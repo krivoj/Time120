@@ -1,0 +1,172 @@
+[setup]
+LanguageName=Italiano
+LanguageID=$0410
+LanguageCodePage=1252
+
+[Messages]
+attribute_Speed=Velocita'
+attribute_Defense=Difesa
+attribute_Passing=Passaggio
+attribute_BallControl=Controllo
+attribute_Shot=Tiro
+attribute_Heading=Testa
+attribute_Stamina=Forza
+
+skill_Move=Muovi
+skill_Short.Passing=Passaggio corto
+skill_Lofted.Pass=Passaggio alto
+skill_Crossing=Cross
+skill_Precision.Shot=Tiro di precisione
+skill_Power.Shot=Tiro potente
+skill_Dribbling=Dribbling
+skill_Protection=Protezione
+skill_Tackle=Contrasto
+skill_Pressing=Pressing
+skill_Pass=Passa turno.
+skill_Stay=Rimani.
+skill_free=Libera.
+skill_Corner.Kick=Calcio d'angolo
+skill_Volley=Tiro al volo
+
+skill_Intercept=Anticipo
+
+talent_Goalkeeper=Portiere
+talent_Challenge=Lottatore
+talent_Toughness=Durezza
+talent_Power=Potenza
+talent_Crossing=Crossing
+talent_LongPass=Passaggio lungo
+talent_Experience=Esperienza
+talent_Dribbling=Dribbling
+talent_Bulldog=Mastino
+talent_Offensive=Offensivo
+talent_Defensive=Difensivo
+talent_Bomb=Cannonata
+talent_Playmaker=Regista
+talent_Faul=Falloso
+talent_Marking=Marcatura a uomo
+talent_Positioning=Posizionamento
+talent_FreeKicks=Punizioni
+
+role_G=Por
+role_D=Dif
+role_M=Cen
+role_F=Att
+
+descr_attribute_Speed=Velocita'
+descr_attribute_Defense=Difesa
+descr_attribute_Passing=Passaggio
+descr_attribute_Ball.Control=Controllo
+descr_attribute_Shot=Tiro
+descr_attribute_Heading=Testa
+descr_attribute_Stamina=Forza
+
+descr_skill_Move=Muovi
+descr_skill_Heading=Colpo di testa
+descr_skill_Short.Passing=Passaggio corto
+descr_skill_Lofted.Pass=Passaggio alto
+descr_skill_Crossing=Cross
+descr_skill_Precision.Shot=Tiro di precisione
+descr_skill_Power.Shot=Tiro potente
+descr_skill_Dribbling=Dribbling
+descr_skill_Protection=Protezione
+descr_skill_Tackle=Contrasto
+descr_skill_Pressing=Pressing
+descr_skill_Corner.Kick=Corner
+descr_skill_Volley=Tiro al volo
+
+descr_talent_Goalkeeper=Puo' giocare in porta!
+descr_talent_Challenge=+1 Tackle passivo durante gli spostamenti dell'avversario con la palla.
+descr_talent_Toughness=+1 Tackle.
+descr_talent_Power=+1 Resistenza ai Tackle attivi e passivi.
+descr_talent_Crossing=+1 sui Cross.
+descr_talent_LongPass=Estende di 1 la distanza dei passaggi.
+descr_talent_Experience=Fare Pressing non costa mosse.
+descr_talent_Dribbling=+1 Dribbling.
+descr_talent_Bulldog=+1 Anticipo durante i passaggi corti avversari.
+descr_talent_Offensive=Tende a muoversi verso l'area avversaria.
+descr_talent_Defensive=Tende a muoversi verso la propria area.
+descr_talent_Bomb=+1 a tutti i bonus di Tiro.
+descr_talent_Playmaker=Cerca di avvicinarsi al proprio portatore di palla. Inoltre i suoi passaggi corti in area avversaria conferiscono un bonus al ricevente.
+descr_talent_Faul=+15% chance di commettere un fallo.
+descr_talent_Marking=DIF=Marca l'attaccante con il Tiro piu' alto. Cen=Marca il Centrocampista con il passaggi piu' alto. ATT=Marca il difensore con il Controllo piu' basso.
+descr_talent_positioning=Cerca di tornare verso la propria zona di campo.
+descr_talent_FreeKicks=+1 Tiro sui Calci di punizione.
+
+
+lbl_Talent=Talento
+lbl_Role=Ruolo
+lbl_Surname=Cognome
+lbl_Back=Indietro
+lbl_Play=Gioca
+lbl_End Turn=Passa Turno
+lbl_Round=Turno
+lbl_Round2=Giornata
+lbl_Formation=Formazione
+lbl_Calendar=Calendario
+lbl_Standings=Classifiche
+lbl_Exit=Esci
+lbl_Thinking=Sto pensando...
+lbl_Minute=Minuto
+lbl_Corner=Angolo
+lbl_GameOver=Fine partita
+lbl_AudioStadium=Audio Stadio
+
+lbl_Tactics=Tattiche
+lbl_Tactic=Tattica
+lbl_Substitution=Sostituzione
+lbl_Substitutions=Sostituzioni
+
+lbl_RedCard=Cartellino rosso
+lbl_YellowCard=Cartellino giallo
+lbl_Injured=Infortunato
+
+lbl_NextTurn=Prossima giornata
+lbl_Money=Denaro
+lbl_MI=M.I.
+lbl_Points=Punti
+lbl_Rank=Rank
+
+lbl_Select=Seleziona
+lbl_Login=Login
+lbl_Help=Aiuto
+lbl_Refresh=Aggiorna
+lbl_Wait=Attendi
+lbl_MarketValue=Valore
+lbl_Age=Eta'
+lbl_MatchesLeft=Partite rimaste
+lbl_Confirm=Conferma
+lbl_Rounds left=Giornate rimaste
+lbl_Freekick=Punizione
+lbl_Fault=Fallo
+lbl_Penalty=Rigore
+lbl_errorlogin=Nome utente o password errate.
+lbl_errorformation=Formazione non valida
+lbl_watchlive=Guarda partita
+lbl_Archive=Archivio
+lbl_waitingwatchlive=In attesa del segnale audio/video
+
+lbl_Dismiss=Licenzia
+lbl_ConfirmDismiss=Davvero vuoi farmi questo? Dopo tutti i gol che ho segnato?
+
+lbl_FormationOK=Formazione OK
+lbl_Reset=Resetta
+lbl_Invalid_Formation=Formazione non valida
+lbl_Uniform=Divisa
+lbl_Jersey=Maglia
+lbl_Shorts=Pantaloncini
+lbl_Socks=Calzettoni
+lbl_Home=Casa
+lbl_Away=Trasferta
+
+lbl_Sell=Vendi
+lbl_Buy=Compra
+lbl_CancelSell=Annulla Vendi
+lbl_ErrorMarketMax=Puoi avere solo 3 giocatori in vendita allo stesso tempo.
+lbl_Market=Mercato
+lbl_Confirm=Conferma
+lbl_Price=Prezzo
+lbl_Search=Cerca
+lbl_MaxValue=Valore massimo
+warning_nosellgk=Non puoi vendere l'unico portiere che hai.
+warning_max18=Non puoi avere piu' di 18 giocatori.

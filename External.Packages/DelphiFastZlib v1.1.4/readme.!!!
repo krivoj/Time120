@@ -1,0 +1,5 @@
+2002.11.24 Errata corrige, please correct this: into FastDecompressString() I have committed an embarassing bug...
+Subst original MoveI32(pointer(s)^, pointer(outBuf)^, outBytes); line
+   with MoveI32(pointer(outBuf)^, pointer(s)^, outBytes); 
+TNX to Guido for the hint, I need to sleep a lot ;-) 
+

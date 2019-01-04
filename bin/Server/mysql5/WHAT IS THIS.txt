@@ -1,0 +1,7 @@
+This folder contains the MySQL database.
+
+Do not attempt to edit the database with a text editor! You will corrupt the tables!
+
+If you want to change things in the database, you need to use a client like HeidiSQL.
+
+Use name and password "root" to connect. Without the quotes!

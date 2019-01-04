@@ -1,0 +1,30 @@
+commit 94723a51d41d7b89bc44b2b09935cb5c422ba380
+Author: Robert Golebiowski <robert.golebiowski@oracle.com>
+Date:   Tue Sep 27 11:17:38 2016 +0200
+
+    Bug #24740291: YASSL UPDATE TO 2.4.2
+
+commit 41d99c054bcb230a1cd614002b62ebf349510499
+Author: Arun Kuruvila <arun.kuruvila@oracle.com>
+Date:   Wed Sep 28 15:52:05 2016 +0530
+
+    Bug#24707666: DEFAULT SETTING FOR SECURE-FILE-PRIV SHOULD BE
+                  RESTRICTED IN ALL GA RELEASES
+    
+    Back port of WL#6782 to 5.5 and 5.6. This also includes
+    back port of Bug#20771331, Bug#20741572 and Bug#20770671.
+    Bug#24695274 and Bug#24679907 are also handled along with
+    this.
+
+commit cf80548b00dafbbc060db75925f5ba4d7fdef1e8
+Merge: 5b0fd61 f105d1e
+Author: Nawaz Nazeer Ahamed <nawaz.nazeer.ahamed@oracle.com>
+Date:   Mon Sep 26 21:28:41 2016 +0530
+
+    Merge branch 'mysql-5.5.52-release' into mysql-5.5.53-release
+
+commit 5b0fd618e5b8155c4533f51cb6cf3b460aee8463
+Author: Balasubramanian Kandasamy <balasubramanian.kandasamy@oracle.com>
+Date:   Mon Aug 8 15:15:17 2016 +0530
+
+    Raise version number after cloning 5.5.52
