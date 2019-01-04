@@ -23,14 +23,14 @@ OSX32/
 *.stat
 
 # Delphi compiler-generated binaries (safe to delete)
-*.exe
-*.dll
+#*.exe
+#*.dll
 *.bpl
 *.bpi
 *.dcp
 *.so
 *.apk
-#*.drc
+*.drc
 *.map
 *.dres
 *.rsm
