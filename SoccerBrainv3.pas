@@ -13099,7 +13099,10 @@ begin
           if aList[p].Cells.Y  <> Ball.Player.CellY then
             aList.Delete(p);
         end;
-        if aList.Count = 0 then Exit
+        if aList.Count = 0 then begin
+          aList.Free;
+          Exit;
+        end
         else
         GetPath (Ball.Player.Team , Ball.Player.CellX , Ball.Player.CellY, aList[0].cells.X, aList[0].cells.Y,iSpeed{Limit},false{useFlank},true{FriendlyWall},
                          true{OpponentWall},true{FinalWall},TruncOneDir{OneDir}, Ball.Player.MovePath );

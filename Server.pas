@@ -19,10 +19,10 @@ uses
   DSE_SearchFiles,
   DSE_Random,
   DSE_ThreadTimer,
+  DSE_theater,
+  DSE_GRID,
 
   MyAccess, DBAccess,
-
-  BaseGrid, AdvGrid, AdvObj,
 
   OverbyteIcsWndControl, OverbyteIcsWSocket, OverbyteIcsWSocketS, OverbyteIcsWSocketTS,
 
@@ -89,27 +89,26 @@ type
     Tcpserver: TWSocketThrdServer;
     Memo1: TMemo;
     Label1: TLabel;
-    advLiveMatches: TAdvStringGrid;
     btnKillAllBrain: TButton;
     btnStopAllBrain: TButton;
     btnStartAllBrain: TButton;
-    btnRefreshListGames: TButton;
     Button1: TButton;
     QueueThread: SE_ThreadTimer;
     MatchThread: SE_ThreadTimer;
     Button2: TButton;
-    RzNumericEdit1: TRzNumericEdit;
-    Label2: TLabel;
-    CheckBox1: TCheckBox;
     threadBot: SE_ThreadTimer;
     Button3: TButton;
-    RzNumericEdit2: TRzNumericEdit;
-    RzNumericEdit3: TRzNumericEdit;
     RadioButton1: TRadioButton;
     RadioButton2: TRadioButton;
-    RzNumericEdit4: TRzNumericEdit;
     Label3: TLabel;
     CheckBox2: TCheckBox;
+    SE_GridLiveMatches: SE_Grid;
+    CheckBoxActiveMacthes: TCheckBox;
+    CheckBox1: TCheckBox;
+    Edit1: TEdit;
+    edit4: TEdit;
+    Edit2: TEdit;
+    Edit3: TEdit;
 
     procedure FormCreate(Sender: TObject);
       procedure CleanDirectory(dir:string);
@@ -140,11 +139,12 @@ type
     procedure btnKillAllBrainClick(Sender: TObject);
     procedure btnStopAllBrainClick(Sender: TObject);
     procedure btnStartAllBrainClick(Sender: TObject);
-    procedure btnRefreshListGamesClick(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure threadBotTimer(Sender: TObject);
     procedure Button3Click(Sender: TObject);
+    procedure RadioButton1Click(Sender: TObject);
+    procedure RadioButton2Click(Sender: TObject);
   private
     { Private declarations }
     procedure Display(Msg : String);
@@ -212,6 +212,8 @@ type
 
 
   public
+
+    procedure RefreshGrid;
     (* procedure che si attivano solo al primo login o comunque se l'account non ha ancora scelto la sua squadra del cuore *)
     procedure PrepareWorldCountries ( directory: string ); overload;
     procedure PrepareWorldCountries ; overload;
@@ -289,6 +291,23 @@ function TryDecimalStrToInt( const S: string; out Value: Integer): Boolean;
 begin
    result := ( pos( '$', S ) = 0 ) and TryStrToInt( S, Value );
 end;
+procedure TFormServer.RadioButton1Click(Sender: TObject);
+begin
+  if RadioButton1.Checked then
+    edit3.Visible := False
+    else edit3.Visible := True;
+end;
+
+procedure TFormServer.RadioButton2Click(Sender: TObject);
+begin
+  if RadioButton2.Checked then begin
+    edit2.Visible := true;
+    edit3.Visible := True;
+  end
+  else edit3.visible := False;
+
+end;
+
 function TFormServer.RandomPassword(PLen: Integer): string;
 var
   str: string;
@@ -314,26 +333,65 @@ begin
 
 end;
 
-procedure TFormServer.btnRefreshListGamesClick(Sender: TObject);
+procedure TFormServer.RefreshGrid;
 var
-  i: Integer;
+  i,y: Integer;
 begin
 
   WaitForSingleObject(Mutex,INFINITE);
-  advLiveMatches.RowCount := BrainManager.lstBrain.Count;
-  advLiveMatches.Clear ;
+  SE_GridLiveMatches.ClearData;   // importante anche pr memoryleak
+  SE_GridLiveMatches.DefaultColWidth := 16;
+  SE_GridLiveMatches.DefaultRowHeight := 16;
+  SE_GridLiveMatches.ColCount := 7;
+  SE_GridLiveMatches.RowCount := BrainManager.lstBrain.Count + 1; // header
+  SE_GridLiveMatches.Columns[0].Width := 220;
+  SE_GridLiveMatches.Columns[1].Width := 220;
+  SE_GridLiveMatches.Columns[2].Width := 50;
+  SE_GridLiveMatches.Columns[3].Width := 50;
+  SE_GridLiveMatches.Columns[4].Width := 60;
+  SE_GridLiveMatches.Columns[5].Width := 60;
+  SE_GridLiveMatches.Columns[6].Width := 50;
+  SE_GridLiveMatches.Width := SE_GridLiveMatches.VirtualWidth;
+
+
+  for y := 0 to SE_GridLiveMatches.RowCount -1 do begin
+    SE_GridLiveMatches.Rows[y].Height := 16;
+    SE_GridLiveMatches.Cells[0,y].FontColor := clWhite;
+    SE_GridLiveMatches.Cells[1,y].FontColor  := clWhite;
+    SE_GridLiveMatches.Cells[2,y].FontColor  := clWhite;
+    SE_GridLiveMatches.Cells[2,y].CellAlignmentH := hCenter;
+    SE_GridLiveMatches.Cells[3,y].FontColor  := clWhite;
+    SE_GridLiveMatches.Cells[3,y].CellAlignmentH := hCenter;
+    SE_GridLiveMatches.Cells[4,y].FontColor  := clWhite;
+    SE_GridLiveMatches.Cells[4,y].CellAlignmentH := hCenter;
+    SE_GridLiveMatches.Cells[5,y].FontColor  := clWhite;
+    SE_GridLiveMatches.Cells[5,y].CellAlignmentH := hCenter;
+    SE_GridLiveMatches.Cells[6,y].FontColor  := clWhite;
+    SE_GridLiveMatches.Cells[6,y].CellAlignmentH := hCenter;
+  end;
+
+  SE_GridLiveMatches.Cells[0,0].Text := 'Guid/Team/Account0';
+  SE_GridLiveMatches.Cells[1,0].Text := 'Guid/Team/Account1';
+  SE_GridLiveMatches.Cells[2,0].Text := 'Turn';
+  SE_GridLiveMatches.Cells[3,0].Text := 'Seconds';
+  SE_GridLiveMatches.Cells[4,0].Text := 'AI0';
+  SE_GridLiveMatches.Cells[5,0].Text := 'AI1';
+  SE_GridLiveMatches.Cells[6,0].Text := 'Minute';
+
+
+
   for I := 0 to BrainManager.lstBrain.Count -1  do begin  // iMin,20
 
-    advLiveMatches.Cells[0,i]:= 'TeamGuid:' +  IntToStr(BrainManager.lstBrain [i].Score.TeamGuid [0]) + ' name:'+ BrainManager.lstBrain [i].Score.Team [0] + ' cliid:' + IntToStr(BrainManager.lstBrain [i].Score.CliId [0]);
-    advLiveMatches.Cells[1,i]:= 'TeamGuid:' +  IntToStr( BrainManager.lstBrain [i].Score.TeamGuid [1]) + ' name:'+ BrainManager.lstBrain [i].Score.Team [1] + ' cliid:' + IntToStr(BrainManager.lstBrain [i].Score.CliId [1]);
-    advLiveMatches.Cells[2,i]:= 'Turn : ' +  IntToStr(BrainManager.lstBrain [i].TeamTurn );
-    advLiveMatches.Cells[3,i]:= 'Seconds : ' +  IntToStr((BrainManager.lstBrain [i].fMilliseconds div 1000) );
+    SE_GridLiveMatches.Cells[0,i+1].Text := IntToStr(BrainManager.lstBrain [i].Score.TeamGuid [0]) + '/'+ BrainManager.lstBrain [i].Score.Team [0] + '/' + IntToStr(BrainManager.lstBrain [i].Score.cliId [0]);
+    SE_GridLiveMatches.Cells[1,i+1].Text := IntToStr( BrainManager.lstBrain [i].Score.TeamGuid [1]) + '/'+ BrainManager.lstBrain [i].Score.Team [1] + '/' + IntToStr(BrainManager.lstBrain [i].Score.CliId [1]);
+    SE_GridLiveMatches.Cells[2,i+1].Text := IntToStr(BrainManager.lstBrain [i].TeamTurn );
+    SE_GridLiveMatches.Cells[3,i+1].Text := IntToStr((BrainManager.lstBrain [i].fMilliseconds div 1000) );
     if BrainManager.lstBrain [i].Score.AI[0]  then
-      advLiveMatches.Cells[4,i]:= 'AI0' else  advLiveMatches.Cells[4,i]:= '';
+      SE_GridLiveMatches.Cells[4,i+1].Text:= 'Active' else  SE_GridLiveMatches.Cells[4,i+1].text:= '';
     if BrainManager.lstBrain [i].Score.AI[1]  then
-      advLiveMatches.Cells[5,i]:= 'AI1' else  advLiveMatches.Cells[5,i]:= '';
+      SE_GridLiveMatches.Cells[5,i+1].Text:= 'Active' else  SE_GridLiveMatches.Cells[5,i+1].text:= '';
 
-    advLiveMatches.Cells[6,i]:= 'Minute : ' +  IntToStr(BrainManager.lstBrain [i].Minute );
+    SE_GridLiveMatches.Cells[6,i+1].Text:= IntToStr(BrainManager.lstBrain [i].Minute );
 
   end;
   ReleaseMutex(Mutex);
@@ -1387,8 +1445,6 @@ begin
 
   ini := TIniFile.Create  ( ExtractFilePath(Application.ExeName) + 'server.ini');
   dir_log := ini.ReadString('setup','dir_log','');
-//  MtpServer.Port := ini.ReadString('mtp','port','2019');
-//  MtpServer.Start;
 
   MySqlServerGame := ini.ReadString('Tcp','Address','localhost');
   MySqlServerWorld := ini.ReadString('Tcp','Address','localhost');
@@ -3000,7 +3056,7 @@ procedure TFormServer.threadBotTimer(Sender: TObject);
 begin
 
   if CheckBox1.Checked then begin
-    if BrainManager.lstBrain.Count < RzNumericEdit1.Value then
+    if BrainManager.lstBrain.Count <  StrToInt( Edit1.Text ) then
       CreateRandomBotMatch;
   end;
   // ore 20.24 900-1000 partite
@@ -3270,7 +3326,7 @@ begin
 
     ServerOpponent[0].bot := False;
     ServerOpponent[1].bot := False;
-    if (GetTickCount - Queue[i].TimeStartQueue) > Trunc(Rznumericedit4.Value) then goto vsbots;
+    if (GetTickCount - Queue[i].TimeStartQueue) > StrToInt(Edit4.Text) then goto vsbots; // se ho superato il tempo massimo in coda in attesa di uno sfidante
 
     CliOpponentGuidTeam := GetQueueOpponent ( Queue[i].WorldTeam , Queue[i].rank, queue[i].nextHA ); // worldteam diversa in opponent, no Bologna vs Bologna
     if CliOpponentGuidTeam <> nil then  begin   // ho trovato un opponent normale
@@ -3301,7 +3357,7 @@ begin
 
       {$IFDEF BOTS}
 vsBots:
-      if (GetTickCount - Queue[i].TimeStartQueue) <= Trunc(Rznumericedit4.Value) then Continue;
+      if (GetTickCount - Queue[i].TimeStartQueue) <= StrToInt(Edit4.Text) then Continue;
       GetGuidTeamOpponentBOT ( Queue[i].WorldTeam , Queue[i].rank, queue[i].nextHA, OpponentBOT.GuidTeam,OpponentBOT.UserName   ); // worldteam diversa in opponent, no Bologna vs Bologna
       if OpponentBOT.GuidTeam <> 0 then  begin   // ho trovato un opponent BOT
         if queue[i].nextHA = 0 then begin
@@ -3389,6 +3445,9 @@ vsBots:
     if Queue[i].Marked then
       Queue.Delete(i);
   end;
+
+  if CheckBoxActiveMacthes.Checked then
+    RefreshGrid;
   ReleaseMutex(Mutex);
 
 end;
@@ -6045,15 +6104,15 @@ begin
 //        BrainManager.lstBrain [i].AI_GCD := {8000} BrainManager.RndGenerateRange( 3000, (BrainManager.lstBrain [i].seconds  * 1000) div
 //                                                                      (BrainManager.lstBrain [i].TeamMovesLeft +1) )
           if RadioButton1.Checked then begin
-            BrainManager.lstBrain [i].AI_GCD := Trunc(RzNumericEdit2.value) ;// {8000} BrainManager.RndGenerateRange( 3000, 12000 )
+            BrainManager.lstBrain [i].AI_GCD := StrToInt(Edit2.Text) ;// {8000} BrainManager.RndGenerateRange( 3000, 12000 )
           end
           else begin
-            BrainManager.lstBrain [i].AI_GCD := BrainManager.RndGenerateRange( Trunc(RzNumericEdit2.value), Trunc(RzNumericEdit3.value) );
+            BrainManager.lstBrain [i].AI_GCD := BrainManager.RndGenerateRange( StrToInt(Edit2.Text), StrToInt(Edit3.Text) );
 
           end;
         end
         else
-        BrainManager.lstBrain [i].AI_GCD := Trunc(RzNumericEdit2.value) ;
+        BrainManager.lstBrain [i].AI_GCD := StrToInt(Edit2.Text) ;
 
         Application.ProcessMessages;
       end;
@@ -6328,6 +6387,10 @@ var
   i,arnd: Integer;
   ConnGame,ConnWorld : TMyConnection;
 begin
+// Prende i colori del team reale db.world e lo trasmette a tutti i team eisstenti in db.game
+// in questo modo aggiornando solo le maglie di tutte le squadre reali, si aggiornano tutti i team dei giocatori
+// eventualmente un oggetto cosmetico può essere quello di una uniforme personalizzata
+
   ConnWorld := TMyConnection.Create(nil);
   ConnWorld.Server := MySqlServerWorld;
   ConnWorld.Username:='root';

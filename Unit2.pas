@@ -13,7 +13,8 @@ procedure ShowLogin;
 procedure ShowScore;
 
 implementation
-uses unit1, SoccerBrainv3, vcl.graphics;
+uses unit1, SoccerBrainv3, vcl.graphics, vcl.controls, dse_bitmap;
+
 
 Function Translate ( aString : string  ): String;
 begin
@@ -143,8 +144,26 @@ begin
   Form1.SE_gridColors.top := Form1.ck_Socks1.Top +  Form1.ck_Socks1.Height + 20;
 
 
-  if Form1.PanelBack.Background.Empty  then Form1.PanelBack.Background.LoadFromFile ( dir_stadium + 'background.bmp');
+  if Form1.PanelBack.Background = nil  then Form1.PanelBack.Background := SE_Bitmap.create ( dir_stadium + 'background.bmp');
   Form1.PanelBack.visible := True;
+
+
+  RoundCornerOf ( Form1.PanelInfoPlayer0 );
+  RoundCornerOf ( Form1.PanelInfoPlayer1 );
+  RoundCornerOf ( Form1.PanelXPplayer0 );
+  RoundCornerOf ( Form1.PanelCombatLog );
+  RoundCornerOf ( Form1.PanelScore );
+  RoundCornerOf ( Form1.PanelSell );
+  RoundCornerOf ( Form1.PanelMain );
+  RoundCornerOf ( Form1.PanelCountryTeam );
+  RoundCornerOf ( Form1.PanelListMatches );
+  RoundCornerOf ( Form1.PanelCorner );
+  RoundCornerOf ( Form1.PanelLogin );
+  RoundCornerOf ( Form1.PanelformationSE );
+  RoundCornerOf ( Form1.PanelSkillSE );
+  RoundCornerOf ( Form1.PanelUniform );
+  RoundCornerOf ( Form1.PanelMarket );
+  RoundCornerOf ( Form1.PanelDismiss );
 
 
 end;
@@ -238,8 +257,6 @@ begin
 
   MyBrainFormation.lstSoccerPlayer.clear;  //<-- rimuove gli sprite
 
- // ClientLoadFormation ;
-//  ClientLoadFormation;
 
   MyBrain:= MyBrainFormation; // <--- assegno MyBrain.
 

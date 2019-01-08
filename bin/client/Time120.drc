@@ -211,134 +211,134 @@
 #define JvResources_RsClMoneyGreen 64845
 #define JvResources_RsClSkyBlue 64846
 #define JvResources_RsClCream 64847
-#define RzBorder_sRzColorGrayText 64848
-#define RzBorder_sRzColorBtnText 64849
-#define RzBorder_sRzColorInactiveCaptionText 64850
-#define RzBorder_sRzColorBtnHighlight 64851
-#define RzBorder_sRzColor3DDkShadow 64852
-#define RzBorder_sRzColor3DLight 64853
-#define RzBorder_sRzColorInfoText 64854
-#define RzBorder_sRzColorInfoBk 64855
-#define RzBorder_sRzColorHotLight 64856
-#define RzBorder_sRzColorGradientActiveCaption 64857
-#define RzBorder_sRzColorGradientInactiveCaption 64858
-#define RzBorder_sRzColorMenuHighlight 64859
-#define RzBorder_sRzColorMenuBar 64860
+#define Vcl_Imaging_pnglang_EPNGNoImageDataText 64848
+#define Vcl_Imaging_pnglang_EPNGCannotAddChunkText 64849
+#define Vcl_Imaging_pnglang_EPNGCannotAddInvalidImageText 64850
+#define Vcl_Imaging_pnglang_EPNGCouldNotLoadResourceText 64851
+#define Vcl_Imaging_pnglang_EPNGOutMemoryText 64852
+#define Vcl_Imaging_pnglang_EPNGCannotChangeTransparentText 64853
+#define Vcl_Imaging_pnglang_EPNGHeaderNotPresentText 64854
+#define Vcl_Imaging_pnglang_EInvalidNewSize 64855
+#define Vcl_Imaging_pnglang_EInvalidSpec 64856
+#define GDIPicture_GDIPERRMSG 64857
+#define Vcl_Imaging_JConsts_sChangeJPGSize 64858
+#define Vcl_Imaging_JConsts_sJPEGError 64859
+#define Vcl_Imaging_JConsts_sJPEGImageFile 64860
 #define JvResources_RsClBlack 64861
 #define JvResources_RsClMaroon 64862
 #define JvResources_RsClGreen 64863
-#define RzBorder_sRzColorBackground 64864
-#define RzBorder_sRzColorActiveCaption 64865
-#define RzBorder_sRzColorInactiveCaption 64866
-#define RzBorder_sRzColorMenu 64867
-#define RzBorder_sRzColorWindow 64868
-#define RzBorder_sRzColorWindowFrame 64869
-#define RzBorder_sRzColorMenuText 64870
-#define RzBorder_sRzColorWindowText 64871
-#define RzBorder_sRzColorCaptionText 64872
-#define RzBorder_sRzColorActiveBorder 64873
-#define RzBorder_sRzColorInactiveBorder 64874
-#define RzBorder_sRzColorAppWorkSpace 64875
-#define RzBorder_sRzColorHighlight 64876
-#define RzBorder_sRzColorHighlightText 64877
-#define RzBorder_sRzColorBtnFace 64878
-#define RzBorder_sRzColorBtnShadow 64879
-#define RzBorder_sRzColorGold 64880
-#define RzBorder_sRzColorYellow 64881
-#define RzBorder_sRzColorBrightGreen 64882
-#define RzBorder_sRzColorTurquoise 64883
-#define RzBorder_sRzColorSkyBlue 64884
-#define RzBorder_sRzColorPlum 64885
-#define RzBorder_sRzColorGray25 64886
-#define RzBorder_sRzColorRose 64887
-#define RzBorder_sRzColorTan 64888
-#define RzBorder_sRzColorLightYellow 64889
-#define RzBorder_sRzColorLightGreen 64890
-#define RzBorder_sRzColorLightTurquoise 64891
-#define RzBorder_sRzColorPaleBlue 64892
-#define RzBorder_sRzColorLavender 64893
-#define RzBorder_sRzColorWhite 64894
-#define RzBorder_sRzColorScrollBar 64895
-#define RzBorder_sRzColorOrange 64896
-#define RzBorder_sRzColorDarkYellow 64897
-#define RzBorder_sRzColorGreen 64898
-#define RzBorder_sRzColorTeal 64899
-#define RzBorder_sRzColorBlue 64900
-#define RzBorder_sRzColorBlueGray 64901
-#define RzBorder_sRzColorGray50 64902
-#define RzBorder_sRzColorRed 64903
-#define RzBorder_sRzColorLightOrange 64904
-#define RzBorder_sRzColorLime 64905
-#define RzBorder_sRzColorSeaGreen 64906
-#define RzBorder_sRzColorAqua 64907
-#define RzBorder_sRzColorLightBlue 64908
-#define RzBorder_sRzColorViolet 64909
-#define RzBorder_sRzColorGray40 64910
-#define RzBorder_sRzColorPink 64911
-#define OverbyteIcsCharsetUtils_sUnicodeUTF7 64912
-#define OverbyteIcsCharsetUtils_sUnicodeUTF8 64913
-#define OverbyteIcsCharsetUtils_sVietnameseWindows 64914
-#define OverbyteIcsCharsetUtils_sWesternEuropeanISO 64915
-#define OverbyteIcsCharsetUtils_sWesternEuropeanWindows 64916
-#define RzCommon_sRzCannotLoadCustomFraming 64917
-#define RzCommon_sRzCannotSaveCustomFraming 64918
-#define RzBorder_sRzColorBlack 64919
-#define RzBorder_sRzColorBrown 64920
-#define RzBorder_sRzColorOliveGreen 64921
-#define RzBorder_sRzColorDarkGreen 64922
-#define RzBorder_sRzColorDarkTeal 64923
-#define RzBorder_sRzColorDarkBlue 64924
-#define RzBorder_sRzColorIndigo 64925
-#define RzBorder_sRzColorGray80 64926
-#define RzBorder_sRzColorDarkRed 64927
-#define OverbyteIcsCharsetUtils_sCyrillicKOI8R 64928
-#define OverbyteIcsCharsetUtils_sCyrillicKOI8U 64929
-#define OverbyteIcsCharsetUtils_sCyrillicWindows 64930
-#define OverbyteIcsCharsetUtils_sEstonianISO 64931
-#define OverbyteIcsCharsetUtils_sGreekISO 64932
-#define OverbyteIcsCharsetUtils_sGreekWindows 64933
-#define OverbyteIcsCharsetUtils_sHebrewISOLogical 64934
-#define OverbyteIcsCharsetUtils_sHebrewISOVisual 64935
-#define OverbyteIcsCharsetUtils_sHebrewWindows 64936
-#define OverbyteIcsCharsetUtils_sJapaneseJIS 64937
-#define OverbyteIcsCharsetUtils_sKorean 64938
-#define OverbyteIcsCharsetUtils_sKoreanEUC 64939
-#define OverbyteIcsCharsetUtils_sLatin9 64940
-#define OverbyteIcsCharsetUtils_sThaiWindows 64941
-#define OverbyteIcsCharsetUtils_sTurkishISO 64942
-#define OverbyteIcsCharsetUtils_sTurkishWindows 64943
-#define Vcl_Imaging_pnglang_EInvalidSpec 64944
-#define GDIPicture_GDIPERRMSG 64945
-#define Vcl_Imaging_JConsts_sChangeJPGSize 64946
-#define Vcl_Imaging_JConsts_sJPEGError 64947
-#define Vcl_Imaging_JConsts_sJPEGImageFile 64948
-#define OverbyteIcsCharsetUtils_sArabicISO 64949
-#define OverbyteIcsCharsetUtils_sArabicWindows 64950
-#define OverbyteIcsCharsetUtils_sBalticISO 64951
-#define OverbyteIcsCharsetUtils_sBalticWindows 64952
-#define OverbyteIcsCharsetUtils_sCentralEuropeanISO 64953
-#define OverbyteIcsCharsetUtils_sCentralEuropeanWindows 64954
-#define OverbyteIcsCharsetUtils_sChineseTraditionalBig5 64955
-#define OverbyteIcsCharsetUtils_sChineseSimplifiedGB18030 64956
-#define OverbyteIcsCharsetUtils_sChineseSimplifiedGB2312 64957
-#define OverbyteIcsCharsetUtils_sChineseSimplifiedHZ 64958
-#define OverbyteIcsCharsetUtils_sCyrillicISO 64959
-#define Vcl_Imaging_pnglang_EPNGIHDRNotFirstText 64960
-#define Vcl_Imaging_pnglang_EPNGSizeExceedsText 64961
-#define Vcl_Imaging_pnglang_EPNGUnknownPalEntryText 64962
-#define Vcl_Imaging_pnglang_EPNGUnknownCriticalChunkText 64963
-#define Vcl_Imaging_pnglang_EPNGUnknownCompressionText 64964
-#define Vcl_Imaging_pnglang_EPNGUnknownInterlaceText 64965
-#define Vcl_Imaging_pnglang_EPNGCannotAssignChunkText 64966
-#define Vcl_Imaging_pnglang_EPNGUnexpectedEndText 64967
-#define Vcl_Imaging_pnglang_EPNGNoImageDataText 64968
-#define Vcl_Imaging_pnglang_EPNGCannotAddChunkText 64969
-#define Vcl_Imaging_pnglang_EPNGCannotAddInvalidImageText 64970
-#define Vcl_Imaging_pnglang_EPNGCouldNotLoadResourceText 64971
-#define Vcl_Imaging_pnglang_EPNGOutMemoryText 64972
-#define Vcl_Imaging_pnglang_EPNGCannotChangeTransparentText 64973
-#define Vcl_Imaging_pnglang_EPNGHeaderNotPresentText 64974
-#define Vcl_Imaging_pnglang_EInvalidNewSize 64975
+#define RzBorder_sRzColorMenuHighlight 64864
+#define RzBorder_sRzColorMenuBar 64865
+#define Vcl_Imaging_pnglang_EPngInvalidCRCText 64866
+#define Vcl_Imaging_pnglang_EPNGInvalidIHDRText 64867
+#define Vcl_Imaging_pnglang_EPNGMissingMultipleIDATText 64868
+#define Vcl_Imaging_pnglang_EPNGZLIBErrorText 64869
+#define Vcl_Imaging_pnglang_EPNGInvalidPaletteText 64870
+#define Vcl_Imaging_pnglang_EPNGInvalidFileHeaderText 64871
+#define Vcl_Imaging_pnglang_EPNGIHDRNotFirstText 64872
+#define Vcl_Imaging_pnglang_EPNGSizeExceedsText 64873
+#define Vcl_Imaging_pnglang_EPNGUnknownPalEntryText 64874
+#define Vcl_Imaging_pnglang_EPNGUnknownCriticalChunkText 64875
+#define Vcl_Imaging_pnglang_EPNGUnknownCompressionText 64876
+#define Vcl_Imaging_pnglang_EPNGUnknownInterlaceText 64877
+#define Vcl_Imaging_pnglang_EPNGCannotAssignChunkText 64878
+#define Vcl_Imaging_pnglang_EPNGUnexpectedEndText 64879
+#define RzBorder_sRzColorAppWorkSpace 64880
+#define RzBorder_sRzColorHighlight 64881
+#define RzBorder_sRzColorHighlightText 64882
+#define RzBorder_sRzColorBtnFace 64883
+#define RzBorder_sRzColorBtnShadow 64884
+#define RzBorder_sRzColorGrayText 64885
+#define RzBorder_sRzColorBtnText 64886
+#define RzBorder_sRzColorInactiveCaptionText 64887
+#define RzBorder_sRzColorBtnHighlight 64888
+#define RzBorder_sRzColor3DDkShadow 64889
+#define RzBorder_sRzColor3DLight 64890
+#define RzBorder_sRzColorInfoText 64891
+#define RzBorder_sRzColorInfoBk 64892
+#define RzBorder_sRzColorHotLight 64893
+#define RzBorder_sRzColorGradientActiveCaption 64894
+#define RzBorder_sRzColorGradientInactiveCaption 64895
+#define RzBorder_sRzColorLightTurquoise 64896
+#define RzBorder_sRzColorPaleBlue 64897
+#define RzBorder_sRzColorLavender 64898
+#define RzBorder_sRzColorWhite 64899
+#define RzBorder_sRzColorScrollBar 64900
+#define RzBorder_sRzColorBackground 64901
+#define RzBorder_sRzColorActiveCaption 64902
+#define RzBorder_sRzColorInactiveCaption 64903
+#define RzBorder_sRzColorMenu 64904
+#define RzBorder_sRzColorWindow 64905
+#define RzBorder_sRzColorWindowFrame 64906
+#define RzBorder_sRzColorMenuText 64907
+#define RzBorder_sRzColorWindowText 64908
+#define RzBorder_sRzColorCaptionText 64909
+#define RzBorder_sRzColorActiveBorder 64910
+#define RzBorder_sRzColorInactiveBorder 64911
+#define RzBorder_sRzColorAqua 64912
+#define RzBorder_sRzColorLightBlue 64913
+#define RzBorder_sRzColorViolet 64914
+#define RzBorder_sRzColorGray40 64915
+#define RzBorder_sRzColorPink 64916
+#define RzBorder_sRzColorGold 64917
+#define RzBorder_sRzColorYellow 64918
+#define RzBorder_sRzColorBrightGreen 64919
+#define RzBorder_sRzColorTurquoise 64920
+#define RzBorder_sRzColorSkyBlue 64921
+#define RzBorder_sRzColorPlum 64922
+#define RzBorder_sRzColorGray25 64923
+#define RzBorder_sRzColorRose 64924
+#define RzBorder_sRzColorTan 64925
+#define RzBorder_sRzColorLightYellow 64926
+#define RzBorder_sRzColorLightGreen 64927
+#define RzBorder_sRzColorDarkTeal 64928
+#define RzBorder_sRzColorDarkBlue 64929
+#define RzBorder_sRzColorIndigo 64930
+#define RzBorder_sRzColorGray80 64931
+#define RzBorder_sRzColorDarkRed 64932
+#define RzBorder_sRzColorOrange 64933
+#define RzBorder_sRzColorDarkYellow 64934
+#define RzBorder_sRzColorGreen 64935
+#define RzBorder_sRzColorTeal 64936
+#define RzBorder_sRzColorBlue 64937
+#define RzBorder_sRzColorBlueGray 64938
+#define RzBorder_sRzColorGray50 64939
+#define RzBorder_sRzColorRed 64940
+#define RzBorder_sRzColorLightOrange 64941
+#define RzBorder_sRzColorLime 64942
+#define RzBorder_sRzColorSeaGreen 64943
+#define OverbyteIcsCharsetUtils_sKoreanEUC 64944
+#define OverbyteIcsCharsetUtils_sLatin9 64945
+#define OverbyteIcsCharsetUtils_sThaiWindows 64946
+#define OverbyteIcsCharsetUtils_sTurkishISO 64947
+#define OverbyteIcsCharsetUtils_sTurkishWindows 64948
+#define OverbyteIcsCharsetUtils_sUnicodeUTF7 64949
+#define OverbyteIcsCharsetUtils_sUnicodeUTF8 64950
+#define OverbyteIcsCharsetUtils_sVietnameseWindows 64951
+#define OverbyteIcsCharsetUtils_sWesternEuropeanISO 64952
+#define OverbyteIcsCharsetUtils_sWesternEuropeanWindows 64953
+#define RzCommon_sRzCannotLoadCustomFraming 64954
+#define RzCommon_sRzCannotSaveCustomFraming 64955
+#define RzBorder_sRzColorBlack 64956
+#define RzBorder_sRzColorBrown 64957
+#define RzBorder_sRzColorOliveGreen 64958
+#define RzBorder_sRzColorDarkGreen 64959
+#define OverbyteIcsCharsetUtils_sChineseTraditionalBig5 64960
+#define OverbyteIcsCharsetUtils_sChineseSimplifiedGB18030 64961
+#define OverbyteIcsCharsetUtils_sChineseSimplifiedGB2312 64962
+#define OverbyteIcsCharsetUtils_sChineseSimplifiedHZ 64963
+#define OverbyteIcsCharsetUtils_sCyrillicISO 64964
+#define OverbyteIcsCharsetUtils_sCyrillicKOI8R 64965
+#define OverbyteIcsCharsetUtils_sCyrillicKOI8U 64966
+#define OverbyteIcsCharsetUtils_sCyrillicWindows 64967
+#define OverbyteIcsCharsetUtils_sEstonianISO 64968
+#define OverbyteIcsCharsetUtils_sGreekISO 64969
+#define OverbyteIcsCharsetUtils_sGreekWindows 64970
+#define OverbyteIcsCharsetUtils_sHebrewISOLogical 64971
+#define OverbyteIcsCharsetUtils_sHebrewISOVisual 64972
+#define OverbyteIcsCharsetUtils_sHebrewWindows 64973
+#define OverbyteIcsCharsetUtils_sJapaneseJIS 64974
+#define OverbyteIcsCharsetUtils_sKorean 64975
 #define MyConsts_SOpenNextPreparedSQL 64976
 #define MyConsts_SOpenNextVsFetchAll 64977
 #define MyConsts_STimestampFieldRequired 64978
@@ -349,12 +349,12 @@
 #define MyConsts_SInvalidClientVersion 64983
 #define MyConsts_SCannotIntercept 64984
 #define MyConsts_STwoEmbServer 64985
-#define Vcl_Imaging_pnglang_EPngInvalidCRCText 64986
-#define Vcl_Imaging_pnglang_EPNGInvalidIHDRText 64987
-#define Vcl_Imaging_pnglang_EPNGMissingMultipleIDATText 64988
-#define Vcl_Imaging_pnglang_EPNGZLIBErrorText 64989
-#define Vcl_Imaging_pnglang_EPNGInvalidPaletteText 64990
-#define Vcl_Imaging_pnglang_EPNGInvalidFileHeaderText 64991
+#define OverbyteIcsCharsetUtils_sArabicISO 64986
+#define OverbyteIcsCharsetUtils_sArabicWindows 64987
+#define OverbyteIcsCharsetUtils_sBalticISO 64988
+#define OverbyteIcsCharsetUtils_sBalticWindows 64989
+#define OverbyteIcsCharsetUtils_sCentralEuropeanISO 64990
+#define OverbyteIcsCharsetUtils_sCentralEuropeanWindows 64991
 #define DAConsts_SProtectionCircular 64992
 #define DAConsts_SNotInitialized 64993
 #define DAConsts_SInvalidIV 64994
@@ -1104,6 +1104,43 @@ BEGIN
 	JvResources_RsClMoneyGreen,	L"Money green"
 	JvResources_RsClSkyBlue,	L"Sky blue"
 	JvResources_RsClCream,	L"Cream"
+	Vcl_Imaging_pnglang_EPNGNoImageDataText,	L"This \"Portable Network Graphics\" image contains no data."
+	Vcl_Imaging_pnglang_EPNGCannotAddChunkText,	L"The program tried to add a existent critical chunk to the current image which is not allowed."
+	Vcl_Imaging_pnglang_EPNGCannotAddInvalidImageText,	L"It's not allowed to add a new chunk because the current image is invalid."
+	Vcl_Imaging_pnglang_EPNGCouldNotLoadResourceText,	L"The png image could not be loaded from the resource ID."
+	Vcl_Imaging_pnglang_EPNGOutMemoryText,	L"Some operation could not be performed because the system is out of resources. Close some windows and try again."
+	Vcl_Imaging_pnglang_EPNGCannotChangeTransparentText,	L"Setting bit transparency color is not allowed for png images containing alpha value for each pixel (COLOR_RGBALPHA and COLOR_GRAYSCALEALPHA)"
+	Vcl_Imaging_pnglang_EPNGHeaderNotPresentText,	L"This operation is not valid because the current image contains no valid header."
+	Vcl_Imaging_pnglang_EInvalidNewSize,	L"The new size provided for image resizing is invalid."
+	Vcl_Imaging_pnglang_EInvalidSpec,	L"The \"Portable Network Graphics\" could not be created because invalid image type parameters have being provided."
+	GDIPicture_GDIPERRMSG,	L"Could not allocate memory for image"
+	Vcl_Imaging_JConsts_sChangeJPGSize,	L"Cannot change the size of a JPEG image"
+	Vcl_Imaging_JConsts_sJPEGError,	L"JPEG error #%d"
+	Vcl_Imaging_JConsts_sJPEGImageFile,	L"JPEG Image File"
+	JvResources_RsClBlack,	L"Black"
+	JvResources_RsClMaroon,	L"Maroon"
+	JvResources_RsClGreen,	L"Green"
+	RzBorder_sRzColorMenuHighlight,	L"Menu Highlight"
+	RzBorder_sRzColorMenuBar,	L"Menu Bar"
+	Vcl_Imaging_pnglang_EPngInvalidCRCText,	L"This \"Portable Network Graphics\" image is not valid because it contains invalid pieces of data (crc error)"
+	Vcl_Imaging_pnglang_EPNGInvalidIHDRText,	L"The \"Portable Network Graphics\" image could not be loaded because one of its main piece of data (ihdr) might be corrupted"
+	Vcl_Imaging_pnglang_EPNGMissingMultipleIDATText,	L"This \"Portable Network Graphics\" image is invalid because it has missing image parts."
+	Vcl_Imaging_pnglang_EPNGZLIBErrorText,	L"Could not decompress the image because it contains invalid compressed data.\r\n Description: "
+	Vcl_Imaging_pnglang_EPNGInvalidPaletteText,	L"The \"Portable Network Graphics\" image contains an invalid palette."
+	Vcl_Imaging_pnglang_EPNGInvalidFileHeaderText,	L"The file being read is not a valid \"Portable Network Graphics\" image because it contains an invalid header. This file may be corrupted, try obtaining it again"
+	Vcl_Imaging_pnglang_EPNGIHDRNotFirstText,	L"This \"Portable Network Graphics\" image is not supported or it might be invalid.\r\n(IHDR chunk is not the first)"
+	Vcl_Imaging_pnglang_EPNGSizeExceedsText,	L"This \"Portable Network Graphics\" image is not supported because either its width or height exceeds the maximum size of 65535 pixels."
+	Vcl_Imaging_pnglang_EPNGUnknownPalEntryText,	L"There is no such palette entry."
+	Vcl_Imaging_pnglang_EPNGUnknownCriticalChunkText,	L"This \"Portable Network Graphics\" image contains an unknown critical part which could not be decoded."
+	Vcl_Imaging_pnglang_EPNGUnknownCompressionText,	L"This \"Portable Network Graphics\" image is encoded with an unknown compression scheme which could not be decoded."
+	Vcl_Imaging_pnglang_EPNGUnknownInterlaceText,	L"This \"Portable Network Graphics\" image uses an unknown interlace scheme which could not be decoded."
+	Vcl_Imaging_pnglang_EPNGCannotAssignChunkText,	L"The chunks must be compatible to be assigned."
+	Vcl_Imaging_pnglang_EPNGUnexpectedEndText,	L"This \"Portable Network Graphics\" image is invalid because the decoder found an unexpected end of the file."
+	RzBorder_sRzColorAppWorkSpace,	L"App WorkSpace"
+	RzBorder_sRzColorHighlight,	L"Highlight"
+	RzBorder_sRzColorHighlightText,	L"Highlight Text"
+	RzBorder_sRzColorBtnFace,	L"Button Face"
+	RzBorder_sRzColorBtnShadow,	L"Button Shadow"
 	RzBorder_sRzColorGrayText,	L"Gray Text"
 	RzBorder_sRzColorBtnText,	L"Button Text"
 	RzBorder_sRzColorInactiveCaptionText,	L"Inactive Caption Text"
@@ -1115,11 +1152,11 @@ BEGIN
 	RzBorder_sRzColorHotLight,	L"Hot Light"
 	RzBorder_sRzColorGradientActiveCaption,	L"Gradient Active Caption"
 	RzBorder_sRzColorGradientInactiveCaption,	L"Gradient Inactive Caption"
-	RzBorder_sRzColorMenuHighlight,	L"Menu Highlight"
-	RzBorder_sRzColorMenuBar,	L"Menu Bar"
-	JvResources_RsClBlack,	L"Black"
-	JvResources_RsClMaroon,	L"Maroon"
-	JvResources_RsClGreen,	L"Green"
+	RzBorder_sRzColorLightTurquoise,	L"Light Turquoise"
+	RzBorder_sRzColorPaleBlue,	L"Pale Blue"
+	RzBorder_sRzColorLavender,	L"Lavender"
+	RzBorder_sRzColorWhite,	L"White"
+	RzBorder_sRzColorScrollBar,	L"Scroll Bar"
 	RzBorder_sRzColorBackground,	L"Background"
 	RzBorder_sRzColorActiveCaption,	L"Active Caption"
 	RzBorder_sRzColorInactiveCaption,	L"Inactive Caption"
@@ -1131,11 +1168,11 @@ BEGIN
 	RzBorder_sRzColorCaptionText,	L"Caption Text"
 	RzBorder_sRzColorActiveBorder,	L"Active Border"
 	RzBorder_sRzColorInactiveBorder,	L"Inactive Border"
-	RzBorder_sRzColorAppWorkSpace,	L"App WorkSpace"
-	RzBorder_sRzColorHighlight,	L"Highlight"
-	RzBorder_sRzColorHighlightText,	L"Highlight Text"
-	RzBorder_sRzColorBtnFace,	L"Button Face"
-	RzBorder_sRzColorBtnShadow,	L"Button Shadow"
+	RzBorder_sRzColorAqua,	L"Aqua"
+	RzBorder_sRzColorLightBlue,	L"Light Blue"
+	RzBorder_sRzColorViolet,	L"Violet"
+	RzBorder_sRzColorGray40,	L"Gray 40%"
+	RzBorder_sRzColorPink,	L"Pink"
 	RzBorder_sRzColorGold,	L"Gold"
 	RzBorder_sRzColorYellow,	L"Yellow"
 	RzBorder_sRzColorBrightGreen,	L"Bright Green"
@@ -1147,11 +1184,11 @@ BEGIN
 	RzBorder_sRzColorTan,	L"Tan"
 	RzBorder_sRzColorLightYellow,	L"Light Yellow"
 	RzBorder_sRzColorLightGreen,	L"Light Green"
-	RzBorder_sRzColorLightTurquoise,	L"Light Turquoise"
-	RzBorder_sRzColorPaleBlue,	L"Pale Blue"
-	RzBorder_sRzColorLavender,	L"Lavender"
-	RzBorder_sRzColorWhite,	L"White"
-	RzBorder_sRzColorScrollBar,	L"Scroll Bar"
+	RzBorder_sRzColorDarkTeal,	L"Dark Teal"
+	RzBorder_sRzColorDarkBlue,	L"Dark Blue"
+	RzBorder_sRzColorIndigo,	L"Indigo"
+	RzBorder_sRzColorGray80,	L"Gray 80%"
+	RzBorder_sRzColorDarkRed,	L"Dark Red"
 	RzBorder_sRzColorOrange,	L"Orange"
 	RzBorder_sRzColorDarkYellow,	L"Dark Yellow"
 	RzBorder_sRzColorGreen,	L"Green"
@@ -1163,11 +1200,11 @@ BEGIN
 	RzBorder_sRzColorLightOrange,	L"Light Orange"
 	RzBorder_sRzColorLime,	L"Lime"
 	RzBorder_sRzColorSeaGreen,	L"Sea Green"
-	RzBorder_sRzColorAqua,	L"Aqua"
-	RzBorder_sRzColorLightBlue,	L"Light Blue"
-	RzBorder_sRzColorViolet,	L"Violet"
-	RzBorder_sRzColorGray40,	L"Gray 40%"
-	RzBorder_sRzColorPink,	L"Pink"
+	OverbyteIcsCharsetUtils_sKoreanEUC,	L"Korean (EUC)"
+	OverbyteIcsCharsetUtils_sLatin9,	L"Latin 9 (ISO)"
+	OverbyteIcsCharsetUtils_sThaiWindows,	L"Thai (Windows)"
+	OverbyteIcsCharsetUtils_sTurkishISO,	L"Turkish (ISO)"
+	OverbyteIcsCharsetUtils_sTurkishWindows,	L"Turkish (Windows)"
 	OverbyteIcsCharsetUtils_sUnicodeUTF7,	L"Unicode (UTF-7)"
 	OverbyteIcsCharsetUtils_sUnicodeUTF8,	L"Unicode (UTF-8)"
 	OverbyteIcsCharsetUtils_sVietnameseWindows,	L"Vietnamese (Windows)"
@@ -1179,11 +1216,11 @@ BEGIN
 	RzBorder_sRzColorBrown,	L"Brown"
 	RzBorder_sRzColorOliveGreen,	L"Olive Green"
 	RzBorder_sRzColorDarkGreen,	L"Dark Green"
-	RzBorder_sRzColorDarkTeal,	L"Dark Teal"
-	RzBorder_sRzColorDarkBlue,	L"Dark Blue"
-	RzBorder_sRzColorIndigo,	L"Indigo"
-	RzBorder_sRzColorGray80,	L"Gray 80%"
-	RzBorder_sRzColorDarkRed,	L"Dark Red"
+	OverbyteIcsCharsetUtils_sChineseTraditionalBig5,	L"Chinese Traditional (Big5)"
+	OverbyteIcsCharsetUtils_sChineseSimplifiedGB18030,	L"Chinese Simplified (GB18030)"
+	OverbyteIcsCharsetUtils_sChineseSimplifiedGB2312,	L"Chinese Simplified (GB2312)"
+	OverbyteIcsCharsetUtils_sChineseSimplifiedHZ,	L"Chinese Simplified (HZ)"
+	OverbyteIcsCharsetUtils_sCyrillicISO,	L"Cyrillic (ISO)"
 	OverbyteIcsCharsetUtils_sCyrillicKOI8R,	L"Cyrillic (KOI8-R)"
 	OverbyteIcsCharsetUtils_sCyrillicKOI8U,	L"Cyrillic (KOI8-U)"
 	OverbyteIcsCharsetUtils_sCyrillicWindows,	L"Cyrillic (Windows)"
@@ -1195,43 +1232,6 @@ BEGIN
 	OverbyteIcsCharsetUtils_sHebrewWindows,	L"Hebrew (Windows)"
 	OverbyteIcsCharsetUtils_sJapaneseJIS,	L"Japanese (JIS)"
 	OverbyteIcsCharsetUtils_sKorean,	L"Korean"
-	OverbyteIcsCharsetUtils_sKoreanEUC,	L"Korean (EUC)"
-	OverbyteIcsCharsetUtils_sLatin9,	L"Latin 9 (ISO)"
-	OverbyteIcsCharsetUtils_sThaiWindows,	L"Thai (Windows)"
-	OverbyteIcsCharsetUtils_sTurkishISO,	L"Turkish (ISO)"
-	OverbyteIcsCharsetUtils_sTurkishWindows,	L"Turkish (Windows)"
-	Vcl_Imaging_pnglang_EInvalidSpec,	L"The \"Portable Network Graphics\" could not be created because invalid image type parameters have being provided."
-	GDIPicture_GDIPERRMSG,	L"Could not allocate memory for image"
-	Vcl_Imaging_JConsts_sChangeJPGSize,	L"Cannot change the size of a JPEG image"
-	Vcl_Imaging_JConsts_sJPEGError,	L"JPEG error #%d"
-	Vcl_Imaging_JConsts_sJPEGImageFile,	L"JPEG Image File"
-	OverbyteIcsCharsetUtils_sArabicISO,	L"Arabic (ISO)"
-	OverbyteIcsCharsetUtils_sArabicWindows,	L"Arabic (Windows)"
-	OverbyteIcsCharsetUtils_sBalticISO,	L"Baltic (ISO)"
-	OverbyteIcsCharsetUtils_sBalticWindows,	L"Baltic (Windows)"
-	OverbyteIcsCharsetUtils_sCentralEuropeanISO,	L"Central European (ISO)"
-	OverbyteIcsCharsetUtils_sCentralEuropeanWindows,	L"Central European (Windows)"
-	OverbyteIcsCharsetUtils_sChineseTraditionalBig5,	L"Chinese Traditional (Big5)"
-	OverbyteIcsCharsetUtils_sChineseSimplifiedGB18030,	L"Chinese Simplified (GB18030)"
-	OverbyteIcsCharsetUtils_sChineseSimplifiedGB2312,	L"Chinese Simplified (GB2312)"
-	OverbyteIcsCharsetUtils_sChineseSimplifiedHZ,	L"Chinese Simplified (HZ)"
-	OverbyteIcsCharsetUtils_sCyrillicISO,	L"Cyrillic (ISO)"
-	Vcl_Imaging_pnglang_EPNGIHDRNotFirstText,	L"This \"Portable Network Graphics\" image is not supported or it might be invalid.\r\n(IHDR chunk is not the first)"
-	Vcl_Imaging_pnglang_EPNGSizeExceedsText,	L"This \"Portable Network Graphics\" image is not supported because either its width or height exceeds the maximum size of 65535 pixels."
-	Vcl_Imaging_pnglang_EPNGUnknownPalEntryText,	L"There is no such palette entry."
-	Vcl_Imaging_pnglang_EPNGUnknownCriticalChunkText,	L"This \"Portable Network Graphics\" image contains an unknown critical part which could not be decoded."
-	Vcl_Imaging_pnglang_EPNGUnknownCompressionText,	L"This \"Portable Network Graphics\" image is encoded with an unknown compression scheme which could not be decoded."
-	Vcl_Imaging_pnglang_EPNGUnknownInterlaceText,	L"This \"Portable Network Graphics\" image uses an unknown interlace scheme which could not be decoded."
-	Vcl_Imaging_pnglang_EPNGCannotAssignChunkText,	L"The chunks must be compatible to be assigned."
-	Vcl_Imaging_pnglang_EPNGUnexpectedEndText,	L"This \"Portable Network Graphics\" image is invalid because the decoder found an unexpected end of the file."
-	Vcl_Imaging_pnglang_EPNGNoImageDataText,	L"This \"Portable Network Graphics\" image contains no data."
-	Vcl_Imaging_pnglang_EPNGCannotAddChunkText,	L"The program tried to add a existent critical chunk to the current image which is not allowed."
-	Vcl_Imaging_pnglang_EPNGCannotAddInvalidImageText,	L"It's not allowed to add a new chunk because the current image is invalid."
-	Vcl_Imaging_pnglang_EPNGCouldNotLoadResourceText,	L"The png image could not be loaded from the resource ID."
-	Vcl_Imaging_pnglang_EPNGOutMemoryText,	L"Some operation could not be performed because the system is out of resources. Close some windows and try again."
-	Vcl_Imaging_pnglang_EPNGCannotChangeTransparentText,	L"Setting bit transparency color is not allowed for png images containing alpha value for each pixel (COLOR_RGBALPHA and COLOR_GRAYSCALEALPHA)"
-	Vcl_Imaging_pnglang_EPNGHeaderNotPresentText,	L"This operation is not valid because the current image contains no valid header."
-	Vcl_Imaging_pnglang_EInvalidNewSize,	L"The new size provided for image resizing is invalid."
 	MyConsts_SOpenNextPreparedSQL,	L"Cannot OpenNext if statement is Prepared"
 	MyConsts_SOpenNextVsFetchAll,	L"OpenNext is not compatible with FetchAll = True"
 	MyConsts_STimestampFieldRequired,	L"Timestamp field required"
@@ -1242,12 +1242,12 @@ BEGIN
 	MyConsts_SInvalidClientVersion,	L"Invalid client version"
 	MyConsts_SCannotIntercept,	L"Cannot intercept"
 	MyConsts_STwoEmbServer,	L"Cannot run second Embedded server instance for single data folder. Please see details in MyDAC help or MySQL Reference manual"
-	Vcl_Imaging_pnglang_EPngInvalidCRCText,	L"This \"Portable Network Graphics\" image is not valid because it contains invalid pieces of data (crc error)"
-	Vcl_Imaging_pnglang_EPNGInvalidIHDRText,	L"The \"Portable Network Graphics\" image could not be loaded because one of its main piece of data (ihdr) might be corrupted"
-	Vcl_Imaging_pnglang_EPNGMissingMultipleIDATText,	L"This \"Portable Network Graphics\" image is invalid because it has missing image parts."
-	Vcl_Imaging_pnglang_EPNGZLIBErrorText,	L"Could not decompress the image because it contains invalid compressed data.\r\n Description: "
-	Vcl_Imaging_pnglang_EPNGInvalidPaletteText,	L"The \"Portable Network Graphics\" image contains an invalid palette."
-	Vcl_Imaging_pnglang_EPNGInvalidFileHeaderText,	L"The file being read is not a valid \"Portable Network Graphics\" image because it contains an invalid header. This file may be corrupted, try obtaining it again"
+	OverbyteIcsCharsetUtils_sArabicISO,	L"Arabic (ISO)"
+	OverbyteIcsCharsetUtils_sArabicWindows,	L"Arabic (Windows)"
+	OverbyteIcsCharsetUtils_sBalticISO,	L"Baltic (ISO)"
+	OverbyteIcsCharsetUtils_sBalticWindows,	L"Baltic (Windows)"
+	OverbyteIcsCharsetUtils_sCentralEuropeanISO,	L"Central European (ISO)"
+	OverbyteIcsCharsetUtils_sCentralEuropeanWindows,	L"Central European (Windows)"
 	DAConsts_SProtectionCircular,	L"Circular Protection detected, Protection Object is invalid"
 	DAConsts_SNotInitialized,	L"%s is not initialized. Set Key first"
 	DAConsts_SInvalidIV,	L"Invalid Initialization Vector"
@@ -1797,18 +1797,19 @@ END
 /* c:\program files (x86)\embarcadero\studio\17.0\lib\Win32\release\Controls.res */
 /* E:\libD10\MyDAC\Source\DBAccess.res */
 /* c:\program files (x86)\embarcadero\studio\17.0\lib\Win32\release\Buttons.res */
-/* E:\libD10\TMS\ASGSPIN.RES */
-/* E:\libD10\TMS\AdvColorPickerDropDown.RES */
-/* E:\libD10\TMS\ADVGRID.RES */
-/* E:\libD10\TMS\ASGRES.RES */
-/* E:\libD10\TMS\ADVMETRO.RES */
-/* E:\libD10\TMS\ASGFLTR.RES */
 /* E:\libD10\Raize\Source\RzCommonBitmaps.res */
 /* E:\libD10\Raize\Source\RzCommonCursors.res */
 /* E:\libD10\Raize\Source\RzCmboBx.res */
 /* c:\program files (x86)\embarcadero\studio\17.0\lib\Win32\release\ExtDlgs.res */
 /* E:\libD10\Raize\Source\RzToolbarForm.dfm */
 /* C:\Time120\Server.dfm */
+/* E:\libD10\cnvcl\Source\Graphics\CNBUTTONS.RES */
+/* E:\libD10\TMS\ASGSPIN.RES */
+/* E:\libD10\TMS\AdvColorPickerDropDown.RES */
+/* E:\libD10\TMS\ADVGRID.RES */
+/* E:\libD10\TMS\ASGRES.RES */
+/* E:\libD10\TMS\ADVMETRO.RES */
+/* E:\libD10\TMS\ASGFLTR.RES */
 /* E:\libD10\TMS\AdvMenuResources.res */
 /* E:\libD10\TMS\CustomizerBtnU.dfm */
 /* E:\libD10\TMS\CustomizerU.dfm */
@@ -1817,8 +1818,6 @@ END
 /* E:\libD10\TMS\ADVGLOWBUTTONDB.RES */
 /* E:\libD10\TMS\METROICONS.RES */
 /* E:\libD10\jcl-master\jcl\lib\d23\win32\debug\JclUnicode.res */
-/* E:\libD10\cnvcl\Source\Graphics\CNBUTTONS.RES */
-/* E:\libD10\cnvcl\Source\Graphics\CNSPIN.RES */
 /* C:\Time120\Unit1.dfm */
 /* C:\Time120\Time120.res */
 /* C:\Time120\Time120.drf */

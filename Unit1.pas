@@ -28,15 +28,19 @@ uses
   DSE_misc,
   DSE_SearchFiles,
   DSE_GRID,
+  DSE_Panel,
   SoccerBrainv3,
 
-  AdvObj,BaseGrid, AdvGrid, AdvPanel,AdvProgr, AdvBadge,CurvyControls,   // TMS grids and Panel
+
+  CnButtons,  // CnVCLBasePack
+
+  BaseGrid, AdvGrid, AdvBadge, AdvObj,    // TMS grids and Panel
   JvExControls, JvTracker, JvExStdCtrls, JvShapedButton, JvSpecialProgress, // Jedi Library
   Dxwave,DXSounds,                    // DelphiX (Audio)
   ZLIBEX,                             // delphizlib invio dati compressi tra server e client
 
   RzBmpBtn, RzButton, RzEdit,RzSpnEdt,RzLabel, RzRadChk, RzPanel, RzRadGrp,    // RaizeComponents
-  OverbyteIcsWndControl, OverbyteIcsWSocket, CnButtons, CnSpin, CnAAFont, CnAACtrls ;  // OverByteIcsWSocketE ics con modifica. vedi directory External.Packages\overbyteICS del progetto
+  OverbyteIcsWndControl, OverbyteIcsWSocket    ;  // OverByteIcsWSocketE ics con modifica. vedi directory External.Packages\overbyteICS del progetto
 
 const GCD_DEFAULT = 200;        // global cooldown, minimo 200 ms tra un input verso il server e l'altro ( anti-cheating )
 const ScaleSprites = 40;        // riduzione generica di tutto gli sprite player
@@ -105,28 +109,28 @@ type
     Timer1: TTimer;
     CheckBoxAI0: TCheckBox;
     CheckBoxAI1: TCheckBox;
-    PanelBack: TAdvPanel;
-    PanelCombatLog: TCurvyPanel;
+    PanelBack: SE_Panel;
+    PanelCombatLog: SE_panel;
     advDice: TAdvStringGrid;
-    PanelScore: TCurvyPanel;
+    PanelScore: SE_panel;
     btnTactics: TRzBmpButton;
-    PanelSell: TCurvyPanel;
+    PanelSell: SE_panel;
     edtSell: TRzNumericEdit;
-    PanelMain: TCurvyPanel;
-    PanelCountryTeam: TCurvyPanel;
+    PanelMain: SE_panel;
+    PanelCountryTeam: SE_panel;
     advCountryTeam: TAdvStringGrid;
-    PanelListMatches: TCurvyPanel;
+    PanelListMatches: SE_panel;
     btnBackListMatches: TButton;
     btnListMatches: TButton;
-    PanelCorner: TCurvyPanel;
+    PanelCorner: SE_panel;
     AdvTeam: TAdvStringGrid;
-    PanelLogin: TCurvyPanel;
+    PanelLogin: SE_panel;
     Label1: TLabel;
     Label5: TLabel;
     Edit1: TEdit;
     Edit2: TEdit;
     AdvBadgeLabel1: TAdvBadgeLabel;
-    PanelError: TCurvyPanel;
+    PanelError: SE_panel;
     lblError: TRzBmpButton;
     btnErrorOK: TRzBmpButton;
     btnFormation: TRzBmpButton;
@@ -141,12 +145,12 @@ type
     SE_field: SE_Engine;
     SE_players: SE_Engine;
     SE_ball: SE_Engine;
-    PanelInfoPlayer0: TCurvyPanel;
-    PanelformationSE: TCurvyPanel;
+    PanelInfoPlayer0: SE_Panel;
+    PanelformationSE: SE_panel;
     se_lblPlay: TRzBmpButton;
     BtnFormationBack: TRzBmpButton;
-    PanelInfoplayer1: TCurvyPanel;
-    PanelSkillSE: TCurvyPanel;
+    PanelInfoplayer1: SE_panel;
+    PanelSkillSE: SE_panel;
     SE_numbers: SE_Engine;
     SE_interface: SE_Engine;
     Button1: TButton;
@@ -165,7 +169,7 @@ type
     ThreadCurMove: SE_ThreadTimer;
     Button3: TButton;
     CheckBox3: TCheckBox;
-    PanelXPplayer0: TCurvyPanel;
+    PanelXPplayer0: SE_panel;
     btnxp0: TRzBmpButton;
     btnxpBack0: TRzBmpButton;
     btnTalentBmp0: TRzBmpButton;
@@ -176,12 +180,12 @@ type
     toolSpin: TRzSpinEdit;
     btnsell0: TRzBmpButton;
     BtnFormationUniform: TRzBmpButton;
-    PanelUniform: TCurvyPanel;
+    PanelUniform: SE_panel;
     btnUniformBack: TRzBmpButton;
     UniformPortrait: TRzBmpButton;
     se_gridColors: TAdvStringGrid;
     btnConfirmSell: TRzBmpButton;
-    PanelMarket: TCurvyPanel;
+    PanelMarket: SE_panel;
     advMarket: TAdvStringGrid;
     btnMarketBack: TRzBmpButton;
     btnMarketRefresh: TRzBmpButton;
@@ -212,7 +216,7 @@ type
     lbl_minute: TRzLabel;
     btnAudioStadium: TRzBmpButton;
     btnDismiss0: TRzBmpButton;
-    PanelDismiss: TCurvyPanel;
+    PanelDismiss: SE_panel;
     btnConfirmDismiss: TRzBmpButton;
     lbl_ConfirmDismiss: TRzLabel;
     imgshpfree: TImage;
@@ -545,11 +549,28 @@ var
   AudioGameOver : TAudioFileStream;
   WaveFormat: TWaveFormatEx;
 
+  procedure RoundCornerOf(Control: TWinControl) ;
 implementation
 
 {$R *.dfm}
 
 uses Unit2{Unit ShowPanel }, Unit3;
+procedure RoundCornerOf(Control: TWinControl) ;
+var
+   R: TRect;
+   Rgn: HRGN;
+begin
+   with Control do begin
+     R := ClientRect;
+     rgn := CreateRoundRectRgn(R.Left, R.Top, R.Right, R.Bottom, 20, 20) ;
+     Perform(EM_GETRECT, 0, lParam(@r)) ;
+     InflateRect(r, - 4, - 4) ;
+     Perform(EM_SETRECTNP, 0, lParam(@r)) ;
+     SetWindowRgn(Handle, rgn, True) ;
+     Invalidate;
+   end;
+end;
+
 function TryDecimalStrToInt( const S: string; out Value: Integer): Boolean;
 begin
    result := ( pos( '$', S ) = 0 ) and TryStrToInt( S, Value );
@@ -1153,11 +1174,13 @@ begin
   ini.Free;
 
 
+
   Timer1Timer(Timer1);
   Timer1.Enabled := True;
   ShowPanelBack;
   ShowLogin;
-  //GameScreen := ScreenLogin;
+  RoundCornerOf ( PanelInfoPlayer0 );
+  RoundCornerOf ( PanelInfoPlayer1 );
 
 
   advDice.ColWidths [0] := 0;
@@ -1174,6 +1197,7 @@ begin
 
   SE_Grid0.thrdAnimate.Priority := tpLowest;
   SE_GridXp0.thrdAnimate.Priority := tpLowest;
+
 
 end;
 procedure TForm1.InitSound;

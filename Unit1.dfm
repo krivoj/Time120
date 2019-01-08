@@ -25,6 +25,7 @@ object Form1: TForm1
     Top = 729
     Width = 1366
     Height = 182
+    BevelOuter = bvNone
     TabOrder = 0
     object Memo1: TMemo
       Left = 11
@@ -208,37 +209,12 @@ object Form1: TForm1
       OnClick = Button4Click
     end
   end
-  object PanelBack: TAdvPanel
+  object PanelBack: SE_Panel
     Left = 24
     Top = 52
     Width = 1393
     Height = 788
-    BevelOuter = bvNone
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -11
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    ParentFont = False
     TabOrder = 1
-    UseDockManager = True
-    Version = '2.4.2.0'
-    BackgroundPosition = bpStretched
-    Caption.Color = clHighlight
-    Caption.ColorTo = clNone
-    Caption.Font.Charset = DEFAULT_CHARSET
-    Caption.Font.Color = clBlack
-    Caption.Font.Height = -11
-    Caption.Font.Name = 'Tahoma'
-    Caption.Font.Style = []
-    DoubleBuffered = True
-    StatusBar.Font.Charset = DEFAULT_CHARSET
-    StatusBar.Font.Color = clWindowText
-    StatusBar.Font.Height = -11
-    StatusBar.Font.Name = 'Tahoma'
-    StatusBar.Font.Style = []
-    Text = ''
-    FullHeight = 200
     object imgshpfree: TImage
       Left = 153
       Top = 28
@@ -248,7 +224,7 @@ object Form1: TForm1
       Transparent = True
       Visible = False
     end
-    object PanelCombatLog: TCurvyPanel
+    object PanelCombatLog: SE_Panel
       Left = 796
       Top = 435
       Width = 466
@@ -412,11 +388,12 @@ object Form1: TForm1
           18)
       end
     end
-    object PanelScore: TCurvyPanel
+    object PanelScore: SE_Panel
       Left = 6
       Top = 99
       Width = 640
       Height = 51
+      BevelOuter = bvNone
       Color = 8081721
       TabOrder = 1
       Visible = False
@@ -592,11 +569,12 @@ object Form1: TForm1
         OnClick = btnAudioStadiumClick
       end
     end
-    object PanelSell: TCurvyPanel
+    object PanelSell: SE_Panel
       Left = 189
       Top = 249
       Width = 116
       Height = 58
+      BevelOuter = bvNone
       Color = 8081721
       TabOrder = 2
       Visible = False
@@ -641,11 +619,12 @@ object Form1: TForm1
         OnClick = btnConfirmSellClick
       end
     end
-    object PanelMain: TCurvyPanel
+    object PanelMain: SE_Panel
       Left = 1136
-      Top = 190
+      Top = 188
       Width = 241
       Height = 225
+      BevelOuter = bvNone
       Color = 8081721
       TabOrder = 3
       Visible = False
@@ -776,11 +755,12 @@ object Form1: TForm1
         OnClick = btnExitClick
       end
     end
-    object PanelCountryTeam: TCurvyPanel
+    object PanelCountryTeam: SE_Panel
       Left = 1031
       Top = 367
       Width = 281
       Height = 293
+      BevelOuter = bvNone
       Color = 8081721
       TabOrder = 4
       Visible = False
@@ -958,11 +938,12 @@ object Form1: TForm1
         OnClick = btnSelCountryTeamClick
       end
     end
-    object PanelListMatches: TCurvyPanel
+    object PanelListMatches: SE_Panel
       Left = 389
       Top = 313
       Width = 685
       Height = 292
+      BevelOuter = bvNone
       Color = 8081721
       TabOrder = 5
       Visible = False
@@ -1154,7 +1135,7 @@ object Form1: TForm1
           22)
       end
     end
-    object PanelCorner: TCurvyPanel
+    object PanelCorner: SE_Panel
       Left = 833
       Top = 108
       Width = 316
@@ -1332,12 +1313,15 @@ object Form1: TForm1
           16)
       end
     end
-    object PanelLogin: TCurvyPanel
+    object PanelLogin: SE_Panel
       Left = 14
       Top = 156
       Width = 169
       Height = 195
+      BevelOuter = bvNone
       Color = 8081721
+      DoubleBuffered = True
+      ParentDoubleBuffered = False
       TabOrder = 7
       object Label1: TLabel
         Left = 20
@@ -1442,11 +1426,12 @@ object Form1: TForm1
         OnClick = BtnLoginClick
       end
     end
-    object PanelError: TCurvyPanel
+    object PanelError: SE_Panel
       Left = 400
       Top = -51
       Width = 401
       Height = 121
+      BevelOuter = bvNone
       Color = 8081721
       TabOrder = 8
       Visible = False
@@ -1524,11 +1509,12 @@ object Form1: TForm1
       Visible = False
       TabOrder = 9
     end
-    object PanelInfoPlayer0: TCurvyPanel
-      Left = 17
-      Top = 310
+    object PanelInfoPlayer0: SE_Panel
+      Left = 25
+      Top = 298
       Width = 317
       Height = 294
+      BevelOuter = bvNone
       Color = 8081721
       TabOrder = 10
       Visible = False
@@ -1715,11 +1701,12 @@ object Form1: TForm1
         Font.Style = []
       end
     end
-    object PanelformationSE: TCurvyPanel
+    object PanelformationSE: SE_Panel
       Left = 3
       Top = 0
       Width = 966
       Height = 40
+      BevelOuter = bvNone
       Color = 8081721
       TabOrder = 11
       Visible = False
@@ -1906,11 +1893,12 @@ object Form1: TForm1
         OnClick = BtnFormationUniformClick
       end
     end
-    object PanelInfoplayer1: TCurvyPanel
+    object PanelInfoplayer1: SE_Panel
       Left = 323
       Top = 464
       Width = 317
       Height = 294
+      BevelOuter = bvNone
       Color = 8081721
       TabOrder = 12
       Visible = False
@@ -2031,11 +2019,12 @@ object Form1: TForm1
         Font.Style = []
       end
     end
-    object PanelSkillSE: TCurvyPanel
+    object PanelSkillSE: SE_Panel
       Left = 768
       Top = 380
       Width = 260
       Height = 201
+      BevelOuter = bvNone
       Color = 8081721
       TabOrder = 13
       Visible = False
@@ -2220,11 +2209,12 @@ object Form1: TForm1
       Visible = False
       ButtonShape = jvSRound
     end
-    object PanelXPplayer0: TCurvyPanel
+    object PanelXPplayer0: SE_Panel
       Left = 28
       Top = 559
       Width = 317
       Height = 290
+      BevelOuter = bvNone
       Color = 8081721
       TabOrder = 18
       Visible = False
@@ -2286,11 +2276,12 @@ object Form1: TForm1
         Font.Style = []
       end
     end
-    object PanelUniform: TCurvyPanel
-      Left = 663
-      Top = 620
+    object PanelUniform: SE_Panel
+      Left = 652
+      Top = 613
       Width = 317
       Height = 223
+      BevelOuter = bvNone
       Color = 8081721
       TabOrder = 19
       Visible = False
@@ -2584,11 +2575,12 @@ object Form1: TForm1
         OnClick = ck_HAClick
       end
     end
-    object PanelMarket: TCurvyPanel
+    object PanelMarket: SE_Panel
       Left = 767
       Top = 69
       Width = 588
       Height = 292
+      BevelOuter = bvNone
       Color = 8081721
       TabOrder = 20
       Visible = False
@@ -2831,7 +2823,7 @@ object Form1: TForm1
         FlatButtons = True
       end
     end
-    object PanelDismiss: TCurvyPanel
+    object PanelDismiss: SE_Panel
       Left = 189
       Top = 185
       Width = 116
