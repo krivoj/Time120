@@ -24,9 +24,9 @@ uses
 
   MyAccess, DBAccess,
 
-  OverbyteIcsWndControl, OverbyteIcsWSocket, OverbyteIcsWSocketS, OverbyteIcsWSocketTS,
+  OverbyteIcsWndControl, OverbyteIcsWSocket, OverbyteIcsWSocketS, OverbyteIcsWSocketTS;
 
-  RzEdit ;
+
 
 type
   TTheArray = array[-4..-1, 0..6] of string;    // le celle a sinistra della porta dove vengono posizionate le riserve
