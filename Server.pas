@@ -26,7 +26,6 @@ uses
 
   OverbyteIcsWndControl, OverbyteIcsWSocket, OverbyteIcsWSocketS, OverbyteIcsWSocketTS;
 
-  { TODO : risolvere bug con l0uso di CheckBoxActiveMacthes }
 
 type
   TTheArray = array[-4..-1, 0..6] of string;    // le celle a sinistra della porta dove vengono posizionate le riserve
@@ -6078,6 +6077,7 @@ begin
 
   for I := BrainManager.lstBrain.Count -1 downto 0 do begin
     if CheckBoxActiveMacthes.Checked then begin
+      SE_GridLiveMatches.RowCount := BrainManager.lstBrain.Count + 1;  // <-- necessario o bug
       SE_GridLiveMatches.Cells[0,i+1].Text := IntToStr(BrainManager.lstBrain [i].Score.TeamGuid [0]) + '/'+ BrainManager.lstBrain [i].Score.Team [0] + '/' + IntToStr(BrainManager.lstBrain [i].Score.cliId [0]);
       SE_GridLiveMatches.Cells[1,i+1].Text := IntToStr( BrainManager.lstBrain [i].Score.TeamGuid [1]) + '/'+ BrainManager.lstBrain [i].Score.Team [1] + '/' + IntToStr(BrainManager.lstBrain [i].Score.CliId [1]);
       SE_GridLiveMatches.Cells[2,i+1].Text := IntToStr(BrainManager.lstBrain [i].TeamTurn );

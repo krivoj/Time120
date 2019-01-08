@@ -491,7 +491,7 @@ end;
 
       MalusPowerShot: array [0..11] of integer;           // definizioni
       MalusPrecisionShot: array [0..11] of integer;       // definizioni
-      ShotCells : TList<TShotCell>;                       // definizioni
+      ShotCells : TObjectList<TShotCell>;                       // definizioni
       AICrossingAreaCells: TList<TAICrossAreaCell>;
       TVCrossingAreaCells: TList<TTVCrossAreaCell>;
 //      BonusDefenseShots: integer;
@@ -4290,7 +4290,6 @@ begin
 end;
 destructor TSoccerbrain.destroy;
 var
-      aShotCell : TShotCell;
       i: integer;
 begin
 //  if not (csDesigning in ComponentState) then begin
@@ -4298,9 +4297,8 @@ begin
     ball.free;
     randGen.free;
     for i:= 0 to ShotCells.Count -1 do begin
-      aShotCell := ShotCells[I];
-      while aShotCell.subCell.count > 0  do begin
-        aShotCell.subCell.Free ;
+      while  ShotCells[I].subCell.count > 0  do begin
+        ShotCells[I].subCell.clear ;
       end;
     end;
     ShotCells.free;
