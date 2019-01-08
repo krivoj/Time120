@@ -214,6 +214,7 @@ begin
   Form1.PanelFormationSE.Visible := false;
 
   Form1.PanelListMatches.Visible := false;
+  Form1.SE_GridAllBrain.Active := False;
   Form1.PanelError.Visible:= false;
   Form1.PanelCountryTeam.Visible := false;
   Form1.PanelScore.Visible := false;
@@ -276,6 +277,7 @@ begin
   Form1.PanelXPPlayer0.Visible := false;
   Form1.PanelCorner.Visible := False;
   Form1.PanelListMatches.Visible := false;
+  Form1.SE_GridAllBrain.Active := False;
   Form1.PanelMarket.Visible:= False;
 
   Form1.PanelLogin.Visible := True;

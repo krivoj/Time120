@@ -26,7 +26,7 @@ object FormServer: TFormServer
   object Label3: TLabel
     Left = 8
     Top = 306
-    Width = 124
+    Width = 104
     Height = 13
     Caption = 'Queue Max Time (ms)'
   end
@@ -130,10 +130,10 @@ object FormServer: TFormServer
     MouseWheelInvert = False
     MouseWheelValue = 10
     MouseWheelZoom = False
-    MousePan = False
+    MousePan = True
     MouseScroll = False
     BackColor = clNavy
-    AnimationInterval = 20
+    AnimationInterval = 100
     GridInfoCell = False
     GridVisible = False
     GridColor = clSilver
@@ -161,8 +161,6 @@ object FormServer: TFormServer
     Width = 124
     Height = 17
     Caption = 'Show Active Matches'
-    Checked = True
-    State = cbChecked
     TabOrder = 11
   end
   object CheckBox1: TCheckBox

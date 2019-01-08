@@ -120,8 +120,6 @@ type
     PanelCountryTeam: SE_panel;
     advCountryTeam: TAdvStringGrid;
     PanelListMatches: SE_panel;
-    btnBackListMatches: TButton;
-    btnListMatches: TButton;
     PanelCorner: SE_panel;
     AdvTeam: TAdvStringGrid;
     PanelLogin: SE_panel;
@@ -164,7 +162,7 @@ type
     CheckBox2: TCheckBox;
     BtnFormationReset: TRzBmpButton;
     btnSubs: TRzBmpButton;
-    advAllbrain: TAdvStringGrid;
+    SE_GridAllBrain: SE_Grid;
     btnWatchLiveExit: TRzBmpButton;
     ThreadCurMove: SE_ThreadTimer;
     Button3: TButton;
@@ -238,6 +236,8 @@ type
     lbl_descrtalent1: TRzLabel;
     PorTrait0: TCnSpeedButton;
     Portrait1: TCnSpeedButton;
+    btnMatchesRefresh: TRzBmpButton;
+    btnMatchesListBack: TRzBmpButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure InitSound;
@@ -255,7 +255,6 @@ type
     procedure btnSelCountryTeamClick(Sender: TObject);
     procedure btnFormationClick(Sender: TObject);
     procedure btnWatchLiveClick(Sender: TObject);
-    procedure btnBackListMatchesClick(Sender: TObject);
 
     procedure tcpSessionConnected(Sender: TObject; ErrCode: Word);
     procedure tcpException(Sender: TObject; SocExcept: ESocketException);
@@ -291,7 +290,6 @@ type
     procedure btnSubsClick(Sender: TObject);
     procedure SE_Theater1BeforeVisibleRender(Sender: TObject; VirtualBitmap, VisibleBitmap: SE_Bitmap);
     procedure btnWatchLiveExitClick(Sender: TObject);
-    procedure advAllbrainClickCell(Sender: TObject; ARow, ACol: Integer);
     procedure ThreadCurMoveTimer(Sender: TObject);
     procedure Button3Click(Sender: TObject);
     procedure CheckBox3Click(Sender: TObject);
@@ -319,6 +317,10 @@ type
       Sprite: SE_Sprite);
     procedure SE_GridXP0GridCellMouseMove(Sender: TObject; Shift: TShiftState; CellX, CellY: Integer; Sprite: SE_Sprite);
     procedure Edit2KeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure SE_GridAllBrainGridCellMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; CellX, CellY: Integer;
+      Sprite: SE_Sprite);
+    procedure btnMatchesRefreshClick(Sender: TObject);
+    procedure btnMatchesListBackClick(Sender: TObject);
   private
     { Private declarations }
     fSelectedPlayer : TSoccerPlayer;
@@ -724,6 +726,17 @@ begin
   end;
 end;
 
+procedure TForm1.btnMatchesListBackClick(Sender: TObject);
+begin
+  GameScreen := ScreenMain;
+
+end;
+
+procedure TForm1.btnMatchesRefreshClick(Sender: TObject);
+begin
+  btnWatchLiveClick ( btnWatchLive );
+end;
+
 procedure TForm1.btnReplayClick(Sender: TObject);
 var
   i: Integer;
@@ -1117,6 +1130,9 @@ begin
   btnMarketBack.Caption := Translate('lbl_Back');
   btnMarketRefresh.Caption := Translate('lbl_Search');
 
+  btnMatchesRefresh.Caption := Translate('lbl_Refresh');
+  btnMatchesListBack.Caption := Translate('lbl_Back');
+
   lbl_MIF.Caption := Translate('lbl_MI');
   lbl_RankF.Caption := Translate('lbl_Rank');
   lbl_pointsF.Caption := Translate('lbl_Points');
@@ -1161,10 +1177,6 @@ begin
 
   DeleteDirData;
 
-  advAllbrain.Left := 3;
-  advAllbrain.top := 3;
-  advAllBrain.ColWidths [1]:=0;
-
 
   InitSound;
 
@@ -1179,8 +1191,6 @@ begin
   Timer1.Enabled := True;
   ShowPanelBack;
   ShowLogin;
-  RoundCornerOf ( PanelInfoPlayer0 );
-  RoundCornerOf ( PanelInfoPlayer1 );
 
 
   advDice.ColWidths [0] := 0;
@@ -1197,6 +1207,7 @@ begin
 
   SE_Grid0.thrdAnimate.Priority := tpLowest;
   SE_GridXp0.thrdAnimate.Priority := tpLowest;
+  SE_GridAllBrain.thrdAnimate.Priority := tpLowest;
 
 
 end;
@@ -2992,7 +3003,7 @@ begin
 end;
 procedure TForm1.SetGlobalCursor ( aCursor: Tcursor);
 begin
-    advAllbrain.Cursor := aCursor;
+    SE_GridAllbrain.Cursor := aCursor;
     SE_Theater1.Cursor := aCursor;
 
 end;
@@ -6492,17 +6503,18 @@ begin
 
 end;
 
-procedure TForm1.advAllbrainClickCell(Sender: TObject; ARow, ACol: Integer);
+
+procedure TForm1.SE_GridAllBrainGridCellMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; CellX, CellY: Integer;
+  Sprite: SE_Sprite);
 begin
   if GCD <= 0 then begin
 
-    if aCol = 10 then begin
-      if advAllBrain.Cells[0,aRow] <> ''  then begin
+    if CellY = 10 then begin   // ha cliccato su icona TV
+      if SE_GridAllBrain.Cells[0,CellX].ids <> ''  then begin
         if (not viewMatch)  then begin
           gameScreen := ScreenWaitingWatchLive ;
-          MemoC.Lines.Add('>tcp: viewmatch,' + advAllBrain.Cells[0,aRow] ); // col 0 = brainIds
-          tcp.SendStr(  'viewmatch,' + advAllBrain.Cells[0,aRow] + EndofLine );
-//          GCD := GCD_DEFAULT;
+          MemoC.Lines.Add('>tcp: viewmatch,' + SE_GridAllBrain.Cells[0,CellX].ids ); // col 0 = brainIds
+          tcp.SendStr(  'viewmatch,' + SE_GridAllBrain.Cells[0,CellX].ids + EndofLine );
           viewMatch := True;
           SetGlobalCursor( crHourGlass);
         end;
@@ -6510,6 +6522,8 @@ begin
     end;
     GCD := GCD_DEFAULT;
   end;
+
+
 end;
 
 procedure TForm1.advCountryTeamKeyPress(Sender: TObject; var Key: Char);
@@ -7583,12 +7597,13 @@ end;
 
 procedure TForm1.btnWatchLiveClick(Sender: TObject);
 begin
+
     if GCD <= 0 then begin
+      SE_GridAllBrain.Active := True;
       MemoC.Lines.Add('>tcp: listmatch'  );
       if (not viewMatch) and (not LiveMatch) then tcp.SendStr( 'listmatch' + EndofLine );
       GCD := GCD_DEFAULT;
     end;
-   // panel2.Visible := False;
 
 end;
 
@@ -7656,10 +7671,6 @@ begin
   end;
 end;
 
-procedure TForm1.btnBackListMatchesClick(Sender: TObject);
-begin
-  GameScreen := ScreenMain;
-end;
 
 
 procedure TForm1.btnConfirmDismissClick(Sender: TObject);
@@ -10162,6 +10173,7 @@ begin
   end
   else if fGameScreen = ScreenSelectCountry then begin
     AudioCrowd.Stop;
+    SE_GridAllBrain.Active := False;
     SE_Theater1.Visible := false;
     PanelMain.Visible := false;
     PanelLogin.Visible := false;
@@ -10180,6 +10192,7 @@ begin
   end
   else if fGameScreen = ScreenSelectTeam then begin
     AudioCrowd.Stop;
+    SE_GridAllBrain.Active := False;
     SE_Theater1.Visible := false;
     PanelMain.Visible := false;
     PanelLogin.Visible := false;
@@ -10199,6 +10212,7 @@ begin
   else if fGameScreen = ScreenWaitingFormation then begin // si accede cliccando back - settcpformation, in attesa
     AudioCrowd.Stop;
     SetTheaterMatchSize;
+    SE_GridAllBrain.Active := False;
     PanelInfoPlayer0.Visible := False;
     PanelMarket.Visible:= False;
     PanelSell.Visible:= false;
@@ -10217,6 +10231,7 @@ begin
     PanelLogin.Visible := false;
     PanelCountryTeam.Visible := false;
     PanelListMatches.Visible := false;
+    SE_GridAllBrain.Active := False;
     PanelSell.Visible := false;
     PanelMarket.Visible := False;
     PanelScore.Visible:= False;
@@ -10363,12 +10378,12 @@ begin
 end;
 procedure TForm1.ClientLoadListMatchFile ;
 var
-  i,count,Country0,Country1,ActiveMatchesCount,Cur,LBrainIds,LUserName0,LUserName1,LTeamName0,LTeamName1: Integer;
+  i,y,count,Country0,Country1,ActiveMatchesCount,Cur,LBrainIds,LUserName0,LUserName1,LTeamName0,LTeamName1: Integer;
   bmpflags, cBitmap: SE_Bitmap;
   SS : TStringStream;
   dataStr: string;
 begin
-{
+{ nel server è salvato cossì:
   MM.Write( @BrainManager.lstbrain.count , SizeOf(word) );
   for i := BrainManager.lstbrain.count -1 downto 0 do begin
 
@@ -10390,54 +10405,72 @@ begin
   SS.Size := MM3[0].Size;
   MM3[0].Position := 0;
   ss.CopyFrom( MM3[0], MM3[0].size );
-  //    dataStr := RemoveEndOfLine(string(buf));
   dataStr := SS.DataString;
   SS.Free;
 
   bmpflags := SE_Bitmap.Create ( dir_interface + 'flags.bmp');
-  advAllBrain.ClearAll ;
-  advAllBrain.RowCount :=1;
-  advAllBrain.Cells[0,0]:= '';
-  advAllBrain.Cells[1,0]:= '';
-  advAllBrain.ColWidths [0]:=0;
-  advAllBrain.ColWidths [1]:=80;     //usename 0
-  advAllBrain.ColWidths [2]:=30;     // flag 0
-  advAllBrain.ColWidths [3]:=120;    // teamname  0
-  advAllBrain.ColWidths [4]:=20;
-  advAllBrain.ColWidths [5]:=20;
-  advAllBrain.ColWidths [6]:=120;    // teamname  1
-  advAllBrain.ColWidths [7]:=30;     // flag 0
-  advAllBrain.ColWidths [8]:=80;     //usename 1
-  advAllBrain.ColWidths [9]:=60;  // vuoto
-  advAllBrain.ColWidths [10]:=30;  // icona tv
-  advAllBrain.ColWidths [11]:=40;  // minute
+
+  SE_GridAllBrain.Left := 3;
+  SE_GridAllBrain.top := 3;
+  SE_GridAllBrain.ClearData;
+  SE_GridAllBrain.DefaultColWidth := 80;
+  SE_GridAllBrain.DefaultRowHeight := 22;
+  SE_GridAllBrain.ColCount := 11;
+  SE_GridAllBrain.Rows [0].Height :=22;     //username 0   + brainIds in Ids
+  SE_GridAllBrain.Columns [0].Width :=80;     //username 0   + brainIds in Ids
+  SE_GridAllBrain.Columns [1].Width :=30;     // bandiera nazione 0
+  SE_GridAllBrain.Columns [2].Width :=135;    // teamname  0
+  SE_GridAllBrain.Columns [3].Width :=20;     // gol 0
+  SE_GridAllBrain.Columns [4].Width :=20;     // gol 1
+  SE_GridAllBrain.Columns [5].Width :=135;    // teamname  1
+  SE_GridAllBrain.Columns [6].Width :=30;     // bandiera nazione 1
+  SE_GridAllBrain.Columns [7].Width :=80;     //username 1
+  SE_GridAllBrain.Columns [8].Width :=60;  // vuoto
+  SE_GridAllBrain.Columns [9].Width :=30;  // icona tv
+  SE_GridAllBrain.Columns [10].Width :=40;  // minute
 
   // a 0 c'è la word che indica dove comincia
   cur := 0;
   ActiveMatchesCount:=   PWORD(@buf3[0][ cur ])^;                // ragiona in base 0
-  advAllBrain.RowCount := ActiveMatchesCount;
+  SE_GridAllBrain.RowCount := ActiveMatchesCount;
   Cur := Cur + 2; // è una word
+
+  for y := 0 to SE_GridAllBrain.RowCount -1 do begin
+    SE_GridAllBrain.Rows[y].Height := 16;
+    SE_GridAllBrain.Cells[0,y].FontName := 'Verdana';
+    SE_GridAllBrain.Cells[0,y].FontSize := 8;
+    SE_GridAllBrain.Cells[0,y].FontColor := clWhite;
+    SE_GridAllBrain.Cells[1,y].FontColor  := clWhite;
+    SE_GridAllBrain.cells [0,y].CellAlignmentH := hCenter;      // Username 0
+    SE_GridAllBrain.cells [7,y].CellAlignmentH := hCenter;      // username 1
+    SE_GridAllBrain.cells [2,y].CellAlignmentH := hCenter;      // team 0
+    SE_GridAllBrain.cells [5,y].CellAlignmentH := hCenter;      // team 0
+    SE_GridAllBrain.cells [3,y].CellAlignmentH := hCenter;      // gol 0
+    SE_GridAllBrain.cells [4,y].CellAlignmentH := hCenter;      // gol 1
+    SE_GridAllBrain.cells [10,y].CellAlignmentH := hLeft;      // Minute
+  end;
+
 
   for I := 0 to ActiveMatchesCount -1 do begin
     LBrainIds :=  Ord( buf3[0][ cur ]);
-    advAllBrain.Cells[0,i]  := MidStr( dataStr, cur + 2  , LBrainIds );// ragiona in base 1
+    SE_GridAllBrain.Cells[0,i].ids  := MidStr( dataStr, cur + 2  , LBrainIds );// ragiona in base 1   , setto solo IDS qui
     cur  := cur + LBrainIds + 1;
 
     LuserName0 :=  Ord( buf3[0][ cur ]);
-    advAllBrain.Cells[1,i]  := MidStr( dataStr, cur + 2  , LuserName0 );// ragiona in base 1
+    SE_GridAllBrain.Cells[0,i].Text  := MidStr( dataStr, cur + 2  , LuserName0 ); // colonna 0 e 7 per gli username
     cur  := cur + LuserName0 + 1;
     LuserName1 :=  Ord( buf3[0][ cur ]);
-    advAllBrain.Cells[8,i]  := MidStr( dataStr, cur + 2  , LuserName1 );// ragiona in base 1
+    SE_GridAllBrain.Cells[7,i].text  := MidStr( dataStr, cur + 2  , LuserName1 );
     cur  := cur + LuserName1 + 1;
 
-    advAllbrain.Alignments [8,i] := taRightJustify;
 
     LTeamName0 :=  Ord( buf3[0][ cur ]);
-    advAllBrain.Cells[3,i]  := MidStr( dataStr, cur + 2  , LTeamName0 );// ragiona in base 1
+    SE_GridAllBrain.Cells[2,i].Text  := MidStr( dataStr, cur + 2  , LTeamName0 );
     cur  := cur + LTeamName0 + 1;
     LTeamName1 :=  Ord( buf3[0][ cur ]);
-    advAllBrain.Cells[6,i]  := MidStr( dataStr, cur + 2  , LTeamName1 );// ragiona in base 1
+    SE_GridAllBrain.Cells[5,i].Text  := MidStr( dataStr, cur + 2  , LTeamName1 );
     cur  := cur + LTeamName1 + 1;
+
 
     Country0:=  PWORD(@buf3[0][ cur ])^;                // ragiona in base 0
     cBitmap := SE_Bitmap.Create (60,40);
@@ -10460,7 +10493,7 @@ begin
       end;
     end;
     cBitmap.Stretch(30,22);
-    advAllBrain.AddBitmap(2,i,cBitmap.Bitmap,false, haLeft, vaTop);
+    SE_GridAllBrain.AddSE_Bitmap (1,i,1,cBitmap,false );
     Cur := Cur + 2;
 
     Country1:=  PWORD(@buf3[0][ cur ])^;               // ragiona in base 0
@@ -10484,24 +10517,22 @@ begin
       end;
     end;
     cBitmap.Stretch(30,22);
-    advAllbrain.Alignments [6,i] := taRightJustify;
-    advAllBrain.AddBitmap(7,i,cBitmap.Bitmap, false, haLeft, vaTop);
+    SE_GridAllBrain.AddSE_Bitmap (6,i,1,cBitmap,false );
     Cur := Cur + 2;
 
 
-    advAllBrain.Cells[4,i]:=  IntToStr( ord ( buf3[0][ cur ]));                 // ragiona in base 0
+    SE_GridAllBrain.Cells[3,i].Text :=  IntToStr( ord ( buf3[0][ cur ]));   // gol 0
     Cur := Cur + 1;
-    advAllBrain.Cells[5,i]:=  IntToStr( ord ( buf3[0][ cur ]));                 // ragiona in base 0
+    SE_GridAllBrain.Cells[4,i].Text :=  IntToStr( ord ( buf3[0][ cur ]));   // gol 1
     Cur := Cur + 1;
 
-    advAllbrain.Alignments [11,i] := taLeftJustify;
-    advAllBrain.Cells[11,i]:=  IntToStr ( ord ( buf3[0][ cur ]));
+    SE_GridAllBrain.Cells[10,i].Text :=  IntToStr ( ord ( buf3[0][ cur ]));
     Cur := Cur + 1;
 
     // 9 vuota
 
     cBitmap := SE_Bitmap.Create ( dir_interface + 'tv.bmp');
-    advAllBrain.AddBitmap(10,i,cBitmap.Bitmap, false, haLeft, vaTop);
+    SE_GridAllBrain.AddSE_Bitmap (9,i,1,cBitmap,false );
 
 
 

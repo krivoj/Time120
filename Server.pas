@@ -26,7 +26,7 @@ uses
 
   OverbyteIcsWndControl, OverbyteIcsWSocket, OverbyteIcsWSocketS, OverbyteIcsWSocketTS;
 
-
+  { TODO : risolvere bug con l0uso di CheckBoxActiveMacthes }
 
 type
   TTheArray = array[-4..-1, 0..6] of string;    // le celle a sinistra della porta dove vengono posizionate le riserve
@@ -213,7 +213,7 @@ type
 
   public
 
-    procedure RefreshGrid;
+    procedure SetupRefreshGrid;
     (* procedure che si attivano solo al primo login o comunque se l'account non ha ancora scelto la sua squadra del cuore *)
     procedure PrepareWorldCountries ( directory: string ); overload;
     procedure PrepareWorldCountries ; overload;
@@ -325,20 +325,19 @@ var
   i: Integer;
 begin
 //  WaitForSingleObject(Mutex,INFINITE);
-  for I := brainManager.lstBrain.Count -1 downto 0 do
-  begin
+  for I := brainManager.lstBrain.Count -1 downto 0 do begin
     brainManager.RemoveBrain ( BrainManager.lstBrain[i].BrainIDS );
   end;
 //  ReleaseMutex(Mutex);
 
 end;
 
-procedure TFormServer.RefreshGrid;
+procedure TFormServer.SetupRefreshGrid;
 var
   i,y: Integer;
 begin
 
-  WaitForSingleObject(Mutex,INFINITE);
+
   SE_GridLiveMatches.ClearData;   // importante anche pr memoryleak
   SE_GridLiveMatches.DefaultColWidth := 16;
   SE_GridLiveMatches.DefaultRowHeight := 16;
@@ -379,23 +378,6 @@ begin
   SE_GridLiveMatches.Cells[6,0].Text := 'Minute';
 
 
-
-  for I := 0 to BrainManager.lstBrain.Count -1  do begin  // iMin,20
-
-    SE_GridLiveMatches.Cells[0,i+1].Text := IntToStr(BrainManager.lstBrain [i].Score.TeamGuid [0]) + '/'+ BrainManager.lstBrain [i].Score.Team [0] + '/' + IntToStr(BrainManager.lstBrain [i].Score.cliId [0]);
-    SE_GridLiveMatches.Cells[1,i+1].Text := IntToStr( BrainManager.lstBrain [i].Score.TeamGuid [1]) + '/'+ BrainManager.lstBrain [i].Score.Team [1] + '/' + IntToStr(BrainManager.lstBrain [i].Score.CliId [1]);
-    SE_GridLiveMatches.Cells[2,i+1].Text := IntToStr(BrainManager.lstBrain [i].TeamTurn );
-    SE_GridLiveMatches.Cells[3,i+1].Text := IntToStr((BrainManager.lstBrain [i].fMilliseconds div 1000) );
-    if BrainManager.lstBrain [i].Score.AI[0]  then
-      SE_GridLiveMatches.Cells[4,i+1].Text:= 'Active' else  SE_GridLiveMatches.Cells[4,i+1].text:= '';
-    if BrainManager.lstBrain [i].Score.AI[1]  then
-      SE_GridLiveMatches.Cells[5,i+1].Text:= 'Active' else  SE_GridLiveMatches.Cells[5,i+1].text:= '';
-
-    SE_GridLiveMatches.Cells[6,i+1].Text:= IntToStr(BrainManager.lstBrain [i].Minute );
-
-  end;
-  ReleaseMutex(Mutex);
-
 end;
 
 procedure TFormServer.btnStartAllBrainClick(Sender: TObject);
@@ -403,8 +385,7 @@ var
   i: Integer;
 begin
   WaitForSingleObject(Mutex,INFINITE);
-  for I := brainManager.lstBrain.Count -1 downto 0 do
-  begin
+  for I := brainManager.lstBrain.Count -1 downto 0 do  begin
     brainManager.lstBrain[i].Paused := false;
   end;
   ReleaseMutex(Mutex);
@@ -1498,6 +1479,7 @@ begin
   TcpServer.MaxClients          := 2000;
   TcpServer.Listen ;
 
+  SE_GridLiveMatches.thrdAnimate.Priority := tpLowest;
 
 end;
 
@@ -3426,10 +3408,11 @@ vsBots:
           aBrain.LogUser [1] := 1;
       end;
 
-    CreateAndLoadMatch(  aBrain, ServerOpponent[0].GuidTeam , ServerOpponent[1].GuidTeam, ServerOpponent[0].Username,  ServerOpponent[1].Username );
-
-
+      WaitForSingleObject(Mutex,INFINITE);
+      CreateAndLoadMatch(  aBrain, ServerOpponent[0].GuidTeam , ServerOpponent[1].GuidTeam, ServerOpponent[0].Username,  ServerOpponent[1].Username );
       BrainManager.AddBrain(aBrain );  //
+      ReleaseMutex(Mutex);
+
       //Caption := IntToStr(BrainManager.lstBrain.count);
       if ServerOpponent[0].bot then aBrain.Score.AI[0]:= True;
       if ServerOpponent[1].bot then aBrain.Score.AI[1]:= True;
@@ -3446,8 +3429,6 @@ vsBots:
       Queue.Delete(i);
   end;
 
-  if CheckBoxActiveMacthes.Checked then
-    RefreshGrid;
   ReleaseMutex(Mutex);
 
 end;
@@ -3490,8 +3471,11 @@ begin
           aBrain.LogUser [1] := 1;
       end;
 
+      WaitForSingleObject(Mutex,INFINITE);
       CreateAndLoadMatch(  aBrain, GuidTeam0 , GuidTeam1, UserName0, UserName1 );
       BrainManager.AddBrain(aBrain );
+      ReleaseMutex(Mutex);
+
       brainManager.Input ( aBrain,   BrainIDS + '000' ) ;
       aBrain.Score.AI[0]:= True;
       aBrain.Score.AI[1]:= True;
@@ -6089,7 +6073,23 @@ var
   i: Integer;
 begin
   WaitForSingleObject(Mutex,INFINITE);
+  if CheckBoxActiveMacthes.Checked then
+    SetupRefreshGrid;
+
   for I := BrainManager.lstBrain.Count -1 downto 0 do begin
+    if CheckBoxActiveMacthes.Checked then begin
+      SE_GridLiveMatches.Cells[0,i+1].Text := IntToStr(BrainManager.lstBrain [i].Score.TeamGuid [0]) + '/'+ BrainManager.lstBrain [i].Score.Team [0] + '/' + IntToStr(BrainManager.lstBrain [i].Score.cliId [0]);
+      SE_GridLiveMatches.Cells[1,i+1].Text := IntToStr( BrainManager.lstBrain [i].Score.TeamGuid [1]) + '/'+ BrainManager.lstBrain [i].Score.Team [1] + '/' + IntToStr(BrainManager.lstBrain [i].Score.CliId [1]);
+      SE_GridLiveMatches.Cells[2,i+1].Text := IntToStr(BrainManager.lstBrain [i].TeamTurn );
+      SE_GridLiveMatches.Cells[3,i+1].Text := IntToStr((BrainManager.lstBrain [i].fMilliseconds div 1000) );
+      if BrainManager.lstBrain [i].Score.AI[0]  then
+        SE_GridLiveMatches.Cells[4,i+1].Text:= 'Active' else  SE_GridLiveMatches.Cells[4,i+1].text:= '';
+      if BrainManager.lstBrain [i].Score.AI[1]  then
+        SE_GridLiveMatches.Cells[5,i+1].Text:= 'Active' else  SE_GridLiveMatches.Cells[5,i+1].text:= '';
+
+      SE_GridLiveMatches.Cells[6,i+1].Text:= IntToStr(BrainManager.lstBrain [i].Minute );
+    end;
+
     if BrainManager.lstBrain [i].paused or BrainManager.lstBrain[i].Finished then Continue;
 
     BrainManager.lstBrain [i].milliseconds := BrainManager.lstBrain [i].milliseconds - MatchThread.Interval;
@@ -6098,18 +6098,12 @@ begin
      if (BrainManager.lstBrain [i].milliseconds <= 0) or (BrainManager.lstBrain [i].Score.AI [BrainManager.lstBrain [i].TeamTurn]) then Begin
         BrainManager.lstBrain [i].AI_GCD := BrainManager.lstBrain [i].AI_GCD - MatchThread.Interval  ;
       if BrainManager.lstBrain [i].AI_GCD <= 0 then begin
-{ in base alle mosse e il tempo rimasto }
         BrainManager.lstBrain [i].AI_Think(BrainManager.lstBrain [i].TeamTurn);
         if BrainManager.lstBrain [i].milliseconds > 4000 then begin
-//        BrainManager.lstBrain [i].AI_GCD := {8000} BrainManager.RndGenerateRange( 3000, (BrainManager.lstBrain [i].seconds  * 1000) div
-//                                                                      (BrainManager.lstBrain [i].TeamMovesLeft +1) )
-          if RadioButton1.Checked then begin
-            BrainManager.lstBrain [i].AI_GCD := StrToInt(Edit2.Text) ;// {8000} BrainManager.RndGenerateRange( 3000, 12000 )
-          end
-          else begin
+          if RadioButton1.Checked then
+            BrainManager.lstBrain [i].AI_GCD := StrToInt(Edit2.Text) // {8000} BrainManager.RndGenerateRange( 3000, 12000 )
+          else
             BrainManager.lstBrain [i].AI_GCD := BrainManager.RndGenerateRange( StrToInt(Edit2.Text), StrToInt(Edit3.Text) );
-
-          end;
         end
         else
         BrainManager.lstBrain [i].AI_GCD := StrToInt(Edit2.Text) ;
@@ -6119,6 +6113,7 @@ begin
      end;
   end;
 
+
   for I := BrainManager.lstBrain.Count -1 downto 0 do begin
     if BrainManager.lstBrain [i].paused then Continue;
     if BrainManager.lstBrain[i].Finished then // 30 secondi poi cancella il brain
@@ -6126,6 +6121,7 @@ begin
         BrainManager.lstBrain.Delete(i); // libera anche gli spettatori
   end;
   ReleaseMutex(Mutex);
+
 
   Application.ProcessMessages;
 

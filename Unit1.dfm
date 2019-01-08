@@ -939,200 +939,91 @@ object Form1: TForm1
       end
     end
     object PanelListMatches: SE_Panel
-      Left = 389
-      Top = 313
+      Left = 685
+      Top = 204
       Width = 685
       Height = 292
       BevelOuter = bvNone
+      BorderStyle = bsSingle
       Color = 8081721
       TabOrder = 5
       Visible = False
-      object btnBackListMatches: TButton
-        Left = 8
-        Top = 258
-        Width = 133
-        Height = 28
-        Caption = 'Indietro'
-        Font.Charset = ANSI_CHARSET
-        Font.Color = clRed
-        Font.Height = -16
-        Font.Name = 'Calibri'
-        Font.Style = []
-        ParentFont = False
-        TabOrder = 0
-        OnClick = btnBackListMatchesClick
-      end
-      object btnListMatches: TButton
-        Left = 549
-        Top = 258
-        Width = 133
-        Height = 28
-        Caption = 'Aggiorna'
-        Font.Charset = ANSI_CHARSET
-        Font.Color = clRed
-        Font.Height = -16
-        Font.Name = 'Calibri'
-        Font.Style = []
-        ParentFont = False
-        TabOrder = 1
-      end
-      object advAllbrain: TAdvStringGrid
+      object SE_GridAllBrain: SE_Grid
         Left = 3
-        Top = -21
+        Top = 0
         Width = 674
         Height = 245
         Cursor = crHandPoint
-        TabStop = False
-        BorderStyle = bsNone
-        Color = 8081721
-        ColCount = 12
-        DefaultColWidth = 330
-        DrawingStyle = gdsClassic
-        FixedCols = 0
-        RowCount = 1
-        FixedRows = 0
+        MouseScrollRate = 1.000000000000000000
+        MouseWheelInvert = False
+        MouseWheelValue = 10
+        MouseWheelZoom = False
+        MousePan = True
+        MouseScroll = False
+        BackColor = 8081721
+        AnimationInterval = 20
+        GridInfoCell = False
+        GridVisible = False
+        GridColor = clSilver
+        GridCellWidth = 40
+        GridCellHeight = 30
+        GridCellsX = 10
+        GridCellsY = 4
+        GridHexSmallWidth = 10
+        CollisionDelay = 0
+        ShowPerformance = False
+        VirtualWidth = 212
+        Virtualheight = 212
+        TabOrder = 0
+        OnGridCellMouseDown = SE_GridAllBrainGridCellMouseDown
+        CellBorder = CellBorderNone
         Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWhite
-        Font.Height = -13
-        Font.Name = 'Calibri'
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
         Font.Style = []
-        GridLineWidth = 0
-        Options = [goVertLine]
+      end
+      object btnMatchesRefresh: TRzBmpButton
+        Left = 581
+        Top = 251
+        Width = 88
+        Height = 22
+        Cursor = crHandPoint
+        Bitmaps.TransparentColor = clOlive
+        Color = clGray
+        ButtonBorder = bbSingle
+        ShowFocus = False
+        ButtonSize = bszStretchToButton
+        Caption = 'btnMatchesRefresh'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = 4308735
+        Font.Height = -16
+        Font.Name = 'Calibri'
+        Font.Style = [fsBold]
         ParentFont = False
-        ParentShowHint = False
-        ScrollBars = ssNone
-        ShowHint = False
+        TabOrder = 1
+        OnClick = btnMatchesRefreshClick
+      end
+      object btnMatchesListBack: TRzBmpButton
+        Left = 15
+        Top = 251
+        Width = 88
+        Height = 22
+        Cursor = crHandPoint
+        Bitmaps.TransparentColor = clOlive
+        Color = clGray
+        ButtonBorder = bbSingle
+        ShowFocus = False
+        ButtonSize = bszStretchToButton
+        Caption = 'btnMatchesListBack'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = 4308735
+        Font.Height = -16
+        Font.Name = 'Calibri'
+        Font.Style = [fsBold]
+        ParentFont = False
         TabOrder = 2
-        HoverRowColor = clBlue
-        HoverRowColorTo = clBlue
-        HoverRowCells = [hcNormal, hcSelected]
-        OnClickCell = advAllbrainClickCell
-        HTMLHint = True
-        ActiveCellFont.Charset = ANSI_CHARSET
-        ActiveCellFont.Color = clWindowText
-        ActiveCellFont.Height = -11
-        ActiveCellFont.Name = 'Calibri'
-        ActiveCellFont.Style = [fsBold]
-        ActiveCellColor = 144
-        ControlLook.FixedGradientHoverFrom = clGray
-        ControlLook.FixedGradientHoverTo = clWhite
-        ControlLook.FixedGradientDownFrom = clGray
-        ControlLook.FixedGradientDownTo = clSilver
-        ControlLook.DropDownHeader.Font.Charset = DEFAULT_CHARSET
-        ControlLook.DropDownHeader.Font.Color = clWindowText
-        ControlLook.DropDownHeader.Font.Height = -11
-        ControlLook.DropDownHeader.Font.Name = 'Tahoma'
-        ControlLook.DropDownHeader.Font.Style = []
-        ControlLook.DropDownHeader.Visible = True
-        ControlLook.DropDownHeader.Buttons = <>
-        ControlLook.DropDownFooter.Font.Charset = DEFAULT_CHARSET
-        ControlLook.DropDownFooter.Font.Color = clWindowText
-        ControlLook.DropDownFooter.Font.Height = -11
-        ControlLook.DropDownFooter.Font.Name = 'Tahoma'
-        ControlLook.DropDownFooter.Font.Style = []
-        ControlLook.DropDownFooter.Visible = True
-        ControlLook.DropDownFooter.Buttons = <>
-        EnhRowColMove = False
-        Filter = <>
-        FilterDropDown.Font.Charset = DEFAULT_CHARSET
-        FilterDropDown.Font.Color = clWindowText
-        FilterDropDown.Font.Height = -11
-        FilterDropDown.Font.Name = 'Tahoma'
-        FilterDropDown.Font.Style = []
-        FilterDropDown.TextChecked = 'Checked'
-        FilterDropDown.TextUnChecked = 'Unchecked'
-        FilterDropDownClear = '(All)'
-        FilterEdit.TypeNames.Strings = (
-          'Starts with'
-          'Ends with'
-          'Contains'
-          'Not contains'
-          'Equal'
-          'Not equal'
-          'Larger than'
-          'Smaller than'
-          'Clear')
-        FixedColWidth = 330
-        FixedRowHeight = 22
-        FixedFont.Charset = DEFAULT_CHARSET
-        FixedFont.Color = clWindowText
-        FixedFont.Height = -11
-        FixedFont.Name = 'Tahoma'
-        FixedFont.Style = [fsBold]
-        FloatFormat = '%.2f'
-        HoverButtons.Buttons = <>
-        HoverButtons.Position = hbLeftFromColumnLeft
-        HTMLSettings.ImageFolder = 'images'
-        HTMLSettings.ImageBaseName = 'img'
-        IntelliPan = ipNone
-        IntelliZoom = False
-        MouseActions.AutoSizeColOnDblClick = False
-        Navigation.AdvanceOnEnterLoop = False
-        Navigation.AdvanceAutoEdit = False
-        Navigation.AdvanceSkipReadOnlyCells = False
-        Navigation.AutoComboSelect = False
-        Navigation.AllowCtrlEnter = False
-        Navigation.AllowClipboardRowGrow = False
-        Navigation.AllowClipboardColGrow = False
-        Navigation.EditSelectAll = False
-        Navigation.ComboGetUpDown = False
-        Navigation.CursorWalkAlwaysEdit = False
-        Navigation.LeftRightRowSelect = False
-        Navigation.CopyHTMLTagsToClipboard = False
-        PrintSettings.DateFormat = 'dd/mm/yyyy'
-        PrintSettings.Font.Charset = DEFAULT_CHARSET
-        PrintSettings.Font.Color = clWindowText
-        PrintSettings.Font.Height = -11
-        PrintSettings.Font.Name = 'Tahoma'
-        PrintSettings.Font.Style = []
-        PrintSettings.FixedFont.Charset = DEFAULT_CHARSET
-        PrintSettings.FixedFont.Color = clWindowText
-        PrintSettings.FixedFont.Height = -11
-        PrintSettings.FixedFont.Name = 'Tahoma'
-        PrintSettings.FixedFont.Style = []
-        PrintSettings.HeaderFont.Charset = DEFAULT_CHARSET
-        PrintSettings.HeaderFont.Color = clWindowText
-        PrintSettings.HeaderFont.Height = -11
-        PrintSettings.HeaderFont.Name = 'Tahoma'
-        PrintSettings.HeaderFont.Style = []
-        PrintSettings.FooterFont.Charset = DEFAULT_CHARSET
-        PrintSettings.FooterFont.Color = clWindowText
-        PrintSettings.FooterFont.Height = -11
-        PrintSettings.FooterFont.Name = 'Tahoma'
-        PrintSettings.FooterFont.Style = []
-        PrintSettings.PageNumSep = '/'
-        SearchFooter.FindNextCaption = 'Find &next'
-        SearchFooter.FindPrevCaption = 'Find &previous'
-        SearchFooter.Font.Charset = DEFAULT_CHARSET
-        SearchFooter.Font.Color = clWindowText
-        SearchFooter.Font.Height = -11
-        SearchFooter.Font.Name = 'Tahoma'
-        SearchFooter.Font.Style = []
-        SearchFooter.HighLightCaption = 'Highlight'
-        SearchFooter.HintClose = 'Close'
-        SearchFooter.HintFindNext = 'Find next occurrence'
-        SearchFooter.HintFindPrev = 'Find previous occurrence'
-        SearchFooter.HintHighlight = 'Highlight occurrences'
-        SearchFooter.MatchCaseCaption = 'Match case'
-        ShowSelection = False
-        ShowDesignHelper = False
-        SortSettings.DefaultFormat = ssAutomatic
-        Version = '7.9.0.3'
-        ColWidths = (
-          330
-          330
-          330
-          330
-          330
-          330
-          330
-          330
-          330
-          330
-          330
-          330)
-        RowHeights = (
-          22)
+        OnClick = btnMatchesListBackClick
       end
     end
     object PanelCorner: SE_Panel
