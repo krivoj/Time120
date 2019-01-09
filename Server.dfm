@@ -1,7 +1,7 @@
 object FormServer: TFormServer
   Left = 0
   Top = 0
-  Caption = 'Soccer Server'
+  Caption = 'Time120 Server'
   ClientHeight = 573
   ClientWidth = 1110
   Color = clBtnFace
@@ -161,6 +161,8 @@ object FormServer: TFormServer
     Width = 124
     Height = 17
     Caption = 'Show Active Matches'
+    Checked = True
+    State = cbChecked
     TabOrder = 11
   end
   object CheckBox1: TCheckBox

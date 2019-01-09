@@ -1910,154 +1910,52 @@ object Form1: TForm1
         Font.Style = []
       end
     end
-    object PanelSkillSE: SE_Panel
+    object PanelSkill: SE_Panel
       Left = 768
       Top = 380
       Width = 260
       Height = 201
       BevelOuter = bvNone
-      Color = 8081721
+      Color = clAqua
+      ParentBackground = False
       TabOrder = 13
       Visible = False
-      object se_gridskill: TAdvStringGrid
-        Left = 48
-        Top = 23
-        Width = 144
-        Height = 161
+      object SE_GridSkill: SE_Grid
+        Left = 28
+        Top = 14
+        Width = 212
+        Height = 107
         Cursor = crHandPoint
-        BevelInner = bvNone
-        BevelOuter = bvNone
-        BorderStyle = bsNone
-        Color = 8081721
-        ColCount = 3
-        Ctl3D = False
-        DrawingStyle = gdsClassic
-        FixedCols = 0
-        RowCount = 9
-        FixedRows = 0
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clYellow
-        Font.Height = -13
-        Font.Name = 'Verdana'
-        Font.Style = [fsBold]
-        ParentCtl3D = False
-        ParentFont = False
-        ScrollBars = ssNone
+        MouseScrollRate = 1.000000000000000000
+        MouseWheelInvert = False
+        MouseWheelValue = 10
+        MouseWheelZoom = False
+        MousePan = False
+        MouseScroll = False
+        BackColor = 8081721
+        AnimationInterval = 20
+        GridInfoCell = False
+        GridVisible = False
+        GridColor = clSilver
+        GridCellWidth = 40
+        GridCellHeight = 30
+        GridCellsX = 10
+        GridCellsY = 4
+        GridHexSmallWidth = 10
+        CollisionDelay = 0
+        ShowPerformance = False
+        VirtualWidth = 212
+        Virtualheight = 212
         TabOrder = 0
-        GridLineColor = 8081721
-        HoverRow = True
-        HoverRowColor = clBlack
-        HoverRowColorTo = clBlack
-        HoverRowCells = [hcNormal, hcSelected]
-        OnGetCellCursor = se_gridskillGetCellCursor
-        ActiveCellFont.Charset = DEFAULT_CHARSET
-        ActiveCellFont.Color = clWindowText
-        ActiveCellFont.Height = -11
-        ActiveCellFont.Name = 'Tahoma'
-        ActiveCellFont.Style = [fsBold]
-        ControlLook.FixedGradientHoverFrom = clGray
-        ControlLook.FixedGradientHoverTo = clWhite
-        ControlLook.FixedGradientDownFrom = clGray
-        ControlLook.FixedGradientDownTo = clSilver
-        ControlLook.DropDownHeader.Font.Charset = DEFAULT_CHARSET
-        ControlLook.DropDownHeader.Font.Color = clWindowText
-        ControlLook.DropDownHeader.Font.Height = -11
-        ControlLook.DropDownHeader.Font.Name = 'Tahoma'
-        ControlLook.DropDownHeader.Font.Style = []
-        ControlLook.DropDownHeader.Visible = True
-        ControlLook.DropDownHeader.Buttons = <>
-        ControlLook.DropDownFooter.Font.Charset = DEFAULT_CHARSET
-        ControlLook.DropDownFooter.Font.Color = clWindowText
-        ControlLook.DropDownFooter.Font.Height = -11
-        ControlLook.DropDownFooter.Font.Name = 'Tahoma'
-        ControlLook.DropDownFooter.Font.Style = []
-        ControlLook.DropDownFooter.Visible = True
-        ControlLook.DropDownFooter.Buttons = <>
-        EnableWheel = False
-        Filter = <>
-        FilterDropDown.Font.Charset = DEFAULT_CHARSET
-        FilterDropDown.Font.Color = clWindowText
-        FilterDropDown.Font.Height = -11
-        FilterDropDown.Font.Name = 'Tahoma'
-        FilterDropDown.Font.Style = []
-        FilterDropDown.TextChecked = 'Checked'
-        FilterDropDown.TextUnChecked = 'Unchecked'
-        FilterDropDownClear = '(All)'
-        FilterEdit.TypeNames.Strings = (
-          'Starts with'
-          'Ends with'
-          'Contains'
-          'Not contains'
-          'Equal'
-          'Not equal'
-          'Larger than'
-          'Smaller than'
-          'Clear')
-        FixedRowHeight = 22
-        FixedFont.Charset = DEFAULT_CHARSET
-        FixedFont.Color = clWindowText
-        FixedFont.Height = -11
-        FixedFont.Name = 'Tahoma'
-        FixedFont.Style = [fsBold]
-        Flat = True
-        FloatFormat = '%.2f'
-        HoverButtons.Buttons = <>
-        HoverButtons.Position = hbLeftFromColumnLeft
-        Hovering = True
-        HTMLSettings.ImageFolder = 'images'
-        HTMLSettings.ImageBaseName = 'img'
-        PrintSettings.DateFormat = 'dd/mm/yyyy'
-        PrintSettings.Font.Charset = DEFAULT_CHARSET
-        PrintSettings.Font.Color = clWindowText
-        PrintSettings.Font.Height = -11
-        PrintSettings.Font.Name = 'Tahoma'
-        PrintSettings.Font.Style = []
-        PrintSettings.FixedFont.Charset = DEFAULT_CHARSET
-        PrintSettings.FixedFont.Color = clWindowText
-        PrintSettings.FixedFont.Height = -11
-        PrintSettings.FixedFont.Name = 'Tahoma'
-        PrintSettings.FixedFont.Style = []
-        PrintSettings.HeaderFont.Charset = DEFAULT_CHARSET
-        PrintSettings.HeaderFont.Color = clWindowText
-        PrintSettings.HeaderFont.Height = -11
-        PrintSettings.HeaderFont.Name = 'Tahoma'
-        PrintSettings.HeaderFont.Style = []
-        PrintSettings.FooterFont.Charset = DEFAULT_CHARSET
-        PrintSettings.FooterFont.Color = clWindowText
-        PrintSettings.FooterFont.Height = -11
-        PrintSettings.FooterFont.Name = 'Tahoma'
-        PrintSettings.FooterFont.Style = []
-        PrintSettings.PageNumSep = '/'
-        SearchFooter.FindNextCaption = 'Find &next'
-        SearchFooter.FindPrevCaption = 'Find &previous'
-        SearchFooter.Font.Charset = DEFAULT_CHARSET
-        SearchFooter.Font.Color = clWindowText
-        SearchFooter.Font.Height = -11
-        SearchFooter.Font.Name = 'Tahoma'
-        SearchFooter.Font.Style = []
-        SearchFooter.HighLightCaption = 'Highlight'
-        SearchFooter.HintClose = 'Close'
-        SearchFooter.HintFindNext = 'Find next occurrence'
-        SearchFooter.HintFindPrev = 'Find previous occurrence'
-        SearchFooter.HintHighlight = 'Highlight occurrences'
-        SearchFooter.MatchCaseCaption = 'Match case'
-        ShowSelection = False
-        SortSettings.DefaultFormat = ssAutomatic
-        Version = '7.9.0.3'
-        ColWidths = (
-          64
-          64
-          64)
-        RowHeights = (
-          22
-          22
-          22
-          22
-          22
-          22
-          22
-          22
-          22)
+        OnGridCellMouseDown = SE_GridSkillGridCellMouseDown
+        OnGridCellMouseMove = SE_GridSkillGridCellMouseMove
+        CellBorder = CellBorderNone
+        CellBorderColor = clGray
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Verdana'
+        Font.Style = []
       end
     end
     object JvShapedButton2: TJvShapedButton

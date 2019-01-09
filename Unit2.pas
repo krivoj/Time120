@@ -45,17 +45,12 @@ begin
 
   Form1.PanelScore.Left := (Form1.PanelBack.Width div 2 ) - (Form1.PanelScore.Width div 2 );
   Form1.PanelScore.Top := Form1.SE_Theater1.top - Form1.PanelScore.Height;;
-  Form1.PanelSkillSE.Top := Form1.SE_Theater1.Top + Form1.SE_Theater1.Height ;
+  Form1.PanelSkill.Top := Form1.SE_Theater1.Top + Form1.SE_Theater1.Height ;
 
   Form1.SE_lblmaxvalue.left := Form1.edtsearchprice.Left;
   Form1.SE_lblmaxvalue.width := Form1.edtsearchprice.width;
   Form1.SE_lblmaxvalue.Top := Form1.edtsearchprice.top - Form1.SE_lblmaxvalue.height ;
   Form1.SE_lblmaxvalue.Caption := Translate('lbl_MaxValue');
-
-  Form1.SE_gridskill.Left := 3;
-  Form1.SE_gridskill.top := 8;
-  Form1.SE_gridskill.OnClickCell := Form1.ClickSkillSE;
-  Form1.PanelSkillSE.Width := Form1.SE_gridskill.Width + 6;
 
   Form1.btnxp0.Left := Form1.Portrait0.Left;
   Form1.btnxp0.Top := Form1.Portrait0.top + Form1.Portrait0.Height;
@@ -106,11 +101,11 @@ begin
   Form1.PanelDismiss.Left:= Form1.PanelInfoPlayer0.left ;
 
 
-  Form1.JvShapedButton1.Top :=  Form1.PanelSkillSE.top;
-  Form1.JvShapedButton2.Top :=  Form1.PanelSkillSE.top;
-  Form1.JvShapedButton3.Top :=  Form1.PanelSkillSE.top;
-  Form1.JvShapedButton4.Top :=  Form1.PanelSkillSE.top;
-  Form1.imgshpfree.Top :=  Form1.PanelSkillSE.top;
+  Form1.JvShapedButton1.Top :=  Form1.PanelSkill.top;
+  Form1.JvShapedButton2.Top :=  Form1.PanelSkill.top;
+  Form1.JvShapedButton3.Top :=  Form1.PanelSkill.top;
+  Form1.JvShapedButton4.Top :=  Form1.PanelSkill.top;
+  Form1.imgshpfree.Top :=  Form1.PanelSkill.top;
 
   Form1.PanelCombatLog.Left :=  (Form1.PanelBack.Width div 2 ) - (Form1.PanelCombatLog.Width div 2 );   ;
   Form1.PanelCombatLog.Top := Form1.JvShapedButton1.Top  + Form1.JvShapedButton1.Height;
@@ -160,7 +155,7 @@ begin
   RoundCornerOf ( Form1.PanelCorner );
   RoundCornerOf ( Form1.PanelLogin );
   RoundCornerOf ( Form1.PanelformationSE );
-  RoundCornerOf ( Form1.PanelSkillSE );
+  RoundCornerOf ( Form1.PanelSkill );
   RoundCornerOf ( Form1.PanelUniform );
   RoundCornerOf ( Form1.PanelMarket );
   RoundCornerOf ( Form1.PanelDismiss );
@@ -235,7 +230,7 @@ end;
 procedure ShowCornerFreeKickGrid;
 begin
 
-  Form1.PanelSkillSe.Visible := False;
+  Form1.PanelSkill.Visible := False;
   Form1.PanelCorner.Left := (form1.Width div 2) - (Form1.PanelCorner.Width div 2 ) ;
   Form1.PanelCorner.Top := Form1.SE_Theater1.Top +  Form1.SE_Theater1.Height ;
   Form1.PanelCorner.Visible := True;
@@ -288,7 +283,7 @@ begin
   Form1.imgshpfree.Visible := False;
   Form1.ProgressSeconds.Visible := False;
 
-  Form1.PanelSkillSE.Visible := False;
+  Form1.PanelSkill.Visible := False;
   Form1.PanelCombatLog.Visible := False;
 
 

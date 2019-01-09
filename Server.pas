@@ -395,8 +395,7 @@ var
   i: Integer;
 begin
   WaitForSingleObject(Mutex,INFINITE);
-  for I := brainManager.lstBrain.Count -1 downto 0 do
-  begin
+  for I := brainManager.lstBrain.Count -1 downto 0 do  begin
     brainManager.lstBrain[i].Paused := True;
   end;
   ReleaseMutex(Mutex);
@@ -423,7 +422,7 @@ begin
   MyQueryAccount := TMyQuery.Create(nil);
   MyQueryAccount.Connection := ConnAccount;   // realmd
 
-  // i primi dieci fatti a mano ....  e account gabriele stefano
+  // genero test1, test2, test3 ecc....
   for I := 1 to 100 do begin
 
     username :=  Uppercase('TEST' + IntTostr(i));
@@ -440,7 +439,6 @@ begin
     ConnAccount.Connected:= False;
     ConnAccount.Free;
 
-  ///////////////////////////////////////////
 
 end;
 
@@ -477,7 +475,7 @@ begin
     GmLevel:= MyQueryAccount.FieldByName('gmLevel').AsInteger;
     MyQueryTeam := TMyQuery.Create(nil);
     MyQueryTeam.Connection := Conngame;   // game
-   // pwd := RandomPassword (25);
+
     MyQueryTeam.SQL.Text := 'SELECT  guid, worldteam, teamname, nextha, mi FROM game.teams where account = ' + AccountID ;  // teamid punta a world.team (e country in join)
     MyQueryTeam.Execute;
     if MyQueryTeam.RecordCount = 1 then begin       // ho già il team
@@ -564,9 +562,8 @@ begin
      // RemoveBrain( brain.brainIds );   { se lo faccio bug, c'era PASS o altri comandi in essere. il brain esegue ancora tsscript, lo faccio dopo 30 secondi }
     end                                 // lo marco per il delete successivo
     else begin
-      // prima il client che gioca  . qui arriva input dai brain quindi  brain.MMbraindata.Memory
-      // arriva anche 000.ini      brainManager.Input ( aBrain,   BrainIDS + '\000.ini' ) ; //
 
+      // prima i client che giocano
       try
         for I := 0 to FormServer.Tcpserver.ClientCount -1 do begin
           if FormServer.TcpServer.Client [i].CliId = brain.Score.CliId [0] then begin
@@ -613,8 +610,6 @@ begin
             ConnAccount.Free;
             Exit;
           end;
-  //    finally
-        //MyClass.Free;
       end;
     end;
 end;
@@ -1385,13 +1380,11 @@ begin
 
   WaitForSingleObject(Mutex,INFINITE);
   for I := lstbrain.count -1 downto 0 do begin
-//      if lstbrain[i].CliId = brain.cliid then begin // esiste la partita con quel clientId
-      if lstbrain[i].BrainIDS  = brainIds then begin // esiste la partita con quel clientId
+      if lstbrain[i].BrainIDS  = brainIds then begin // esiste la partita con quel BrainIds
         lstBrain.Delete(i); // libera anche gli spettatori
         ReleaseMutex(Mutex);
         Exit;
       end;
- //   end;
   end;
   ReleaseMutex(Mutex);
 
@@ -1405,7 +1398,7 @@ msg2: string;
 begin
   //ReplaceS(Msg2,'|', '    ' );
   if memo1.Lines.Count  > 1000 then begin  { Prevent TMemo overflow }
-        memo1.LineS.Clear ;
+        memo1.Lines.Clear ;
   end;
   memo1.Lines.add (msg);
 end;
@@ -1470,7 +1463,6 @@ begin
 
 
   TcpServer.LineMode            := true;
-//  TcpServer.LineMode            := false;
   TcpServer.LineEdit            := false;
   TcpServer.LineEnd             := EndOfLine;
   TcpServer.LineLimit           := 1024;
@@ -1549,11 +1541,8 @@ begin
     end;
 
 
-    //Client.Tag                 := randomrange (100000,200000 );
-    //  Client.CliId
       Client.LastTickCount       := 0;  // a mezzanotte ....bug
       Client.LineMode            := TRUE;
-//      Client.LineMode            := false;
       Client.LineEnd             := EndOfLine;
       Client.LineEdit            := false;
       Client.LineLimit           := 1024;
@@ -1590,11 +1579,10 @@ begin
       end;
     end;
 
-      for I := 0 to brainManager.lstBrain.Count -1 do begin
-        brainManager.lstBrain [i].RemoveSpectator (Client.CliId);
-      end;
+    for I := 0 to brainManager.lstBrain.Count -1 do begin
+      brainManager.lstBrain [i].RemoveSpectator (Client.CliId);
+    end;
 
-    //  Solo BrainManager distrugge i brain
 
   ReleaseMutex(Mutex);
    Label1.caption :=  'Client Count: ' + intTostr(Tcpserver.ClientCount );
@@ -1672,8 +1660,6 @@ begin
             Cli.sPassWord  := anAuth.password;
             Cli.Username := anAuth.UserName;
             Cli.Flags :=  anAuth.Flags;
-           // Cli.pwdTicket := RandomPassword (25);
-           // Cli.SendStr( 'pwd,' + Cli.pwdTicket + EndOfline);
 
 
             // preparo world.countries.ini direttamente nell'FTP
@@ -1685,23 +1671,6 @@ begin
             Cli.sPassWord  := anAuth.password;
             Cli.Username := anAuth.UserName;
             Cli.Flags :=  anAuth.Flags;
-            (* Mando la pwdTicket *)
-          //  Cli.pwdTicket := RandomPassword (25);
-          //  Cli.SendStr( 'pwd,' + Cli.pwdTicket + EndOfline);
-  {    public
-          GmLevel: Integer;
-          GuidTeam: Integer;
-          WorldTeam: Integer;
-          teamName: string;
-          info: string;
-          MarketValueTeam: Integer;
-          Marked: boolean;
-          nextHA: integer;
-          mi: integer;
-          sreason: string;
-          PwdTicket : string;
-          sPassword : string;
-          Brain : TObject;   }
 
 
             cli.GmLevel := anAuth.GmLevel;

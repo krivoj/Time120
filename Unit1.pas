@@ -11,6 +11,11 @@
       { TODO : sostituire grid con se_grid }
       { TODO : gestire il fine partita }
       { TODO : bug sui pulsanti tattiche. il player rimane sospeso  }
+      { TODO : sul rigore che diventa gol manca il suono della folla  }
+
+
+      // procedure importanti:
+      //    procedure SE_GridSkillGridCellMouseDown  click sulla skill ---> input verso il server
 
 interface
 uses
@@ -148,7 +153,7 @@ type
     se_lblPlay: TRzBmpButton;
     BtnFormationBack: TRzBmpButton;
     PanelInfoplayer1: SE_panel;
-    PanelSkillSE: SE_panel;
+    PanelSkill: SE_Panel;
     SE_numbers: SE_Engine;
     SE_interface: SE_Engine;
     Button1: TButton;
@@ -195,7 +200,6 @@ type
     lbl_TurnF: TRzLabel;
     lbl_PointsF: TRzLabel;
     lbl_MIF: TRzLabel;
-    se_gridskill: TAdvStringGrid;
     se_lblSurname0: TRzLabel;
     se_lblSurname1: TRzLabel;
     lbl_talent0: TRzLabel;
@@ -238,6 +242,7 @@ type
     Portrait1: TCnSpeedButton;
     btnMatchesRefresh: TRzBmpButton;
     btnMatchesListBack: TRzBmpButton;
+    SE_GridSkill: SE_Grid;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure InitSound;
@@ -275,7 +280,6 @@ type
     procedure SE_Theater1SpriteMouseUp(Sender: TObject; lstSprite: TObjectList<DSE_theater.SE_Sprite>; Button: TMouseButton;
       Shift: TShiftState);
     procedure SE_Theater1TheaterMouseMove(Sender: TObject; VisibleX, VisibleY, VirtualX, VirtualY: Integer; Shift: TShiftState);
-    procedure se_gridskillGetCellCursor(Sender: TObject; ACol, ARow, X, Y: Integer; var ACursor: TCursor);
     procedure Button6Click(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure SE_ballSpriteDestinationReached(ASprite: SE_Sprite);
@@ -321,6 +325,9 @@ type
       Sprite: SE_Sprite);
     procedure btnMatchesRefreshClick(Sender: TObject);
     procedure btnMatchesListBackClick(Sender: TObject);
+    procedure SE_GridSkillGridCellMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; CellX, CellY: Integer;
+      Sprite: SE_Sprite);
+    procedure SE_GridSkillGridCellMouseMove(Sender: TObject; Shift: TShiftState; CellX, CellY: Integer; Sprite: SE_Sprite);
   private
     { Private declarations }
     fSelectedPlayer : TSoccerPlayer;
@@ -350,7 +357,7 @@ type
     procedure HighLightField ( CellX, CellY, LifeSpan : integer );
     procedure HighLightFieldFriendly ( aPlayer: TSoccerPlayer; cells: char );
     procedure HighLightFieldFriendly_hide;
-    procedure SelectedPlayerPopupSkillSE ( CellX, CellY: integer);
+    procedure SelectedPlayerPopupSkill ( CellX, CellY: integer);
 
     procedure Anim ( Script: string );
     procedure RoundBorder (bmp: TBitmap; w,h: Integer);
@@ -387,8 +394,6 @@ type
     function RndGenerate0( Upper: integer ): integer;
     function RndGenerateRange( Lower, Upper: integer ): integer;
 
-    procedure PanelSkillDynamicResizeSE;
-
     function findlstSkill (SkillName: string ): integer;
     function findPlayerMyBrainFormation ( guid: string ): TSoccerPlayer;
     procedure UpdateFormation ( Guid: string; Team, TvCellX, TvCellY: integer);
@@ -421,7 +426,6 @@ type
 //    function InvertFormationCell (FormationCellX , FormationCellY : integer): Tpoint;
 
 
-    procedure ClickSkillSE ( Sender : TObject; ARow,ACol: Integer);
     function GetDominantColor ( Team: integer  ): TColor;
     function GetContrastColor( cl: TColor  ): TColor;
 
@@ -1382,8 +1386,8 @@ begin
   se_theater1.Height  := se_theater1.Virtualheight ;//960 ;
   se_theater1.Left := (form1.Width div 2) - (SE_Theater1.Width div 2);
   se_theater1.Top := (form1.Height div 2) - (SE_Theater1.Height div 2);
-  PanelSkillSE.Left := (form1.Width div 2) - (PanelSkillSE.Width div 2 ) ;
-  PanelSkillSE.Top := SE_Theater1.Top + SE_Theater1.Height ;
+  PanelSkill.Left := (form1.Width div 2) - (PanelSkill.Width div 2 ) ;
+  PanelSkill.Top := SE_Theater1.Top + SE_Theater1.Height ;
 
 end;
 
@@ -1486,39 +1490,216 @@ begin
 //    se_portrait1.Bitmaps.Disabled.LoadFromFile(dir_tmp + 'se_0b.bmp');
 end;
 
-procedure TForm1.se_gridskillGetCellCursor(Sender: TObject; ACol, ARow, X, Y: Integer; var ACursor: TCursor);
+
+procedure TForm1.SE_GridSkillGridCellMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; CellX, CellY: Integer;
+  Sprite: SE_Sprite);
+var
+  aDoor: TPoint;
+begin
+{  LstSkill[0]:= 'Move';
+  LstSkill[1]:= 'Short.Passing';
+  LstSkill[2]:= 'Lofted.Pass';
+  LstSkill[3]:= 'Crossing';
+  LstSkill[4]:= 'Precision.Shot';
+  LstSkill[5]:= 'Power.Shot';
+  LstSkill[6]:= 'Dribbling';
+  LstSkill[7]:= 'Protection';
+  LstSkill[8]:= 'Tackle';
+  LstSkill[9]:= 'Pressing';
+  LstSkill[10]:= 'Corner.Kick'; }
+  if se_players.IsAnySpriteMoving or se_ball.IsAnySpriteMoving   then  exit;
+  panelSkill.Visible := False;
+  SE_GridSkill.Active := False;
+  PanelCombatLog.Left :=  (PanelBack.Width div 2 ) - (PanelCombatLog.Width div 2 );   ;
+
+  if se_gridskill.Cells [0,CellY].Ids = 'Move' then begin
+          WaitForXY_Move := true;
+          WaitForXY_ShortPass:= false;
+          WaitForXY_LoftedPass:= false;
+          WaitForXY_Crossing:= false;
+          WaitForXY_Dribbling:= false;
+  end
+  else if se_gridskill.Cells [0,CellY].Ids = 'Short.Passing' then begin
+          WaitForXY_Move := false;
+          WaitForXY_ShortPass:= true;
+          WaitForXY_LoftedPass:= false;
+          WaitForXY_Crossing:= false;
+          WaitForXY_Dribbling:= false;
+  end
+  else if se_gridskill.Cells [0,CellY].Ids = 'Lofted.Pass' then begin
+          WaitForXY_Move := false;
+          WaitForXY_ShortPass:= false;
+          WaitForXY_LoftedPass:= true;
+          WaitForXY_Crossing:= false;
+          WaitForXY_Dribbling:= false;
+  end
+  else if se_gridskill.Cells [0,CellY].Ids = 'Crossing' then begin
+    if GCD <= 0 then begin
+          WaitForXY_Move := false;
+          WaitForXY_ShortPass:= false;
+          WaitForXY_LoftedPass:= false;
+          WaitForXY_Crossing:= true;
+          WaitForXY_Dribbling:= false;
+
+          if MyBrain.w_FreeKick2 then begin   // in caso di freeKick2 il cross è automatico
+            WaitForXY_Crossing:= false;
+            if  ( LiveMatch ) and  (Mybrain.Score.TeamGuid  [ Mybrain.TeamTurn ] = MyGuidTeam) then tcp.SendStr( 'CRO2' + EndofLine);
+            hidechances;
+          end;
+          GCD := GCD_DEFAULT;
+    end;
+  end
+  else if se_gridskill.Cells [0,CellY].Ids = 'Precision.Shot' then begin
+    if GCD <= 0 then begin
+          WaitForXY_Move := false;
+          WaitForXY_ShortPass:= false;
+          WaitForXY_LoftedPass:= false;
+          WaitForXY_Crossing:= false;
+          WaitForXY_Dribbling:= false;
+          aDoor:= MyBrain.GetOpponentDoor (SelectedPlayer );
+            if  ( LiveMatch ) and  (Mybrain.Score.TeamGuid  [ Mybrain.TeamTurn ] = MyGuidTeam) then tcp.SendStr( 'PRS'  + EndofLine);
+            hidechances;
+           GCD := GCD_DEFAULT;
+    end;
+  end
+  else if se_gridskill.Cells [0,CellY].Ids = 'Power.Shot' then begin
+    if GCD <= 0 then begin
+          WaitForXY_Move := false;
+          WaitForXY_ShortPass:= false;
+          WaitForXY_LoftedPass:= false;
+          WaitForXY_Crossing:= false;
+          WaitForXY_Dribbling:= false;
+          aDoor:= MyBrain.GetOpponentDoor (SelectedPlayer );
+            if  ( LiveMatch ) and  (Mybrain.Score.TeamGuid  [ Mybrain.TeamTurn ] = MyGuidTeam) then tcp.SendStr( 'POS' + EndofLine);
+          hidechances;
+          GCD := GCD_DEFAULT;
+    end;
+  end
+  else if se_gridskill.Cells [0,CellY].Ids = 'Dribbling' then begin
+          WaitForXY_Move := false;
+          WaitForXY_ShortPass:= false;
+          WaitForXY_LoftedPass:= false;
+          WaitForXY_Crossing:= false;
+          WaitForXY_Dribbling:= true;
+  end
+  else if se_gridskill.Cells [0,CellY].Ids = 'Protection' then begin
+    if GCD <= 0 then begin
+          WaitForXY_Move := false;
+          WaitForXY_ShortPass:= false;
+          WaitForXY_LoftedPass:= false;
+          WaitForXY_Crossing:= false;
+          WaitForXY_Dribbling:= false;
+          if  ( LiveMatch ) and  (Mybrain.Score.TeamGuid  [ Mybrain.TeamTurn ] = MyGuidTeam) then tcp.SendStr( 'PRO'  + EndofLine);
+          GCD := GCD_DEFAULT;
+          hidechances;
+    end;
+  end
+  else if se_gridskill.Cells [0,CellY].Ids = 'Tackle' then begin
+    if GCD <= 0 then begin
+          WaitForXY_Move := false;
+          WaitForXY_ShortPass:= false;
+          WaitForXY_LoftedPass:= false;
+          WaitForXY_Crossing:= false;
+          WaitForXY_Dribbling:= false;
+          if Mybrain.Ball.Player <> nil then begin
+            if  AbsDistance (Mybrain.Ball.Player.CellX ,Mybrain.Ball.Player.CellY, SelectedPlayer.CellX, SelectedPlayer.CellY ) = 1 then begin
+              // Tackle può portare anche ai falli e relativi infortuni e cartellini. Un tackle da dietro ha alte possibilità di generare un fallo
+            if  ( LiveMatch ) and  (Mybrain.Score.TeamGuid  [ Mybrain.TeamTurn ] = MyGuidTeam) then tcp.SendStr( 'TAC' + ',' + SelectedPlayer.Ids  + EndofLine);
+                  hidechances;
+            end;
+          end;
+      GCD := GCD_DEFAULT;
+    end;
+  end
+  else if se_gridskill.Cells [0,CellY].Ids = 'Pressing' then begin
+    if GCD <= 0 then begin
+            WaitForXY_Move := false;
+          WaitForXY_ShortPass:= false;
+          WaitForXY_LoftedPass:= false;
+          WaitForXY_Crossing:= false;
+          WaitForXY_Dribbling:= false;
+          if Mybrain.Ball.Player <> nil then begin
+            if  AbsDistance (Mybrain.Ball.Player.CellX ,Mybrain.Ball.Player.CellY, SelectedPlayer.CellX, SelectedPlayer.CellY ) = 1 then begin
+            if  ( LiveMatch ) and  (Mybrain.Score.TeamGuid  [ Mybrain.TeamTurn ] = MyGuidTeam) then tcp.SendStr( 'PRE,' + SelectedPlayer.Ids  + EndofLine);
+                  hidechances;
+            end;
+          end;
+     GCD := GCD_DEFAULT;
+    end;
+  end
+  else if se_gridskill.Cells [0,CellY].Ids = 'Corner.Kick' then begin
+         // non più usata
+    if GCD <= 0 then begin
+          WaitForXY_Move := false;
+          WaitForXY_ShortPass:= false;
+          WaitForXY_LoftedPass:= false;
+          WaitForXY_Crossing:= false;
+          WaitForXY_Dribbling:= false;
+          // sul brain iscof batterà il corner
+            if  ( LiveMatch ) and  (Mybrain.Score.TeamGuid  [ Mybrain.TeamTurn ] = MyGuidTeam) then tcp.SendStr( 'COR' + EndofLine);
+                  GCD := GCD_DEFAULT;
+                  hidechances;
+    end;
+  end
+  else if se_gridskill.Cells [0,CellY].Ids = 'Pass' then begin
+    if GCD <= 0 then begin
+      if  ( LiveMatch ) and  (MyBrain.Score.TeamGuid  [ MyBrain.TeamTurn ] = MyGuidTeam) then tcp.SendStr( 'PASS'+ EndOfLine);
+      GCD := GCD_DEFAULT;
+      hidechances;
+    end;
+  end
+  else if se_gridskill.Cells [0,CellY].Ids = 'Stay' then begin
+    if GCD <= 0 then begin
+      if  ( LiveMatch ) and  (MyBrain.Score.TeamGuid  [ MyBrain.TeamTurn ] = MyGuidTeam) and  ( not SelectedPlayer.stay)
+         then tcp.SendStr( 'STAY,' + SelectedPlayer.Ids  + EndOfLine);
+      GCD := GCD_DEFAULT;
+      hidechances;
+    end;
+  end
+  else if se_gridskill.Cells [0,CellY].Ids = 'Free' then begin
+    if GCD <= 0 then begin
+      if  ( LiveMatch ) and  (MyBrain.Score.TeamGuid  [ MyBrain.TeamTurn ] = MyGuidTeam) and  ( SelectedPlayer.stay)
+        then tcp.SendStr( 'FREE,' + SelectedPlayer.Ids + EndOfLine);
+      GCD := GCD_DEFAULT;
+      hidechances;
+    end;
+  end;
+
+
+end;
+
+procedure TForm1.SE_GridSkillGridCellMouseMove(Sender: TObject; Shift: TShiftState; CellX, CellY: Integer; Sprite: SE_Sprite);
 var
   aSeField : SE_Sprite;
 begin
-  ACursor := crHandPoint;
   // se ho già cliccato sulla skill passando sul mouse sopra ad un'altyra skill non creo i circle
   if WaitForXY_Move or  WaitForXY_ShortPass or WaitForXY_LoftedPass or WaitForXY_Crossing or  WaitForXY_Dribbling
     then Exit;
 
 
-  if (ACol = se_gridskilloldCol) and (ARow = se_gridskilloldRow) then Exit;
-  se_gridskilloldCol := ACol;
-  se_gridskilloldRow := ARow;
+  if (CellX = se_gridskilloldCol) and (CellY = se_gridskilloldRow) then Exit;
+  se_gridskilloldCol := CellX;
+  se_gridskilloldRow := CellY;
 
   SE_interface.RemoveAllSprites;
   //SE_circle.RemoveAllSprites;
   HighLightFieldFriendly_hide;
 
-  if se_gridskill.Cells[0,aRow]= 'Tackle' then
+  if se_gridskill.Cells[0,CellY].Ids = 'Tackle' then
     TackleMouseEnter ( nil )
-  else if se_gridskill.Cells[0,aRow]= 'Move' then
+  else if se_gridskill.Cells[0,CellY].Ids = 'Move' then
     MovMouseEnter ( nil )
-  else if se_gridskill.Cells[0,aRow]= 'Short.Passing' then
+  else if se_gridskill.Cells[0,CellY].Ids = 'Short.Passing' then
     ShpMouseEnter ( nil )
-  else if se_gridskill.Cells[0,aRow]= 'Lofted.Pass' then
+  else if se_gridskill.Cells[0,CellY].Ids = 'Lofted.Pass' then
     LopMouseEnter ( nil )
-  else if se_gridskill.Cells[0,aRow]= 'Crossing' then
+  else if se_gridskill.Cells[0,CellY].Ids = 'Crossing' then
     CroMouseEnter ( nil )
-  else if se_gridskill.Cells[0,aRow]= 'Dribbling' then
+  else if se_gridskill.Cells[0,CellY].Ids = 'Dribbling' then
     DriMouseEnter ( nil )
-  else if se_gridskill.Cells[0,aRow]= 'Precision.Shot' then
+  else if se_gridskill.Cells[0,CellY].Ids = 'Precision.Shot' then
     PrsMouseEnter ( nil )
-  else if se_gridskill.Cells[0,aRow]= 'Power.Shot' then
+  else if se_gridskill.Cells[0,CellY].Ids = 'Power.Shot' then
     PosMouseEnter ( nil );
 
 
@@ -2692,7 +2873,7 @@ end;
 procedure TForm1.TackleMouseEnter ( Sender : TObject);
 begin
   hidechances;
-  PanelCombatLog.Left := PanelSkillSE.Left + PanelSkillSE.Width;
+  PanelCombatLog.Left := PanelSkill.Left + PanelSkill.Width;
   advDice.RowCount := 1;
   advDice.Clear ;
 
@@ -2722,7 +2903,7 @@ var
 begin
   hidechances;
 
-  PanelCombatLog.Left := PanelSkillSE.Left + PanelSkillSE.Width;
+  PanelCombatLog.Left := PanelSkill.Left + PanelSkill.Width;
   advDice.RowCount := 1;
   advDice.Clear ;
   if SelectedPlayer = nil then Exit;
@@ -3076,7 +3257,7 @@ var
 
 begin
   hidechances;
-  PanelCombatLog.Left := PanelSkillSE.Left + PanelSkillSE.Width;
+  PanelCombatLog.Left := PanelSkill.Left + PanelSkill.Width;
   advDice.RowCount := 1;
   advDice.Clear ;
   if SelectedPlayer = nil then Exit;
@@ -3133,182 +3314,6 @@ begin
     CreateCircle( aGK );
     advDiceWriteRow  ( aGK.Team,  UpperCase(Translate('attribute_Defense')),  aGK.SurName, aGK.Ids, 'VS',IntToStr(aGK.Defense ) );
   end;
-
-end;
-
-procedure TForm1.ClickSkillSE ( Sender : TObject; ARow,ACol: Integer);
-var
-  aDoor: TPoint;
-begin
-{  LstSkill[0]:= 'Move';
-  LstSkill[1]:= 'Short.Passing';
-  LstSkill[2]:= 'Lofted.Pass';
-  LstSkill[3]:= 'Crossing';
-  LstSkill[4]:= 'Precision.Shot';
-  LstSkill[5]:= 'Power.Shot';
-  LstSkill[6]:= 'Dribbling';
-  LstSkill[7]:= 'Protection';
-  LstSkill[8]:= 'Tackle';
-  LstSkill[9]:= 'Pressing';
-  LstSkill[10]:= 'Corner.Kick'; }
-  if se_players.IsAnySpriteMoving or se_ball.IsAnySpriteMoving   then  exit;
-  panelSkillSE.Visible := False;
-  PanelCombatLog.Left :=  (PanelBack.Width div 2 ) - (PanelCombatLog.Width div 2 );   ;
-//  application.ProcessMessages ;
-  if se_gridskill.Cells [0,aRow] = 'Move' then begin
-          WaitForXY_Move := true;
-          WaitForXY_ShortPass:= false;
-          WaitForXY_LoftedPass:= false;
-          WaitForXY_Crossing:= false;
-          WaitForXY_Dribbling:= false;
-  end
-  else if se_gridskill.Cells [0,aRow] = 'Short.Passing' then begin
-          WaitForXY_Move := false;
-          WaitForXY_ShortPass:= true;
-          WaitForXY_LoftedPass:= false;
-          WaitForXY_Crossing:= false;
-          WaitForXY_Dribbling:= false;
-  end
-  else if se_gridskill.Cells [0,aRow] = 'Lofted.Pass' then begin
-          WaitForXY_Move := false;
-          WaitForXY_ShortPass:= false;
-          WaitForXY_LoftedPass:= true;
-          WaitForXY_Crossing:= false;
-          WaitForXY_Dribbling:= false;
-  end
-  else if se_gridskill.Cells [0,aRow] = 'Crossing' then begin
-    if GCD <= 0 then begin
-          WaitForXY_Move := false;
-          WaitForXY_ShortPass:= false;
-          WaitForXY_LoftedPass:= false;
-          WaitForXY_Crossing:= true;
-          WaitForXY_Dribbling:= false;
-
-          if MyBrain.w_FreeKick2 then begin   // in caso di freeKick2 il cross è automatico
-            WaitForXY_Crossing:= false;
-            if  ( LiveMatch ) and  (Mybrain.Score.TeamGuid  [ Mybrain.TeamTurn ] = MyGuidTeam) then tcp.SendStr( 'CRO2' + EndofLine);
-            hidechances;
-          end;
-          GCD := GCD_DEFAULT;
-    end;
-  end
-  else if se_gridskill.Cells [0,aRow] = 'Precision.Shot' then begin
-    if GCD <= 0 then begin
-          WaitForXY_Move := false;
-          WaitForXY_ShortPass:= false;
-          WaitForXY_LoftedPass:= false;
-          WaitForXY_Crossing:= false;
-          WaitForXY_Dribbling:= false;
-          aDoor:= MyBrain.GetOpponentDoor (SelectedPlayer );
-            if  ( LiveMatch ) and  (Mybrain.Score.TeamGuid  [ Mybrain.TeamTurn ] = MyGuidTeam) then tcp.SendStr( 'PRS'  + EndofLine);
-            hidechances;
-           GCD := GCD_DEFAULT;
-    end;
-  end
-  else if se_gridskill.Cells [0,aRow] = 'Power.Shot' then begin
-    if GCD <= 0 then begin
-          WaitForXY_Move := false;
-          WaitForXY_ShortPass:= false;
-          WaitForXY_LoftedPass:= false;
-          WaitForXY_Crossing:= false;
-          WaitForXY_Dribbling:= false;
-          aDoor:= MyBrain.GetOpponentDoor (SelectedPlayer );
-            if  ( LiveMatch ) and  (Mybrain.Score.TeamGuid  [ Mybrain.TeamTurn ] = MyGuidTeam) then tcp.SendStr( 'POS' + EndofLine);
-          hidechances;
-          GCD := GCD_DEFAULT;
-    end;
-  end
-  else if se_gridskill.Cells [0,aRow] = 'Dribbling' then begin
-          WaitForXY_Move := false;
-          WaitForXY_ShortPass:= false;
-          WaitForXY_LoftedPass:= false;
-          WaitForXY_Crossing:= false;
-          WaitForXY_Dribbling:= true;
-  end
-  else if se_gridskill.Cells [0,aRow] = 'Protection' then begin
-    if GCD <= 0 then begin
-          WaitForXY_Move := false;
-          WaitForXY_ShortPass:= false;
-          WaitForXY_LoftedPass:= false;
-          WaitForXY_Crossing:= false;
-          WaitForXY_Dribbling:= false;
-          if  ( LiveMatch ) and  (Mybrain.Score.TeamGuid  [ Mybrain.TeamTurn ] = MyGuidTeam) then tcp.SendStr( 'PRO'  + EndofLine);
-          GCD := GCD_DEFAULT;
-          hidechances;
-    end;
-  end
-  else if se_gridskill.Cells [0,aRow] = 'Tackle' then begin
-    if GCD <= 0 then begin
-          WaitForXY_Move := false;
-          WaitForXY_ShortPass:= false;
-          WaitForXY_LoftedPass:= false;
-          WaitForXY_Crossing:= false;
-          WaitForXY_Dribbling:= false;
-          if Mybrain.Ball.Player <> nil then begin
-            if  AbsDistance (Mybrain.Ball.Player.CellX ,Mybrain.Ball.Player.CellY, SelectedPlayer.CellX, SelectedPlayer.CellY ) = 1 then begin
-              // Tackle può portare anche ai falli e relativi infortuni e cartellini. Un tackle da dietro ha alte possibilità di generare un fallo
-            if  ( LiveMatch ) and  (Mybrain.Score.TeamGuid  [ Mybrain.TeamTurn ] = MyGuidTeam) then tcp.SendStr( 'TAC' + ',' + SelectedPlayer.Ids  + EndofLine);
-                  hidechances;
-            end;
-          end;
-      GCD := GCD_DEFAULT;
-    end;
-  end
-  else if se_gridskill.Cells [0,aRow] = 'Pressing' then begin
-    if GCD <= 0 then begin
-            WaitForXY_Move := false;
-          WaitForXY_ShortPass:= false;
-          WaitForXY_LoftedPass:= false;
-          WaitForXY_Crossing:= false;
-          WaitForXY_Dribbling:= false;
-          if Mybrain.Ball.Player <> nil then begin
-            if  AbsDistance (Mybrain.Ball.Player.CellX ,Mybrain.Ball.Player.CellY, SelectedPlayer.CellX, SelectedPlayer.CellY ) = 1 then begin
-            if  ( LiveMatch ) and  (Mybrain.Score.TeamGuid  [ Mybrain.TeamTurn ] = MyGuidTeam) then tcp.SendStr( 'PRE,' + SelectedPlayer.Ids  + EndofLine);
-                  hidechances;
-            end;
-          end;
-     GCD := GCD_DEFAULT;
-    end;
-  end
-  else if se_gridskill.Cells [0,aRow] = 'Corner.Kick' then begin
-         // non più usata
-    if GCD <= 0 then begin
-          WaitForXY_Move := false;
-          WaitForXY_ShortPass:= false;
-          WaitForXY_LoftedPass:= false;
-          WaitForXY_Crossing:= false;
-          WaitForXY_Dribbling:= false;
-          // sul brain iscof batterà il corner
-            if  ( LiveMatch ) and  (Mybrain.Score.TeamGuid  [ Mybrain.TeamTurn ] = MyGuidTeam) then tcp.SendStr( 'COR' + EndofLine);
-                  GCD := GCD_DEFAULT;
-                  hidechances;
-    end;
-  end
-  else if se_gridskill.Cells [0,aRow] = 'Pass' then begin
-    if GCD <= 0 then begin
-      if  ( LiveMatch ) and  (MyBrain.Score.TeamGuid  [ MyBrain.TeamTurn ] = MyGuidTeam) then tcp.SendStr( 'PASS'+ EndOfLine);
-      GCD := GCD_DEFAULT;
-      hidechances;
-    end;
-  end
-  else if se_gridskill.Cells [0,aRow] = 'Stay' then begin
-    if GCD <= 0 then begin
-      if  ( LiveMatch ) and  (MyBrain.Score.TeamGuid  [ MyBrain.TeamTurn ] = MyGuidTeam) and  ( not SelectedPlayer.stay)
-         then tcp.SendStr( 'STAY,' + SelectedPlayer.Ids  + EndOfLine);
-      GCD := GCD_DEFAULT;
-      hidechances;
-    end;
-  end
-  else if se_gridskill.Cells [0,aRow] = 'Free' then begin
-    if GCD <= 0 then begin
-      if  ( LiveMatch ) and  (MyBrain.Score.TeamGuid  [ MyBrain.TeamTurn ] = MyGuidTeam) and  ( SelectedPlayer.stay)
-        then tcp.SendStr( 'FREE,' + SelectedPlayer.Ids + EndOfLine);
-      GCD := GCD_DEFAULT;
-      hidechances;
-    end;
-  end;
-
-
 
 end;
 
@@ -3779,7 +3784,8 @@ var
   UniformBitmap : array[0..1] of SE_Bitmap;
   UniformBitmapGK: SE_bitmap;
 begin
-  PanelSkillSE.Visible:= False;
+  PanelSkill.Visible:= False;
+  SE_GridSkill.Active := False;
   se_players.RemoveAllSprites ;
   MyBrain.ClearReserveSlot;
 
@@ -4374,12 +4380,12 @@ begin
   end
   else if MyBrain.w_FreeKick1  then begin
 //    if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
-//      SelectedPlayerPopupSkillSE ( MyBrain.Ball.CellX, MyBrain.Ball.CellY );
+//      SelectedPlayerPopupSkill ( MyBrain.Ball.CellX, MyBrain.Ball.CellY );
 //    end
 //    else PanelCorner.Visible := False;
     PanelCorner.Visible := False;
     if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
-      SelectedPlayerPopupSkillSE( MyBrain.Ball.CellX, MyBrain.Ball.cellY );
+      SelectedPlayerPopupSkill( MyBrain.Ball.CellX, MyBrain.Ball.cellY );
     end;
   end
   else if MyBrain.w_Fka2 then begin
@@ -4429,7 +4435,7 @@ begin
   else if MyBrain.w_FreeKick3  then begin
     PanelCorner.Visible := False;
     if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
-      SelectedPlayerPopupSkillSE( MyBrain.Ball.CellX, MyBrain.Ball.cellY );
+      SelectedPlayerPopupSkill( MyBrain.Ball.CellX, MyBrain.Ball.cellY );
     end;
   end
   else if MyBrain.w_Fka4 then begin
@@ -4445,7 +4451,7 @@ begin
   else if MyBrain.w_FreeKick4  then begin
     PanelCorner.Visible := False;
     if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
-      SelectedPlayerPopupSkillSE( MyBrain.Ball.CellX, MyBrain.Ball.cellY );
+      SelectedPlayerPopupSkill( MyBrain.Ball.CellX, MyBrain.Ball.cellY );
     end;
   end
   else if MyBrain.w_Coa then begin
@@ -4565,7 +4571,7 @@ begin
       imgshpfree.Left := JvShapedButton4.left + JvShapedButton4.Width ;
   end
   else begin
-      JvShapedButton1.Left := PanelSkillSE.Left + PanelSkillSE.Width ;
+      JvShapedButton1.Left := PanelSkill.Left + PanelSkill.Width ;
       JvShapedButton2.Left := JvShapedButton1.left + JvShapedButton1.Width ;
       JvShapedButton3.Left := JvShapedButton2.left + JvShapedButton2.Width ;
       JvShapedButton4.Left := JvShapedButton3.left + JvShapedButton3.Width ;
@@ -7343,7 +7349,8 @@ begin
       se_Theater1.thrdAnimate.OnTimer (se_Theater1.thrdAnimate);
       application.ProcessMessages ;
     end;
-      PanelSkillSE.Visible := false;
+    PanelSkill.Visible := false;
+    SE_GridSkill.Active := False;
      // Cl_BrainLoaded := true;
      // ClientLoadBrainSE(dir_data + Format('%.*d',[3, MyBrain.incMove+1]) + '.ini'); // forzo la lettura del brain, devo sapere adesso
 
@@ -7964,15 +7971,15 @@ begin
 
 
 end;
-procedure Tform1.SelectedPlayerPopupSkillSE ( CellX, CellY: integer);
+procedure Tform1.SelectedPlayerPopupSkill ( CellX, CellY: integer);
 var
-  i: integer;
+  i,y: integer;
   tmp: integer;
   PosX: integer;
   ModifierX, ModifierY: integer;
   aList : TObjectList<TSoccerPlayer>;
   visX,visY: Integer;
-  label LoadButtonBar,Preloadbuttonbar;
+  label LoadGridSkill,PreloadGridSkill;
 procedure setupBMp (bmp:TBitmap; aColor: Tcolor);
 begin
   BMP.Canvas.Font.Size := 8;
@@ -8010,7 +8017,7 @@ begin
 
 
 
-    if Not SelectedPlayer.CanSkill then goto Preloadbuttonbar;
+    if Not SelectedPlayer.CanSkill then goto PreloadGridSkill;
 //    if SelectedPlayer.GuidTeam <> MyGuidTeam then Exit;
 
    // HideChances;
@@ -8019,32 +8026,32 @@ begin
     SelectedPlayer.ActiveSkills.Clear ;
     if SelectedPlayer.isCOF then begin
       if SelectedPlayer.Role <> 'G' then SelectedPlayer.ActiveSkills.Add('Corner.Kick=' + IntTostr(SelectedPlayer.Passing + SelectedPlayer.Tal_Crossing  ));
-      goto LoadButtonBar; // break
+      goto LoadGridSkill; // break
     end
     else if SelectedPlayer.isFK1 then begin
       if SelectedPlayer.Role <> 'G' then begin
         SelectedPlayer.ActiveSkills.Add('Short.Passing=' + IntTostr(SelectedPlayer.Passing ));
         SelectedPlayer.ActiveSkills.Add('Lofted.Pass=' + IntTostr(SelectedPlayer.Passing ));
-        goto LoadButtonBar; // break
+        goto LoadGridSkill; // break
       end;
     end
     else if SelectedPlayer.isFK2 then begin
 //      if SelectedPlayer.Role <> 'G' then SelectedPlayer.ActiveSkills.Add('Crossing=' + IntTostr(SelectedPlayer.Passing + SelectedPlayer.Tal_Crossing  ));
       Exit;
-      goto LoadButtonBar; // break
+      goto LoadGridSkill; // break
     end
     else if SelectedPlayer.isFK3 then begin
       if SelectedPlayer.Role <> 'G' then begin
         SelectedPlayer.ActiveSkills.Add('Power.Shot=' + IntTostr(SelectedPlayer.shot  ));
         SelectedPlayer.ActiveSkills.Add('Precision.Shot=' + IntTostr(SelectedPlayer.shot  ));
-        goto LoadButtonBar; // break
+        goto LoadGridSkill; // break
       end;
     end
     else if SelectedPlayer.isFK4 then begin
       if SelectedPlayer.Role <> 'G' then begin
         SelectedPlayer.ActiveSkills.Add('Power.Shot=' + IntTostr(SelectedPlayer.shot  ));
         SelectedPlayer.ActiveSkills.Add('Precision.Shot=' + IntTostr(SelectedPlayer.shot  ));
-        goto LoadButtonBar; // break
+        goto LoadGridSkill; // break
       end;
     end;
 
@@ -8105,50 +8112,72 @@ begin
     end;
 
     if  MyBrain.w_CornerSetup or MyBrain.w_FreeKickSetup1 or MyBrain.w_FreeKickSetup2 or MyBrain.w_FreeKickSetup3 or MyBrain.w_FreeKickSetup4 then
-      goto LoadButtonBar;
+      goto LoadGridSkill;
 
-PreLoadButtonBar:
+PreLoadGridSkill:
     SelectedPlayer.ActiveSkills.Add('Pass=0');
     if (SelectedPlayer.Role <> 'G') then begin
       if SelectedPlayer.stay then SelectedPlayer.ActiveSkills.Add('Free=0')
       else SelectedPlayer.ActiveSkills.Add('Stay=0');
     end;
-LoadButtonBar:
-    if SelectedPlayer.ActiveSkills.count = 0 then Exit;
-    se_gridskill.Clear;
-    se_gridskill.RowCount := SelectedPlayer.ActiveSkills.count;
-    se_gridskill.ColWidths [0]:=0;
-    se_gridskill.ColWidths [1]:=120;
-    se_gridskill.ColWidths [2]:=16;
-    for I := 0 to SelectedPlayer.ActiveSkills.count -1 do begin
-      se_gridskill.Cells[0,i]:= SelectedPlayer.ActiveSkills.Names [i]; // da usare in caso di traduzione della col 1
-      se_gridskill.Cells[1,i]:= Translate( 'skill_' + SelectedPlayer.ActiveSkills.Names [i]); // tradotta
-      if SelectedPlayer.ActiveSkills.ValueFromIndex [i] <> '0' then se_gridskill.Cells[2,i]:= SelectedPlayer.ActiveSkills.ValueFromIndex [i];
-      if (se_gridskill.Cells[0,i]='Stay') or  (se_gridskill.Cells[0,i]='Free') then begin
-        se_gridskill.Colors[1,i] := clSilver;
-        se_gridskill.Colors[2,i] := clSilver;
-        se_gridskill.FontColors[1,i] := clBlack;
-        se_gridskill.FontColors[2,i] := clBlack;
-      end;
+LoadGridSkill:
+    if SelectedPlayer.ActiveSkills.count = 0 then
+     Exit;
+
+  SE_GridSkill.ClearData;
+  SE_GridSkill.DefaultColWidth := 80;
+  SE_GridSkill.DefaultRowHeight := 16;
+  SE_GridSkill.Rows [0].Height := 16;
+  SE_GridSkill.ColCount := 2;
+  SE_GridSkill.RowCount := SelectedPlayer.ActiveSkills.count;
+  SE_GridSkill.Columns[0].Width := 120;  // nome skill tradotta
+  SE_GridSkill.Columns[1].Width := 16;
+
+  for y := 0 to SE_GridSkill.RowCount -1 do begin
+    SE_GridSkill.Rows[y].Height := 16;
+    SE_GridSkill.Cells[0,y].BackColor := $007B5139;
+    SE_GridSkill.Cells[0,y].FontName := 'Verdana';
+    SE_GridSkill.Cells[0,y].FontSize := 8;
+    SE_GridSkill.Cells[0,y].FontColor := clyellow; // $0041BEFF;
+    SE_GridSkill.Cells[1,y].BackColor := $007B5139;
+    SE_GridSkill.Cells[1,y].FontName := 'Verdana';
+    SE_GridSkill.Cells[1,y].FontSize := 8;
+    SE_GridSkill.Cells[1,y].FontColor  := clyellow; //$0041BEFF;
+    SE_GridSkill.cells[1,y].CellAlignmentH := hCenter;      // username 1
+  end;
+
+
+  for I := 0 to SelectedPlayer.ActiveSkills.count -1 do begin
+    se_gridskill.Cells[0,i].Ids := SelectedPlayer.ActiveSkills.Names [i]; // IDS contiene il nome della skill originale (English)
+    se_gridskill.Cells[0,i].Text := Translate( 'skill_' + SelectedPlayer.ActiveSkills.Names [i]); // tradotta
+    if SelectedPlayer.ActiveSkills.ValueFromIndex [i] <> '0' then se_gridskill.Cells[1,i].Text := SelectedPlayer.ActiveSkills.ValueFromIndex [i];
+    if (se_gridskill.Cells[0,i].Ids  ='Stay') or  (se_gridskill.Cells[0,i].Ids ='Free') then begin
+      se_gridskill.Cells[0,i].BackColor := clSilver;
+      se_gridskill.Cells[1,i].BackColor := clSilver;
+      se_gridskill.Cells[0,i].FontColor := clBlack;
+      se_gridskill.Cells[1,i].FontColor := clBlack;
     end;
+  end;
 
-    PanelSkillDynamicResizeSE;
-    PanelSkillSE.Visible := True;
-//    visX := se_Theater1.XVirtualToVisible(SelectedPlayer.SE_Sprite.Position.X) - (PanelSkillSE.Width div 2) + se_theater1.Left ;
+  SE_GridSkill.Width := 120+16;
+  SE_GridSkill.Height := SE_GridSkill.Virtualheight;
+  PanelSkill.Width := SE_gridskill.Width + 9;
+  PanelSkill.Height := SE_gridskill.Height + 9;
+  SE_GridSkill.Left := 3;
+  SE_GridSkill.top := 3;
+  PanelSkill.Left := ( Form1.Width div 2 ) - (PanelSkill.Width div 2);
+
+  RoundCornerOf  ( PanelSkill );
+  PanelSkill.Visible := True;
+  SE_GridSkill.Active := True;
+//    visX := se_Theater1.XVirtualToVisible(SelectedPlayer.SE_Sprite.Position.X) - (PanelSkill.Width div 2) + se_theater1.Left ;
 //    visY := se_Theater1.YVirtualToVisible(SelectedPlayer.SE_Sprite.Position.Y + SelectedPlayer.SE_Sprite.BMP.Height div 2 )+10 +se_theater1.Top  ;
-//    PanelSkillSE.Left := visX;
-//    PanelSkillSE.Top := visY ;
-    PanelSkillSE.BringToFront ;
+//    PanelSkill.Left := visX;
+//    PanelSkill.Top := visY ;
+  PanelSkill.BringToFront ;
 
 end;
 
-procedure TForm1.PanelSkillDynamicResizeSE;
-begin
-
-  se_gridskill.Height := se_gridskill.RowCount * se_gridskill.DefaultRowHeight;
-  panelskillSE.Height :=  se_gridskill.Height + 16;
-
-end;
 procedure TForm1.SE_Theater1TheaterMouseMove(Sender: TObject; VisibleX, VisibleY, VirtualX, VirtualY: Integer; Shift: TShiftState);
 begin
 //    caption := IntToStr(VirtualX) + '  ' +  IntToStr(VirtualY);
@@ -8189,7 +8218,8 @@ var
 begin
     if ClearMark then advTeam.ClearAll ;
 
-    PanelSkillSE.Visible := False;
+    PanelSkill.Visible := False;
+    SE_GridSkill.Active := False;
 
     advTeam.ColWidths [0]:=0;
     advTeam.ColWidths [1]:=50;
@@ -8420,7 +8450,8 @@ begin
       WaitForXY_PowerShot:= false;
   //    hideinterface('sks');
       hidechances;
-      PanelSkillSE.Visible := False;
+      PanelSkill.Visible := False;
+      SE_GridSkill.Active := False;
       //AnimationScript.Reset ;
       //SpriteResetSE(true);
        Exit;
@@ -8445,14 +8476,14 @@ begin
             if SelectedPlayer.GuidTeam = MyGuidTeam then begin
 
               if not IsOutside ( SelectedPlayer.CellX, SelectedPlayer.CellY) then begin
-                SelectedPlayerPopupSkillSE( SelectedPlayer.CellX, SelectedPlayer.CellY );
+                SelectedPlayerPopupSkill( SelectedPlayer.CellX, SelectedPlayer.CellY );
                 Exit;
               end;
             end;
           end;
         end;
 
-        // qui sopra SelectedPlayerPopupSkillSE compare solo se può comparire. se cìè un waitfor non agisce
+        // qui sopra SelectedPlayerPopupSkill compare solo se può comparire. se cìè un waitfor non agisce
         // se arriva qui ed è attivo un waitfor 'aspetto' che sia se_field per avere le coordinate. il player lo trovo via celle
       // un player si muove CON o SENZA palla
 
@@ -10035,9 +10066,6 @@ begin
     end;
 end;
 
-
-
-{* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *}
 procedure TForm1.ThreadCurMoveTimer(Sender: TObject);
 begin
       // brain in memoria e sprite a video
@@ -10250,7 +10278,8 @@ begin
     (Mybrain.Score.TeamGuid [ Mybrain.TeamTurn ]  <> MyGuidTeam) or Animating then Exit;
    // MyBrain.ClearReserveSlot; // questo va bene e poi le devo riempire con putinreserveslot
 
-    PanelSkillSE.Visible := False;
+    PanelSkill.Visible := False;
+    SE_GridSkill.Active := False;
     PanelCombatLog.Visible := False;
     // passo da cells a defaultcell. E' visibile anche l'avversario
 
@@ -10278,7 +10307,8 @@ begin
   end
   else if fGameScreen = ScreenSubs then begin    // btnSubs
 
-    PanelSkillSE.Visible := False;
+    PanelSkill.Visible := False;
+    SE_GridSkill.Active := False;
     PanelCombatLog.Visible := False;
 
     for I := 0 to MyBrain.lstSoccerPlayer.Count -1  do begin
