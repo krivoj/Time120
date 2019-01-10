@@ -5558,7 +5558,7 @@ begin
       Exit;
   end;
 
-  for I := 0 to 9 do begin      { TODO -cINFO COLORI : INFO COLORI }
+  for I := 0 to 9 do begin
     if not TryDecimalStrToInt(ts[i], aValue) then begin
       cli.sReason := 'validate_setuniform Invalid uniform  ' ;
       ts.Free;
@@ -5566,7 +5566,7 @@ begin
 
     end
     else begin
-      if (aValue < 0) or (aValue > 12) then begin     { TODO -cINFO COLORI : INFO COLORI }
+      if (aValue < 0) or (aValue > 12) then begin
         cli.sReason := 'validate_setuniform uniform Invalid color index  ' ;
         ts.Free;
         Exit;
