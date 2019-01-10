@@ -1601,7 +1601,7 @@ object Form1: TForm1
       Color = 8081721
       TabOrder = 11
       Visible = False
-      object lbl_MoneyF: TRzLabel
+      object lbl_MoneyF: TLabel
         Left = 316
         Top = 20
         Width = 84
@@ -1618,7 +1618,7 @@ object Form1: TForm1
         ParentFont = False
         Transparent = False
       end
-      object lbl_RankF: TRzLabel
+      object lbl_RankF: TLabel
         Left = 316
         Top = 6
         Width = 84
@@ -1635,7 +1635,7 @@ object Form1: TForm1
         ParentFont = False
         Transparent = False
       end
-      object lbl_TurnF: TRzLabel
+      object lbl_TurnF: TLabel
         Left = 399
         Top = 6
         Width = 121
@@ -1652,7 +1652,7 @@ object Form1: TForm1
         ParentFont = False
         Transparent = False
       end
-      object lbl_PointsF: TRzLabel
+      object lbl_PointsF: TLabel
         Left = 398
         Top = 20
         Width = 67
@@ -1669,7 +1669,7 @@ object Form1: TForm1
         ParentFont = False
         Transparent = False
       end
-      object lbl_MIF: TRzLabel
+      object lbl_MIF: TLabel
         Left = 471
         Top = 20
         Width = 49
@@ -1916,7 +1916,7 @@ object Form1: TForm1
       Width = 260
       Height = 201
       BevelOuter = bvNone
-      Color = clAqua
+      Color = 16744576
       ParentBackground = False
       TabOrder = 13
       Visible = False

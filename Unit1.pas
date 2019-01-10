@@ -8,7 +8,7 @@
       { TODO : risolvere sfarfallio in formation }
       { TODO : finire traduzioni }
       { TODO : verificare bug sound prs e posizione palla}
-      { TODO : sostituire grid con se_grid }
+      { TODO : sostituire grid con se_grid. la gridLog non deve resettarsi, ma mantenere gli ultimi 50 eventi e fare pan automatico}
       { TODO : gestire il fine partita }
       { TODO : bug sui pulsanti tattiche. il player rimane sospeso  }
       { TODO : sul rigore che diventa gol manca il suono della folla  }
@@ -195,11 +195,11 @@ type
     edtsearchprice: TRzNumericEdit;
     btnLogin: TRzBmpButton;
     btnSelCountryTeam: TRzBmpButton;
-    lbl_MoneyF: TRzLabel;
-    lbl_RankF: TRzLabel;
-    lbl_TurnF: TRzLabel;
-    lbl_PointsF: TRzLabel;
-    lbl_MIF: TRzLabel;
+    lbl_MoneyF: TLabel;
+    lbl_RankF: TLabel;
+    lbl_TurnF: TLabel;
+    lbl_PointsF: TLabel;
+    lbl_MIF: TLabel;
     se_lblSurname0: TRzLabel;
     se_lblSurname1: TRzLabel;
     lbl_talent0: TRzLabel;
