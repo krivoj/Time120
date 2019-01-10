@@ -47,7 +47,7 @@ uses
   ZLIBEX,                             // delphizlib invio dati compressi tra server e client
 
    // RaizeComponents
-  OverbyteIcsWndControl, OverbyteIcsWSocket ;  // OverByteIcsWSocketE ics con modifica. vedi directory External.Packages\overbyteICS del progetto
+  OverbyteIcsWndControl, OverbyteIcsWSocket, CnAAFont, CnAACtrls ;  // OverByteIcsWSocketE ics con modifica. vedi directory External.Packages\overbyteICS del progetto
 
 const GCD_DEFAULT = 200;        // global cooldown, minimo 200 ms tra un input verso il server e l'altro ( anti-cheating )
 const ScaleSprites = 40;        // riduzione generica di tutto gli sprite player
@@ -203,8 +203,8 @@ type
     ck_Jersey2: TCnSpeedButton;
     ck_Socks2: TCnSpeedButton;
     se_lblmaxvalue: TLabel;
-    lblNick0: TLabel;
-    lblNick1: TLabel;
+    lbl_Nick0: TCnAAScrollText;
+    lbl_Nick1: TCnAAScrollText;
     lbl_score: TLabel;
     ProgressSeconds: TJvSpecialProgress;
     lbl_minute: TLabel;
@@ -1059,8 +1059,8 @@ begin
 
   CurrentIncMove := 0;
   lstInteractivePlayers:= TList<TInteractivePlayer>.create;
-  lblNick0.Caption := '';
-  lblNick1.Caption := '';
+  lbl_Nick0.Text.Lines.Clear;
+  lbl_Nick1.Text.Lines.Clear;
 
 
   edtSell.Left := ( (PanelSell.Width div 2) - (edtSell.Width div 2) )  ;
@@ -3929,11 +3929,6 @@ begin
     MyBrain.Score.FontColor[1]:= GetContrastColor( se_gridColors.Colors [ StrToInt(TsUniforms[1][0]),0 ] )
     else MyBrain.Score.FontColor[1]:= se_gridColors.Colors [StrToInt( TsUniforms[1][1] ),0];
 
-  lblNick0.Color :=  MyBrain.Score.DominantColor[0];
-  lblNick0.Font.Color:= MyBrain.Score.FontColor[0];
-  lblNick1.Color :=  MyBrain.Score.DominantColor[1];
-  lblNick1.Font.Color:= MyBrain.Score.FontColor[1];
-
   MyBrain.Score.Gol [0] :=  Ord( buf3[incMove][ cur ]);
   cur := cur + 1 ;
   MyBrain.Score.Gol [1] :=  Ord( buf3[incMove][ cur ]);
@@ -4049,17 +4044,16 @@ begin
   MyBrain.w_FreeKick4:=  Boolean( Ord( buf3[incMove][ cur ]));
   cur := cur + 1 ;
 
-  lblNick0.Caption :=  MyBrain.Score.UserName[0] +' - ' +  UpperCase( MyBrain.Score.Team [0]);
-  lblNick1.Caption :=   MyBrain.Score.Team [1] +' - ' +  UpperCase(MyBrain.Score.UserName[1]);
+  lbl_Nick0.Text.Lines.Clear;
+  lbl_Nick0.Text.Lines.Add ( '<Title1>' +  UpperCase( MyBrain.Score.Team [0]));
+  lbl_Nick0.Text.Lines.Add ( '<Title1>' +  MyBrain.Score.UserName[0]);
+  lbl_Nick1.Text.Lines.Clear;
+  lbl_Nick1.Text.Lines.Add ( '<Title1>' +  UpperCase( MyBrain.Score.Team [1]));
+  lbl_Nick1.Text.Lines.Add ( '<Title1>' +  MyBrain.Score.UserName[1]);
+
+
   lbl_score.Caption := IntToStr(Mybrain.Score.gol [0]) +'-'+ IntToStr(Mybrain.Score.gol [1]);
 
-  lblNick0.Color :=  MyBrain.Score.DominantColor [0];
-//  lblNick0.BlinkColor  :=  MyBrain.Score.DominantColor [0];
-  lblNick0.Font.Color := GetContrastColor(lblNick0.Color  );
-
-  lblNick1.Color :=  MyBrain.Score.DominantColor [1];
-//  lblNick1.BlinkColor  :=  MyBrain.Score.DominantColor [1];
-  lblNick1.Font.Color := GetContrastColor(lblNick1.Color  );
   lbl_minute.Caption := IntToStr(MyBrain.Minute) +'''';
 
 
@@ -4585,15 +4579,17 @@ begin
 //   if Mybrain.Score.TeamGuid [ Mybrain.TeamTurn ]  = MyGuidTeam then begin
 
     if Mybrain.TeamTurn = 0 then begin
-      btnSubs.Left := lblNick0.Left;
+      btnSubs.Left := lbl_Nick0.Left;
       btnTactics.Left := btnSubs.Left + btnSubs.Width;
-//      lblNick0.Blinking := True;
-//      lblNick1.Blinking := false;
+      lbl_Nick0.Active := True;
+      lbl_Nick1.Reset;
+      lbl_Nick1.Active := false;
     end
     else if Mybrain.TeamTurn = 1 then begin
-//      lblNick0.Blinking := false;
-//      lblNick1.Blinking := True;
-      btnTactics.Left := lblNick1.Left + lblNick1.Width - btnTactics.Width ;
+      lbl_Nick0.Active := false;
+      lbl_Nick0.Reset;
+      lbl_Nick1.Active := true;
+      btnTactics.Left := lbl_Nick1.Left + lbl_Nick1.Width - btnTactics.Width ;
       btnSubs.Left := btnTactics.Left - btnSubs.Width;
     end;
 
@@ -4630,7 +4626,7 @@ procedure Tform1.SetTmlPosition ( team: string );
 begin
   if team = '0' then begin
 
-      ProgressSeconds.Left := lblNick0.Left;
+      ProgressSeconds.Left := lbl_Nick0.Left;
       JvShapedButton1.Left := SE_Theater1.left;
       JvShapedButton2.Left := JvShapedButton1.left + JvShapedButton1.Width ;
       JvShapedButton3.Left := JvShapedButton2.left + JvShapedButton2.Width ;
@@ -4643,7 +4639,7 @@ begin
       JvShapedButton3.Left := JvShapedButton2.left + JvShapedButton2.Width ;
       JvShapedButton4.Left := JvShapedButton3.left + JvShapedButton3.Width ;
       imgshpfree.Left := JvShapedButton4.left + JvShapedButton4.Width ;
-      ProgressSeconds.Left := lblNick1.Left;
+      ProgressSeconds.Left := lbl_Nick1.Left;
   end;
 end;
 
@@ -4759,15 +4755,17 @@ begin
    else btnsubs.Visible := True;
 //   if Mybrain.Score.TeamGuid [ Mybrain.TeamTurn ]  = MyGuidTeam then begin
     if team = '0' then begin
-      btnSubs.Left := lblNick0.Left;
+      btnSubs.Left := lbl_Nick0.Left;
       btnTactics.Left := btnSubs.Left + btnSubs.Width;
-//      lblNick0.Blinking := True;
-//      lblNick1.Blinking := false;
+      lbl_Nick0.Active := True;
+      lbl_Nick1.Active := false;
+      lbl_Nick1.Reset;
     end
     else if team = '1' then begin
-//      lblNick0.Blinking := false;
-//      lblNick1.Blinking := True;
-      btnTactics.Left := lblNick1.Left + lblNick1.Width - btnTactics.Width ;
+      lbl_Nick0.Active := False;
+      lbl_Nick0.Reset;
+      lbl_Nick1.Active := true;
+      btnTactics.Left := lbl_Nick1.Left + lbl_Nick1.Width - btnTactics.Width ;
       btnSubs.Left := btnTactics.Left - btnSubs.Width;
     end;
 
@@ -6582,12 +6580,12 @@ procedure TForm1.SE_GridAllBrainGridCellMouseDown(Sender: TObject; Button: TMous
 begin
   if GCD <= 0 then begin
 
-    if CellY = 10 then begin   // ha cliccato su icona TV
-      if SE_GridAllBrain.Cells[0,CellX].ids <> ''  then begin
+    if CellX = 9 then begin   // ha cliccato su icona TV
+      if SE_GridAllBrain.Cells[0,CellY].ids <> ''  then begin
         if (not viewMatch)  then begin
           gameScreen := ScreenWaitingWatchLive ;
-          MemoC.Lines.Add('>tcp: viewmatch,' + SE_GridAllBrain.Cells[0,CellX].ids ); // col 0 = brainIds
-          tcp.SendStr(  'viewmatch,' + SE_GridAllBrain.Cells[0,CellX].ids + EndofLine );
+          MemoC.Lines.Add('>tcp: viewmatch,' + SE_GridAllBrain.Cells[0,CellY].ids ); // col 0 = brainIds
+          tcp.SendStr(  'viewmatch,' + SE_GridAllBrain.Cells[0,CellY].ids + EndofLine );
           viewMatch := True;
           SetGlobalCursor( crHourGlass);
         end;
@@ -7740,7 +7738,7 @@ begin
   end
   else begin // non suonare
     btnAudioStadium.NumGlyphs := 2;
-    if  AudioCrowd.Playing then begin
+    if AudioCrowd.Playing then begin
       AudioCrowd.Stop;
     end;
 
@@ -10321,7 +10319,10 @@ begin
     SE_GridAllBrain.Active := False;
     PanelSell.Visible := false;
     PanelMarket.Visible := False;
+
     PanelScore.Visible:= False;
+      lbl_Nick0.Active := False;
+      lbl_Nick1.Active := False;
 
     btnWatchLiveExit.Visible := false;
     PanelInfoPlayer0.Visible:= True;
@@ -10404,6 +10405,9 @@ begin
     PanelInfoPlayer1.Visible:= false;
     PanelXPPlayer0.Visible := false;
     PanelScore.Visible := false;
+      lbl_Nick0.Active := False;
+      lbl_Nick1.Active := False;
+
     ShowMain;
     //ClientLoadFormation ;
     btnMainPlay.Enabled := CheckFormationTeamMemory;

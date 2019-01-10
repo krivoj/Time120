@@ -393,44 +393,283 @@ object Form1: TForm1
       end
     end
     object PanelScore: SE_Panel
-      Left = 6
-      Top = 99
+      Left = 26
+      Top = 111
       Width = 640
       Height = 51
       BevelOuter = bvNone
       Color = 8081721
       TabOrder = 1
       Visible = False
-      object lblNick0: TLabel
+      object lbl_Nick0: TCnAAScrollText
         Left = 27
         Top = 3
         Width = 280
         Height = 20
-        Alignment = taRightJustify
-        AutoSize = False
-        Caption = 'lblnick0'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWhite
-        Font.Height = -13
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        ParentFont = False
-        Transparent = False
+        ParentEffect.ParentColor = False
+        ParentEffect.ParentFont = False
+        Fonts = <
+          item
+            Name = 'Title1'
+            Font.Charset = ANSI_CHARSET
+            Font.Color = clWhite
+            Font.Height = -13
+            Font.Name = 'Verdana'
+            Font.Style = [fsBold]
+            Effect.Shadow.Enabled = True
+          end
+          item
+            Name = 'Title2'
+            Font.Charset = ANSI_CHARSET
+            Font.Color = clWhite
+            Font.Height = -13
+            Font.Name = 'Verdana'
+            Font.Style = [fsBold]
+            Effect.Shadow.Enabled = True
+            Effect.Shadow.OffsetX = 1
+            Effect.Shadow.OffsetY = 1
+          end
+          item
+            Name = 'Title3'
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clBlue
+            Font.Height = -15
+            Font.Name = #191#172#204#229'_GB2312'
+            Font.Style = []
+            Effect.Shadow.Enabled = True
+          end
+          item
+            Name = 'Text1'
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clBlack
+            Font.Height = -12
+            Font.Name = #191#172#204#229'_GB2312'
+            Font.Style = []
+            Effect.Shadow.OffsetX = 1
+            Effect.Shadow.OffsetY = 1
+          end
+          item
+            Name = 'Text2'
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clTeal
+            Font.Height = -11
+            Font.Name = #191#172#204#229'_GB2312'
+            Font.Style = []
+            Effect.Shadow.Enabled = True
+            Effect.Shadow.OffsetX = 1
+            Effect.Shadow.OffsetY = 1
+          end
+          item
+            Name = 'Title4'
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clBlack
+            Font.Height = -29
+            Font.Name = #193#165#202#233
+            Font.Style = [fsBold]
+            Effect.Shadow.Enabled = True
+            Effect.Gradual.Enabled = True
+            Effect.Gradual.StartColor = 16720384
+            Effect.Gradual.EndColor = 2232575
+            Effect.Blur = 50
+            Effect.Outline = True
+          end
+          item
+            Name = 'Text3'
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clBlue
+            Font.Height = -15
+            Font.Name = #193#165#202#233
+            Font.Style = []
+            Effect.Shadow.Enabled = True
+            Effect.Shadow.OffsetX = 1
+            Effect.Shadow.OffsetY = 1
+            Effect.Gradual.Enabled = True
+            Effect.Gradual.Style = gsTopToBottom
+            Effect.Gradual.StartColor = 13382417
+            Effect.Gradual.EndColor = 16720554
+          end>
+        Labels = <
+          item
+            Name = 'Left'
+            Style = lsLeftJustify
+          end
+          item
+            Name = 'Center'
+            Style = lsCenter
+          end
+          item
+            Name = 'Right'
+            Style = lsRightJustify
+          end
+          item
+            Name = 'Owner'
+            Style = lsRegOwner
+          end
+          item
+            Name = 'Organization'
+            Style = lsRegOrganization
+          end
+          item
+            Name = 'AppTitle'
+            Style = lsAppTitle
+          end
+          item
+            Name = 'Date'
+            Style = lsDate
+          end
+          item
+            Name = 'Time'
+            Style = lsTime
+          end>
+        Active = False
+        ScrollDelay = 80
+        Text.Fade = False
+        Text.FadeHeight = 0
+        Text.TailSpace = 0
+        Text.Lines.Strings = (
+          '<Title1>Team'
+          '<Title2>NickName')
+        Text.Font.Charset = DEFAULT_CHARSET
+        Text.Font.Color = clBlack
+        Text.Font.Height = -11
+        Text.Font.Name = 'Tahoma'
+        Text.Font.Style = []
+        Text.BackColor = 8081721
       end
-      object lblNick1: TLabel
+      object lbl_Nick1: TCnAAScrollText
         Left = 336
         Top = 3
         Width = 280
         Height = 20
-        AutoSize = False
-        Caption = 'lblNick1'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWhite
-        Font.Height = -13
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        ParentFont = False
-        Transparent = False
+        ParentEffect.ParentColor = False
+        ParentEffect.ParentFont = False
+        Fonts = <
+          item
+            Name = 'Title1'
+            Font.Charset = ANSI_CHARSET
+            Font.Color = clWhite
+            Font.Height = -13
+            Font.Name = 'Verdana'
+            Font.Style = [fsBold]
+            Effect.Shadow.Enabled = True
+          end
+          item
+            Name = 'Title2'
+            Font.Charset = ANSI_CHARSET
+            Font.Color = clWhite
+            Font.Height = -13
+            Font.Name = 'Verdana'
+            Font.Style = [fsBold]
+            Effect.Shadow.Enabled = True
+            Effect.Shadow.OffsetX = 1
+            Effect.Shadow.OffsetY = 1
+          end
+          item
+            Name = 'Title3'
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clBlue
+            Font.Height = -15
+            Font.Name = #191#172#204#229'_GB2312'
+            Font.Style = []
+            Effect.Shadow.Enabled = True
+          end
+          item
+            Name = 'Text1'
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clBlack
+            Font.Height = -12
+            Font.Name = #191#172#204#229'_GB2312'
+            Font.Style = []
+            Effect.Shadow.OffsetX = 1
+            Effect.Shadow.OffsetY = 1
+          end
+          item
+            Name = 'Text2'
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clTeal
+            Font.Height = -11
+            Font.Name = #191#172#204#229'_GB2312'
+            Font.Style = []
+            Effect.Shadow.Enabled = True
+            Effect.Shadow.OffsetX = 1
+            Effect.Shadow.OffsetY = 1
+          end
+          item
+            Name = 'Title4'
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clBlack
+            Font.Height = -29
+            Font.Name = #193#165#202#233
+            Font.Style = [fsBold]
+            Effect.Shadow.Enabled = True
+            Effect.Gradual.Enabled = True
+            Effect.Gradual.StartColor = 16720384
+            Effect.Gradual.EndColor = 2232575
+            Effect.Blur = 50
+            Effect.Outline = True
+          end
+          item
+            Name = 'Text3'
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clBlue
+            Font.Height = -15
+            Font.Name = #193#165#202#233
+            Font.Style = []
+            Effect.Shadow.Enabled = True
+            Effect.Shadow.OffsetX = 1
+            Effect.Shadow.OffsetY = 1
+            Effect.Gradual.Enabled = True
+            Effect.Gradual.Style = gsTopToBottom
+            Effect.Gradual.StartColor = 13382417
+            Effect.Gradual.EndColor = 16720554
+          end>
+        Labels = <
+          item
+            Name = 'Left'
+            Style = lsLeftJustify
+          end
+          item
+            Name = 'Center'
+            Style = lsCenter
+          end
+          item
+            Name = 'Right'
+            Style = lsRightJustify
+          end
+          item
+            Name = 'Owner'
+            Style = lsRegOwner
+          end
+          item
+            Name = 'Organization'
+            Style = lsRegOrganization
+          end
+          item
+            Name = 'AppTitle'
+            Style = lsAppTitle
+          end
+          item
+            Name = 'Date'
+            Style = lsDate
+          end
+          item
+            Name = 'Time'
+            Style = lsTime
+          end>
+        Active = False
+        ScrollDelay = 80
+        Text.Fade = False
+        Text.FadeHeight = 0
+        Text.TailSpace = 0
+        Text.Lines.Strings = (
+          '<Title1>Team'
+          '<Title2>NickName')
+        Text.Font.Charset = DEFAULT_CHARSET
+        Text.Font.Color = clBlack
+        Text.Font.Height = -11
+        Text.Font.Name = 'Tahoma'
+        Text.Font.Style = []
+        Text.BackColor = 8081721
       end
       object lbl_score: TLabel
         Left = 307
@@ -440,7 +679,7 @@ object Form1: TForm1
         Alignment = taCenter
         AutoSize = False
         Caption = '2-1'
-        Color = clBlack
+        Color = 8081721
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWhite
         Font.Height = -16
@@ -569,6 +808,7 @@ object Form1: TForm1
         MinValue = 0
         TabOrder = 0
         Value = 0
+        Visible = False
         OnChange = ToolSpinChange
         OnKeyPress = toolSpinKeyPress
       end
@@ -1307,8 +1547,8 @@ object Form1: TForm1
       end
     end
     object PanelError: SE_Panel
-      Left = 153
-      Top = 46
+      Left = 672
+      Top = 140
       Width = 401
       Height = 121
       BevelOuter = bvNone
