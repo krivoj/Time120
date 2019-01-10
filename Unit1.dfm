@@ -21,8 +21,8 @@ object Form1: TForm1
   PixelsPerInch = 96
   TextHeight = 13
   object Panel1: TPanel
-    Left = 65
-    Top = 729
+    Left = 8
+    Top = 759
     Width = 1366
     Height = 182
     BevelOuter = bvNone
@@ -191,22 +191,24 @@ object Form1: TForm1
       TabOrder = 18
       OnClick = CheckBox3Click
     end
-    object RzSpinEdit1: TRzSpinEdit
-      Left = 1258
-      Top = 127
-      Width = 47
-      Height = 21
-      Max = 255.000000000000000000
-      TabOrder = 19
-    end
     object Button4: TButton
       Left = 1318
       Top = 151
       Width = 38
       Height = 25
       Caption = 'think'
-      TabOrder = 20
+      TabOrder = 19
       OnClick = Button4Click
+    end
+    object CnSpinEdit1: TCnSpinEdit
+      Left = 1244
+      Top = 126
+      Width = 52
+      Height = 22
+      MaxValue = 255
+      MinValue = 0
+      TabOrder = 20
+      Value = 0
     end
   end
   object PanelBack: SE_Panel
@@ -397,7 +399,7 @@ object Form1: TForm1
       Color = 8081721
       TabOrder = 1
       Visible = False
-      object lblNick0: TRzLabel
+      object lblNick0: TLabel
         Left = 27
         Top = 3
         Width = 280
@@ -413,7 +415,7 @@ object Form1: TForm1
         ParentFont = False
         Transparent = False
       end
-      object lblNick1: TRzLabel
+      object lblNick1: TLabel
         Left = 336
         Top = 3
         Width = 280
@@ -428,7 +430,7 @@ object Form1: TForm1
         ParentFont = False
         Transparent = False
       end
-      object lbl_score: TRzLabel
+      object lbl_score: TLabel
         Left = 307
         Top = 3
         Width = 27
@@ -468,7 +470,7 @@ object Form1: TForm1
         TextCentered = True
         TextOption = toCaption
       end
-      object lbl_minute: TRzLabel
+      object lbl_minute: TLabel
         Left = 3
         Top = 3
         Width = 27
@@ -485,7 +487,7 @@ object Form1: TForm1
         ParentFont = False
         Transparent = False
       end
-      object btnTactics: TRzBmpButton
+      object btnTactics: TCnSpeedButton
         Tag = 119
         Left = 53
         Top = 29
@@ -493,16 +495,16 @@ object Form1: TForm1
         Height = 20
         Cursor = crHandPoint
         AllowAllUp = True
-        GroupIndex = 2
-        Bitmaps.TransparentColor = clOlive
         Color = clBtnFace
-        ButtonBorder = bbButton
-        ButtonSize = bszStretchToButton
+        DownBold = False
+        FlatBorder = False
+        HotTrackBold = False
+        GroupIndex = 2
         Caption = 'T'
-        TabOrder = 0
+        Margin = 4
         OnClick = btnTacticsClick
       end
-      object btnSubs: TRzBmpButton
+      object btnSubs: TCnSpeedButton
         Tag = 119
         Left = 79
         Top = 29
@@ -510,49 +512,36 @@ object Form1: TForm1
         Height = 20
         Cursor = crHandPoint
         AllowAllUp = True
-        GroupIndex = 2
-        Bitmaps.TransparentColor = clOlive
         Color = clBtnFace
-        ButtonBorder = bbButton
-        ButtonSize = bszStretchToButton
-        TabOrder = 1
+        DownBold = False
+        FlatBorder = False
+        HotTrackBold = False
+        GroupIndex = 2
+        Margin = 4
         OnClick = btnSubsClick
       end
-      object btnWatchLiveExit: TRzBmpButton
+      object btnWatchLiveExit: TCnSpeedButton
         Left = 259
         Top = 27
         Width = 118
         Height = 21
         Cursor = crHandPoint
-        Bitmaps.TransparentColor = clOlive
         Color = clGray
-        ButtonBorder = bbSingle
-        ShowFocus = False
-        ButtonSize = bszStretchToButton
+        DownBold = False
+        FlatBorder = False
+        HotTrackBold = False
         Caption = 'EXIT'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = 4308735
         Font.Height = -16
         Font.Name = 'Calibri'
         Font.Style = [fsBold]
+        Margin = 4
         ParentFont = False
-        TabOrder = 2
         Visible = False
         OnClick = btnWatchLiveExitClick
       end
-      object toolSpin: TRzSpinEdit
-        Left = 383
-        Top = 27
-        Width = 47
-        Height = 21
-        AllowKeyEdit = True
-        Max = 255.000000000000000000
-        OnButtonClick = toolSpinButtonClick
-        TabOrder = 3
-        Visible = False
-        OnKeyPress = toolSpinKeyPress
-      end
-      object btnAudioStadium: TRzBmpButton
+      object btnAudioStadium: TCnSpeedButton
         Tag = 119
         Left = 618
         Top = 3
@@ -560,13 +549,26 @@ object Form1: TForm1
         Height = 20
         Cursor = crHandPoint
         AllowAllUp = True
-        GroupIndex = 3
-        Bitmaps.TransparentColor = clOlive
         Color = clBtnFace
-        ButtonBorder = bbButton
-        ButtonSize = bszStretchToButton
-        TabOrder = 4
+        DownBold = False
+        FlatBorder = False
+        HotTrackBold = False
+        GroupIndex = 3
+        Margin = 4
         OnClick = btnAudioStadiumClick
+      end
+      object ToolSpin: TCnSpinEdit
+        Left = 386
+        Top = 29
+        Width = 49
+        Height = 22
+        AutoSelect = False
+        MaxValue = 255
+        MinValue = 0
+        TabOrder = 0
+        Value = 0
+        OnChange = ToolSpinChange
+        OnKeyPress = toolSpinKeyPress
       end
     end
     object PanelSell: SE_Panel
@@ -578,6 +580,26 @@ object Form1: TForm1
       Color = 8081721
       TabOrder = 2
       Visible = False
+      object btnConfirmSell: TCnSpeedButton
+        Left = 19
+        Top = 33
+        Width = 74
+        Height = 22
+        Cursor = crHandPoint
+        Color = clGray
+        DownBold = False
+        FlatBorder = False
+        HotTrackBold = False
+        Caption = 'confirm'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = 4308735
+        Font.Height = -16
+        Font.Name = 'Calibri'
+        Font.Style = [fsBold]
+        Margin = 4
+        ParentFont = False
+        OnClick = btnConfirmSellClick
+      end
       object edtSell: TRzNumericEdit
         Left = 3
         Top = 3
@@ -597,27 +619,6 @@ object Form1: TForm1
         FlatButtonColor = 8081721
         FlatButtons = True
       end
-      object btnConfirmSell: TRzBmpButton
-        Left = 19
-        Top = 33
-        Width = 74
-        Height = 22
-        Cursor = crHandPoint
-        Bitmaps.TransparentColor = clOlive
-        Color = clGray
-        ButtonBorder = bbSingle
-        ShowFocus = False
-        ButtonSize = bszStretchToButton
-        Caption = 'confirm'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = 4308735
-        Font.Height = -16
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        ParentFont = False
-        TabOrder = 1
-        OnClick = btnConfirmSellClick
-      end
     end
     object PanelMain: SE_Panel
       Left = 1136
@@ -628,130 +629,124 @@ object Form1: TForm1
       Color = 8081721
       TabOrder = 3
       Visible = False
-      object btnFormation: TRzBmpButton
+      object btnFormation: TCnSpeedButton
         Left = 3
         Top = 17
         Width = 233
         Height = 32
         Cursor = crHandPoint
-        Bitmaps.TransparentColor = clOlive
         Color = clGray
-        ButtonBorder = bbSingle
-        ShowFocus = False
-        ButtonSize = bszStretchToButton
+        DownBold = False
+        FlatBorder = False
+        HotTrackBold = False
         Caption = 'formazione'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = 4308735
         Font.Height = -21
         Font.Name = 'Calibri'
         Font.Style = [fsBold]
+        Margin = 4
         ParentFont = False
-        TabOrder = 0
         OnClick = btnFormationClick
       end
-      object btnMainPlay: TRzBmpButton
+      object btnMainPlay: TCnSpeedButton
         Left = 3
         Top = 49
         Width = 233
         Height = 32
         Cursor = crHandPoint
-        Bitmaps.TransparentColor = clOlive
         Color = clGray
-        ButtonBorder = bbSingle
-        ShowFocus = False
-        ButtonSize = bszStretchToButton
+        DownBold = False
+        FlatBorder = False
+        HotTrackBold = False
         Caption = 'play'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = 4308735
         Font.Height = -21
         Font.Name = 'Calibri'
         Font.Style = [fsBold]
+        Margin = 4
         ParentFont = False
-        TabOrder = 1
         OnClick = btnMainPlayClick
       end
-      object btnWatchLive: TRzBmpButton
+      object btnWatchLive: TCnSpeedButton
         Left = 3
         Top = 81
         Width = 233
         Height = 32
         Cursor = crHandPoint
-        Bitmaps.TransparentColor = clOlive
         Color = clGray
-        ButtonBorder = bbSingle
-        ShowFocus = False
-        ButtonSize = bszStretchToButton
+        DownBold = False
+        FlatBorder = False
+        HotTrackBold = False
         Caption = 'btnWatchLive'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = 4308735
         Font.Height = -21
         Font.Name = 'Calibri'
         Font.Style = [fsBold]
+        Margin = 4
         ParentFont = False
-        TabOrder = 2
         OnClick = btnWatchLiveClick
       end
-      object btnMarket: TRzBmpButton
+      object btnMarket: TCnSpeedButton
         Left = 3
         Top = 145
         Width = 233
         Height = 32
         Cursor = crHandPoint
-        Bitmaps.TransparentColor = clOlive
         Color = clGray
-        ButtonBorder = bbSingle
-        ShowFocus = False
-        ButtonSize = bszStretchToButton
+        DownBold = False
+        FlatBorder = False
+        HotTrackBold = False
         Caption = 'btnMarket'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = 4308735
         Font.Height = -21
         Font.Name = 'Calibri'
         Font.Style = [fsBold]
+        Margin = 4
         ParentFont = False
-        TabOrder = 3
         OnClick = btnMarketClick
       end
-      object btnStandings: TRzBmpButton
+      object btnStandings: TCnSpeedButton
         Left = 3
         Top = 113
         Width = 233
         Height = 32
         Cursor = crHandPoint
-        Bitmaps.TransparentColor = clOlive
         Color = clGray
-        ButtonBorder = bbSingle
-        ShowFocus = False
-        ButtonSize = bszStretchToButton
+        DownBold = False
+        FlatBorder = False
+        HotTrackBold = False
         Caption = 'btnStandings'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = 4308735
         Font.Height = -21
         Font.Name = 'Calibri'
         Font.Style = [fsBold]
+        Margin = 4
         ParentFont = False
-        TabOrder = 4
         OnClick = btnStandingsClick
       end
-      object btnExit: TRzBmpButton
+      object btnExit: TCnSpeedButton
         Left = 3
         Top = 177
         Width = 233
         Height = 32
         Cursor = crHandPoint
-        Bitmaps.TransparentColor = clOlive
         Color = clGray
-        ButtonBorder = bbSingle
-        ShowFocus = False
-        ButtonSize = bszStretchToButton
+        DownBold = False
+        FlatBorder = False
+        HotTrackBold = False
         Caption = 'btnExit'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = 4308735
         Font.Height = -21
         Font.Name = 'Calibri'
         Font.Style = [fsBold]
+        Margin = 4
         ParentFont = False
-        TabOrder = 5
         OnClick = btnExitClick
       end
     end
@@ -764,6 +759,26 @@ object Form1: TForm1
       Color = 8081721
       TabOrder = 4
       Visible = False
+      object btnSelCountryTeam: TCnSpeedButton
+        Left = 3
+        Top = 253
+        Width = 275
+        Height = 32
+        Cursor = crHandPoint
+        Color = clGray
+        DownBold = False
+        FlatBorder = False
+        HotTrackBold = False
+        Caption = 'btnselcountryteam'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = 4308735
+        Font.Height = -21
+        Font.Name = 'Calibri'
+        Font.Style = [fsBold]
+        Margin = 4
+        ParentFont = False
+        OnClick = btnSelCountryTeamClick
+      end
       object advCountryTeam: TAdvStringGrid
         Left = 3
         Top = 3
@@ -916,27 +931,6 @@ object Form1: TForm1
         RowHeights = (
           22)
       end
-      object btnSelCountryTeam: TRzBmpButton
-        Left = 3
-        Top = 253
-        Width = 275
-        Height = 32
-        Cursor = crHandPoint
-        Bitmaps.TransparentColor = clOlive
-        Color = clGray
-        ButtonBorder = bbSingle
-        ShowFocus = False
-        ButtonSize = bszStretchToButton
-        Caption = 'btnselcountryteam'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = 4308735
-        Font.Height = -21
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        ParentFont = False
-        TabOrder = 1
-        OnClick = btnSelCountryTeamClick
-      end
     end
     object PanelListMatches: SE_Panel
       Left = 685
@@ -948,6 +942,46 @@ object Form1: TForm1
       Color = 8081721
       TabOrder = 5
       Visible = False
+      object btnMatchesRefresh: TCnSpeedButton
+        Left = 581
+        Top = 251
+        Width = 88
+        Height = 22
+        Cursor = crHandPoint
+        Color = clGray
+        DownBold = False
+        FlatBorder = False
+        HotTrackBold = False
+        Caption = 'btnMatchesRefresh'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = 4308735
+        Font.Height = -16
+        Font.Name = 'Calibri'
+        Font.Style = [fsBold]
+        Margin = 4
+        ParentFont = False
+        OnClick = btnMatchesRefreshClick
+      end
+      object btnMatchesListBack: TCnSpeedButton
+        Left = 15
+        Top = 251
+        Width = 88
+        Height = 22
+        Cursor = crHandPoint
+        Color = clGray
+        DownBold = False
+        FlatBorder = False
+        HotTrackBold = False
+        Caption = 'btnMatchesListBack'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = 4308735
+        Font.Height = -16
+        Font.Name = 'Calibri'
+        Font.Style = [fsBold]
+        Margin = 4
+        ParentFont = False
+        OnClick = btnMatchesListBackClick
+      end
       object SE_GridAllBrain: SE_Grid
         Left = 3
         Top = 0
@@ -982,48 +1016,6 @@ object Form1: TForm1
         Font.Height = -11
         Font.Name = 'Tahoma'
         Font.Style = []
-      end
-      object btnMatchesRefresh: TRzBmpButton
-        Left = 581
-        Top = 251
-        Width = 88
-        Height = 22
-        Cursor = crHandPoint
-        Bitmaps.TransparentColor = clOlive
-        Color = clGray
-        ButtonBorder = bbSingle
-        ShowFocus = False
-        ButtonSize = bszStretchToButton
-        Caption = 'btnMatchesRefresh'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = 4308735
-        Font.Height = -16
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        ParentFont = False
-        TabOrder = 1
-        OnClick = btnMatchesRefreshClick
-      end
-      object btnMatchesListBack: TRzBmpButton
-        Left = 15
-        Top = 251
-        Width = 88
-        Height = 22
-        Cursor = crHandPoint
-        Bitmaps.TransparentColor = clOlive
-        Color = clGray
-        ButtonBorder = bbSingle
-        ShowFocus = False
-        ButtonSize = bszStretchToButton
-        Caption = 'btnMatchesListBack'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = 4308735
-        Font.Height = -16
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        ParentFont = False
-        TabOrder = 2
-        OnClick = btnMatchesListBackClick
       end
     end
     object PanelCorner: SE_Panel
@@ -1240,6 +1232,47 @@ object Form1: TForm1
         Font.Style = []
         ParentFont = False
       end
+      object btnReplay: TCnSpeedButton
+        Left = 21
+        Top = 3
+        Width = 70
+        Height = 17
+        Cursor = crHandPoint
+        Color = clGray
+        DownBold = False
+        FlatBorder = False
+        HotTrackBold = False
+        Caption = 'Replay'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clRed
+        Font.Height = -16
+        Font.Name = 'Calibri'
+        Font.Style = [fsBold]
+        Margin = 4
+        ParentFont = False
+        Visible = False
+        OnClick = btnReplayClick
+      end
+      object btnLogin: TCnSpeedButton
+        Left = 16
+        Top = 145
+        Width = 137
+        Height = 32
+        Cursor = crHandPoint
+        Color = clGray
+        DownBold = False
+        FlatBorder = False
+        HotTrackBold = False
+        Caption = 'btnLogin'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = 4308735
+        Font.Height = -21
+        Font.Name = 'Calibri'
+        Font.Style = [fsBold]
+        Margin = 4
+        ParentFont = False
+        OnClick = BtnLoginClick
+      end
       object Edit1: TEdit
         Left = 16
         Top = 46
@@ -1273,49 +1306,6 @@ object Form1: TForm1
         TabOrder = 2
         Badge = 'connecting'
       end
-      object btnReplay: TRzBmpButton
-        Left = 21
-        Top = 3
-        Width = 70
-        Height = 17
-        Cursor = crHandPoint
-        Bitmaps.TransparentColor = clOlive
-        Color = clGray
-        ButtonBorder = bbSingle
-        ShowFocus = False
-        ButtonSize = bszStretchToButton
-        Caption = 'Replay'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clRed
-        Font.Height = -16
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        ParentFont = False
-        TabOrder = 4
-        Visible = False
-        OnClick = btnReplayClick
-      end
-      object btnLogin: TRzBmpButton
-        Left = 16
-        Top = 145
-        Width = 137
-        Height = 32
-        Cursor = crHandPoint
-        Bitmaps.TransparentColor = clOlive
-        Color = clGray
-        ButtonBorder = bbSingle
-        ShowFocus = False
-        ButtonSize = bszStretchToButton
-        Caption = 'btnLogin'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = 4308735
-        Font.Height = -21
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        ParentFont = False
-        TabOrder = 5
-        OnClick = BtnLoginClick
-      end
     end
     object PanelError: SE_Panel
       Left = 400
@@ -1326,44 +1316,43 @@ object Form1: TForm1
       Color = 8081721
       TabOrder = 8
       Visible = False
-      object lblError: TRzBmpButton
+      object lblError: TCnSpeedButton
         Left = 19
         Top = 14
         Width = 358
         Height = 60
         Cursor = crHandPoint
-        Bitmaps.TransparentColor = clOlive
         Color = clBtnFace
-        ShowFocus = False
-        ButtonSize = bszStretchToButton
-        WordWrap = True
+        DownBold = False
+        FlatBorder = False
+        HotTrackBold = False
         Caption = 'error'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = 4308735
         Font.Height = -16
         Font.Name = 'Calibri'
         Font.Style = []
+        Margin = 4
         ParentFont = False
-        TabOrder = 0
       end
-      object btnErrorOK: TRzBmpButton
+      object btnErrorOK: TCnSpeedButton
         Left = 159
         Top = 80
         Width = 70
         Height = 28
         Cursor = crHandPoint
-        Bitmaps.TransparentColor = clOlive
         Color = clBtnFace
-        ShowFocus = False
-        ButtonSize = bszStretchToButton
+        DownBold = False
+        FlatBorder = False
+        HotTrackBold = False
         Caption = 'Ok'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = 4308735
         Font.Height = -16
         Font.Name = 'Calibri'
         Font.Style = [fsBold]
+        Margin = 4
         ParentFont = False
-        TabOrder = 1
         OnClick = btnErrorOKClick
       end
     end
@@ -1409,7 +1398,7 @@ object Form1: TForm1
       Color = 8081721
       TabOrder = 10
       Visible = False
-      object se_lblSurname0: TRzLabel
+      object se_lblSurname0: TLabel
         Left = 3
         Top = 8
         Width = 117
@@ -1423,7 +1412,7 @@ object Form1: TForm1
         ParentFont = False
         Transparent = True
       end
-      object lbl_talent0: TRzLabel
+      object lbl_talent0: TLabel
         Left = 3
         Top = 201
         Width = 59
@@ -1437,7 +1426,7 @@ object Form1: TForm1
         ParentFont = False
         Transparent = True
       end
-      object lbl_descrTalent0: TRzLabel
+      object lbl_descrTalent0: TLabel
         Left = 7
         Top = 220
         Width = 75
@@ -1453,7 +1442,7 @@ object Form1: TForm1
         Transparent = True
         WordWrap = True
       end
-      object PorTrait0: TCnSpeedButton
+      object Portrait0: TCnSpeedButton
         Left = 0
         Top = 30
         Width = 74
@@ -1470,90 +1459,83 @@ object Form1: TForm1
         Margin = 4
         Spacing = 0
       end
-      object btnxp0: TRzBmpButton
+      object btnTalentBmp0: TCnSpeedButton
+        Left = 16
+        Top = 137
+        Width = 32
+        Height = 32
+        ShadowColor = 8081721
+        Color = 8081721
+        DownColor = 8081721
+        DownBold = False
+        FlatBorder = True
+        HotTrackBold = False
+        HotTrackColor = 8081721
+        LightColor = 8081721
+        ModernBtnStyle = bsFlat
+        Margin = 4
+        Spacing = 0
+      end
+      object btnxp0: TCnSpeedButton
         Left = 103
         Top = 250
         Width = 47
         Height = 22
         Cursor = crHandPoint
-        Bitmaps.TransparentColor = clOlive
         Color = clGray
-        ButtonBorder = bbSingle
-        ShowFocus = False
-        ButtonSize = bszStretchToButton
+        DownBold = False
+        FlatBorder = False
+        HotTrackBold = False
         Caption = 'XP'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = 4308735
         Font.Height = -16
         Font.Name = 'Calibri'
         Font.Style = [fsBold]
+        Margin = 4
         ParentFont = False
-        TabOrder = 0
         Visible = False
         OnClick = btnxp0Click
       end
-      object btnTalentBmp0: TRzBmpButton
-        Left = 20
-        Top = 154
-        Width = 32
-        Height = 32
-        Cursor = crHandPoint
-        Bitmaps.TransparentColor = clOlive
-        Color = clGray
-        ButtonBorder = bbSingle
-        ShowFocus = False
-        ButtonSize = bszStretchToButton
-        Enabled = False
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = 4308735
-        Font.Height = -16
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        ParentFont = False
-        TabOrder = 1
-        Visible = False
-      end
-      object btnsell0: TRzBmpButton
+      object btnsell0: TCnSpeedButton
         Left = 3
         Top = 109
         Width = 74
         Height = 22
         Cursor = crHandPoint
-        Bitmaps.TransparentColor = clOlive
         Color = clGray
-        ButtonBorder = bbSingle
-        ShowFocus = False
-        ButtonSize = bszStretchToButton
+        DownBold = False
+        FlatBorder = False
+        HotTrackBold = False
         Caption = 'btnsell'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = 4308735
         Font.Height = -16
         Font.Name = 'Calibri'
         Font.Style = [fsBold]
+        Margin = 4
         ParentFont = False
-        TabOrder = 2
         Visible = False
         OnClick = btnsell0Click
       end
-      object btnDismiss0: TRzBmpButton
+      object btnDismiss0: TCnSpeedButton
         Left = 3
         Top = 266
         Width = 74
         Height = 22
         Cursor = crHandPoint
-        Bitmaps.TransparentColor = clOlive
         Color = clGray
-        ButtonBorder = bbSingle
-        ShowFocus = False
-        ButtonSize = bszStretchToButton
+        DownBold = False
+        FlatBorder = False
+        HotTrackBold = False
         Caption = 'btnDismiss'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = 4308735
         Font.Height = -16
         Font.Name = 'Calibri'
         Font.Style = [fsBold]
+        Margin = 4
         ParentFont = False
-        TabOrder = 3
         Visible = False
         OnClick = btnDismiss0Click
       end
@@ -1582,7 +1564,7 @@ object Form1: TForm1
         ShowPerformance = False
         VirtualWidth = 212
         Virtualheight = 212
-        TabOrder = 4
+        TabOrder = 0
         CellBorder = CellBorderNone
         CellBorderColor = clGray
         Font.Charset = DEFAULT_CHARSET
@@ -1686,7 +1668,7 @@ object Form1: TForm1
         ParentFont = False
         Transparent = False
       end
-      object lbl_TeamName: TRzLabel
+      object lbl_TeamName: TLabel
         Left = 3
         Top = 11
         Width = 302
@@ -1701,99 +1683,96 @@ object Form1: TForm1
         ParentFont = False
         Transparent = True
       end
-      object se_lblPlay: TRzBmpButton
+      object se_lblPlay: TCnSpeedButton
         Left = 613
         Top = 6
         Width = 115
         Height = 28
         Cursor = crHandPoint
-        Bitmaps.TransparentColor = clOlive
         Color = clBtnFace
-        ShowFocus = False
-        ButtonSize = bszStretchToButton
+        DownBold = False
+        FlatBorder = False
+        HotTrackBold = False
         Caption = 'valid formatiom'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = 4308735
         Font.Height = -13
         Font.Name = 'Calibri'
         Font.Style = [fsBold]
+        Margin = 4
         ParentFont = False
-        TabOrder = 0
       end
-      object BtnFormationBack: TRzBmpButton
+      object BtnFormationBack: TCnSpeedButton
         Left = 819
         Top = 6
         Width = 75
         Height = 28
         Cursor = crHandPoint
-        Bitmaps.TransparentColor = clOlive
         Color = clGray
-        ButtonBorder = bbSingle
-        ShowFocus = False
-        ButtonSize = bszStretchToButton
+        DownBold = False
+        FlatBorder = False
+        HotTrackBold = False
         Caption = 'back'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = 4308735
         Font.Height = -16
         Font.Name = 'Calibri'
         Font.Style = [fsBold]
+        Margin = 4
         ParentFont = False
-        TabOrder = 1
         OnClick = BtnFormationBackClick
       end
-      object BtnFormationReset: TRzBmpButton
+      object BtnFormationReset: TCnSpeedButton
         Left = 738
         Top = 6
         Width = 75
         Height = 28
         Cursor = crHandPoint
-        Bitmaps.TransparentColor = clOlive
         Color = clGray
-        ButtonBorder = bbSingle
-        ShowFocus = False
-        ButtonSize = bszStretchToButton
+        DownBold = False
+        FlatBorder = False
+        HotTrackBold = False
         Caption = 'reset'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = 4308735
         Font.Height = -16
         Font.Name = 'Calibri'
         Font.Style = [fsBold]
+        Margin = 4
         ParentFont = False
-        TabOrder = 2
         OnClick = BtnFormationResetClick
       end
-      object BtnFormationUniform: TRzBmpButton
+      object BtnFormationUniform: TCnSpeedButton
         Left = 533
         Top = 6
         Width = 75
         Height = 28
         Cursor = crHandPoint
-        Bitmaps.TransparentColor = clOlive
         Color = clGray
-        ButtonBorder = bbSingle
-        ShowFocus = False
-        ButtonSize = bszStretchToButton
+        DownBold = False
+        FlatBorder = False
+        HotTrackBold = False
         Caption = 'uniform'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = 4308735
         Font.Height = -16
         Font.Name = 'Calibri'
         Font.Style = [fsBold]
+        Margin = 4
         ParentFont = False
-        TabOrder = 3
         OnClick = BtnFormationUniformClick
       end
     end
     object PanelInfoplayer1: SE_Panel
-      Left = 323
-      Top = 464
+      Left = 329
+      Top = 457
       Width = 317
       Height = 294
       BevelOuter = bvNone
       Color = 8081721
       TabOrder = 12
       Visible = False
-      object se_lblSurname1: TRzLabel
+      object se_lblSurname1: TLabel
         Left = 3
         Top = 8
         Width = 117
@@ -1807,7 +1786,7 @@ object Form1: TForm1
         ParentFont = False
         Transparent = True
       end
-      object lbl_talent1: TRzLabel
+      object lbl_talent1: TLabel
         Left = 46
         Top = 231
         Width = 59
@@ -1821,7 +1800,7 @@ object Form1: TForm1
         ParentFont = False
         Transparent = True
       end
-      object lbl_descrtalent1: TRzLabel
+      object lbl_descrtalent1: TLabel
         Left = 28
         Top = 252
         Width = 75
@@ -1854,26 +1833,22 @@ object Form1: TForm1
         Margin = 4
         Spacing = 0
       end
-      object btnTalentBmp1: TRzBmpButton
-        Left = 28
-        Top = 162
+      object btnTalentBmp1: TCnSpeedButton
+        Left = 24
+        Top = 145
         Width = 32
         Height = 32
-        Cursor = crHandPoint
-        Bitmaps.TransparentColor = clOlive
-        Color = clGray
-        ButtonBorder = bbSingle
-        ShowFocus = False
-        ButtonSize = bszStretchToButton
-        Enabled = False
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = 4308735
-        Font.Height = -16
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        ParentFont = False
-        TabOrder = 0
-        Visible = False
+        ShadowColor = 8081721
+        Color = 8081721
+        DownColor = 8081721
+        DownBold = False
+        FlatBorder = True
+        HotTrackBold = False
+        HotTrackColor = 8081721
+        LightColor = 8081721
+        ModernBtnStyle = bsFlat
+        Margin = 4
+        Spacing = 0
       end
       object SE_Grid1: SE_Grid
         Left = 91
@@ -1900,7 +1875,7 @@ object Form1: TForm1
         ShowPerformance = False
         VirtualWidth = 212
         Virtualheight = 212
-        TabOrder = 1
+        TabOrder = 0
         CellBorder = CellBorderNone
         CellBorderColor = clGray
         Font.Charset = DEFAULT_CHARSET
@@ -2007,25 +1982,24 @@ object Form1: TForm1
       Color = 8081721
       TabOrder = 18
       Visible = False
-      object btnxpBack0: TRzBmpButton
+      object btnxpBack0: TCnSpeedButton
         Left = 267
         Top = 6
         Width = 47
         Height = 22
         Cursor = crHandPoint
-        Bitmaps.TransparentColor = clOlive
         Color = clGray
-        ButtonBorder = bbSingle
-        ShowFocus = False
-        ButtonSize = bszStretchToButton
+        DownBold = False
+        FlatBorder = False
+        HotTrackBold = False
         Caption = 'Back'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = 4308735
         Font.Height = -16
         Font.Name = 'Calibri'
         Font.Style = [fsBold]
+        Margin = 4
         ParentFont = False
-        TabOrder = 0
         OnClick = btnxpBack0Click
       end
       object SE_GridXP0: SE_Grid
@@ -2053,7 +2027,7 @@ object Form1: TForm1
         ShowPerformance = False
         VirtualWidth = 212
         Virtualheight = 212
-        TabOrder = 1
+        TabOrder = 0
         OnGridCellMouseDown = SE_GridXP0GridCellMouseDown
         OnGridCellMouseMove = SE_GridXP0GridCellMouseMove
         CellBorder = CellBorderNone
@@ -2067,54 +2041,54 @@ object Form1: TForm1
     end
     object PanelUniform: SE_Panel
       Left = 652
-      Top = 613
+      Top = 587
       Width = 317
       Height = 223
       BevelOuter = bvNone
       Color = 8081721
       TabOrder = 19
       Visible = False
-      object btnUniformBack: TRzBmpButton
+      object btnUniformBack: TCnSpeedButton
         Left = 265
         Top = 5
         Width = 47
         Height = 22
         Cursor = crHandPoint
-        Bitmaps.TransparentColor = clOlive
         Color = clGray
-        ButtonBorder = bbSingle
-        ShowFocus = False
-        ButtonSize = bszStretchToButton
+        DownBold = False
+        FlatBorder = False
+        HotTrackBold = False
         Caption = 'Back'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = 4308735
         Font.Height = -16
         Font.Name = 'Calibri'
         Font.Style = [fsBold]
+        Margin = 4
         ParentFont = False
-        TabOrder = 0
         OnClick = btnUniformBackClick
       end
-      object UniformPortrait: TRzBmpButton
+      object UniformPortrait: TCnSpeedButton
         Left = 113
         Top = 53
         Width = 74
         Height = 74
         Cursor = crHandPoint
         AllowAllUp = True
-        CaptionDownOffset = 0
-        Bitmaps.TransparentColor = clSilver
+        ShadowColor = 8081721
         Color = clGray
-        ButtonSize = bszStretchToButton
-        Enabled = False
+        DownBold = False
+        FlatBorder = True
+        HotTrackBold = False
+        LightColor = 8081721
+        ModernBtnStyle = bsFlat
         Font.Charset = DEFAULT_CHARSET
         Font.Color = 4308735
         Font.Height = -19
         Font.Name = 'Calibri'
         Font.Style = [fsBold]
+        Margin = 4
         ParentFont = False
-        TabOrder = 1
-        TabStop = False
       end
       object se_gridColors: TAdvStringGrid
         Left = 3
@@ -2141,7 +2115,7 @@ object Form1: TForm1
         ParentCtl3D = False
         ParentFont = False
         ScrollBars = ssNone
-        TabOrder = 2
+        TabOrder = 0
         GridLineColor = 8081721
         HoverRowCells = [hcNormal, hcSelected]
         OnClickCell = se_gridColorsClickCell
@@ -2269,7 +2243,7 @@ object Form1: TForm1
         Font.Name = 'Tahoma'
         Font.Style = []
         ParentFont = False
-        TabOrder = 3
+        TabOrder = 1
         TabStop = True
         Transparent = True
       end
@@ -2286,7 +2260,7 @@ object Form1: TForm1
         Font.Name = 'Tahoma'
         Font.Style = []
         ParentFont = False
-        TabOrder = 4
+        TabOrder = 2
         Transparent = True
       end
       object ck_Socks1: TRzRadioButton
@@ -2302,7 +2276,7 @@ object Form1: TForm1
         Font.Name = 'Tahoma'
         Font.Style = []
         ParentFont = False
-        TabOrder = 5
+        TabOrder = 4
         Transparent = True
       end
       object ck_Jersey2: TRzRadioButton
@@ -2334,7 +2308,7 @@ object Form1: TForm1
         Font.Name = 'Tahoma'
         Font.Style = []
         ParentFont = False
-        TabOrder = 7
+        TabOrder = 3
         Transparent = True
       end
       object ck_HA: TRzRadioGroup
@@ -2357,7 +2331,7 @@ object Form1: TForm1
           'Home'
           'Away')
         StartYPos = 0
-        TabOrder = 8
+        TabOrder = 5
         Transparent = True
         VerticalSpacing = 1
         VisualStyle = vsClassic
@@ -2373,7 +2347,7 @@ object Form1: TForm1
       Color = 8081721
       TabOrder = 20
       Visible = False
-      object se_lblmaxvalue: TRzLabel
+      object se_lblmaxvalue: TLabel
         Left = 255
         Top = 253
         Width = 82
@@ -2388,7 +2362,46 @@ object Form1: TForm1
         ParentFont = False
         Transparent = True
         WordWrap = True
-        BorderColor = clYellow
+      end
+      object btnMarketBack: TCnSpeedButton
+        Left = 3
+        Top = 267
+        Width = 88
+        Height = 22
+        Cursor = crHandPoint
+        Color = clGray
+        DownBold = False
+        FlatBorder = False
+        HotTrackBold = False
+        Caption = 'Back'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = 4308735
+        Font.Height = -16
+        Font.Name = 'Calibri'
+        Font.Style = [fsBold]
+        Margin = 4
+        ParentFont = False
+        OnClick = btnMarketBackClick
+      end
+      object btnMarketRefresh: TCnSpeedButton
+        Left = 352
+        Top = 266
+        Width = 88
+        Height = 22
+        Cursor = crHandPoint
+        Color = clGray
+        DownBold = False
+        FlatBorder = False
+        HotTrackBold = False
+        Caption = 'btnMarketRefresh'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = 4308735
+        Font.Height = -16
+        Font.Name = 'Calibri'
+        Font.Style = [fsBold]
+        Margin = 4
+        ParentFont = False
+        OnClick = btnMarketRefreshClick
       end
       object advMarket: TAdvStringGrid
         Left = 14
@@ -2549,48 +2562,6 @@ object Form1: TForm1
         RowHeights = (
           22)
       end
-      object btnMarketBack: TRzBmpButton
-        Left = 3
-        Top = 267
-        Width = 88
-        Height = 22
-        Cursor = crHandPoint
-        Bitmaps.TransparentColor = clOlive
-        Color = clGray
-        ButtonBorder = bbSingle
-        ShowFocus = False
-        ButtonSize = bszStretchToButton
-        Caption = 'Back'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = 4308735
-        Font.Height = -16
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        ParentFont = False
-        TabOrder = 1
-        OnClick = btnMarketBackClick
-      end
-      object btnMarketRefresh: TRzBmpButton
-        Left = 352
-        Top = 266
-        Width = 88
-        Height = 22
-        Cursor = crHandPoint
-        Bitmaps.TransparentColor = clOlive
-        Color = clGray
-        ButtonBorder = bbSingle
-        ShowFocus = False
-        ButtonSize = bszStretchToButton
-        Caption = 'btnMarketRefresh'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = 4308735
-        Font.Height = -16
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        ParentFont = False
-        TabOrder = 2
-        OnClick = btnMarketRefreshClick
-      end
       object edtsearchprice: TRzNumericEdit
         Left = 239
         Top = 266
@@ -2605,7 +2576,7 @@ object Form1: TForm1
         Font.Name = 'Tahoma'
         Font.Style = []
         ParentFont = False
-        TabOrder = 3
+        TabOrder = 1
         AllowScientificNotation = False
         DisplayFormat = ',0;(,0)'
         FlatButtonColor = 8081721
@@ -2620,7 +2591,7 @@ object Form1: TForm1
       Color = 8081721
       TabOrder = 21
       Visible = False
-      object lbl_ConfirmDismiss: TRzLabel
+      object lbl_ConfirmDismiss: TLabel
         Left = 3
         Top = 3
         Width = 110
@@ -2635,27 +2606,25 @@ object Form1: TForm1
         ParentFont = False
         Transparent = True
         WordWrap = True
-        BorderColor = clYellow
       end
-      object btnConfirmDismiss: TRzBmpButton
+      object btnConfirmDismiss: TCnSpeedButton
         Left = 19
         Top = 33
         Width = 74
         Height = 22
         Cursor = crHandPoint
-        Bitmaps.TransparentColor = clOlive
         Color = clGray
-        ButtonBorder = bbSingle
-        ShowFocus = False
-        ButtonSize = bszStretchToButton
+        DownBold = False
+        FlatBorder = False
+        HotTrackBold = False
         Caption = 'confirm'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = 4308735
         Font.Height = -16
         Font.Name = 'Calibri'
         Font.Style = [fsBold]
+        Margin = 4
         ParentFont = False
-        TabOrder = 0
         OnClick = btnConfirmDismissClick
       end
     end

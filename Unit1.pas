@@ -44,8 +44,8 @@ uses
   Dxwave,DXSounds,                    // DelphiX (Audio)
   ZLIBEX,                             // delphizlib invio dati compressi tra server e client
 
-  RzBmpBtn, RzButton, RzEdit,RzSpnEdt,RzLabel, RzRadChk, RzPanel, RzRadGrp,    // RaizeComponents
-  OverbyteIcsWndControl, OverbyteIcsWSocket    ;  // OverByteIcsWSocketE ics con modifica. vedi directory External.Packages\overbyteICS del progetto
+  RzBmpBtn, RzButton, RzEdit,RzSpnEdt, RzRadChk, RzPanel, RzRadGrp,    // RaizeComponents
+  OverbyteIcsWndControl, OverbyteIcsWSocket, CnSpin    ;  // OverByteIcsWSocketE ics con modifica. vedi directory External.Packages\overbyteICS del progetto
 
 const GCD_DEFAULT = 200;        // global cooldown, minimo 200 ms tra un input verso il server e l'altro ( anti-cheating )
 const ScaleSprites = 40;        // riduzione generica di tutto gli sprite player
@@ -118,7 +118,7 @@ type
     PanelCombatLog: SE_panel;
     advDice: TAdvStringGrid;
     PanelScore: SE_panel;
-    btnTactics: TRzBmpButton;
+    btnTactics: TcnSpeedButton;
     PanelSell: SE_panel;
     edtSell: TRzNumericEdit;
     PanelMain: SE_panel;
@@ -134,14 +134,14 @@ type
     Edit2: TEdit;
     AdvBadgeLabel1: TAdvBadgeLabel;
     PanelError: SE_panel;
-    lblError: TRzBmpButton;
-    btnErrorOK: TRzBmpButton;
-    btnFormation: TRzBmpButton;
-    btnMainPlay: TRzBmpButton;
-    btnWatchLive: TRzBmpButton;
-    btnMarket: TRzBmpButton;
-    btnStandings: TRzBmpButton;
-    btnExit: TRzBmpButton;
+    lblError: TcnSpeedButton;
+    btnErrorOK: TcnSpeedButton;
+    btnFormation: TcnSpeedButton;
+    btnMainPlay: TcnSpeedButton;
+    btnWatchLive: TcnSpeedButton;
+    btnMarket: TcnSpeedButton;
+    btnStandings: TcnSpeedButton;
+    btnExit: TcnSpeedButton;
     RzNumericEdit1: TRzNumericEdit;
     RzNumericEdit2: TRzNumericEdit;
     SE_Theater1: SE_Theater;
@@ -150,8 +150,8 @@ type
     SE_ball: SE_Engine;
     PanelInfoPlayer0: SE_Panel;
     PanelformationSE: SE_panel;
-    se_lblPlay: TRzBmpButton;
-    BtnFormationBack: TRzBmpButton;
+    se_lblPlay: TcnSpeedButton;
+    BtnFormationBack: TcnSpeedButton;
     PanelInfoplayer1: SE_panel;
     PanelSkill: SE_Panel;
     SE_numbers: SE_Engine;
@@ -165,62 +165,58 @@ type
     JvShapedButton3: TJvShapedButton;
     Memo2: TMemo;
     CheckBox2: TCheckBox;
-    BtnFormationReset: TRzBmpButton;
-    btnSubs: TRzBmpButton;
+    BtnFormationReset: TcnSpeedButton;
+    btnSubs: TcnSpeedButton;
     SE_GridAllBrain: SE_Grid;
-    btnWatchLiveExit: TRzBmpButton;
+    btnWatchLiveExit: TcnSpeedButton;
     ThreadCurMove: SE_ThreadTimer;
     Button3: TButton;
     CheckBox3: TCheckBox;
     PanelXPplayer0: SE_panel;
-    btnxp0: TRzBmpButton;
-    btnxpBack0: TRzBmpButton;
-    btnTalentBmp0: TRzBmpButton;
-    btnTalentBmp1: TRzBmpButton;
+    btnxp0: TcnSpeedButton;
+    btnxpBack0: TcnSpeedButton;
     FolderDialog1: TFolderDialog;
-    btnReplay: TRzBmpButton;
-    RzSpinEdit1: TRzSpinEdit;
-    toolSpin: TRzSpinEdit;
-    btnsell0: TRzBmpButton;
-    BtnFormationUniform: TRzBmpButton;
+    btnReplay: TcnSpeedButton;
+    btnsell0: TcnSpeedButton;
+    BtnFormationUniform: TcnSpeedButton;
     PanelUniform: SE_panel;
-    btnUniformBack: TRzBmpButton;
-    UniformPortrait: TRzBmpButton;
+    btnUniformBack: TcnSpeedButton;
+    UniformPortrait: TcnSpeedButton;
     se_gridColors: TAdvStringGrid;
-    btnConfirmSell: TRzBmpButton;
+    btnConfirmSell: TcnSpeedButton;
     PanelMarket: SE_panel;
     advMarket: TAdvStringGrid;
-    btnMarketBack: TRzBmpButton;
-    btnMarketRefresh: TRzBmpButton;
+    btnMarketBack: TcnSpeedButton;
+    btnMarketRefresh: TcnSpeedButton;
     edtsearchprice: TRzNumericEdit;
-    btnLogin: TRzBmpButton;
-    btnSelCountryTeam: TRzBmpButton;
+    btnLogin: TcnSpeedButton;
+    btnSelCountryTeam: TcnSpeedButton;
     lbl_MoneyF: TLabel;
     lbl_RankF: TLabel;
     lbl_TurnF: TLabel;
     lbl_PointsF: TLabel;
     lbl_MIF: TLabel;
-    se_lblSurname0: TRzLabel;
-    se_lblSurname1: TRzLabel;
-    lbl_talent0: TRzLabel;
-    lbl_talent1: TRzLabel;
+    se_lblSurname0: TLabel;
+    se_lblSurname1: TLabel;
+    lbl_talent0: TLabel;
+    lbl_talent1: TLabel;
     ck_Jersey1: TRzRadioButton;
     ck_Shorts: TRzRadioButton;
     ck_Socks1: TRzRadioButton;
     ck_Jersey2: TRzRadioButton;
     ck_Socks2: TRzRadioButton;
-    se_lblmaxvalue: TRzLabel;
+    se_lblmaxvalue: TLabel;
     ck_HA: TRzRadioGroup;
-    lblNick0: TRzLabel;
-    lblNick1: TRzLabel;
-    lbl_score: TRzLabel;
+    lblNick0: TLabel;
+    lblNick1: TLabel;
+    lbl_score: TLabel;
     ProgressSeconds: TJvSpecialProgress;
-    lbl_minute: TRzLabel;
-    btnAudioStadium: TRzBmpButton;
-    btnDismiss0: TRzBmpButton;
+    lbl_minute: TLabel;
+    btnAudioStadium: TcnSpeedButton;
+    btnDismiss0: TcnSpeedButton;
     PanelDismiss: SE_panel;
-    btnConfirmDismiss: TRzBmpButton;
-    lbl_ConfirmDismiss: TRzLabel;
+    btnConfirmDismiss: TcnSpeedButton;
+    lbl_ConfirmDismiss: TLabel;
     imgshpfree: TImage;
     DXSound2: TDXSound;
     DXSound3: TDXSound;
@@ -231,18 +227,22 @@ type
     DXSound8: TDXSound;
     DXSound9: TDXSound;
     DXSound10: TDXSound;
-    lbl_TeamName: TRzLabel;
+    lbl_TeamName: TLabel;
     Button4: TButton;
     SE_GridXP0: SE_Grid;
     SE_Grid0: SE_Grid;
     SE_Grid1: SE_Grid;
-    lbl_descrTalent0: TRzLabel;
-    lbl_descrtalent1: TRzLabel;
-    PorTrait0: TCnSpeedButton;
+    lbl_descrTalent0: TLabel;
+    lbl_descrtalent1: TLabel;
+    Portrait0: TCnSpeedButton;
     Portrait1: TCnSpeedButton;
-    btnMatchesRefresh: TRzBmpButton;
-    btnMatchesListBack: TRzBmpButton;
+    btnMatchesRefresh: TcnSpeedButton;
+    btnMatchesListBack: TcnSpeedButton;
     SE_GridSkill: SE_Grid;
+    btnTalentBmp0: TCnSpeedButton;
+    btnTalentBmp1: TCnSpeedButton;
+    CnSpinEdit1: TCnSpinEdit;
+    ToolSpin: TCnSpinEdit;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure InitSound;
@@ -302,7 +302,6 @@ type
     procedure btnReplayClick(Sender: TObject);
     procedure btnStandingsClick(Sender: TObject);
     procedure toolSpinKeyPress(Sender: TObject; var Key: Char);
-    procedure toolSpinButtonClick(Sender: TObject; Button: TSpinButtonType);
     procedure btnsell0Click(Sender: TObject);
     procedure BtnFormationUniformClick(Sender: TObject);
     procedure btnUniformBackClick(Sender: TObject);
@@ -328,6 +327,7 @@ type
     procedure SE_GridSkillGridCellMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; CellX, CellY: Integer;
       Sprite: SE_Sprite);
     procedure SE_GridSkillGridCellMouseMove(Sender: TObject; Shift: TShiftState; CellX, CellY: Integer; Sprite: SE_Sprite);
+    procedure ToolSpinChange(Sender: TObject);
   private
     { Private declarations }
     fSelectedPlayer : TSoccerPlayer;
@@ -916,12 +916,12 @@ begin
   {$ifdef tools}
   CheckBox3.Enabled := False;
   ThreadCurMove.Enabled := False;
-  if  RzSpinEdit1.Value > 0 then
-   ClientLoadBrainMM ( trunc( RzSpinEdit1.Value - 1) );
-  CurrentIncMove :=  trunc( RzSpinEdit1.Value);
-  ClientLoadScript( trunc( RzSpinEdit1.Value)  );
+  if  CnSpinEdit1.Value > 0 then
+   ClientLoadBrainMM ( trunc( CnSpinEdit1.Value - 1) );
+  CurrentIncMove :=  trunc( CnSpinEdit1.Value);
+  ClientLoadScript( trunc( CnSpinEdit1.Value)  );
   if Mybrain.tsScript.Count = 0 then begin
-    ClientLoadBrainMM ( trunc( RzSpinEdit1.Value) );
+    ClientLoadBrainMM ( trunc( CnSpinEdit1.Value) );
   end
   else
     ElaborateTsScript; // if ts[0] = server_Plm CL_ ecc..... il vecchio ClientLoadbrain . alla fine il thread chiama  ClientLoadBrainMM
@@ -1173,10 +1173,10 @@ begin
 
   SetTheaterMatchSize;
 
-  btnSubs.Bitmaps.Up.LoadFromFile ( dir_interface + 'inout.bmp') ;
-  btnSubs.Bitmaps.Down.LoadFromFile ( dir_interface + 'inout.bmp') ;
-  btnAudioStadium.Bitmaps.Up.LoadFromFile ( dir_interface + 'audioon.bmp') ;
-  btnAudioStadium.Bitmaps.Down.LoadFromFile ( dir_interface + 'audiooff.bmp') ;
+  btnSubs.Glyph.LoadFromFile ( dir_interface + 'inout.bmp') ;
+  btnSubs.Glyph.LoadFromFile ( dir_interface + 'inout.bmp') ;
+  btnAudioStadium.Glyph.LoadFromFile ( dir_interface + 'audioon.bmp') ;
+  btnAudioStadium.Glyph.LoadFromFile ( dir_interface + 'audiooff.bmp') ;
   imgshpfree.Picture.LoadFromFile(  dir_interface + 'shpfree.bmp') ;
 
   DeleteDirData;
@@ -1486,7 +1486,8 @@ begin
     UniformBitmap := SE_Bitmap.Create (dir_player + 'bw.bmp');
     PreLoadUniform( ha, UniformBitmap   );  // usa tsuniforms e  UniformBitmapBW
     UniformBitmap.free;
-    UniformPortrait.Bitmaps.Disabled.LoadFromFile(dir_tmp + 'color' + IntToStr(ha)+ '.bmp');
+    UniformPortrait.Glyph.LoadFromFile(dir_tmp + 'color' + IntToStr(ha)+ '.bmp');
+    UniformPortrait.NumGlyphs := 1;
 //    se_portrait1.Bitmaps.Disabled.LoadFromFile(dir_tmp + 'se_0b.bmp');
 end;
 
@@ -1944,7 +1945,7 @@ begin
     aRGB.b := 214;
     Result := TRGB2TColor(aRGB);
   end
-  else if aColor= $00FF0080 then begin
+  else if aColor= $00FF80FF then begin
     aRGB := TColor2TRGB ( aColor);
     aRGB.r := 214;
     aRGB.g := 87;
@@ -2235,7 +2236,7 @@ begin
     // in caso di nero e bianco ho i preset grigi.
     UniformBitmap := SE_Bitmap.Create (dir_player + 'bw.bmp');
     PreLoadUniform(NextHa, UniformBitmap);  // usa tsuniforms e  UniformBitmapBW
-    UniformPortrait.Bitmaps.Disabled.LoadFromFile(dir_tmp + 'color0.bmp');
+    UniformPortrait.Glyph.LoadFromFile(dir_tmp + 'color0.bmp');
     Portrait0.Glyph.LoadFromFile(dir_tmp + 'color0.bmp');
     ck_HA.Buttons[NextHa].Checked := True;
     UniformBitmapGK := SE_Bitmap.Create (dir_player + 'bw.bmp');
@@ -3987,11 +3988,11 @@ begin
   lbl_score.Caption := IntToStr(Mybrain.Score.gol [0]) +'-'+ IntToStr(Mybrain.Score.gol [1]);
 
   lblNick0.Color :=  MyBrain.Score.DominantColor [0];
-  lblNick0.BlinkColor  :=  MyBrain.Score.DominantColor [0];
+//  lblNick0.BlinkColor  :=  MyBrain.Score.DominantColor [0];
   lblNick0.Font.Color := GetContrastColor(lblNick0.Color  );
 
   lblNick1.Color :=  MyBrain.Score.DominantColor [1];
-  lblNick1.BlinkColor  :=  MyBrain.Score.DominantColor [1];
+//  lblNick1.BlinkColor  :=  MyBrain.Score.DominantColor [1];
   lblNick1.Font.Color := GetContrastColor(lblNick1.Color  );
   lbl_minute.Caption := IntToStr(MyBrain.Minute) +'''';
 
@@ -4520,12 +4521,12 @@ begin
     if Mybrain.TeamTurn = 0 then begin
       btnSubs.Left := lblNick0.Left;
       btnTactics.Left := btnSubs.Left + btnSubs.Width;
-      lblNick0.Blinking := True;
-      lblNick1.Blinking := false;
+//      lblNick0.Blinking := True;
+//      lblNick1.Blinking := false;
     end
     else if Mybrain.TeamTurn = 1 then begin
-      lblNick0.Blinking := false;
-      lblNick1.Blinking := True;
+//      lblNick0.Blinking := false;
+//      lblNick1.Blinking := True;
       btnTactics.Left := lblNick1.Left + lblNick1.Width - btnTactics.Width ;
       btnSubs.Left := btnTactics.Left - btnSubs.Width;
     end;
@@ -4694,12 +4695,12 @@ begin
     if team = '0' then begin
       btnSubs.Left := lblNick0.Left;
       btnTactics.Left := btnSubs.Left + btnSubs.Width;
-      lblNick0.Blinking := True;
-      lblNick1.Blinking := false;
+//      lblNick0.Blinking := True;
+//      lblNick1.Blinking := false;
     end
     else if team = '1' then begin
-      lblNick0.Blinking := false;
-      lblNick1.Blinking := True;
+//      lblNick0.Blinking := false;
+//      lblNick1.Blinking := True;
       btnTactics.Left := lblNick1.Left + lblNick1.Width - btnTactics.Width ;
       btnSubs.Left := btnTactics.Left - btnSubs.Width;
     end;
@@ -7666,11 +7667,13 @@ procedure TForm1.btnAudioStadiumClick(Sender: TObject);
 begin
   if not btnAudioStadium.Down then begin
 
+    btnAudioStadium.NumGlyphs := 1;
     if Not AudioCrowd.Playing then begin
       AudioCrowd.Play;
     end;
   end
   else begin // non suonare
+    btnAudioStadium.NumGlyphs := 2;
     if  AudioCrowd.Playing then begin
       AudioCrowd.Stop;
     end;
@@ -8650,7 +8653,7 @@ begin
     UniformBitmap := SE_Bitmap.Create (dir_player + 'bw.bmp');
     PreLoadUniform( ha, UniformBitmap );  // usa tsuniforms e  UniformBitmapBW
     UniformBitmap.free;
-    UniformPortrait.Bitmaps.Disabled.LoadFromFile(dir_tmp + 'color' + IntToStr(ha) +'.bmp');
+    UniformPortrait.Glyph.LoadFromFile(dir_tmp + 'color' + IntToStr(ha) +'.bmp');
   //  se_portrait1.Bitmaps.Disabled.LoadFromFile(dir_tmp + 'se_0b.bmp');
 
 end;
@@ -8680,9 +8683,10 @@ procedure TForm1.SE_Theater1SpriteMouseMove(Sender: TObject; lstSprite: TObjectL
 var
   aPlayer,aFriend,anOpponent: TSoccerPlayer;
   SE_GridAttributes : SE_grid;
-  btnxp,btnBmp : TRzBmpButton;
+  btnxp : TcnSpeedButton;
+  btnTalentBmp: TCnSpeedButton;
   portrait : TCnSpeedButton;
-  lbls,lblt,lbldescrT: TRzLabel;
+  lbls,lblt,lbldescrT: TLabel;
   i,x,y: Integer;
 
   CellX, CellY : Integer;
@@ -8745,7 +8749,7 @@ begin
             lbls := se_lblSurname0;
             lblt:= lbl_Talent0;
             lbldescrT:= lbl_descrtalent0;
-            btnBmp :=btnTalentBmp0;
+            btnTalentBmp :=btnTalentBmp0;
             portrait := Portrait0;
 
           end;
@@ -8754,7 +8758,7 @@ begin
             lbls := se_lblSurname1;
             lblt:= lbl_Talent1;
             lbldescrT:= lbl_descrtalent1;
-            btnBmp :=btnTalentBmp1;
+            btnTalentBmp :=btnTalentBmp1;
             portrait := Portrait1;
           end;
         end;
@@ -8784,10 +8788,10 @@ begin
            lbldescrT.Caption := Translate('descr_talent_' + aPlayer.Talents);
               //          lblR.Caption := '';
            if aPlayer.Talents <> '' then begin
-               btnBmp.Bitmaps.Disabled.LoadFromFile( dir_talent + aPlayer.Talents + '.bmp' );
-               btnBmp.Visible := True;
+               btnTalentBmp.Glyph.LoadFromFile ( dir_talent + aPlayer.Talents + '.bmp' );
+               btnTalentBmp.Visible := True;
            end
-           else btnBmp.Visible := False;
+           else btnTalentBmp.Visible := False;
 
 
       end;
@@ -10139,12 +10143,15 @@ begin
 end;
 
 
-procedure TForm1.toolSpinButtonClick(Sender: TObject; Button: TSpinButtonType);
+
+
+procedure TForm1.ToolSpinChange(Sender: TObject);
 var
   AChar: Char;
 begin
   aChar := #13;
   toolSpinKeyPress(Sender, aChar);
+
 end;
 
 procedure TForm1.toolSpinKeyPress(Sender: TObject; var Key: Char);
