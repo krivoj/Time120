@@ -689,28 +689,6 @@ object Form1: TForm1
         ParentFont = False
         Transparent = False
       end
-      object ProgressSeconds: TJvSpecialProgress
-        Left = 343
-        Top = 30
-        Width = 294
-        Height = 18
-        Caption = '50'
-        Color = 8081721
-        EndColor = clYellow
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = 8081721
-        Font.Height = -11
-        Font.Name = 'Tahoma'
-        Font.Style = [fsBold]
-        Maximum = 120
-        ParentColor = False
-        ParentFont = False
-        Position = 70
-        Solid = True
-        StartColor = clYellow
-        TextCentered = True
-        TextOption = toCaption
-      end
       object lbl_minute: TLabel
         Left = 3
         Top = 3
@@ -718,7 +696,7 @@ object Form1: TForm1
         Height = 20
         Alignment = taCenter
         AutoSize = False
-        Color = clBlack
+        Color = 8081721
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clLime
         Font.Height = -16
@@ -764,7 +742,7 @@ object Form1: TForm1
       object btnWatchLiveExit: TCnSpeedButton
         Left = 259
         Top = 27
-        Width = 118
+        Width = 60
         Height = 21
         Cursor = crHandPoint
         Color = clGray
@@ -811,6 +789,40 @@ object Form1: TForm1
         Visible = False
         OnChange = ToolSpinChange
         OnKeyPress = toolSpinKeyPress
+      end
+      object SE_GridTime: SE_Grid
+        Left = 89
+        Top = 29
+        Width = 230
+        Height = 18
+        MouseScrollRate = 1.000000000000000000
+        MouseWheelInvert = False
+        MouseWheelValue = 10
+        MouseWheelZoom = False
+        MousePan = False
+        MouseScroll = False
+        BackColor = 8081721
+        AnimationInterval = 20
+        GridInfoCell = False
+        GridVisible = False
+        GridColor = clSilver
+        GridCellWidth = 40
+        GridCellHeight = 30
+        GridCellsX = 10
+        GridCellsY = 4
+        GridHexSmallWidth = 10
+        CollisionDelay = 0
+        ShowPerformance = False
+        VirtualWidth = 212
+        Virtualheight = 294
+        TabOrder = 1
+        CellBorder = CellBorderNone
+        CellBorderColor = clGray
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Verdana'
+        Font.Style = []
       end
     end
     object PanelSell: SE_Panel
@@ -2173,46 +2185,6 @@ object Form1: TForm1
         Font.Style = []
       end
     end
-    object JvShapedButton2: TJvShapedButton
-      Left = 41
-      Top = 28
-      Width = 20
-      Height = 20
-      Enabled = False
-      TabOrder = 14
-      Visible = False
-      ButtonShape = jvSRound
-    end
-    object JvShapedButton4: TJvShapedButton
-      Left = 117
-      Top = 28
-      Width = 20
-      Height = 20
-      Enabled = False
-      TabOrder = 15
-      Visible = False
-      ButtonShape = jvSRound
-    end
-    object JvShapedButton1: TJvShapedButton
-      Left = 79
-      Top = 28
-      Width = 20
-      Height = 20
-      Enabled = False
-      TabOrder = 16
-      Visible = False
-      ButtonShape = jvSRound
-    end
-    object JvShapedButton3: TJvShapedButton
-      Left = 3
-      Top = 28
-      Width = 20
-      Height = 20
-      Enabled = False
-      TabOrder = 17
-      Visible = False
-      ButtonShape = jvSRound
-    end
     object PanelXPplayer0: SE_Panel
       Left = 28
       Top = 559
@@ -2220,7 +2192,7 @@ object Form1: TForm1
       Height = 290
       BevelOuter = bvNone
       Color = 8081721
-      TabOrder = 18
+      TabOrder = 14
       Visible = False
       object btnxpBack0: TCnSpeedButton
         Left = 267
@@ -2286,7 +2258,7 @@ object Form1: TForm1
       Height = 223
       BevelOuter = bvNone
       Color = 8081721
-      TabOrder = 19
+      TabOrder = 15
       Visible = False
       object btnUniformBack: TCnSpeedButton
         Left = 265
@@ -2627,7 +2599,7 @@ object Form1: TForm1
       Height = 292
       BevelOuter = bvNone
       Color = 8081721
-      TabOrder = 20
+      TabOrder = 16
       Visible = False
       object se_lblmaxvalue: TLabel
         Left = 255
@@ -2867,7 +2839,7 @@ object Form1: TForm1
       Width = 116
       Height = 58
       Color = 8081721
-      TabOrder = 21
+      TabOrder = 17
       Visible = False
       object lbl_ConfirmDismiss: TLabel
         Left = 3

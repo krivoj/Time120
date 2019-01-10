@@ -14,6 +14,7 @@
       { TODO : bug sui pulsanti tattiche. il player rimane sospeso  }
       { TODO : sul rigore che diventa gol manca il suono della folla  }
       { TODO : bug sui setuniform. avolte va in db.realmd.cheatdetected  }
+      { TODO : bug su closeviewmatch }
 
 
       // procedure importanti:
@@ -39,15 +40,14 @@ uses
   SoccerBrainv3,   // si occupa della singola partita
 
 
-  CnButtons,CnSpin,  // CnVCLPack
+  CnButtons,CnSpin,CnAAFont, CnAACtrls,  // CnVCLPack
 
   BaseGrid, AdvGrid, AdvObj,    // TMS grids and Panel
-  JvExControls, JvTracker, JvExStdCtrls, JvShapedButton, JvSpecialProgress, // Jedi Library
   Dxwave,DXSounds,                    // DelphiX (Audio)
   ZLIBEX,                             // delphizlib invio dati compressi tra server e client
 
    // RaizeComponents
-  OverbyteIcsWndControl, OverbyteIcsWSocket, CnAAFont, CnAACtrls ;  // OverByteIcsWSocketE ics con modifica. vedi directory External.Packages\overbyteICS del progetto
+  OverbyteIcsWndControl, OverbyteIcsWSocket  ;  // OverByteIcsWSocketE ics con modifica. vedi directory External.Packages\overbyteICS del progetto
 
 const GCD_DEFAULT = 200;        // global cooldown, minimo 200 ms tra un input verso il server e l'altro ( anti-cheating )
 const ScaleSprites = 40;        // riduzione generica di tutto gli sprite player
@@ -156,10 +156,6 @@ type
     Button1: TButton;
     Edit3: TEdit;
     mainThread: SE_ThreadTimer;
-    JvShapedButton2: TJvShapedButton;
-    JvShapedButton4: TJvShapedButton;
-    JvShapedButton1: TJvShapedButton;
-    JvShapedButton3: TJvShapedButton;
     Memo2: TMemo;
     CheckBox2: TCheckBox;
     BtnFormationReset: TcnSpeedButton;
@@ -206,14 +202,12 @@ type
     lbl_Nick0: TCnAAScrollText;
     lbl_Nick1: TCnAAScrollText;
     lbl_score: TLabel;
-    ProgressSeconds: TJvSpecialProgress;
     lbl_minute: TLabel;
     btnAudioStadium: TcnSpeedButton;
     btnDismiss0: TcnSpeedButton;
     PanelDismiss: SE_panel;
     btnConfirmDismiss: TcnSpeedButton;
     lbl_ConfirmDismiss: TLabel;
-    imgshpfree: TImage;
     DXSound2: TDXSound;
     DXSound3: TDXSound;
     DXSound4: TDXSound;
@@ -246,6 +240,8 @@ type
     BtnErrorOK: TCnSpeedButton;
     btn_UniformHome: TCnSpeedButton;
     btn_UniformAway: TCnSpeedButton;
+    SE_GridTime: SE_Grid;
+    imgshpfree: TImage;
 // General
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -381,6 +377,7 @@ type
     procedure i_Tml ( MovesLeft,team: string );  // animazione internal mosse rimaste
     procedure SetTmlPosition ( team: string );
     procedure i_tuc ( team: string );          // animazione internal turn change
+    procedure RefreshGridTime;
     procedure i_red ( ids: string );           // animazione internal red card (espulsione)
     procedure i_Yellow ( ids: string );        // animazione internal yellow card (ammonizione)
     procedure i_Injured ( ids: string );       // animazione internal infortunio
@@ -1209,7 +1206,6 @@ begin
   btnSubs.Glyph.LoadFromFile ( dir_interface + 'inout.bmp') ;
   btnAudioStadium.Glyph.LoadFromFile ( dir_interface + 'audioon.bmp') ;
   btnAudioStadium.Glyph.LoadFromFile ( dir_interface + 'audiooff.bmp') ;
-  imgshpfree.Picture.LoadFromFile(  dir_interface + 'shpfree.bmp') ;
 
   DeleteDirData;
 
@@ -1244,6 +1240,7 @@ begin
   SE_Grid0.thrdAnimate.Priority := tpLowest;
   SE_GridXp0.thrdAnimate.Priority := tpLowest;
   SE_GridAllBrain.thrdAnimate.Priority := tpLowest;
+  SE_GridTime.thrdAnimate.Priority := tpLowest;
 
 
 end;
@@ -2367,7 +2364,7 @@ begin
           aPlayer.SE_Sprite := se_Players.CreateSprite(UniformBitmapGK.Bitmap , aPlayer.Ids,1,1,1000,0,0,true);
 
         aPlayer.SE_Sprite.Scale := ScaleSprites;
-//        aPlayer.se_sprite.BlendMode := SE_BlendLuminosity2;
+        aPlayer.se_sprite.ModPriority := i+2;
       end;
 
       tsHistory := TStringList.Create;
@@ -2418,7 +2415,6 @@ begin
       tsXP.Free;
 
 
-//      aPlayer.SpriteSE.Priority := i+1;
       MyBrainFormation.AddSoccerPlayer(aPlayer); // uso anche questa lista per trovare gli sprite inKeyDown
       if MyBrainFormation.isReserveSlot  ( AIFormation_x,AIFormation_y )  then begin // le riserve tutte a sinistra
 
@@ -4563,8 +4559,10 @@ begin
 
     if (Mybrain.Score.TeamGuid [0]  = MyGuidTeam ) or (Mybrain.Score.TeamGuid [1]  = MyGuidTeam ) then
       btnWatchLiveExit.Visible := false
-      else btnWatchLiveExit.Visible := true;
-
+    else begin
+      btnWatchLiveExit.Left := (PanelScore.Width div 2) - ( btnWatchLiveExit.Width div 2 );
+      btnWatchLiveExit.Visible := true;
+    end;
      SetGlobalCursor(crHandPoint );
 
      if (not AudioCrowd.Playing) and ( not btnAudioStadium.Down) then begin
@@ -4579,7 +4577,7 @@ begin
 //   if Mybrain.Score.TeamGuid [ Mybrain.TeamTurn ]  = MyGuidTeam then begin
 
     if Mybrain.TeamTurn = 0 then begin
-      btnSubs.Left := lbl_Nick0.Left;
+      btnSubs.Left := 3;
       btnTactics.Left := btnSubs.Left + btnSubs.Width;
       lbl_Nick0.Active := True;
       lbl_Nick1.Reset;
@@ -4589,7 +4587,7 @@ begin
       lbl_Nick0.Active := false;
       lbl_Nick0.Reset;
       lbl_Nick1.Active := true;
-      btnTactics.Left := lbl_Nick1.Left + lbl_Nick1.Width - btnTactics.Width ;
+      btnTactics.Left := lbl_Nick1.Left + lbl_Nick1.Width;// - btnTactics.Width ;
       btnSubs.Left := btnTactics.Left - btnSubs.Width;
     end;
 
@@ -4624,87 +4622,58 @@ begin
 end;
 procedure Tform1.SetTmlPosition ( team: string );
 begin
-  if team = '0' then begin
+  if team = '0' then
+      SE_GridTime.Left := lbl_Nick0.Left + 32
+  else
+      SE_GridTime.Left := lbl_Nick1.Left + 50;
+end;
+procedure TForm1.refreshGridTime;
+var
+  y: Integer;
+  bmp: SE_Bitmap;
+begin
+  SE_GridTime.ClearData;   // importante anche pr memoryleak
+  SE_GridTime.DefaultColWidth := 16;
+  SE_GridTime.DefaultRowHeight := 32;
+  SE_GridTime.ColCount :=3; // i 5 bitmap delle mosse, shpo free e la progressBar
+  SE_GridTime.RowCount :=1;
+  SE_GridTime.Columns[0].Width := 50;
+  SE_GridTime.Columns[1].Width := 32;
+  SE_GridTime.Columns[2].Width := 120;
+  SE_GridTime.Height := 16;
+  SE_GridTime.Width := 50+32+120;
+  SE_GridTime.top := PanelScore.Height - SE_GridTime.Height ;
 
-      ProgressSeconds.Left := lbl_Nick0.Left;
-      JvShapedButton1.Left := SE_Theater1.left;
-      JvShapedButton2.Left := JvShapedButton1.left + JvShapedButton1.Width ;
-      JvShapedButton3.Left := JvShapedButton2.left + JvShapedButton2.Width ;
-      JvShapedButton4.Left := JvShapedButton3.left + JvShapedButton3.Width ;
-      imgshpfree.Left := JvShapedButton4.left + JvShapedButton4.Width ;
-  end
-  else begin
-      JvShapedButton1.Left := PanelSkill.Left + PanelSkill.Width ;
-      JvShapedButton2.Left := JvShapedButton1.left + JvShapedButton1.Width ;
-      JvShapedButton3.Left := JvShapedButton2.left + JvShapedButton2.Width ;
-      JvShapedButton4.Left := JvShapedButton3.left + JvShapedButton3.Width ;
-      imgshpfree.Left := JvShapedButton4.left + JvShapedButton4.Width ;
-      ProgressSeconds.Left := lbl_Nick1.Left;
+  for y := 0 to SE_GridTime.RowCount -1 do begin
+    SE_GridTime.Rows[y].Height := 10;
   end;
+
+
+
+  bmp:= SE_bitmap.Create ( dir_ball + 'ball2.bmp');
+
+  SE_GridTime.AddSE_Bitmap(0,0, MyBrain.TeamMovesLeft ,Bmp,true);
+
+  bmp.Free;
+
+  if MyBrain.ShpFree > 0 then begin
+    bmp:= SE_bitmap.Create ( dir_interface + 'shpfree.bmp');
+    SE_GridTime.AddSE_Bitmap(1,0,1,bmp,true);
+    bmp.Free;
+  end;
+
+  SE_GridTime.AddProgressBar(2,0,100,clWhite,pbStandard);
 end;
 
-
 procedure Tform1.i_tml ( MovesLeft,team: string );
-var
-  fore,back: TColor;
 begin
 
-    SetTmlPosition ( Team );
-    DontDoPlayers:= False;
+  SetTmlPosition ( Team );
+  DontDoPlayers:= False;
+  lbl_minute.Caption := IntToStr(MyBrain.Minute) +'''';
 
-    lbl_minute.Caption := IntToStr(MyBrain.Minute) +'''';
+  RefreshGridTime;
 
-    fore := MyBrain.Score.DominantColor [ StrToInt(Team)  ];
-    Back:= GetContrastColor(MyBrain.Score.DominantColor [ StrToInt(Team)]) ;
-    JvShapedButton1.Color := fore;
-    JvShapedButton2.Color := fore;
-    JvShapedButton3.Color := fore;
-    JvShapedButton4.Color := fore;
-//    JvShapedButton5.Color := fore;
-    ProgressSeconds.StartColor := fore;
-    ProgressSeconds.EndColor := fore;
-    ProgressSeconds.Font.Color := back;
-    ProgressSeconds.Visible := true;
-
-  case StrToInt(MovesLeft) of
-    0:Begin
-
-      JvShapedButton1.Visible := False;
-      JvShapedButton2.Visible := False;
-      JvShapedButton3.Visible := False;
-      JvShapedButton4.Visible := False;
-
-    End;
-    1:Begin
-
-      JvShapedButton1.Visible := true;
-      JvShapedButton2.Visible := False;
-      JvShapedButton3.Visible := False;
-      JvShapedButton4.Visible := False;
-    End;
-    2:Begin
-
-      JvShapedButton1.Visible := true;
-      JvShapedButton2.Visible := true;
-      JvShapedButton3.Visible := false;
-      JvShapedButton4.Visible := False;
-    End;
-    3:Begin
-      JvShapedButton1.Visible := true;
-      JvShapedButton2.Visible := true;
-      JvShapedButton3.Visible := true;
-      JvShapedButton4.Visible := False;
-    End;
-    4:Begin
-      JvShapedButton1.Visible := true;
-      JvShapedButton2.Visible := true;
-      JvShapedButton3.Visible := true;
-      JvShapedButton4.Visible := true;
-    End;
-  end;
-
-
-    imgshpfree.Visible := MyBrain.ShpFree = 1 ;
 end;
 procedure Tform1.i_tuc ( team: string );
 var
@@ -4719,32 +4688,8 @@ begin
    SetTmlPosition ( Team );
     //CreateSplash ( Translate('Round',1)  + ' ' + MyBrain.Score.Team [MyBrain.TeamTurn],msSplashTurn);
 
-    fore := MyBrain.Score.DominantColor [ StrToInt(Team) ];
-    Back:= GetContrastColor(MyBrain.Score.DominantColor [ StrToInt(Team)]) ;
+   RefreshGridTime;
 
-    ProgressSeconds.StartColor := fore;
-    ProgressSeconds.EndColor := fore;
-    ProgressSeconds.Font.Color := back;
-
-    JvShapedButton1.Color := fore;
-    JvShapedButton1.Visible:= True;
-
-
-    JvShapedButton2.Color := fore;
-    JvShapedButton2.Visible:= True;
-
-    JvShapedButton3.Color := fore;
-    JvShapedButton3.Visible:= True;
-
-    JvShapedButton4.Color := fore;
-    JvShapedButton4.Visible:= True;
-
-//    JvShapedButton5.Color := fore;
-    imgshpfree.Visible := MyBrain.ShpFree = 1 ;
-
-   // if MyBrain.Score.TeamGuid [StrToInt(Team)] = GuidTeam then
-   //   btnSkill11.Visible := True
-   //   else btnSkill11.Visible := false;
    btnTactics.Visible := Mybrain.Score.TeamGuid [ Mybrain.TeamTurn ]  = MyGuidTeam;
 
 
@@ -4989,7 +4934,10 @@ begin
 //*****************************************************************************************************************************************
     else if (tsCmd[0]= 'SERVER_SHP') then begin   // ids aplayer.cellx aplayer.celly  cellx celly
 
-      imgshpfree.Visible := MyBrain.ShpFree = 1 ;
+      if SE_GridTime.Cells[1,0].Bitmap <> nil then begin
+        SE_GridTime.Cells[1,0].Bitmap.Free;
+        SE_GridTime.Cells[1,0].Bitmap := nil;
+      end;
 
       PrepareAnim;
       AnimationScript.Tsadd ( 'cl_mainskillused,Short.Passing,' + tsCmd[1] + ',' + tsCmd[2] + ',' + tsCmd[3] + ',' + tsCmd[4] + ',' + tsCmd[5]) ;
@@ -7704,12 +7652,8 @@ begin
       gamescreen := ScreenMain;
     end;
 
-      JvShapedButton1.Visible := False;
-      JvShapedButton2.Visible := False;
-      JvShapedButton3.Visible := False;
-      JvShapedButton4.Visible := False;
-      imgshpfree.Visible := False;
-      ProgressSeconds.Visible := False;
+    SE_GridTime.Visible := false;
+    SE_GridTime.Active := false;
     GCD := GCD_DEFAULT;
   end;
 end;
@@ -10180,14 +10124,13 @@ begin
         localseconds := localseconds - (Timer1.Interval div 1000);
         if LocalSeconds < 0 then LocalSeconds := 0;
 
-//        Caption :=  Edit1.Text + ' ' + MyBrain.Score.Team [  MyBrain.TeamTurn ] +  ' ' + IntToStr(MyBrain.TeamTurn) + ': '+ IntToStr(localseconds);
-        ProgressSeconds.Position := localseconds;
-        if ProgressSeconds.PercentDone  < 50 then
-          ProgressSeconds.Font.Color := clWhite
-          else ProgressSeconds.Font.Color := GetContrastColor(MyBrain.Score.DominantColor [  MyBrain.TeamTurn ]) ;
+        SE_GridTime.Cells[2,0].ProgressBarValue :=  (localseconds * 100) div 120;
+//        if ProgressSeconds.PercentDone  < 50 then
+//          ProgressSeconds.Font.Color := clWhite
+//          else ProgressSeconds.Font.Color := GetContrastColor(MyBrain.Score.DominantColor [  MyBrain.TeamTurn ]) ;
 
 
-        ProgressSeconds.Caption := IntToStr(localseconds);
+//        ProgressSeconds.Caption := IntToStr(localseconds);
 
       end;
 end;
@@ -10323,6 +10266,8 @@ begin
     PanelScore.Visible:= False;
       lbl_Nick0.Active := False;
       lbl_Nick1.Active := False;
+      SE_GridTime.Visible := false;
+      SE_GridTime.Active := false;
 
     btnWatchLiveExit.Visible := false;
     PanelInfoPlayer0.Visible:= True;
@@ -10407,6 +10352,8 @@ begin
     PanelScore.Visible := false;
       lbl_Nick0.Active := False;
       lbl_Nick1.Active := False;
+      SE_GridTime.Visible := false;
+      SE_GridTime.Active := false;
 
     ShowMain;
     //ClientLoadFormation ;
@@ -10434,6 +10381,9 @@ begin
     PanelInfoPlayer1.Visible:= True;
     PanelXPPlayer0.Visible := false;
     PanelScore.Visible := true;
+      SE_GridTime.Visible := true;
+      SE_GridTime.Active := true;
+
     ShowScore;
     advDice.ClearAll ;
   end

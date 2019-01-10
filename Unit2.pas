@@ -101,14 +101,8 @@ begin
   Form1.PanelDismiss.Left:= Form1.PanelInfoPlayer0.left ;
 
 
-  Form1.JvShapedButton1.Top :=  Form1.PanelSkill.top;
-  Form1.JvShapedButton2.Top :=  Form1.PanelSkill.top;
-  Form1.JvShapedButton3.Top :=  Form1.PanelSkill.top;
-  Form1.JvShapedButton4.Top :=  Form1.PanelSkill.top;
-  Form1.imgshpfree.Top :=  Form1.PanelSkill.top;
-
   Form1.PanelCombatLog.Left :=  (Form1.PanelBack.Width div 2 ) - (Form1.PanelCombatLog.Width div 2 );   ;
-  Form1.PanelCombatLog.Top := Form1.JvShapedButton1.Top  + Form1.JvShapedButton1.Height;
+  Form1.PanelCombatLog.Top := Form1.se_theater1.top + Form1.se_theater1.height + 3;
 
 
   Form1.SE_lblSurname0.Caption := '';
@@ -221,12 +215,8 @@ begin
   Form1.PanelXPPlayer0.Visible := false;
 
 
-  Form1.JvShapedButton1.Visible := False;
-  Form1.JvShapedButton2.Visible := False;
-  Form1.JvShapedButton3.Visible := False;
-  Form1.JvShapedButton4.Visible := False;
-  Form1.imgshpfree.Visible := False;
-  Form1.ProgressSeconds.Visible := False;
+  Form1.SE_GridTime.Active := False;
+  Form1.SE_GridTime.Visible:= False;
 
 end;
 procedure ShowCornerFreeKickGrid;
@@ -278,12 +268,8 @@ begin
   Form1.PanelMarket.Visible:= False;
 
   Form1.PanelLogin.Visible := True;
-  Form1.JvShapedButton1.Visible := False;
-  Form1.JvShapedButton2.Visible := False;
-  Form1.JvShapedButton3.Visible := False;
-  Form1.JvShapedButton4.Visible := False;
-  Form1.imgshpfree.Visible := False;
-  Form1.ProgressSeconds.Visible := False;
+  Form1.SE_GridTime.Active := False;
+  Form1.SE_GridTime.Visible:= False;
 
   Form1.PanelSkill.Visible := False;
   Form1.PanelCombatLog.Visible := False;
@@ -298,8 +284,8 @@ begin
   Form1.PanelCombatLog.Visible := True;
   Form1.PanelCombatLog.BringToFront ;
 
-  Form1.ProgressSeconds.Maximum :=  (TurnMilliSeconds div 1000);
-
+  Form1.SE_GridTime.Active := True;
+  Form1.SE_GridTime.Visible := true;
 
   Form1.PanelListMatches.Visible := false;
   Form1.PanelCountryTeam.Visible := false;
