@@ -9,9 +9,11 @@
       { TODO : finire traduzioni }
       { TODO : verificare bug sound prs e posizione palla}
       { TODO : sostituire grid con se_grid. la gridLog non deve resettarsi, ma mantenere gli ultimi 50 eventi e fare pan automatico}
+      { TODO : sostituire jvshaped con se_grid.}
       { TODO : gestire il fine partita }
       { TODO : bug sui pulsanti tattiche. il player rimane sospeso  }
       { TODO : sul rigore che diventa gol manca il suono della folla  }
+      { TODO : bug sui setuniform. avolte va in db.realmd.cheatdetected  }
 
 
       // procedure importanti:
@@ -34,18 +36,18 @@ uses
   DSE_SearchFiles,
   DSE_GRID,
   DSE_Panel,
-  SoccerBrainv3,
+  SoccerBrainv3,   // si occupa della singola partita
 
 
-  CnButtons,  // CnVCLBasePack
+  CnButtons,CnSpin,  // CnVCLPack
 
-  BaseGrid, AdvGrid, AdvBadge, AdvObj,    // TMS grids and Panel
+  BaseGrid, AdvGrid, AdvObj,    // TMS grids and Panel
   JvExControls, JvTracker, JvExStdCtrls, JvShapedButton, JvSpecialProgress, // Jedi Library
   Dxwave,DXSounds,                    // DelphiX (Audio)
   ZLIBEX,                             // delphizlib invio dati compressi tra server e client
 
-  RzBmpBtn, RzButton, RzEdit,RzSpnEdt, RzRadChk, RzPanel, RzRadGrp,    // RaizeComponents
-  OverbyteIcsWndControl, OverbyteIcsWSocket, CnSpin    ;  // OverByteIcsWSocketE ics con modifica. vedi directory External.Packages\overbyteICS del progetto
+   // RaizeComponents
+  OverbyteIcsWndControl, OverbyteIcsWSocket ;  // OverByteIcsWSocketE ics con modifica. vedi directory External.Packages\overbyteICS del progetto
 
 const GCD_DEFAULT = 200;        // global cooldown, minimo 200 ms tra un input verso il server e l'altro ( anti-cheating )
 const ScaleSprites = 40;        // riduzione generica di tutto gli sprite player
@@ -120,7 +122,7 @@ type
     PanelScore: SE_panel;
     btnTactics: TcnSpeedButton;
     PanelSell: SE_panel;
-    edtSell: TRzNumericEdit;
+    edtSell: TEdit;
     PanelMain: SE_panel;
     PanelCountryTeam: SE_panel;
     advCountryTeam: TAdvStringGrid;
@@ -128,22 +130,17 @@ type
     PanelCorner: SE_panel;
     AdvTeam: TAdvStringGrid;
     PanelLogin: SE_panel;
-    Label1: TLabel;
-    Label5: TLabel;
+    lbl_username: TLabel;
+    lbl_Password: TLabel;
     Edit1: TEdit;
     Edit2: TEdit;
-    AdvBadgeLabel1: TAdvBadgeLabel;
     PanelError: SE_panel;
-    lblError: TcnSpeedButton;
-    btnErrorOK: TcnSpeedButton;
     btnFormation: TcnSpeedButton;
     btnMainPlay: TcnSpeedButton;
     btnWatchLive: TcnSpeedButton;
     btnMarket: TcnSpeedButton;
     btnStandings: TcnSpeedButton;
     btnExit: TcnSpeedButton;
-    RzNumericEdit1: TRzNumericEdit;
-    RzNumericEdit2: TRzNumericEdit;
     SE_Theater1: SE_Theater;
     SE_field: SE_Engine;
     SE_players: SE_Engine;
@@ -188,7 +185,7 @@ type
     advMarket: TAdvStringGrid;
     btnMarketBack: TcnSpeedButton;
     btnMarketRefresh: TcnSpeedButton;
-    edtsearchprice: TRzNumericEdit;
+    edtsearchprice: TEdit;
     btnLogin: TcnSpeedButton;
     btnSelCountryTeam: TcnSpeedButton;
     lbl_MoneyF: TLabel;
@@ -200,13 +197,12 @@ type
     se_lblSurname1: TLabel;
     lbl_talent0: TLabel;
     lbl_talent1: TLabel;
-    ck_Jersey1: TRzRadioButton;
-    ck_Shorts: TRzRadioButton;
-    ck_Socks1: TRzRadioButton;
-    ck_Jersey2: TRzRadioButton;
-    ck_Socks2: TRzRadioButton;
+    ck_Jersey1: TCnSpeedButton;
+    ck_Shorts: TCnSpeedButton;
+    ck_Socks1: TCnSpeedButton;
+    ck_Jersey2: TCnSpeedButton;
+    ck_Socks2: TCnSpeedButton;
     se_lblmaxvalue: TLabel;
-    ck_HA: TRzRadioGroup;
     lblNick0: TLabel;
     lblNick1: TLabel;
     lbl_score: TLabel;
@@ -243,91 +239,128 @@ type
     btnTalentBmp1: TCnSpeedButton;
     CnSpinEdit1: TCnSpinEdit;
     ToolSpin: TCnSpinEdit;
+    editN1: TEdit;
+    EditN2: TEdit;
+    lbl_ConnectionStatus: TLabel;
+    lbl_Error: TLabel;
+    BtnErrorOK: TCnSpeedButton;
+    btn_UniformHome: TCnSpeedButton;
+    btn_UniformAway: TCnSpeedButton;
+// General
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure InitSound;
-    procedure ClientLoadListMatchFile;
-    procedure ClientLoadMarket;
-    procedure ElaborateTsScript; // tsScript arriva dal server e contiene l'animazione da realizzare qui sul client
+    procedure btnMainPlayClick(Sender: TObject);
+    procedure btnErrorOKClick(Sender: TObject);
+    procedure btnExitClick(Sender: TObject);
+    procedure BtnLoginClick(Sender: TObject);
+    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+
+
+// first time select country and team
+    procedure advCountryTeamKeyPress(Sender: TObject; var Key: Char);
+    procedure btnSelCountryTeamClick(Sender: TObject);
+
+// LiveMatch GamePlay utilities
     procedure AdvTeamClickCell(Sender: TObject; ARow, ACol: Integer);
+    procedure btnTacticsClick(Sender: TObject);
+    procedure btnSkillPASSClick(Sender: TObject);
+    procedure btnSubsClick(Sender: TObject);
+    procedure btnAudioStadiumClick(Sender: TObject);
+
+// Tcp
+    procedure tcpSessionConnected(Sender: TObject; ErrCode: Word);
+    procedure tcpException(Sender: TObject; SocExcept: ESocketException);
+    procedure tcpSessionClosed(Sender: TObject; ErrCode: Word);
+    procedure tcpDataAvailable(Sender: TObject; ErrCode: Word);
+
+// Threads And timers
+    procedure mainThreadTimer(Sender: TObject);
+    procedure Timer1Timer(Sender: TObject);
+    procedure ThreadCurMoveTimer(Sender: TObject);
+    procedure ElaborateTsScript; // tsScript arriva dal server e contiene l'animazione da realizzare qui sul client
+
+// Tools
+    procedure CheckBoxAI0Click(Sender: TObject);
+    procedure CheckBoxAI1Click(Sender: TObject);
+    procedure CheckBox2Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure Button7Click(Sender: TObject);
     procedure Button10Click(Sender: TObject);
     procedure Button8Click(Sender: TObject);
-    procedure tcpDataAvailable(Sender: TObject; ErrCode: Word);
-    procedure BtnLoginClick(Sender: TObject);
-    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
-    procedure btnSelCountryTeamClick(Sender: TObject);
-    procedure btnFormationClick(Sender: TObject);
-    procedure btnWatchLiveClick(Sender: TObject);
-
-    procedure tcpSessionConnected(Sender: TObject; ErrCode: Word);
-    procedure tcpException(Sender: TObject; SocExcept: ESocketException);
-    procedure tcpSessionClosed(Sender: TObject; ErrCode: Word);
-
-    procedure Timer1Timer(Sender: TObject);
-
-    procedure btnTacticsClick(Sender: TObject);
-    procedure btnSkill11Click(Sender: TObject);
-    procedure btnMainPlayClick(Sender: TObject);
-    procedure btnErrorOKClick(Sender: TObject);
-    procedure btnExitClick(Sender: TObject);
-    procedure advCountryTeamKeyPress(Sender: TObject; var Key: Char);
-    procedure SE_Theater1SpriteMouseMove(Sender: TObject; lstSprite: TObjectList<DSE_theater.SE_Sprite>; Shift: TShiftState);
-      function FindInteractivePlayer ( aPlayer: TSoccerPlayer ): TInteractivePlayer;
-    procedure SE_Theater1SpriteMouseDown(Sender: TObject; lstSprite: TObjectList<DSE_theater.SE_Sprite>; Button: TMouseButton;
-      Shift: TShiftState);
-    procedure SE_Theater1SpriteMouseUp(Sender: TObject; lstSprite: TObjectList<DSE_theater.SE_Sprite>; Button: TMouseButton;
-      Shift: TShiftState);
-    procedure SE_Theater1TheaterMouseMove(Sender: TObject; VisibleX, VisibleY, VirtualX, VirtualY: Integer; Shift: TShiftState);
     procedure Button6Click(Sender: TObject);
     procedure Button1Click(Sender: TObject);
+
+// Mouse on Theater
+    procedure SE_Theater1SpriteMouseMove(Sender: TObject; lstSprite: TObjectList<DSE_theater.SE_Sprite>; Shift: TShiftState);
+    procedure SE_Theater1SpriteMouseDown(Sender: TObject; lstSprite: TObjectList<DSE_theater.SE_Sprite>; Button: TMouseButton; Shift: TShiftState);
+    procedure SE_Theater1SpriteMouseUp(Sender: TObject; lstSprite: TObjectList<DSE_theater.SE_Sprite>; Button: TMouseButton; Shift: TShiftState);
+    procedure SE_Theater1TheaterMouseMove(Sender: TObject; VisibleX, VisibleY, VirtualX, VirtualY: Integer; Shift: TShiftState);
+    procedure SE_Theater1BeforeVisibleRender(Sender: TObject; VirtualBitmap, VisibleBitmap: SE_Bitmap);
     procedure SE_ballSpriteDestinationReached(ASprite: SE_Sprite);
-    procedure mainThreadTimer(Sender: TObject);
-    procedure CheckBoxAI0Click(Sender: TObject);
-    procedure CheckBoxAI1Click(Sender: TObject);
-    procedure CheckBox2Click(Sender: TObject);
+
+// Formation
     procedure BtnFormationBackClick(Sender: TObject);
     procedure BtnFormationResetClick(Sender: TObject);
-    procedure advDiceWriteRow  ( team: integer; attr, Surname, ids, vs,num1: string);
-      function advDiceNextBlank  ( team: integer): Integer;
-    procedure btnSubsClick(Sender: TObject);
-    procedure SE_Theater1BeforeVisibleRender(Sender: TObject; VirtualBitmap, VisibleBitmap: SE_Bitmap);
-    procedure btnWatchLiveExitClick(Sender: TObject);
-    procedure ThreadCurMoveTimer(Sender: TObject);
-    procedure Button3Click(Sender: TObject);
-    procedure CheckBox3Click(Sender: TObject);
-    procedure btnxp0Click(Sender: TObject);
-    procedure btnxpBack0Click(Sender: TObject);
-    procedure btnReplayClick(Sender: TObject);
-    procedure btnStandingsClick(Sender: TObject);
-    procedure toolSpinKeyPress(Sender: TObject; var Key: Char);
-    procedure btnsell0Click(Sender: TObject);
-    procedure BtnFormationUniformClick(Sender: TObject);
-    procedure btnUniformBackClick(Sender: TObject);
-    procedure se_gridColorsClickCell(Sender: TObject; ARow, ACol: Integer);
-    procedure ck_HAClick(Sender: TObject);
-    procedure btnConfirmSellClick(Sender: TObject);
+    procedure btnFormationClick(Sender: TObject);
+
+// Market
     procedure btnMarketBackClick(Sender: TObject);
     procedure btnMarketClick(Sender: TObject);
     procedure btnMarketRefreshClick(Sender: TObject);
     procedure advMarketClickCell(Sender: TObject; ARow, ACol: Integer);
-    procedure btnAudioStadiumClick(Sender: TObject);
+    procedure ClientLoadMarket;
+    procedure btnConfirmSellClick(Sender: TObject);
     procedure btnConfirmDismissClick(Sender: TObject);
     procedure btnDismiss0Click(Sender: TObject);
-    procedure Button4Click(Sender: TObject);
-    procedure SE_GridXP0GridCellMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; CellX, CellY: Integer;
-      Sprite: SE_Sprite);
+    procedure btnsell0Click(Sender: TObject);
+
+// XP
+    procedure btnxp0Click(Sender: TObject);
+    procedure btnxpBack0Click(Sender: TObject);
+    procedure SE_GridXP0GridCellMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; CellX, CellY: Integer; Sprite: SE_Sprite);
     procedure SE_GridXP0GridCellMouseMove(Sender: TObject; Shift: TShiftState; CellX, CellY: Integer; Sprite: SE_Sprite);
-    procedure Edit2KeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
-    procedure SE_GridAllBrainGridCellMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; CellX, CellY: Integer;
-      Sprite: SE_Sprite);
+
+
+// replay
+    procedure btnReplayClick(Sender: TObject);
+    procedure ToolSpinChange(Sender: TObject);
+    procedure toolSpinKeyPress(Sender: TObject; var Key: Char);
+
+
+// Skill
+    procedure SE_GridSkillGridCellMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; CellX, CellY: Integer; Sprite: SE_Sprite);
+    procedure SE_GridSkillGridCellMouseMove(Sender: TObject; Shift: TShiftState; CellX, CellY: Integer; Sprite: SE_Sprite);
+
+// WatchLive
+    procedure btnWatchLiveClick(Sender: TObject);
+    procedure ClientLoadListMatchFile;
+    procedure SE_GridAllBrainGridCellMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; CellX, CellY: Integer; Sprite: SE_Sprite);
     procedure btnMatchesRefreshClick(Sender: TObject);
     procedure btnMatchesListBackClick(Sender: TObject);
-    procedure SE_GridSkillGridCellMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; CellX, CellY: Integer;
-      Sprite: SE_Sprite);
-    procedure SE_GridSkillGridCellMouseMove(Sender: TObject; Shift: TShiftState; CellX, CellY: Integer; Sprite: SE_Sprite);
-    procedure ToolSpinChange(Sender: TObject);
+    procedure btnWatchLiveExitClick(Sender: TObject);
+
+
+// Combat Log
+    procedure advDiceWriteRow  ( team: integer; attr, Surname, ids, vs,num1: string);
+      function advDiceNextBlank  ( team: integer): Integer;
+
+
+// Uniform
+    procedure BtnFormationUniformClick(Sender: TObject);
+    procedure btnUniformBackClick(Sender: TObject);
+    procedure se_gridColorsClickCell(Sender: TObject; ARow, ACol: Integer);
+    procedure Btn_UniformHomeClick(Sender: TObject);
+    procedure Btn_UniformAwayClick(Sender: TObject);
+
+
+    procedure Button3Click(Sender: TObject);
+    procedure CheckBox3Click(Sender: TObject);
+    procedure btnStandingsClick(Sender: TObject);
+    procedure Button4Click(Sender: TObject);
+    procedure Edit2KeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+
+
   private
     { Private declarations }
     fSelectedPlayer : TSoccerPlayer;
@@ -828,8 +861,7 @@ begin
         PanelSell.Visible := True;
         PanelSell.BringToFront;
         aPlayer:= MyBrainFormation.GetSoccerPlayer2( se_grid0.SceneName ) ;
-        edtSell.Value := Trunc (aPlayer.MarketValue);
-        edtSell.Min := Trunc (aPlayer.MarketValue);
+        edtSell.Text  := IntToStr(aPlayer.MarketValue);
       end
       else begin
         lastStrError:= 'lbl_ErrorMarketMax';
@@ -840,7 +872,7 @@ begin
 
 end;
 
-procedure TForm1.btnSkill11Click(Sender: TObject);
+procedure TForm1.btnSkillPASSClick(Sender: TObject);
 begin
   if MyBrain.w_CornerSetup then Exit;
 
@@ -887,7 +919,7 @@ procedure TForm1.Button1Click(Sender: TObject);
 begin
 {$ifdef tools}
   if GCD <= 0 then begin
-    tcp.SendStr( 'setplayer,' +  Edit3.Text + ',' +  RzNumericEdit1.Text + ',' +  RzNumericEdit2.Text + EndOfLine ) ;
+    tcp.SendStr( 'setplayer,' +  Edit3.Text + ',' +  EditN1.Text + ',' +  EditN2.Text + EndOfLine ) ;
     GCD := GCD_DEFAULT;
 
   end;
@@ -937,7 +969,7 @@ procedure TForm1.Button6Click(Sender: TObject);
 begin
 {$ifdef tools}
   if GCD <= 0 then begin
-    tcp.SendStr( 'setball,' + RzNumericEdit1.Text + ',' +  RzNumericEdit2.Text + EndOfLine ) ;
+    tcp.SendStr( 'setball,' + EditN1.Text + ',' +  EditN2.Text + EndOfLine ) ;
     GCD := GCD_DEFAULT;
   end;
  {$endif tools}
@@ -1126,8 +1158,8 @@ begin
   ck_Shorts.Caption :=   Translate('lbl_Shorts');
   ck_Socks1.Caption :=   Translate('lbl_Socks')+ ' 1';
   ck_Socks2.Caption :=   Translate('lbl_Socks')+ ' 2';
-  ck_HA.Buttons[0].Caption := Translate('lbl_Home');
-  ck_HA.Buttons[1].Caption := Translate('lbl_Away');
+  btn_UniformHome.Caption := Translate('lbl_Home');
+  btn_UniformAway.Caption := Translate('lbl_Away');
 
   btnLogin.Caption := Translate('lbl_Login');
 
@@ -1469,26 +1501,24 @@ var
   UniformBitmap: SE_Bitmap;
   ha : Byte;
 begin
-    if ck_HA.Buttons[0].Checked then
+    if btn_UniformHome.Down then
      ha := 0
      else ha :=1;
-    if ck_Jersey1.checked then
+    if ck_Jersey1.Down then
       TSUniforms[ha][0] := IntToStr( aCol )
-      else if ck_Jersey2.checked then
+      else if ck_Jersey2.Down then
       TSUniforms[ha][1] := IntToStr( aCol )
-      else if ck_Shorts.checked then
+      else if ck_Shorts.Down then
       TSUniforms[ha][2] := IntToStr( aCol )
-      else if ck_Socks1.checked then
+      else if ck_Socks1.Down then
       TSUniforms[ha][3] := IntToStr( aCol )
-      else if ck_Socks2.checked then
+      else if ck_Socks2.Down then
       TSUniforms[ha][4] := IntToStr( aCol );
 
     UniformBitmap := SE_Bitmap.Create (dir_player + 'bw.bmp');
     PreLoadUniform( ha, UniformBitmap   );  // usa tsuniforms e  UniformBitmapBW
     UniformBitmap.free;
     UniformPortrait.Glyph.LoadFromFile(dir_tmp + 'color' + IntToStr(ha)+ '.bmp');
-    UniformPortrait.NumGlyphs := 1;
-//    se_portrait1.Bitmaps.Disabled.LoadFromFile(dir_tmp + 'se_0b.bmp');
 end;
 
 
@@ -2238,7 +2268,12 @@ begin
     PreLoadUniform(NextHa, UniformBitmap);  // usa tsuniforms e  UniformBitmapBW
     UniformPortrait.Glyph.LoadFromFile(dir_tmp + 'color0.bmp');
     Portrait0.Glyph.LoadFromFile(dir_tmp + 'color0.bmp');
-    ck_HA.Buttons[NextHa].Checked := True;
+
+    if NextHa = 0 then
+      btn_UniformHome.Down:= True
+      else
+        btn_UniformAway.Down:= True;
+
     UniformBitmapGK := SE_Bitmap.Create (dir_player + 'bw.bmp');
     PreLoadUniformGK(NextHa, UniformBitmapGK);
   end;
@@ -2988,6 +3023,37 @@ begin
   end;
 
 end;
+procedure TForm1.Btn_UniformAwayClick(Sender: TObject);
+var
+  ha : Byte;
+  UniformBitmap: SE_Bitmap;
+begin
+    if Btn_UniformAway.Down then
+     ha := 1
+     else ha :=0;
+
+    UniformBitmap := SE_Bitmap.Create (dir_player + 'bw.bmp');
+    PreLoadUniform( ha, UniformBitmap );  // usa tsuniforms e  UniformBitmapBW
+    UniformBitmap.free;
+    UniformPortrait.Glyph.LoadFromFile(dir_tmp + 'color' + IntToStr(ha) +'.bmp');
+
+end;
+
+procedure TForm1.Btn_UniformHomeClick(Sender: TObject);
+var
+  ha : Byte;
+  UniformBitmap: SE_Bitmap;
+begin
+    if Btn_UniformHome.Down then
+     ha := 0
+     else ha :=1;
+
+    UniformBitmap := SE_Bitmap.Create (dir_player + 'bw.bmp');
+    PreLoadUniform( ha, UniformBitmap );  // usa tsuniforms e  UniformBitmapBW
+    UniformBitmap.free;
+    UniformPortrait.Glyph.LoadFromFile(dir_tmp + 'color' + IntToStr(ha) +'.bmp');
+end;
+
 procedure TForm1.MovMouseEnter ( Sender : TObject);
 var
   I, MoveValue: Integer;
@@ -7700,9 +7766,15 @@ var
   aPlayer: TSoccerPlayer;
 begin
   if GCD <= 0 then begin
+    aPlayer:= MyBrainformation.GetSoccerPlayer2 (se_grid0.SceneName);
+    if StrToIntDef(edtSell.Text,0) < aPlayer.MarketValue then begin
+        ShowError ( Translate ('warning_nosell_lowprice'));
+        edtSell.Text := IntToStr( aPlayer.MarketValue);
+        Exit;
+    end;
+
     GCD := GCD_DEFAULT;
     PanelSell.Visible := False;
-    aPlayer:= MyBrainformation.GetSoccerPlayer2 (se_grid0.SceneName);
     if aPlayer.TalentId=1 then begin
       tGK:=0;
       for I := MyBrainFormation.lstSoccerPlayer.Count -1 downto 0 do begin
@@ -8641,22 +8713,6 @@ begin
   end;
 
 end;
-procedure TForm1.ck_HAClick(Sender: TObject);
-var
-  ha : Byte;
-  UniformBitmap: SE_Bitmap;
-begin
-    if ck_HA.Buttons[0].Checked then
-     ha := 0
-     else ha :=1;
-
-    UniformBitmap := SE_Bitmap.Create (dir_player + 'bw.bmp');
-    PreLoadUniform( ha, UniformBitmap );  // usa tsuniforms e  UniformBitmapBW
-    UniformBitmap.free;
-    UniformPortrait.Glyph.LoadFromFile(dir_tmp + 'color' + IntToStr(ha) +'.bmp');
-  //  se_portrait1.Bitmaps.Disabled.LoadFromFile(dir_tmp + 'se_0b.bmp');
-
-end;
 
 procedure TForm1.ShowFace ( aSprite: SE_Sprite);
 var
@@ -9051,10 +9107,6 @@ begin
 //
 end;
 
-function TForm1.FindInteractivePlayer ( aPlayer: TSoccerPlayer ): TInteractivePlayer;
-begin
-  //
-end;
 procedure TForm1.ArrowShowMoveAutoTackle ( CellX, CellY : Integer);
 var
   i,au,MoveValue: Integer;
@@ -10034,8 +10086,8 @@ begin
       FirstLoadOK:= False;
       MyGuidTeam := 0;
       Timer1.Enabled := true;
-      AdvBadgeLabel1.BadgeColor := clRed;
-      AdvBadgeLabel1.Badge := 'connecting';
+      lbl_ConnectionStatus.Color := clRed;
+      lbl_ConnectionStatus.Caption := 'connecting';
       GameScreen := ScreenLogin;
       MyBrainFormation.lstSoccerPlayer.Clear;
       ThreadCurMove.Enabled := False;
@@ -10050,8 +10102,8 @@ begin
       MemoC.Lines.add('Can''t connect, error #' + IntToStr(ErrCode));
       GameScreen := ScreenLogin;
       WaitForAuth := True;
-      AdvBadgeLabel1.BadgeColor := clRed;
-      AdvBadgeLabel1.Badge := 'connecting';
+      lbl_ConnectionStatus.Color := clRed;
+      lbl_ConnectionStatus.Caption := 'connecting';
       ThreadCurMove.Enabled := False;
       viewMatch := false;
       LiveMatch := false;
@@ -10063,8 +10115,8 @@ begin
       MemoC.Lines.add('Session Connected.');
       //GameScreen := ScreenLogin;
       WaitForAuth := True;
-      AdvBadgeLabel1.BadgeColor := clGreen;
-      AdvBadgeLabel1.Badge := 'connected';
+      lbl_ConnectionStatus.Color := clGreen;
+      lbl_ConnectionStatus.Caption := 'connected';
       viewMatch := false;
       LiveMatch := false;
     end;

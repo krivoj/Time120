@@ -119,9 +119,11 @@ begin
   Form1.lbl_descrtalent1.Caption :='';
 
 
-  Form1.ck_HA.Top := 3;
-  Form1.ck_HA.Left := (Form1.PanelUniform.Width div 2) - (Form1.UniformPortrait.Width div 2 );
-  Form1.UniformPortrait.Top := Form1.ck_HA.Top + Form1.ck_HA.Height;
+  Form1.btn_uniformHome.Top := 3;
+  Form1.Btn_uniformHome.Left := (Form1.PanelUniform.Width div 2) - (Form1.UniformPortrait.Width div 2 );
+  Form1.Btn_uniformAway.Top := Form1.Btn_uniformHome.Top + Form1.Btn_uniformHome.Height;
+  Form1.Btn_uniformAway.Left := (Form1.PanelUniform.Width div 2) - (Form1.UniformPortrait.Width div 2 );
+  Form1.UniformPortrait.Top := Form1.Btn_uniformAway.Top + Form1.Btn_uniformAway.Height + 8 ;
   Form1.UniformPortrait.Left := (Form1.PanelUniform.Width div 2) - (Form1.UniformPortrait.Width div 2 );
   Form1.ck_Jersey1.Left :=  Form1.UniformPortrait.Left - 100;
   Form1.ck_Jersey2.Left :=  Form1.UniformPortrait.Left + Form1.UniformPortrait.Width + 100 - Form1.ck_Jersey2.width;
@@ -181,7 +183,7 @@ procedure ShowError ( AString: string);
 begin
 
 //  SE_Theater1.Visible := false;
-  Form1.lblError.Caption := AString;
+  Form1.lbl_Error.Caption := AString;
   Form1.PanelError.Visible:= true;
   Form1.PanelError.BringToFront;
  // PanelCountryTeam.Visible := false;

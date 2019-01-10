@@ -21,8 +21,8 @@ object Form1: TForm1
   PixelsPerInch = 96
   TextHeight = 13
   object Panel1: TPanel
-    Left = 8
-    Top = 759
+    Left = 30
+    Top = 809
     Width = 1366
     Height = 182
     BevelOuter = bvNone
@@ -123,29 +123,13 @@ object Form1: TForm1
       TabOrder = 10
       OnClick = CheckBoxAI1Click
     end
-    object RzNumericEdit1: TRzNumericEdit
-      Left = 1191
-      Top = 34
-      Width = 25
-      Height = 21
-      TabOrder = 11
-      DisplayFormat = ',0;(,0)'
-    end
-    object RzNumericEdit2: TRzNumericEdit
-      Left = 1222
-      Top = 35
-      Width = 25
-      Height = 21
-      TabOrder = 12
-      DisplayFormat = ',0;(,0)'
-    end
     object Button1: TButton
       Left = 1055
       Top = 45
       Width = 75
       Height = 25
       Caption = 'set player'
-      TabOrder = 13
+      TabOrder = 11
       OnClick = Button1Click
     end
     object Edit3: TEdit
@@ -153,7 +137,7 @@ object Form1: TForm1
       Top = 48
       Width = 49
       Height = 21
-      TabOrder = 14
+      TabOrder = 12
     end
     object Memo2: TMemo
       Left = 269
@@ -162,7 +146,7 @@ object Form1: TForm1
       Height = 163
       Lines.Strings = (
         '')
-      TabOrder = 15
+      TabOrder = 13
     end
     object CheckBox2: TCheckBox
       Left = 1240
@@ -170,7 +154,7 @@ object Form1: TForm1
       Width = 113
       Height = 17
       Caption = 'Pause'
-      TabOrder = 16
+      TabOrder = 14
       OnClick = CheckBox2Click
     end
     object Button3: TButton
@@ -179,7 +163,7 @@ object Form1: TForm1
       Width = 38
       Height = 25
       Caption = 'load'
-      TabOrder = 17
+      TabOrder = 15
       OnClick = Button3Click
     end
     object CheckBox3: TCheckBox
@@ -188,7 +172,7 @@ object Form1: TForm1
       Width = 94
       Height = 17
       Caption = 'ThreadCurMove'
-      TabOrder = 18
+      TabOrder = 16
       OnClick = CheckBox3Click
     end
     object Button4: TButton
@@ -197,7 +181,7 @@ object Form1: TForm1
       Width = 38
       Height = 25
       Caption = 'think'
-      TabOrder = 19
+      TabOrder = 17
       OnClick = Button4Click
     end
     object CnSpinEdit1: TCnSpinEdit
@@ -207,13 +191,31 @@ object Form1: TForm1
       Height = 22
       MaxValue = 255
       MinValue = 0
-      TabOrder = 20
+      TabOrder = 18
       Value = 0
+    end
+    object editN1: TEdit
+      Left = 1191
+      Top = 48
+      Width = 25
+      Height = 21
+      NumbersOnly = True
+      TabOrder = 19
+      Text = '0'
+    end
+    object EditN2: TEdit
+      Left = 1222
+      Top = 48
+      Width = 25
+      Height = 21
+      NumbersOnly = True
+      TabOrder = 20
+      Text = '0'
     end
   end
   object PanelBack: SE_Panel
-    Left = 24
-    Top = 52
+    Left = 8
+    Top = 21
     Width = 1393
     Height = 788
     TabOrder = 1
@@ -600,7 +602,7 @@ object Form1: TForm1
         ParentFont = False
         OnClick = btnConfirmSellClick
       end
-      object edtSell: TRzNumericEdit
+      object edtSell: TEdit
         Left = 3
         Top = 3
         Width = 109
@@ -614,10 +616,6 @@ object Form1: TForm1
         Font.Style = []
         ParentFont = False
         TabOrder = 0
-        AllowScientificNotation = False
-        DisplayFormat = ',0;(,0)'
-        FlatButtonColor = 8081721
-        FlatButtons = True
       end
     end
     object PanelMain: SE_Panel
@@ -1198,7 +1196,7 @@ object Form1: TForm1
     end
     object PanelLogin: SE_Panel
       Left = 14
-      Top = 156
+      Top = 183
       Width = 169
       Height = 195
       BevelOuter = bvNone
@@ -1206,7 +1204,7 @@ object Form1: TForm1
       DoubleBuffered = True
       ParentDoubleBuffered = False
       TabOrder = 7
-      object Label1: TLabel
+      object lbl_username: TLabel
         Left = 20
         Top = 21
         Width = 71
@@ -1219,7 +1217,7 @@ object Form1: TForm1
         Font.Style = []
         ParentFont = False
       end
-      object Label5: TLabel
+      object lbl_Password: TLabel
         Left = 16
         Top = 83
         Width = 67
@@ -1273,6 +1271,22 @@ object Form1: TForm1
         ParentFont = False
         OnClick = BtnLoginClick
       end
+      object lbl_ConnectionStatus: TLabel
+        Left = 103
+        Top = 6
+        Width = 100
+        Height = 13
+        Caption = 'lbl_ConnectionStatus'
+        Color = 8081721
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWhite
+        Font.Height = -11
+        Font.Name = 'Calibri'
+        Font.Style = []
+        ParentColor = False
+        ParentFont = False
+        Transparent = False
+      end
       object Edit1: TEdit
         Left = 16
         Top = 46
@@ -1291,61 +1305,47 @@ object Form1: TForm1
         Text = 'test2'
         OnKeyDown = Edit2KeyDown
       end
-      object AdvBadgeLabel1: TAdvBadgeLabel
-        Left = 97
-        Top = 17
-        Width = 8
-        Height = 23
-        AutoSize = False
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWhite
-        Font.Height = -16
-        Font.Name = 'Tahoma'
-        Font.Style = []
-        ParentFont = False
-        TabOrder = 2
-        Badge = 'connecting'
-      end
     end
     object PanelError: SE_Panel
-      Left = 400
-      Top = -51
+      Left = 153
+      Top = 46
       Width = 401
       Height = 121
       BevelOuter = bvNone
-      Color = 8081721
+      Color = clRed
+      ParentBackground = False
       TabOrder = 8
       Visible = False
-      object lblError: TCnSpeedButton
-        Left = 19
-        Top = 14
-        Width = 358
-        Height = 60
-        Cursor = crHandPoint
-        Color = clBtnFace
-        DownBold = False
-        FlatBorder = False
-        HotTrackBold = False
-        Caption = 'error'
+      object lbl_Error: TLabel
+        Left = 13
+        Top = 11
+        Width = 372
+        Height = 66
+        Alignment = taCenter
+        AutoSize = False
+        Caption = 'lbl_MoneyF'
+        Color = clRed
         Font.Charset = DEFAULT_CHARSET
-        Font.Color = 4308735
+        Font.Color = clWhite
         Font.Height = -16
         Font.Name = 'Calibri'
-        Font.Style = []
-        Margin = 4
+        Font.Style = [fsBold]
+        ParentColor = False
         ParentFont = False
+        Transparent = False
+        WordWrap = True
       end
-      object btnErrorOK: TCnSpeedButton
-        Left = 159
+      object BtnErrorOK: TCnSpeedButton
+        Left = 158
         Top = 80
-        Width = 70
+        Width = 75
         Height = 28
         Cursor = crHandPoint
-        Color = clBtnFace
+        Color = clGray
         DownBold = False
         FlatBorder = False
         HotTrackBold = False
-        Caption = 'Ok'
+        Caption = 'OK'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = 4308735
         Font.Height = -16
@@ -2072,11 +2072,11 @@ object Form1: TForm1
         Left = 113
         Top = 53
         Width = 74
-        Height = 74
+        Height = 92
         Cursor = crHandPoint
         AllowAllUp = True
         ShadowColor = 8081721
-        Color = clGray
+        Color = 8081721
         DownBold = False
         FlatBorder = True
         HotTrackBold = False
@@ -2087,6 +2087,156 @@ object Form1: TForm1
         Font.Height = -19
         Font.Name = 'Calibri'
         Font.Style = [fsBold]
+        Margin = 4
+        ParentFont = False
+        OnClick = Btn_UniformHomeClick
+      end
+      object btn_UniformHome: TCnSpeedButton
+        Left = 113
+        Top = 15
+        Width = 104
+        Height = 17
+        Color = 8081721
+        DownColor = clBlue
+        DownBold = True
+        FlatBorder = False
+        HotTrackBold = False
+        GroupIndex = 1
+        Down = True
+        Caption = 'btn_UniformHome'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWhite
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        Margin = 4
+        ParentFont = False
+        OnClick = Btn_UniformHomeClick
+      end
+      object btn_UniformAway: TCnSpeedButton
+        Left = 113
+        Top = 34
+        Width = 104
+        Height = 17
+        Color = 8081721
+        DownColor = clBlue
+        DownBold = True
+        FlatBorder = False
+        HotTrackBold = False
+        GroupIndex = 1
+        Caption = 'btn_UniformAway'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWhite
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        Margin = 4
+        ParentFont = False
+        OnClick = Btn_UniformAwayClick
+      end
+      object ck_Jersey1: TCnSpeedButton
+        Left = 220
+        Top = 140
+        Width = 49
+        Height = 15
+        Cursor = crHandPoint
+        Color = 8081721
+        DownColor = clBlue
+        DownBold = True
+        FlatBorder = False
+        HotTrackBold = False
+        GroupIndex = 2
+        Down = True
+        Caption = 'maglia'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWhite
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        Margin = 4
+        ParentFont = False
+      end
+      object ck_Shorts: TCnSpeedButton
+        Left = 121
+        Top = 157
+        Width = 76
+        Height = 15
+        Cursor = crHandPoint
+        Color = 8081721
+        DownColor = clBlue
+        DownBold = True
+        FlatBorder = False
+        HotTrackBold = False
+        GroupIndex = 2
+        Caption = 'pantaloncini'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWhite
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        Margin = 4
+        ParentFont = False
+      end
+      object ck_Socks1: TCnSpeedButton
+        Left = 20
+        Top = 119
+        Width = 65
+        Height = 15
+        Cursor = crHandPoint
+        Color = 8081721
+        DownColor = clBlue
+        DownBold = True
+        FlatBorder = False
+        HotTrackBold = False
+        GroupIndex = 2
+        Caption = 'calzettoni'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWhite
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        Margin = 4
+        ParentFont = False
+      end
+      object ck_Jersey2: TCnSpeedButton
+        Left = 156
+        Top = 140
+        Width = 49
+        Height = 15
+        Cursor = crHandPoint
+        Color = 8081721
+        DownColor = clBlue
+        DownBold = True
+        FlatBorder = False
+        HotTrackBold = False
+        GroupIndex = 2
+        Caption = 'maglia'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWhite
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        Margin = 4
+        ParentFont = False
+      end
+      object ck_Socks2: TCnSpeedButton
+        Left = 73
+        Top = 140
+        Width = 65
+        Height = 15
+        Cursor = crHandPoint
+        Color = 8081721
+        DownColor = clBlue
+        DownBold = True
+        FlatBorder = False
+        HotTrackBold = False
+        GroupIndex = 2
+        Caption = 'calzettoni'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWhite
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = []
         Margin = 4
         ParentFont = False
       end
@@ -2228,114 +2378,6 @@ object Form1: TForm1
           64)
         RowHeights = (
           16)
-      end
-      object ck_Jersey1: TRzRadioButton
-        Left = 220
-        Top = 140
-        Width = 49
-        Height = 15
-        Cursor = crHandPoint
-        Caption = 'maglia'
-        Checked = True
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWhite
-        Font.Height = -11
-        Font.Name = 'Tahoma'
-        Font.Style = []
-        ParentFont = False
-        TabOrder = 1
-        TabStop = True
-        Transparent = True
-      end
-      object ck_Shorts: TRzRadioButton
-        Left = 121
-        Top = 157
-        Width = 76
-        Height = 15
-        Cursor = crHandPoint
-        Caption = 'pantaloncini'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWhite
-        Font.Height = -11
-        Font.Name = 'Tahoma'
-        Font.Style = []
-        ParentFont = False
-        TabOrder = 2
-        Transparent = True
-      end
-      object ck_Socks1: TRzRadioButton
-        Left = 20
-        Top = 119
-        Width = 65
-        Height = 15
-        Cursor = crHandPoint
-        Caption = 'calzettoni'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWhite
-        Font.Height = -11
-        Font.Name = 'Tahoma'
-        Font.Style = []
-        ParentFont = False
-        TabOrder = 4
-        Transparent = True
-      end
-      object ck_Jersey2: TRzRadioButton
-        Left = 156
-        Top = 140
-        Width = 49
-        Height = 15
-        Cursor = crHandPoint
-        Caption = 'maglia'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWhite
-        Font.Height = -11
-        Font.Name = 'Tahoma'
-        Font.Style = []
-        ParentFont = False
-        TabOrder = 6
-        Transparent = True
-      end
-      object ck_Socks2: TRzRadioButton
-        Left = 73
-        Top = 140
-        Width = 65
-        Height = 15
-        Cursor = crHandPoint
-        Caption = 'calzettoni'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWhite
-        Font.Height = -11
-        Font.Name = 'Tahoma'
-        Font.Style = []
-        ParentFont = False
-        TabOrder = 3
-        Transparent = True
-      end
-      object ck_HA: TRzRadioGroup
-        Left = 116
-        Top = 0
-        Width = 73
-        Height = 51
-        Cursor = crHandPoint
-        BorderColor = 8081721
-        BorderSides = []
-        Caption = ''
-        Color = 8081721
-        ItemFont.Charset = DEFAULT_CHARSET
-        ItemFont.Color = clWhite
-        ItemFont.Height = -11
-        ItemFont.Name = 'Calibri'
-        ItemFont.Style = []
-        ItemIndex = 0
-        Items.Strings = (
-          'Home'
-          'Away')
-        StartYPos = 0
-        TabOrder = 5
-        Transparent = True
-        VerticalSpacing = 1
-        VisualStyle = vsClassic
-        OnClick = ck_HAClick
       end
     end
     object PanelMarket: SE_Panel
@@ -2562,7 +2604,7 @@ object Form1: TForm1
         RowHeights = (
           22)
       end
-      object edtsearchprice: TRzNumericEdit
+      object edtsearchprice: TEdit
         Left = 239
         Top = 266
         Width = 109
@@ -2577,10 +2619,6 @@ object Form1: TForm1
         Font.Style = []
         ParentFont = False
         TabOrder = 1
-        AllowScientificNotation = False
-        DisplayFormat = ',0;(,0)'
-        FlatButtonColor = 8081721
-        FlatButtons = True
       end
     end
     object PanelDismiss: SE_Panel

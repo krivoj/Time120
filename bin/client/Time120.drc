@@ -8,785 +8,691 @@
   resources were bound to the produced executable.
 */
 
-#define RzBorder_sRzColorInactiveCaptionText 64640
-#define RzBorder_sRzColorBtnHighlight 64641
-#define RzBorder_sRzColor3DDkShadow 64642
-#define RzBorder_sRzColor3DLight 64643
-#define RzBorder_sRzColorInfoText 64644
-#define RzBorder_sRzColorInfoBk 64645
-#define RzBorder_sRzColorHotLight 64646
-#define RzBorder_sRzColorGradientActiveCaption 64647
-#define RzBorder_sRzColorGradientInactiveCaption 64648
-#define RzBorder_sRzColorMenuHighlight 64649
-#define RzBorder_sRzColorMenuBar 64650
-#define RzBorder_sRzColorInactiveCaption 64656
-#define RzBorder_sRzColorMenu 64657
-#define RzBorder_sRzColorWindow 64658
-#define RzBorder_sRzColorWindowFrame 64659
-#define RzBorder_sRzColorMenuText 64660
-#define RzBorder_sRzColorWindowText 64661
-#define RzBorder_sRzColorCaptionText 64662
-#define RzBorder_sRzColorActiveBorder 64663
-#define RzBorder_sRzColorInactiveBorder 64664
-#define RzBorder_sRzColorAppWorkSpace 64665
-#define RzBorder_sRzColorHighlight 64666
-#define RzBorder_sRzColorHighlightText 64667
-#define RzBorder_sRzColorBtnFace 64668
-#define RzBorder_sRzColorBtnShadow 64669
-#define RzBorder_sRzColorGrayText 64670
-#define RzBorder_sRzColorBtnText 64671
-#define RzBorder_sRzColorBrightGreen 64672
-#define RzBorder_sRzColorTurquoise 64673
-#define RzBorder_sRzColorSkyBlue 64674
-#define RzBorder_sRzColorPlum 64675
-#define RzBorder_sRzColorGray25 64676
-#define RzBorder_sRzColorRose 64677
-#define RzBorder_sRzColorTan 64678
-#define RzBorder_sRzColorLightYellow 64679
-#define RzBorder_sRzColorLightGreen 64680
-#define RzBorder_sRzColorLightTurquoise 64681
-#define RzBorder_sRzColorPaleBlue 64682
-#define RzBorder_sRzColorLavender 64683
-#define RzBorder_sRzColorWhite 64684
-#define RzBorder_sRzColorScrollBar 64685
-#define RzBorder_sRzColorBackground 64686
-#define RzBorder_sRzColorActiveCaption 64687
-#define RzBorder_sRzColorGreen 64688
-#define RzBorder_sRzColorTeal 64689
-#define RzBorder_sRzColorBlue 64690
-#define RzBorder_sRzColorBlueGray 64691
-#define RzBorder_sRzColorGray50 64692
-#define RzBorder_sRzColorRed 64693
-#define RzBorder_sRzColorLightOrange 64694
-#define RzBorder_sRzColorLime 64695
-#define RzBorder_sRzColorSeaGreen 64696
-#define RzBorder_sRzColorAqua 64697
-#define RzBorder_sRzColorLightBlue 64698
-#define RzBorder_sRzColorViolet 64699
-#define RzBorder_sRzColorGray40 64700
-#define RzBorder_sRzColorPink 64701
-#define RzBorder_sRzColorGold 64702
-#define RzBorder_sRzColorYellow 64703
-#define DXConsts_SInvalidWave 64704
-#define DXConsts_SInvalidWaveFormat 64705
-#define DXConsts_SStreamOpend 64706
-#define RzCommon_sRzCannotLoadCustomFraming 64707
-#define RzCommon_sRzCannotSaveCustomFraming 64708
-#define RzBorder_sRzColorBlack 64709
-#define RzBorder_sRzColorBrown 64710
-#define RzBorder_sRzColorOliveGreen 64711
-#define RzBorder_sRzColorDarkGreen 64712
-#define RzBorder_sRzColorDarkTeal 64713
-#define RzBorder_sRzColorDarkBlue 64714
-#define RzBorder_sRzColorIndigo 64715
-#define RzBorder_sRzColorGray80 64716
-#define RzBorder_sRzColorDarkRed 64717
-#define RzBorder_sRzColorOrange 64718
-#define RzBorder_sRzColorDarkYellow 64719
-#define JclResources_RsIntelCacheDescrFF 64720
-#define JclResources_RsOSVersionWin8 64721
-#define JclResources_RsOSVersionWinServer2012 64722
-#define JclResources_RsOSVersionWin81 64723
-#define JclResources_RsOSVersionWinServer2012R2 64724
-#define DXConsts_SDirectSound 64725
-#define DXConsts_SDirectSoundBuffer 64726
-#define DXConsts_SDirectSoundPrimaryBuffer 64727
-#define DXConsts_SNotMade 64728
-#define DXConsts_SStreamNotOpend 64729
-#define DXConsts_SWaveStreamNotSet 64730
-#define DXConsts_SCannotMade 64731
-#define DXConsts_SCannotInitialized 64732
-#define DXConsts_SCannotLock 64733
-#define DXConsts_SDLLNotLoaded 64734
-#define DXConsts_SNoForm 64735
-#define JclResources_RsIntelCacheDescrD1 64736
-#define JclResources_RsIntelCacheDescrD2 64737
-#define JclResources_RsIntelCacheDescrD6 64738
-#define JclResources_RsIntelCacheDescrD7 64739
-#define JclResources_RsIntelCacheDescrD8 64740
-#define JclResources_RsIntelCacheDescrDC 64741
-#define JclResources_RsIntelCacheDescrDD 64742
-#define JclResources_RsIntelCacheDescrDE 64743
-#define JclResources_RsIntelCacheDescrE2 64744
-#define JclResources_RsIntelCacheDescrE3 64745
-#define JclResources_RsIntelCacheDescrE4 64746
-#define JclResources_RsIntelCacheDescrEA 64747
-#define JclResources_RsIntelCacheDescrEB 64748
-#define JclResources_RsIntelCacheDescrEC 64749
-#define JclResources_RsIntelCacheDescrF0 64750
-#define JclResources_RsIntelCacheDescrF1 64751
-#define JclResources_RsIntelCacheDescr80 64752
-#define JclResources_RsIntelCacheDescr82 64753
-#define JclResources_RsIntelCacheDescr83 64754
-#define JclResources_RsIntelCacheDescr84 64755
-#define JclResources_RsIntelCacheDescr85 64756
-#define JclResources_RsIntelCacheDescr86 64757
-#define JclResources_RsIntelCacheDescr87 64758
-#define JclResources_RsIntelCacheDescrB0 64759
-#define JclResources_RsIntelCacheDescrB1 64760
-#define JclResources_RsIntelCacheDescrB2 64761
-#define JclResources_RsIntelCacheDescrB3 64762
-#define JclResources_RsIntelCacheDescrB4 64763
-#define JclResources_RsIntelCacheDescrBA 64764
-#define JclResources_RsIntelCacheDescrC0 64765
-#define JclResources_RsIntelCacheDescrCA 64766
-#define JclResources_RsIntelCacheDescrD0 64767
-#define JclResources_RsIntelCacheDescr60 64768
-#define JclResources_RsIntelCacheDescr66 64769
-#define JclResources_RsIntelCacheDescr67 64770
-#define JclResources_RsIntelCacheDescr68 64771
-#define JclResources_RsIntelCacheDescr70 64772
-#define JclResources_RsIntelCacheDescr71 64773
-#define JclResources_RsIntelCacheDescr72 64774
-#define JclResources_RsIntelCacheDescr73 64775
-#define JclResources_RsIntelCacheDescr76 64776
-#define JclResources_RsIntelCacheDescr78 64777
-#define JclResources_RsIntelCacheDescr79 64778
-#define JclResources_RsIntelCacheDescr7A 64779
-#define JclResources_RsIntelCacheDescr7B 64780
-#define JclResources_RsIntelCacheDescr7C 64781
-#define JclResources_RsIntelCacheDescr7D 64782
-#define JclResources_RsIntelCacheDescr7F 64783
-#define JclResources_RsIntelCacheDescr4B 64784
-#define JclResources_RsIntelCacheDescr4C 64785
-#define JclResources_RsIntelCacheDescr4D 64786
-#define JclResources_RsIntelCacheDescr4E 64787
-#define JclResources_RsIntelCacheDescr4F 64788
-#define JclResources_RsIntelCacheDescr50 64789
-#define JclResources_RsIntelCacheDescr51 64790
-#define JclResources_RsIntelCacheDescr52 64791
-#define JclResources_RsIntelCacheDescr55 64792
-#define JclResources_RsIntelCacheDescr56 64793
-#define JclResources_RsIntelCacheDescr57 64794
-#define JclResources_RsIntelCacheDescr59 64795
-#define JclResources_RsIntelCacheDescr5A 64796
-#define JclResources_RsIntelCacheDescr5B 64797
-#define JclResources_RsIntelCacheDescr5C 64798
-#define JclResources_RsIntelCacheDescr5D 64799
-#define JclResources_RsIntelCacheDescr3A 64800
-#define JclResources_RsIntelCacheDescr3B 64801
-#define JclResources_RsIntelCacheDescr3C 64802
-#define JclResources_RsIntelCacheDescr3D 64803
-#define JclResources_RsIntelCacheDescr3E 64804
-#define JclResources_RsIntelCacheDescr40 64805
-#define JclResources_RsIntelCacheDescr41 64806
-#define JclResources_RsIntelCacheDescr42 64807
-#define JclResources_RsIntelCacheDescr43 64808
-#define JclResources_RsIntelCacheDescr44 64809
-#define JclResources_RsIntelCacheDescr45 64810
-#define JclResources_RsIntelCacheDescr46 64811
-#define JclResources_RsIntelCacheDescr47 64812
-#define JclResources_RsIntelCacheDescr48 64813
-#define JclResources_RsIntelCacheDescr49 64814
-#define JclResources_RsIntelCacheDescr4A 64815
-#define JclResources_RsIntelCacheDescr06 64816
-#define JclResources_RsIntelCacheDescr08 64817
-#define JclResources_RsIntelCacheDescr09 64818
-#define JclResources_RsIntelCacheDescr0A 64819
-#define JclResources_RsIntelCacheDescr0B 64820
-#define JclResources_RsIntelCacheDescr0C 64821
-#define JclResources_RsIntelCacheDescr0D 64822
-#define JclResources_RsIntelCacheDescr0E 64823
-#define JclResources_RsIntelCacheDescr21 64824
-#define JclResources_RsIntelCacheDescr22 64825
-#define JclResources_RsIntelCacheDescr23 64826
-#define JclResources_RsIntelCacheDescr25 64827
-#define JclResources_RsIntelCacheDescr29 64828
-#define JclResources_RsIntelCacheDescr2C 64829
-#define JclResources_RsIntelCacheDescr30 64830
-#define JclResources_RsIntelCacheDescr39 64831
-#define JvResources_RsGradientActiveCaption 64832
-#define JvResources_RsGradientInactiveCaption 64833
-#define JvResources_RsHotLight 64834
-#define JvResources_RsMenuBar 64835
-#define JvResources_RsMenuHighlight 64836
-#define JclResources_RsEReplacementChar 64837
-#define JclResources_RsUnableToOpenKeyRead 64838
-#define JclResources_RsUnableToAccessValue 64839
-#define JclResources_RsWrongDataType 64840
-#define JclResources_RsInconsistentPath 64841
-#define JclResources_RsIntelCacheDescr00 64842
-#define JclResources_RsIntelCacheDescr01 64843
-#define JclResources_RsIntelCacheDescr02 64844
-#define JclResources_RsIntelCacheDescr03 64845
-#define JclResources_RsIntelCacheDescr04 64846
-#define JclResources_RsIntelCacheDescr05 64847
-#define JvResources_RsClCaptionText 64848
-#define JvResources_RsClActiveBorder 64849
-#define JvResources_RsClInactiveBorder 64850
-#define JvResources_RsClAppWorkSpace 64851
-#define JvResources_RsClHighlight 64852
-#define JvResources_RsClHighlightText 64853
-#define JvResources_RsClBtnFace 64854
-#define JvResources_RsClBtnShadow 64855
-#define JvResources_RsClGrayText 64856
-#define JvResources_RsClBtnText 64857
-#define JvResources_RsClInactiveCaptionText 64858
-#define JvResources_RsClBtnHighlight 64859
-#define JvResources_RsCl3DDkShadow 64860
-#define JvResources_RsCl3DLight 64861
-#define JvResources_RsClInfoText 64862
-#define JvResources_RsClInfoBk 64863
-#define JvResources_RsClRose 64864
-#define JvResources_RsClTan 64865
-#define JvResources_RsClLightYellow 64866
-#define JvResources_RsClLightGreen 64867
-#define JvResources_RsClLightTurquoise 64868
-#define JvResources_RsClPaleBlue 64869
-#define JvResources_RsClLavender 64870
-#define JvResources_RsClScrollBar 64871
-#define JvResources_RsClBackground 64872
-#define JvResources_RsClActiveCaption 64873
-#define JvResources_RsClInactiveCaption 64874
-#define JvResources_RsClMenu 64875
-#define JvResources_RsClWindow 64876
-#define JvResources_RsClWindowFrame 64877
-#define JvResources_RsClMenuText 64878
-#define JvResources_RsClWindowText 64879
-#define JvResources_RsClDarkRed 64880
-#define JvResources_RsClOrange 64881
-#define JvResources_RsClDarkYellow 64882
-#define JvResources_RsClBlueGray 64883
-#define JvResources_RsClGray50 64884
-#define JvResources_RsClLightOrange 64885
-#define JvResources_RsClSeaGreen 64886
-#define JvResources_RsClLightBlue 64887
-#define JvResources_RsClViolet 64888
-#define JvResources_RsClGray40 64889
-#define JvResources_RsClPink 64890
-#define JvResources_RsClGold 64891
-#define JvResources_RsClBrightGreen 64892
-#define JvResources_RsClTurquoise 64893
-#define JvResources_RsClPlum 64894
-#define JvResources_RsClGray25 64895
-#define JvResources_RsClYellow 64896
-#define JvResources_RsClBlue 64897
-#define JvResources_RsClFuchsia 64898
-#define JvResources_RsClAqua 64899
-#define JvResources_RsClWhite 64900
-#define JvResources_RsClMoneyGreen 64901
-#define JvResources_RsClSkyBlue 64902
-#define JvResources_RsClCream 64903
-#define JvResources_RsClMedGray 64904
-#define JvResources_RsClBrown 64905
-#define JvResources_RsClOliveGreen 64906
-#define JvResources_RsClDarkGreen 64907
-#define JvResources_RsClDarkTeal 64908
-#define JvResources_RsClDarkBlue 64909
-#define JvResources_RsClIndigo 64910
-#define JvResources_RsClGray80 64911
-#define Vcl_Imaging_pnglang_EInvalidSpec 64912
-#define GDIPicture_GDIPERRMSG 64913
-#define Vcl_Imaging_JConsts_sChangeJPGSize 64914
-#define Vcl_Imaging_JConsts_sJPEGError 64915
-#define Vcl_Imaging_JConsts_sJPEGImageFile 64916
-#define JvResources_RsClBlack 64917
-#define JvResources_RsClMaroon 64918
-#define JvResources_RsClGreen 64919
-#define JvResources_RsClOlive 64920
-#define JvResources_RsClNavy 64921
-#define JvResources_RsClPurple 64922
-#define JvResources_RsClTeal 64923
-#define JvResources_RsClGray 64924
-#define JvResources_RsClSilver 64925
-#define JvResources_RsClRed 64926
-#define JvResources_RsClLime 64927
-#define Vcl_Imaging_pnglang_EPNGIHDRNotFirstText 64928
-#define Vcl_Imaging_pnglang_EPNGSizeExceedsText 64929
-#define Vcl_Imaging_pnglang_EPNGUnknownPalEntryText 64930
-#define Vcl_Imaging_pnglang_EPNGUnknownCriticalChunkText 64931
-#define Vcl_Imaging_pnglang_EPNGUnknownCompressionText 64932
-#define Vcl_Imaging_pnglang_EPNGUnknownInterlaceText 64933
-#define Vcl_Imaging_pnglang_EPNGCannotAssignChunkText 64934
-#define Vcl_Imaging_pnglang_EPNGUnexpectedEndText 64935
-#define Vcl_Imaging_pnglang_EPNGNoImageDataText 64936
-#define Vcl_Imaging_pnglang_EPNGCannotAddChunkText 64937
-#define Vcl_Imaging_pnglang_EPNGCannotAddInvalidImageText 64938
-#define Vcl_Imaging_pnglang_EPNGCouldNotLoadResourceText 64939
-#define Vcl_Imaging_pnglang_EPNGOutMemoryText 64940
-#define Vcl_Imaging_pnglang_EPNGCannotChangeTransparentText 64941
-#define Vcl_Imaging_pnglang_EPNGHeaderNotPresentText 64942
-#define Vcl_Imaging_pnglang_EInvalidNewSize 64943
-#define OverbyteIcsCharsetUtils_sKoreanEUC 64944
-#define OverbyteIcsCharsetUtils_sLatin9 64945
-#define OverbyteIcsCharsetUtils_sThaiWindows 64946
-#define OverbyteIcsCharsetUtils_sTurkishISO 64947
-#define OverbyteIcsCharsetUtils_sTurkishWindows 64948
-#define OverbyteIcsCharsetUtils_sUnicodeUTF7 64949
-#define OverbyteIcsCharsetUtils_sUnicodeUTF8 64950
-#define OverbyteIcsCharsetUtils_sVietnameseWindows 64951
-#define OverbyteIcsCharsetUtils_sWesternEuropeanISO 64952
-#define OverbyteIcsCharsetUtils_sWesternEuropeanWindows 64953
-#define Vcl_Imaging_pnglang_EPngInvalidCRCText 64954
-#define Vcl_Imaging_pnglang_EPNGInvalidIHDRText 64955
-#define Vcl_Imaging_pnglang_EPNGMissingMultipleIDATText 64956
-#define Vcl_Imaging_pnglang_EPNGZLIBErrorText 64957
-#define Vcl_Imaging_pnglang_EPNGInvalidPaletteText 64958
-#define Vcl_Imaging_pnglang_EPNGInvalidFileHeaderText 64959
-#define OverbyteIcsCharsetUtils_sChineseTraditionalBig5 64960
-#define OverbyteIcsCharsetUtils_sChineseSimplifiedGB18030 64961
-#define OverbyteIcsCharsetUtils_sChineseSimplifiedGB2312 64962
-#define OverbyteIcsCharsetUtils_sChineseSimplifiedHZ 64963
-#define OverbyteIcsCharsetUtils_sCyrillicISO 64964
-#define OverbyteIcsCharsetUtils_sCyrillicKOI8R 64965
-#define OverbyteIcsCharsetUtils_sCyrillicKOI8U 64966
-#define OverbyteIcsCharsetUtils_sCyrillicWindows 64967
-#define OverbyteIcsCharsetUtils_sEstonianISO 64968
-#define OverbyteIcsCharsetUtils_sGreekISO 64969
-#define OverbyteIcsCharsetUtils_sGreekWindows 64970
-#define OverbyteIcsCharsetUtils_sHebrewISOLogical 64971
-#define OverbyteIcsCharsetUtils_sHebrewISOVisual 64972
-#define OverbyteIcsCharsetUtils_sHebrewWindows 64973
-#define OverbyteIcsCharsetUtils_sJapaneseJIS 64974
-#define OverbyteIcsCharsetUtils_sKorean 64975
-#define MyConsts_SOpenNextPreparedSQL 64976
-#define MyConsts_SOpenNextVsFetchAll 64977
-#define MyConsts_STimestampFieldRequired 64978
-#define MyConsts_SPrepareNotSupportedC 64979
-#define MyConsts_SPrepareNotSupportedS 64980
-#define MyConsts_SLockTableVsFetchAll 64981
-#define MyConsts_SNoRecordToLock 64982
-#define MyConsts_SInvalidClientVersion 64983
-#define MyConsts_SCannotIntercept 64984
-#define MyConsts_STwoEmbServer 64985
-#define OverbyteIcsCharsetUtils_sArabicISO 64986
-#define OverbyteIcsCharsetUtils_sArabicWindows 64987
-#define OverbyteIcsCharsetUtils_sBalticISO 64988
-#define OverbyteIcsCharsetUtils_sBalticWindows 64989
-#define OverbyteIcsCharsetUtils_sCentralEuropeanISO 64990
-#define OverbyteIcsCharsetUtils_sCentralEuropeanWindows 64991
-#define DAConsts_SProtectionCircular 64992
-#define DAConsts_SNotInitialized 64993
-#define DAConsts_SInvalidIV 64994
-#define DAConsts_SInvalidKey 64995
-#define DAConsts_SInvalidKeySize 64996
-#define DAConsts_SEncryptionNotSupported 64997
-#define DAConsts_SInvalidEncDataSize 64998
-#define DAConsts_SInvalidEncData 64999
-#define DAConsts_SInvalidHash 65000
-#define DBMonitorClient_SAppStarted 65001
-#define DBMonitorClient_SAppFinished 65002
-#define MyConsts_SFieldNameNotDefined 65003
-#define MyConsts_sMultipleFieldsFound 65004
-#define MyConsts_SNoResultSet 65005
-#define MyConsts_SEServInitErr 65006
-#define MyConsts_SConnectionOpen 65007
-#define DAConsts_SUpdateComponentCircularReferences 65008
-#define DAConsts_SUpdateComponentInvalidType 65009
-#define DAConsts_SUpdateObjectEmptySQL 65010
-#define DAConsts_SEmptySQLStatement 65011
-#define DAConsts_SInvalidBlobPosition 65012
-#define DAConsts_SNoConnectionsInTransaction 65013
-#define DAConsts_SConnectionInTransactionNotActive 65014
-#define DAConsts_SUnsupportedIsolationLevel 65015
-#define DAConsts_SIsolationLevelNotSupportedWithMTS 65016
-#define DAConsts_SReadOnlyTransactionNotSupported 65017
-#define DAConsts_SOperationNotSupported 65018
-#define DAConsts_SMultipleTransactionsNotSupported 65019
-#define DAConsts_SInvalidParamsArray 65020
-#define DAConsts_SUnsupportedMetaDataKind 65021
-#define DAConsts_SRestrictionMustBeSet 65022
-#define DAConsts_SMDIsNotMemDataSet 65023
-#define DAConsts_STransactionNotAssigned 65024
-#define DAConsts_SUpdateFailed 65025
-#define DAConsts_SCustomUpdateFailed 65026
-#define DAConsts_SRefreshFailed 65027
-#define DAConsts_SInvalidFetchRows 65028
-#define DAConsts_SNoCorrespondParam 65029
-#define DAConsts_SUnknownParamDataType 65030
-#define DAConsts_SRecordChanged 65031
-#define DAConsts_SStoredProcNotDefined 65032
-#define DAConsts_SCannotPerformIfPooling 65033
-#define DAConsts_SMaxConnectionsReached 65034
-#define DAConsts_SCannotChangeIsUnicode 65035
-#define DAConsts_SNoTimers 65036
-#define DAConsts_sBlobNotCompressed 65037
-#define DAConsts_SCompressorNotLinked 65038
-#define DAConsts_SUncompressorNotLinked 65039
-#define DAConsts_SBadTableInfoName 65040
-#define DAConsts_SBadStatementType 65041
-#define DAConsts_SBadUpdatingTable 65042
-#define DAConsts_SKeyFieldNotFound 65043
-#define DAConsts_SInvalidUnComprBlobSize 65044
-#define DAConsts_SInvalidComprBlobSize 65045
-#define DAConsts_SInvalidComprBlobHeader 65046
-#define DAConsts_SInvalidComprBlobData 65047
-#define DAConsts_SDataSetIsNotPrepared 65048
-#define DAConsts_SNotCachedUpdate 65049
-#define DAConsts_SUpdateWrongDB 65050
-#define DAConsts_SConnectionNotDefined 65051
-#define DAConsts_SCannotConnect 65052
-#define DAConsts_SMacroNotFound 65053
-#define DAConsts_SNotInTransaction 65054
-#define DAConsts_SInTransaction 65055
-#define Data_DBConsts_SInvalidSqlTimeStamp 65056
-#define System_ZLibConst_sTargetBufferTooSmall 65057
-#define System_ZLibConst_sError 65058
-#define DAConsts_SUnknownDataType 65059
-#define DAConsts_SDataTypeNotSupported 65060
-#define DAConsts_SFieldNotFound 65061
-#define DAConsts_SAttributeNotFount 65062
-#define DAConsts_SCannotConvertType 65063
-#define DAConsts_SIllegalFilter 65064
-#define DAConsts_SNeedBlobType 65065
-#define DAConsts_SInvalidSharedObject 65066
-#define DAConsts_SInvalidBlob 65067
-#define DAConsts_SBlobMustBeCached 65068
-#define DAConsts_SKeyFieldsRequired 65069
-#define DAConsts_SKeyFieldsReq 65070
-#define DAConsts_SNoKeyFields 65071
-#define Data_DBConsts_SDataSetEmpty 65072
-#define Data_DBConsts_SDataSetReadOnly 65073
-#define Data_DBConsts_SNestedDataSetClass 65074
-#define Data_DBConsts_STextFalse 65075
-#define Data_DBConsts_STextTrue 65076
-#define Data_DBConsts_SParameterNotFound 65077
-#define Data_DBConsts_SInvalidVersion 65078
-#define Data_DBConsts_SBadFieldType 65079
-#define Data_DBConsts_SProviderSQLNotSupported 65080
-#define Data_DBConsts_SProviderExecuteNotSupported 65081
-#define Data_DBConsts_SDataSetUnidirectional 65082
-#define Data_DBConsts_SUnassignedVar 65083
-#define Data_DBConsts_SRecordNotFound 65084
-#define Data_DBConsts_SBcdOverflow 65085
-#define Data_DBConsts_SInvalidBcdValue 65086
-#define Data_DBConsts_SCouldNotParseTimeStamp 65087
-#define Data_DBConsts_SInvalidVarByteArray 65088
-#define Data_DBConsts_SFieldOutOfRange 65089
-#define Data_DBConsts_SFieldRequired 65090
-#define Data_DBConsts_SDataSetMissing 65091
-#define Data_DBConsts_SInvalidCalcType 65092
-#define Data_DBConsts_SFieldReadOnly 65093
-#define Data_DBConsts_SDuplicateIndexName 65094
-#define Data_DBConsts_SNoIndexForFields 65095
-#define Data_DBConsts_SIndexNotFound 65096
-#define Data_DBConsts_SDBDuplicateName 65097
-#define Data_DBConsts_SCircularDataLink 65098
-#define Data_DBConsts_SLookupInfoError 65099
-#define Data_DBConsts_SDataSourceChange 65100
-#define Data_DBConsts_SDataSetOpen 65101
-#define Data_DBConsts_SNotEditing 65102
-#define Data_DBConsts_SDataSetClosed 65103
-#define DSE_PathPlanner_SInvalidNeighborRequest 65104
-#define Data_DBConsts_SInvalidFieldSize 65105
-#define Data_DBConsts_SInvalidFieldKind 65106
-#define Data_DBConsts_SUnknownFieldType 65107
-#define Data_DBConsts_SFieldNameMissing 65108
-#define Data_DBConsts_SDuplicateFieldName 65109
-#define Data_DBConsts_SFieldNotFound 65110
-#define Data_DBConsts_SFieldAccessError 65111
-#define Data_DBConsts_SFieldValueError 65112
-#define Data_DBConsts_SFieldRangeError 65113
-#define Data_DBConsts_SBcdFieldRangeError 65114
-#define Data_DBConsts_SInvalidIntegerValue 65115
-#define Data_DBConsts_SInvalidBoolValue 65116
-#define Data_DBConsts_SInvalidFloatValue 65117
-#define Data_DBConsts_SFieldTypeMismatch 65118
-#define Data_DBConsts_SFieldSizeMismatch 65119
-#define System_Win_ComConst_SOleError 65120
-#define System_Win_ComConst_SNoMethod 65121
-#define System_Win_ComConst_SVarNotObject 65122
-#define System_Win_ComConst_STooManyParams 65123
-#define Vcl_ComStrs_sRichEditInsertError 65124
-#define Vcl_ComStrs_sRichEditLoadFail 65125
-#define Vcl_ComStrs_sRichEditSaveFail 65126
-#define Vcl_ComStrs_sInvalidComCtl32 65127
-#define Vcl_ComStrs_sDateTimeMax 65128
-#define Vcl_ComStrs_sDateTimeMin 65129
-#define Vcl_ComStrs_sNeedAllowNone 65130
-#define Vcl_ComStrs_sFailSetCalDateTime 65131
-#define Vcl_ComStrs_sFailSetCalMaxSelRange 65132
-#define Vcl_ComStrs_sFailSetCalMinMaxRange 65133
-#define Vcl_ComStrs_sFailsetCalSelRange 65134
-#define DSE_PathPlanner_SMissingStateFactory 65135
-#define Vcl_Consts_SStyleLoadError 65136
-#define Vcl_Consts_SStyleLoadErrors 65137
-#define Vcl_Consts_SStyleRegisterError 65138
-#define Vcl_Consts_SStyleClassRegisterError 65139
-#define Vcl_Consts_SStyleNotFound 65140
-#define Vcl_Consts_SStyleClassNotFound 65141
-#define Vcl_Consts_SStyleInvalidHandle 65142
-#define Vcl_Consts_SStyleFormatError 65143
-#define Vcl_Consts_SStyleHookClassRegistered 65144
-#define Vcl_Consts_SStyleHookClassNotRegistered 65145
-#define Vcl_Consts_SStyleInvalidParameter 65146
-#define Vcl_Consts_SStyleFeatureNotSupported 65147
-#define Vcl_Consts_SStyleNotRegistered 65148
-#define Vcl_Consts_SStyleUnregisterError 65149
-#define Vcl_Consts_SStyleNotRegisteredNoName 65150
-#define Vcl_Consts_sBeginInvokeNoHandle 65151
-#define Vcl_Consts_SListBoxMustBeVirtual 65152
-#define Vcl_Consts_SUnableToSaveSettings 65153
-#define Vcl_Consts_SRestoreDefaultSchedule 65154
-#define Vcl_Consts_SMissingActionBarStyleName 65155
-#define Vcl_Consts_SActionBarStyleMissing 65156
-#define Vcl_Consts_SANSIEncoding 65157
-#define Vcl_Consts_SASCIIEncoding 65158
-#define Vcl_Consts_SUnicodeEncoding 65159
-#define Vcl_Consts_SBigEndianEncoding 65160
-#define Vcl_Consts_SUTF8Encoding 65161
-#define Vcl_Consts_SUTF7Encoding 65162
-#define Vcl_Consts_STrayIconRemoveError 65163
-#define Vcl_Consts_SWindowsVistaRequired 65164
-#define Vcl_Consts_STaskDlgButtonCaption 65165
-#define Vcl_Consts_STaskDlgRadioButtonCaption 65166
-#define Vcl_Consts_SInvalidTaskDlgButtonCaption 65167
-#define Vcl_Consts_SPromptArrayEmpty 65168
-#define Vcl_Consts_SUsername 65169
-#define Vcl_Consts_SPassword 65170
-#define Vcl_Consts_SDomain 65171
-#define Vcl_Consts_SLogin 65172
-#define Vcl_Consts_SAssignSubItemError 65173
-#define Vcl_Consts_SDeleteItemWithSubItems 65174
-#define Vcl_Consts_SDeleteNotAllowed 65175
-#define Vcl_Consts_SMoveNotAllowed 65176
-#define Vcl_Consts_SMoreButtons 65177
-#define Vcl_Consts_SExpand 65178
-#define Vcl_Consts_SErrorLoadingFile 65179
-#define Vcl_Consts_SNoName 65180
-#define Vcl_Consts_SCircularReferencesNotAllowed 65181
-#define Vcl_Consts_SCannotHideActionBand 65182
-#define Vcl_Consts_SErrorSettingCount 65183
-#define Vcl_Consts_SOutOfRange 65184
-#define Vcl_Consts_sAllFilter 65185
-#define Vcl_Consts_SInsertLineError 65186
-#define Vcl_Consts_SInvalidClipFmt 65187
-#define Vcl_Consts_SIconToClipboard 65188
-#define Vcl_Consts_SCannotOpenClipboard 65189
-#define Vcl_Consts_SInvalidMemoSize 65190
-#define Vcl_Consts_SInvalidPrinterOp 65191
-#define Vcl_Consts_SNoDefaultPrinter 65192
-#define Vcl_Consts_SDuplicateMenus 65193
-#define Vcl_Consts_SDockedCtlNeedsName 65194
-#define Vcl_Consts_SDockTreeRemoveError 65195
-#define Vcl_Consts_SDockZoneNotFound 65196
-#define Vcl_Consts_SDockZoneHasNoCtl 65197
-#define Vcl_Consts_SDockZoneVersionConflict 65198
-#define Vcl_Consts_SPromptArrayTooShort 65199
-#define Vcl_Consts_SmkcEsc 65200
-#define Vcl_Consts_SmkcEnter 65201
-#define Vcl_Consts_SmkcSpace 65202
-#define Vcl_Consts_SmkcPgUp 65203
-#define Vcl_Consts_SmkcPgDn 65204
-#define Vcl_Consts_SmkcEnd 65205
-#define Vcl_Consts_SmkcHome 65206
-#define Vcl_Consts_SmkcLeft 65207
-#define Vcl_Consts_SmkcUp 65208
-#define Vcl_Consts_SmkcRight 65209
-#define Vcl_Consts_SmkcDown 65210
-#define Vcl_Consts_SmkcIns 65211
-#define Vcl_Consts_SmkcDel 65212
-#define Vcl_Consts_SmkcShift 65213
-#define Vcl_Consts_SmkcCtrl 65214
-#define Vcl_Consts_SmkcAlt 65215
-#define Vcl_Consts_SMsgDlgInformation 65216
-#define Vcl_Consts_SMsgDlgConfirm 65217
-#define Vcl_Consts_SMsgDlgYes 65218
-#define Vcl_Consts_SMsgDlgNo 65219
-#define Vcl_Consts_SMsgDlgOK 65220
-#define Vcl_Consts_SMsgDlgCancel 65221
-#define Vcl_Consts_SMsgDlgHelp 65222
-#define Vcl_Consts_SMsgDlgAbort 65223
-#define Vcl_Consts_SMsgDlgRetry 65224
-#define Vcl_Consts_SMsgDlgIgnore 65225
-#define Vcl_Consts_SMsgDlgAll 65226
-#define Vcl_Consts_SMsgDlgNoToAll 65227
-#define Vcl_Consts_SMsgDlgYesToAll 65228
-#define Vcl_Consts_SMsgDlgClose 65229
-#define Vcl_Consts_SmkcBkSp 65230
-#define Vcl_Consts_SmkcTab 65231
-#define Vcl_Consts_SCannotDragForm 65232
-#define Vcl_Consts_SVMetafiles 65233
-#define Vcl_Consts_SVEnhMetafiles 65234
-#define Vcl_Consts_SVIcons 65235
-#define Vcl_Consts_SVBitmaps 65236
-#define Vcl_Consts_SVTIFFImages 65237
-#define Vcl_Consts_SGridTooLarge 65238
-#define Vcl_Consts_STooManyDeleted 65239
-#define Vcl_Consts_SIndexOutOfRange 65240
-#define Vcl_Consts_SFixedColTooBig 65241
-#define Vcl_Consts_SFixedRowTooBig 65242
-#define Vcl_Consts_SInvalidStringGridOp 65243
-#define Vcl_Consts_SMaskErr 65244
-#define Vcl_Consts_SMaskEditErr 65245
-#define Vcl_Consts_SMsgDlgWarning 65246
-#define Vcl_Consts_SMsgDlgError 65247
-#define Vcl_Consts_SInvalidPrinter 65248
-#define Vcl_Consts_SDeviceOnPort 65249
-#define Vcl_Consts_SGroupIndexTooLow 65250
-#define Vcl_Consts_SNoMDIForm 65251
-#define Vcl_Consts_SImageCanvasNeedsBitmap 65252
-#define Vcl_Consts_SControlParentSetToSelf 65253
-#define Vcl_Consts_SOKButton 65254
-#define Vcl_Consts_SCancelButton 65255
-#define Vcl_Consts_SYesButton 65256
-#define Vcl_Consts_SNoButton 65257
-#define Vcl_Consts_SHelpButton 65258
-#define Vcl_Consts_SCloseButton 65259
-#define Vcl_Consts_SIgnoreButton 65260
-#define Vcl_Consts_SRetryButton 65261
-#define Vcl_Consts_SAbortButton 65262
-#define Vcl_Consts_SAllButton 65263
-#define Vcl_Consts_SWindowClass 65264
-#define Vcl_Consts_SCannotFocus 65265
-#define Vcl_Consts_SParentRequired 65266
-#define Vcl_Consts_SParentGivenNotAParent 65267
-#define Vcl_Consts_SMDIChildNotVisible 65268
-#define Vcl_Consts_SVisibleChanged 65269
-#define Vcl_Consts_SCannotShowModal 65270
-#define Vcl_Consts_SScrollBarRange 65271
-#define Vcl_Consts_SPropertyOutOfRange 65272
-#define Vcl_Consts_SMenuIndexError 65273
-#define Vcl_Consts_SMenuReinserted 65274
-#define Vcl_Consts_SMenuNotFound 65275
-#define Vcl_Consts_SNoTimers 65276
-#define Vcl_Consts_SNotPrinting 65277
-#define Vcl_Consts_SPrinting 65278
-#define Vcl_Consts_SPrinterIndexError 65279
-#define Vcl_Consts_SScanLine 65280
-#define Vcl_Consts_SChangeIconSize 65281
-#define Vcl_Consts_SChangeWicSize 65282
-#define Vcl_Consts_SOleGraphic 65283
-#define Vcl_Consts_SUnknownExtension 65284
-#define Vcl_Consts_SUnknownClipboardFormat 65285
-#define Vcl_Consts_SOutOfResources 65286
-#define Vcl_Consts_SNoCanvasHandle 65287
-#define Vcl_Consts_SInvalidTextFormatFlag 65288
-#define Vcl_Consts_SInvalidImageSize 65289
-#define Vcl_Consts_SInvalidImageList 65290
-#define Vcl_Consts_SReplaceImage 65291
-#define Vcl_Consts_SImageIndexError 65292
-#define Vcl_Consts_SImageReadFail 65293
-#define Vcl_Consts_SImageWriteFail 65294
-#define Vcl_Consts_SWindowDCError 65295
-#define System_RTLConsts_sObserverUnsupported 65296
-#define System_RTLConsts_sObserverMultipleSingleCast 65297
-#define System_RTLConsts_sObserverNoInterface 65298
-#define System_RTLConsts_sObserverNoSinglecastFound 65299
-#define System_RTLConsts_sObserverNoMulticastFound 65300
-#define System_RTLConsts_sObserverNotAvailable 65301
-#define System_RTLConsts_SInvalidDateString 65302
-#define System_RTLConsts_SInvalidTimeString 65303
-#define System_RTLConsts_SInvalidOffsetString 65304
-#define System_RTLConsts_sMustWaitOnOneEvent 65305
-#define System_RTLConsts_sBeginInvokeDestroying 65306
-#define Vcl_Consts_SInvalidBitmap 65307
-#define Vcl_Consts_SInvalidIcon 65308
-#define Vcl_Consts_SInvalidMetafile 65309
-#define Vcl_Consts_SInvalidPixelFormat 65310
-#define Vcl_Consts_SInvalidImage 65311
-#define System_RTLConsts_SVersion32 65312
-#define System_RTLConsts_SVersion64 65313
-#define System_RTLConsts_SWindows 65314
-#define System_RTLConsts_SWindowsVista 65315
-#define System_RTLConsts_SWindowsServer2008 65316
-#define System_RTLConsts_SWindows7 65317
-#define System_RTLConsts_SWindowsServer2008R2 65318
-#define System_RTLConsts_SWindows2000 65319
-#define System_RTLConsts_SWindowsXP 65320
-#define System_RTLConsts_SWindowsServer2003 65321
-#define System_RTLConsts_SWindowsServer2003R2 65322
-#define System_RTLConsts_SWindowsServer2012 65323
-#define System_RTLConsts_SWindowsServer2012R2 65324
-#define System_RTLConsts_SWindows8 65325
-#define System_RTLConsts_SWindows8Point1 65326
-#define System_RTLConsts_SWindows10 65327
-#define System_RTLConsts_SNoIndex 65328
-#define System_RTLConsts_SNoSearch 65329
-#define System_RTLConsts_SNoTableOfContents 65330
-#define System_RTLConsts_SNoTopics 65331
-#define System_RTLConsts_SNothingFound 65332
-#define System_RTLConsts_SArgumentOutOfRange 65333
-#define System_RTLConsts_SArgumentNil 65334
-#define System_RTLConsts_SGenericItemNotFound 65335
-#define System_RTLConsts_SGenericDuplicateItem 65336
-#define System_RTLConsts_SInsufficientRtti 65337
-#define System_RTLConsts_SParameterCountMismatch 65338
-#define System_RTLConsts_SNonPublicType 65339
-#define System_RTLConsts_SByRefArgMismatch 65340
-#define System_RTLConsts_SServiceNotFound 65341
-#define System_RTLConsts_SVersionStr 65342
-#define System_RTLConsts_SSPVersionStr 65343
-#define System_RTLConsts_SFileNotFound 65344
-#define System_RTLConsts_SLocalTimeInvalid 65345
-#define System_RTLConsts_hNoFilterViewer 65346
-#define System_RTLConsts_sArgumentOutOfRange_Index 65347
-#define System_RTLConsts_sInvalidStringAndObjectArrays 65348
-#define System_RTLConsts_sNoConstruct 65349
-#define System_RTLConsts_sInvalidTimeoutValue 65350
-#define System_RTLConsts_sSpinCountOutOfRange 65351
-#define System_RTLConsts_sTimespanTooLong 65352
-#define System_RTLConsts_sInvalidTimespanDuration 65353
-#define System_RTLConsts_sTimespanValueCannotBeNan 65354
-#define System_RTLConsts_sCannotNegateTimespan 65355
-#define System_RTLConsts_sInvalidTimespanFormat 65356
-#define System_RTLConsts_sTimespanElementTooLong 65357
-#define System_RTLConsts_SNoContext 65358
-#define System_RTLConsts_SNoContextFound 65359
-#define System_RTLConsts_SUnknownProperty 65360
-#define System_RTLConsts_SWriteError 65361
-#define System_RTLConsts_SThreadCreateError 65362
-#define System_RTLConsts_SThreadError 65363
-#define System_RTLConsts_SThreadExternalTerminate 65364
-#define System_RTLConsts_SThreadExternalWait 65365
-#define System_RTLConsts_SThreadStartError 65366
-#define System_RTLConsts_SThreadExternalCheckTerminated 65367
-#define System_RTLConsts_SThreadExternalSetReturnValue 65368
-#define System_RTLConsts_SParamIsNil 65369
-#define System_RTLConsts_SParamIsNegative 65370
-#define System_RTLConsts_SInputBufferExceed 65371
-#define System_RTLConsts_SInvalidCharsInPath 65372
-#define System_RTLConsts_SPathTooLong 65373
-#define System_RTLConsts_SPathNotFound 65374
-#define System_RTLConsts_SPathFormatNotSupported 65375
-#define System_RTLConsts_SInvalidRegType 65376
-#define System_RTLConsts_SListCapacityError 65377
-#define System_RTLConsts_SListCountError 65378
-#define System_RTLConsts_SListIndexError 65379
-#define System_RTLConsts_SMemoryStreamError 65380
-#define System_RTLConsts_SNoComSupport 65381
-#define System_RTLConsts_SPropertyException 65382
-#define System_RTLConsts_SReadError 65383
-#define System_RTLConsts_SReadOnlyProperty 65384
-#define System_RTLConsts_SRegCreateFailed 65385
-#define System_RTLConsts_SRegGetDataFailed 65386
-#define System_RTLConsts_SRegSetDataFailed 65387
-#define System_RTLConsts_SResNotFound 65388
-#define System_RTLConsts_SSeekNotImplemented 65389
-#define System_RTLConsts_SSortedListError 65390
-#define System_RTLConsts_SUnknownGroup 65391
-#define System_RTLConsts_SDuplicateClass 65392
-#define System_RTLConsts_SDuplicateItem 65393
-#define System_RTLConsts_SDuplicateName 65394
-#define System_RTLConsts_SDuplicateString 65395
-#define System_RTLConsts_SFCreateErrorEx 65396
-#define System_RTLConsts_SFOpenErrorEx 65397
-#define System_RTLConsts_SIniFileWriteError 65398
-#define System_RTLConsts_SInvalidFileName 65399
-#define System_RTLConsts_SInvalidImage 65400
-#define System_RTLConsts_SInvalidMask 65401
-#define System_RTLConsts_SInvalidName 65402
-#define System_RTLConsts_SInvalidProperty 65403
-#define System_RTLConsts_SInvalidPropertyElement 65404
-#define System_RTLConsts_SInvalidPropertyPath 65405
-#define System_RTLConsts_SInvalidPropertyType 65406
-#define System_RTLConsts_SInvalidPropertyValue 65407
-#define System_SysConst_SCannotCreateDir 65408
-#define System_SysConst_SInvalidSourceArray 65409
-#define System_SysConst_SInvalidDestinationArray 65410
-#define System_SysConst_SCharIndexOutOfBounds 65411
-#define System_SysConst_SByteIndexOutOfBounds 65412
-#define System_SysConst_SInvalidCharCount 65413
-#define System_SysConst_SInvalidDestinationIndex 65414
-#define System_SysConst_SInvalidCodePage 65415
-#define System_SysConst_SInvalidEncodingName 65416
-#define System_SysConst_SNoMappingForUnicodeCharacter 65417
-#define System_RTLConsts_SAncestorNotFound 65418
-#define System_RTLConsts_SAssignError 65419
-#define System_RTLConsts_SBitsIndexError 65420
-#define System_RTLConsts_SCantWriteResourceStreamError 65421
-#define System_RTLConsts_SCheckSynchronizeError 65422
-#define System_RTLConsts_SClassNotFound 65423
+#define DXConsts_SDirectSoundBuffer 64736
+#define DXConsts_SDirectSoundPrimaryBuffer 64737
+#define DXConsts_SNotMade 64738
+#define DXConsts_SStreamNotOpend 64739
+#define DXConsts_SWaveStreamNotSet 64740
+#define DXConsts_SCannotMade 64741
+#define DXConsts_SCannotInitialized 64742
+#define DXConsts_SCannotLock 64743
+#define DXConsts_SDLLNotLoaded 64744
+#define DXConsts_SNoForm 64745
+#define DXConsts_SInvalidWave 64746
+#define DXConsts_SInvalidWaveFormat 64747
+#define DXConsts_SStreamOpend 64748
+#define JclResources_RsIntelCacheDescrDD 64752
+#define JclResources_RsIntelCacheDescrDE 64753
+#define JclResources_RsIntelCacheDescrE2 64754
+#define JclResources_RsIntelCacheDescrE3 64755
+#define JclResources_RsIntelCacheDescrE4 64756
+#define JclResources_RsIntelCacheDescrEA 64757
+#define JclResources_RsIntelCacheDescrEB 64758
+#define JclResources_RsIntelCacheDescrEC 64759
+#define JclResources_RsIntelCacheDescrF0 64760
+#define JclResources_RsIntelCacheDescrF1 64761
+#define JclResources_RsIntelCacheDescrFF 64762
+#define JclResources_RsOSVersionWin8 64763
+#define JclResources_RsOSVersionWinServer2012 64764
+#define JclResources_RsOSVersionWin81 64765
+#define JclResources_RsOSVersionWinServer2012R2 64766
+#define DXConsts_SDirectSound 64767
+#define JclResources_RsIntelCacheDescr87 64768
+#define JclResources_RsIntelCacheDescrB0 64769
+#define JclResources_RsIntelCacheDescrB1 64770
+#define JclResources_RsIntelCacheDescrB2 64771
+#define JclResources_RsIntelCacheDescrB3 64772
+#define JclResources_RsIntelCacheDescrB4 64773
+#define JclResources_RsIntelCacheDescrBA 64774
+#define JclResources_RsIntelCacheDescrC0 64775
+#define JclResources_RsIntelCacheDescrCA 64776
+#define JclResources_RsIntelCacheDescrD0 64777
+#define JclResources_RsIntelCacheDescrD1 64778
+#define JclResources_RsIntelCacheDescrD2 64779
+#define JclResources_RsIntelCacheDescrD6 64780
+#define JclResources_RsIntelCacheDescrD7 64781
+#define JclResources_RsIntelCacheDescrD8 64782
+#define JclResources_RsIntelCacheDescrDC 64783
+#define JclResources_RsIntelCacheDescr72 64784
+#define JclResources_RsIntelCacheDescr73 64785
+#define JclResources_RsIntelCacheDescr76 64786
+#define JclResources_RsIntelCacheDescr78 64787
+#define JclResources_RsIntelCacheDescr79 64788
+#define JclResources_RsIntelCacheDescr7A 64789
+#define JclResources_RsIntelCacheDescr7B 64790
+#define JclResources_RsIntelCacheDescr7C 64791
+#define JclResources_RsIntelCacheDescr7D 64792
+#define JclResources_RsIntelCacheDescr7F 64793
+#define JclResources_RsIntelCacheDescr80 64794
+#define JclResources_RsIntelCacheDescr82 64795
+#define JclResources_RsIntelCacheDescr83 64796
+#define JclResources_RsIntelCacheDescr84 64797
+#define JclResources_RsIntelCacheDescr85 64798
+#define JclResources_RsIntelCacheDescr86 64799
+#define JclResources_RsIntelCacheDescr51 64800
+#define JclResources_RsIntelCacheDescr52 64801
+#define JclResources_RsIntelCacheDescr55 64802
+#define JclResources_RsIntelCacheDescr56 64803
+#define JclResources_RsIntelCacheDescr57 64804
+#define JclResources_RsIntelCacheDescr59 64805
+#define JclResources_RsIntelCacheDescr5A 64806
+#define JclResources_RsIntelCacheDescr5B 64807
+#define JclResources_RsIntelCacheDescr5C 64808
+#define JclResources_RsIntelCacheDescr5D 64809
+#define JclResources_RsIntelCacheDescr60 64810
+#define JclResources_RsIntelCacheDescr66 64811
+#define JclResources_RsIntelCacheDescr67 64812
+#define JclResources_RsIntelCacheDescr68 64813
+#define JclResources_RsIntelCacheDescr70 64814
+#define JclResources_RsIntelCacheDescr71 64815
+#define JclResources_RsIntelCacheDescr41 64816
+#define JclResources_RsIntelCacheDescr42 64817
+#define JclResources_RsIntelCacheDescr43 64818
+#define JclResources_RsIntelCacheDescr44 64819
+#define JclResources_RsIntelCacheDescr45 64820
+#define JclResources_RsIntelCacheDescr46 64821
+#define JclResources_RsIntelCacheDescr47 64822
+#define JclResources_RsIntelCacheDescr48 64823
+#define JclResources_RsIntelCacheDescr49 64824
+#define JclResources_RsIntelCacheDescr4A 64825
+#define JclResources_RsIntelCacheDescr4B 64826
+#define JclResources_RsIntelCacheDescr4C 64827
+#define JclResources_RsIntelCacheDescr4D 64828
+#define JclResources_RsIntelCacheDescr4E 64829
+#define JclResources_RsIntelCacheDescr4F 64830
+#define JclResources_RsIntelCacheDescr50 64831
+#define JclResources_RsIntelCacheDescr0D 64832
+#define JclResources_RsIntelCacheDescr0E 64833
+#define JclResources_RsIntelCacheDescr21 64834
+#define JclResources_RsIntelCacheDescr22 64835
+#define JclResources_RsIntelCacheDescr23 64836
+#define JclResources_RsIntelCacheDescr25 64837
+#define JclResources_RsIntelCacheDescr29 64838
+#define JclResources_RsIntelCacheDescr2C 64839
+#define JclResources_RsIntelCacheDescr30 64840
+#define JclResources_RsIntelCacheDescr39 64841
+#define JclResources_RsIntelCacheDescr3A 64842
+#define JclResources_RsIntelCacheDescr3B 64843
+#define JclResources_RsIntelCacheDescr3C 64844
+#define JclResources_RsIntelCacheDescr3D 64845
+#define JclResources_RsIntelCacheDescr3E 64846
+#define JclResources_RsIntelCacheDescr40 64847
+#define JclResources_RsUnableToOpenKeyRead 64848
+#define JclResources_RsUnableToAccessValue 64849
+#define JclResources_RsWrongDataType 64850
+#define JclResources_RsInconsistentPath 64851
+#define JclResources_RsIntelCacheDescr00 64852
+#define JclResources_RsIntelCacheDescr01 64853
+#define JclResources_RsIntelCacheDescr02 64854
+#define JclResources_RsIntelCacheDescr03 64855
+#define JclResources_RsIntelCacheDescr04 64856
+#define JclResources_RsIntelCacheDescr05 64857
+#define JclResources_RsIntelCacheDescr06 64858
+#define JclResources_RsIntelCacheDescr08 64859
+#define JclResources_RsIntelCacheDescr09 64860
+#define JclResources_RsIntelCacheDescr0A 64861
+#define JclResources_RsIntelCacheDescr0B 64862
+#define JclResources_RsIntelCacheDescr0C 64863
+#define JvResources_RsClBtnFace 64864
+#define JvResources_RsClBtnShadow 64865
+#define JvResources_RsClGrayText 64866
+#define JvResources_RsClBtnText 64867
+#define JvResources_RsClInactiveCaptionText 64868
+#define JvResources_RsClBtnHighlight 64869
+#define JvResources_RsCl3DDkShadow 64870
+#define JvResources_RsCl3DLight 64871
+#define JvResources_RsClInfoText 64872
+#define JvResources_RsClInfoBk 64873
+#define JvResources_RsGradientActiveCaption 64874
+#define JvResources_RsGradientInactiveCaption 64875
+#define JvResources_RsHotLight 64876
+#define JvResources_RsMenuBar 64877
+#define JvResources_RsMenuHighlight 64878
+#define JclResources_RsEReplacementChar 64879
+#define JvResources_RsClLavender 64880
+#define JvResources_RsClScrollBar 64881
+#define JvResources_RsClBackground 64882
+#define JvResources_RsClActiveCaption 64883
+#define JvResources_RsClInactiveCaption 64884
+#define JvResources_RsClMenu 64885
+#define JvResources_RsClWindow 64886
+#define JvResources_RsClWindowFrame 64887
+#define JvResources_RsClMenuText 64888
+#define JvResources_RsClWindowText 64889
+#define JvResources_RsClCaptionText 64890
+#define JvResources_RsClActiveBorder 64891
+#define JvResources_RsClInactiveBorder 64892
+#define JvResources_RsClAppWorkSpace 64893
+#define JvResources_RsClHighlight 64894
+#define JvResources_RsClHighlightText 64895
+#define JvResources_RsClSeaGreen 64896
+#define JvResources_RsClLightBlue 64897
+#define JvResources_RsClViolet 64898
+#define JvResources_RsClGray40 64899
+#define JvResources_RsClPink 64900
+#define JvResources_RsClGold 64901
+#define JvResources_RsClBrightGreen 64902
+#define JvResources_RsClTurquoise 64903
+#define JvResources_RsClPlum 64904
+#define JvResources_RsClGray25 64905
+#define JvResources_RsClRose 64906
+#define JvResources_RsClTan 64907
+#define JvResources_RsClLightYellow 64908
+#define JvResources_RsClLightGreen 64909
+#define JvResources_RsClLightTurquoise 64910
+#define JvResources_RsClPaleBlue 64911
+#define JvResources_RsClSkyBlue 64912
+#define JvResources_RsClCream 64913
+#define JvResources_RsClMedGray 64914
+#define JvResources_RsClBrown 64915
+#define JvResources_RsClOliveGreen 64916
+#define JvResources_RsClDarkGreen 64917
+#define JvResources_RsClDarkTeal 64918
+#define JvResources_RsClDarkBlue 64919
+#define JvResources_RsClIndigo 64920
+#define JvResources_RsClGray80 64921
+#define JvResources_RsClDarkRed 64922
+#define JvResources_RsClOrange 64923
+#define JvResources_RsClDarkYellow 64924
+#define JvResources_RsClBlueGray 64925
+#define JvResources_RsClGray50 64926
+#define JvResources_RsClLightOrange 64927
+#define JvResources_RsClMaroon 64928
+#define JvResources_RsClGreen 64929
+#define JvResources_RsClOlive 64930
+#define JvResources_RsClNavy 64931
+#define JvResources_RsClPurple 64932
+#define JvResources_RsClTeal 64933
+#define JvResources_RsClGray 64934
+#define JvResources_RsClSilver 64935
+#define JvResources_RsClRed 64936
+#define JvResources_RsClLime 64937
+#define JvResources_RsClYellow 64938
+#define JvResources_RsClBlue 64939
+#define JvResources_RsClFuchsia 64940
+#define JvResources_RsClAqua 64941
+#define JvResources_RsClWhite 64942
+#define JvResources_RsClMoneyGreen 64943
+#define Vcl_Imaging_pnglang_EPNGCannotAssignChunkText 64944
+#define Vcl_Imaging_pnglang_EPNGUnexpectedEndText 64945
+#define Vcl_Imaging_pnglang_EPNGNoImageDataText 64946
+#define Vcl_Imaging_pnglang_EPNGCannotAddChunkText 64947
+#define Vcl_Imaging_pnglang_EPNGCannotAddInvalidImageText 64948
+#define Vcl_Imaging_pnglang_EPNGCouldNotLoadResourceText 64949
+#define Vcl_Imaging_pnglang_EPNGOutMemoryText 64950
+#define Vcl_Imaging_pnglang_EPNGCannotChangeTransparentText 64951
+#define Vcl_Imaging_pnglang_EPNGHeaderNotPresentText 64952
+#define Vcl_Imaging_pnglang_EInvalidNewSize 64953
+#define Vcl_Imaging_pnglang_EInvalidSpec 64954
+#define GDIPicture_GDIPERRMSG 64955
+#define Vcl_Imaging_JConsts_sChangeJPGSize 64956
+#define Vcl_Imaging_JConsts_sJPEGError 64957
+#define Vcl_Imaging_JConsts_sJPEGImageFile 64958
+#define JvResources_RsClBlack 64959
+#define OverbyteIcsCharsetUtils_sUnicodeUTF8 64960
+#define OverbyteIcsCharsetUtils_sVietnameseWindows 64961
+#define OverbyteIcsCharsetUtils_sWesternEuropeanISO 64962
+#define OverbyteIcsCharsetUtils_sWesternEuropeanWindows 64963
+#define Vcl_Imaging_pnglang_EPngInvalidCRCText 64964
+#define Vcl_Imaging_pnglang_EPNGInvalidIHDRText 64965
+#define Vcl_Imaging_pnglang_EPNGMissingMultipleIDATText 64966
+#define Vcl_Imaging_pnglang_EPNGZLIBErrorText 64967
+#define Vcl_Imaging_pnglang_EPNGInvalidPaletteText 64968
+#define Vcl_Imaging_pnglang_EPNGInvalidFileHeaderText 64969
+#define Vcl_Imaging_pnglang_EPNGIHDRNotFirstText 64970
+#define Vcl_Imaging_pnglang_EPNGSizeExceedsText 64971
+#define Vcl_Imaging_pnglang_EPNGUnknownPalEntryText 64972
+#define Vcl_Imaging_pnglang_EPNGUnknownCriticalChunkText 64973
+#define Vcl_Imaging_pnglang_EPNGUnknownCompressionText 64974
+#define Vcl_Imaging_pnglang_EPNGUnknownInterlaceText 64975
+#define OverbyteIcsCharsetUtils_sCyrillicKOI8U 64976
+#define OverbyteIcsCharsetUtils_sCyrillicWindows 64977
+#define OverbyteIcsCharsetUtils_sEstonianISO 64978
+#define OverbyteIcsCharsetUtils_sGreekISO 64979
+#define OverbyteIcsCharsetUtils_sGreekWindows 64980
+#define OverbyteIcsCharsetUtils_sHebrewISOLogical 64981
+#define OverbyteIcsCharsetUtils_sHebrewISOVisual 64982
+#define OverbyteIcsCharsetUtils_sHebrewWindows 64983
+#define OverbyteIcsCharsetUtils_sJapaneseJIS 64984
+#define OverbyteIcsCharsetUtils_sKorean 64985
+#define OverbyteIcsCharsetUtils_sKoreanEUC 64986
+#define OverbyteIcsCharsetUtils_sLatin9 64987
+#define OverbyteIcsCharsetUtils_sThaiWindows 64988
+#define OverbyteIcsCharsetUtils_sTurkishISO 64989
+#define OverbyteIcsCharsetUtils_sTurkishWindows 64990
+#define OverbyteIcsCharsetUtils_sUnicodeUTF7 64991
+#define MyConsts_SNoRecordToLock 64992
+#define MyConsts_SInvalidClientVersion 64993
+#define MyConsts_SCannotIntercept 64994
+#define MyConsts_STwoEmbServer 64995
+#define OverbyteIcsCharsetUtils_sArabicISO 64996
+#define OverbyteIcsCharsetUtils_sArabicWindows 64997
+#define OverbyteIcsCharsetUtils_sBalticISO 64998
+#define OverbyteIcsCharsetUtils_sBalticWindows 64999
+#define OverbyteIcsCharsetUtils_sCentralEuropeanISO 65000
+#define OverbyteIcsCharsetUtils_sCentralEuropeanWindows 65001
+#define OverbyteIcsCharsetUtils_sChineseTraditionalBig5 65002
+#define OverbyteIcsCharsetUtils_sChineseSimplifiedGB18030 65003
+#define OverbyteIcsCharsetUtils_sChineseSimplifiedGB2312 65004
+#define OverbyteIcsCharsetUtils_sChineseSimplifiedHZ 65005
+#define OverbyteIcsCharsetUtils_sCyrillicISO 65006
+#define OverbyteIcsCharsetUtils_sCyrillicKOI8R 65007
+#define DAConsts_SInvalidEncDataSize 65008
+#define DAConsts_SInvalidEncData 65009
+#define DAConsts_SInvalidHash 65010
+#define DBMonitorClient_SAppStarted 65011
+#define DBMonitorClient_SAppFinished 65012
+#define MyConsts_SFieldNameNotDefined 65013
+#define MyConsts_sMultipleFieldsFound 65014
+#define MyConsts_SNoResultSet 65015
+#define MyConsts_SEServInitErr 65016
+#define MyConsts_SConnectionOpen 65017
+#define MyConsts_SOpenNextPreparedSQL 65018
+#define MyConsts_SOpenNextVsFetchAll 65019
+#define MyConsts_STimestampFieldRequired 65020
+#define MyConsts_SPrepareNotSupportedC 65021
+#define MyConsts_SPrepareNotSupportedS 65022
+#define MyConsts_SLockTableVsFetchAll 65023
+#define DAConsts_SConnectionInTransactionNotActive 65024
+#define DAConsts_SUnsupportedIsolationLevel 65025
+#define DAConsts_SIsolationLevelNotSupportedWithMTS 65026
+#define DAConsts_SReadOnlyTransactionNotSupported 65027
+#define DAConsts_SOperationNotSupported 65028
+#define DAConsts_SMultipleTransactionsNotSupported 65029
+#define DAConsts_SInvalidParamsArray 65030
+#define DAConsts_SUnsupportedMetaDataKind 65031
+#define DAConsts_SRestrictionMustBeSet 65032
+#define DAConsts_SMDIsNotMemDataSet 65033
+#define DAConsts_SProtectionCircular 65034
+#define DAConsts_SNotInitialized 65035
+#define DAConsts_SInvalidIV 65036
+#define DAConsts_SInvalidKey 65037
+#define DAConsts_SInvalidKeySize 65038
+#define DAConsts_SEncryptionNotSupported 65039
+#define DAConsts_SUnknownParamDataType 65040
+#define DAConsts_SRecordChanged 65041
+#define DAConsts_SStoredProcNotDefined 65042
+#define DAConsts_SCannotPerformIfPooling 65043
+#define DAConsts_SMaxConnectionsReached 65044
+#define DAConsts_SCannotChangeIsUnicode 65045
+#define DAConsts_SNoTimers 65046
+#define DAConsts_sBlobNotCompressed 65047
+#define DAConsts_SCompressorNotLinked 65048
+#define DAConsts_SUncompressorNotLinked 65049
+#define DAConsts_SUpdateComponentCircularReferences 65050
+#define DAConsts_SUpdateComponentInvalidType 65051
+#define DAConsts_SUpdateObjectEmptySQL 65052
+#define DAConsts_SEmptySQLStatement 65053
+#define DAConsts_SInvalidBlobPosition 65054
+#define DAConsts_SNoConnectionsInTransaction 65055
+#define DAConsts_SInvalidComprBlobHeader 65056
+#define DAConsts_SInvalidComprBlobData 65057
+#define DAConsts_SDataSetIsNotPrepared 65058
+#define DAConsts_SNotCachedUpdate 65059
+#define DAConsts_SUpdateWrongDB 65060
+#define DAConsts_SConnectionNotDefined 65061
+#define DAConsts_SCannotConnect 65062
+#define DAConsts_SMacroNotFound 65063
+#define DAConsts_SNotInTransaction 65064
+#define DAConsts_SInTransaction 65065
+#define DAConsts_STransactionNotAssigned 65066
+#define DAConsts_SUpdateFailed 65067
+#define DAConsts_SCustomUpdateFailed 65068
+#define DAConsts_SRefreshFailed 65069
+#define DAConsts_SInvalidFetchRows 65070
+#define DAConsts_SNoCorrespondParam 65071
+#define DAConsts_SAttributeNotFount 65072
+#define DAConsts_SCannotConvertType 65073
+#define DAConsts_SIllegalFilter 65074
+#define DAConsts_SNeedBlobType 65075
+#define DAConsts_SInvalidSharedObject 65076
+#define DAConsts_SInvalidBlob 65077
+#define DAConsts_SBlobMustBeCached 65078
+#define DAConsts_SKeyFieldsRequired 65079
+#define DAConsts_SKeyFieldsReq 65080
+#define DAConsts_SNoKeyFields 65081
+#define DAConsts_SBadTableInfoName 65082
+#define DAConsts_SBadStatementType 65083
+#define DAConsts_SBadUpdatingTable 65084
+#define DAConsts_SKeyFieldNotFound 65085
+#define DAConsts_SInvalidUnComprBlobSize 65086
+#define DAConsts_SInvalidComprBlobSize 65087
+#define Data_DBConsts_SInvalidVersion 65088
+#define Data_DBConsts_SBadFieldType 65089
+#define Data_DBConsts_SProviderSQLNotSupported 65090
+#define Data_DBConsts_SProviderExecuteNotSupported 65091
+#define Data_DBConsts_SDataSetUnidirectional 65092
+#define Data_DBConsts_SUnassignedVar 65093
+#define Data_DBConsts_SRecordNotFound 65094
+#define Data_DBConsts_SBcdOverflow 65095
+#define Data_DBConsts_SInvalidBcdValue 65096
+#define Data_DBConsts_SCouldNotParseTimeStamp 65097
+#define Data_DBConsts_SInvalidSqlTimeStamp 65098
+#define System_ZLibConst_sTargetBufferTooSmall 65099
+#define System_ZLibConst_sError 65100
+#define DAConsts_SUnknownDataType 65101
+#define DAConsts_SDataTypeNotSupported 65102
+#define DAConsts_SFieldNotFound 65103
+#define Data_DBConsts_SDuplicateIndexName 65104
+#define Data_DBConsts_SNoIndexForFields 65105
+#define Data_DBConsts_SIndexNotFound 65106
+#define Data_DBConsts_SDBDuplicateName 65107
+#define Data_DBConsts_SCircularDataLink 65108
+#define Data_DBConsts_SLookupInfoError 65109
+#define Data_DBConsts_SDataSourceChange 65110
+#define Data_DBConsts_SDataSetOpen 65111
+#define Data_DBConsts_SNotEditing 65112
+#define Data_DBConsts_SDataSetClosed 65113
+#define Data_DBConsts_SDataSetEmpty 65114
+#define Data_DBConsts_SDataSetReadOnly 65115
+#define Data_DBConsts_SNestedDataSetClass 65116
+#define Data_DBConsts_STextFalse 65117
+#define Data_DBConsts_STextTrue 65118
+#define Data_DBConsts_SParameterNotFound 65119
+#define Data_DBConsts_SFieldNotFound 65120
+#define Data_DBConsts_SFieldAccessError 65121
+#define Data_DBConsts_SFieldValueError 65122
+#define Data_DBConsts_SFieldRangeError 65123
+#define Data_DBConsts_SBcdFieldRangeError 65124
+#define Data_DBConsts_SInvalidIntegerValue 65125
+#define Data_DBConsts_SInvalidBoolValue 65126
+#define Data_DBConsts_SInvalidFloatValue 65127
+#define Data_DBConsts_SFieldTypeMismatch 65128
+#define Data_DBConsts_SFieldSizeMismatch 65129
+#define Data_DBConsts_SInvalidVarByteArray 65130
+#define Data_DBConsts_SFieldOutOfRange 65131
+#define Data_DBConsts_SFieldRequired 65132
+#define Data_DBConsts_SDataSetMissing 65133
+#define Data_DBConsts_SInvalidCalcType 65134
+#define Data_DBConsts_SFieldReadOnly 65135
+#define Vcl_ComStrs_sRichEditSaveFail 65136
+#define Vcl_ComStrs_sInvalidComCtl32 65137
+#define Vcl_ComStrs_sDateTimeMax 65138
+#define Vcl_ComStrs_sDateTimeMin 65139
+#define Vcl_ComStrs_sNeedAllowNone 65140
+#define Vcl_ComStrs_sFailSetCalDateTime 65141
+#define Vcl_ComStrs_sFailSetCalMaxSelRange 65142
+#define Vcl_ComStrs_sFailSetCalMinMaxRange 65143
+#define Vcl_ComStrs_sFailsetCalSelRange 65144
+#define DSE_PathPlanner_SMissingStateFactory 65145
+#define DSE_PathPlanner_SInvalidNeighborRequest 65146
+#define Data_DBConsts_SInvalidFieldSize 65147
+#define Data_DBConsts_SInvalidFieldKind 65148
+#define Data_DBConsts_SUnknownFieldType 65149
+#define Data_DBConsts_SFieldNameMissing 65150
+#define Data_DBConsts_SDuplicateFieldName 65151
+#define Vcl_Consts_SStyleInvalidHandle 65152
+#define Vcl_Consts_SStyleFormatError 65153
+#define Vcl_Consts_SStyleHookClassRegistered 65154
+#define Vcl_Consts_SStyleHookClassNotRegistered 65155
+#define Vcl_Consts_SStyleInvalidParameter 65156
+#define Vcl_Consts_SStyleFeatureNotSupported 65157
+#define Vcl_Consts_SStyleNotRegistered 65158
+#define Vcl_Consts_SStyleUnregisterError 65159
+#define Vcl_Consts_SStyleNotRegisteredNoName 65160
+#define Vcl_Consts_sBeginInvokeNoHandle 65161
+#define System_Win_ComConst_SOleError 65162
+#define System_Win_ComConst_SNoMethod 65163
+#define System_Win_ComConst_SVarNotObject 65164
+#define System_Win_ComConst_STooManyParams 65165
+#define Vcl_ComStrs_sRichEditInsertError 65166
+#define Vcl_ComStrs_sRichEditLoadFail 65167
+#define Vcl_Consts_SPassword 65168
+#define Vcl_Consts_SDomain 65169
+#define Vcl_Consts_SLogin 65170
+#define Vcl_Consts_SErrorSettingCount 65171
+#define Vcl_Consts_SListBoxMustBeVirtual 65172
+#define Vcl_Consts_STrayIconRemoveError 65173
+#define Vcl_Consts_SWindowsVistaRequired 65174
+#define Vcl_Consts_STaskDlgButtonCaption 65175
+#define Vcl_Consts_STaskDlgRadioButtonCaption 65176
+#define Vcl_Consts_SInvalidTaskDlgButtonCaption 65177
+#define Vcl_Consts_SStyleLoadError 65178
+#define Vcl_Consts_SStyleLoadErrors 65179
+#define Vcl_Consts_SStyleRegisterError 65180
+#define Vcl_Consts_SStyleClassRegisterError 65181
+#define Vcl_Consts_SStyleNotFound 65182
+#define Vcl_Consts_SStyleClassNotFound 65183
+#define Vcl_Consts_SInsertLineError 65184
+#define Vcl_Consts_SInvalidClipFmt 65185
+#define Vcl_Consts_SIconToClipboard 65186
+#define Vcl_Consts_SCannotOpenClipboard 65187
+#define Vcl_Consts_SInvalidMemoSize 65188
+#define Vcl_Consts_SInvalidPrinterOp 65189
+#define Vcl_Consts_SNoDefaultPrinter 65190
+#define Vcl_Consts_SDuplicateMenus 65191
+#define Vcl_Consts_SDockedCtlNeedsName 65192
+#define Vcl_Consts_SDockTreeRemoveError 65193
+#define Vcl_Consts_SDockZoneNotFound 65194
+#define Vcl_Consts_SDockZoneHasNoCtl 65195
+#define Vcl_Consts_SDockZoneVersionConflict 65196
+#define Vcl_Consts_SPromptArrayTooShort 65197
+#define Vcl_Consts_SPromptArrayEmpty 65198
+#define Vcl_Consts_SUsername 65199
+#define Vcl_Consts_SmkcSpace 65200
+#define Vcl_Consts_SmkcPgUp 65201
+#define Vcl_Consts_SmkcPgDn 65202
+#define Vcl_Consts_SmkcEnd 65203
+#define Vcl_Consts_SmkcHome 65204
+#define Vcl_Consts_SmkcLeft 65205
+#define Vcl_Consts_SmkcUp 65206
+#define Vcl_Consts_SmkcRight 65207
+#define Vcl_Consts_SmkcDown 65208
+#define Vcl_Consts_SmkcIns 65209
+#define Vcl_Consts_SmkcDel 65210
+#define Vcl_Consts_SmkcShift 65211
+#define Vcl_Consts_SmkcCtrl 65212
+#define Vcl_Consts_SmkcAlt 65213
+#define Vcl_Consts_SOutOfRange 65214
+#define Vcl_Consts_sAllFilter 65215
+#define Vcl_Consts_SMsgDlgYes 65216
+#define Vcl_Consts_SMsgDlgNo 65217
+#define Vcl_Consts_SMsgDlgOK 65218
+#define Vcl_Consts_SMsgDlgCancel 65219
+#define Vcl_Consts_SMsgDlgHelp 65220
+#define Vcl_Consts_SMsgDlgAbort 65221
+#define Vcl_Consts_SMsgDlgRetry 65222
+#define Vcl_Consts_SMsgDlgIgnore 65223
+#define Vcl_Consts_SMsgDlgAll 65224
+#define Vcl_Consts_SMsgDlgNoToAll 65225
+#define Vcl_Consts_SMsgDlgYesToAll 65226
+#define Vcl_Consts_SMsgDlgClose 65227
+#define Vcl_Consts_SmkcBkSp 65228
+#define Vcl_Consts_SmkcTab 65229
+#define Vcl_Consts_SmkcEsc 65230
+#define Vcl_Consts_SmkcEnter 65231
+#define Vcl_Consts_SVEnhMetafiles 65232
+#define Vcl_Consts_SVIcons 65233
+#define Vcl_Consts_SVBitmaps 65234
+#define Vcl_Consts_SVTIFFImages 65235
+#define Vcl_Consts_SGridTooLarge 65236
+#define Vcl_Consts_STooManyDeleted 65237
+#define Vcl_Consts_SIndexOutOfRange 65238
+#define Vcl_Consts_SFixedColTooBig 65239
+#define Vcl_Consts_SFixedRowTooBig 65240
+#define Vcl_Consts_SInvalidStringGridOp 65241
+#define Vcl_Consts_SMaskErr 65242
+#define Vcl_Consts_SMaskEditErr 65243
+#define Vcl_Consts_SMsgDlgWarning 65244
+#define Vcl_Consts_SMsgDlgError 65245
+#define Vcl_Consts_SMsgDlgInformation 65246
+#define Vcl_Consts_SMsgDlgConfirm 65247
+#define Vcl_Consts_SGroupIndexTooLow 65248
+#define Vcl_Consts_SNoMDIForm 65249
+#define Vcl_Consts_SImageCanvasNeedsBitmap 65250
+#define Vcl_Consts_SControlParentSetToSelf 65251
+#define Vcl_Consts_SOKButton 65252
+#define Vcl_Consts_SCancelButton 65253
+#define Vcl_Consts_SYesButton 65254
+#define Vcl_Consts_SNoButton 65255
+#define Vcl_Consts_SHelpButton 65256
+#define Vcl_Consts_SCloseButton 65257
+#define Vcl_Consts_SIgnoreButton 65258
+#define Vcl_Consts_SRetryButton 65259
+#define Vcl_Consts_SAbortButton 65260
+#define Vcl_Consts_SAllButton 65261
+#define Vcl_Consts_SCannotDragForm 65262
+#define Vcl_Consts_SVMetafiles 65263
+#define Vcl_Consts_SParentRequired 65264
+#define Vcl_Consts_SParentGivenNotAParent 65265
+#define Vcl_Consts_SMDIChildNotVisible 65266
+#define Vcl_Consts_SVisibleChanged 65267
+#define Vcl_Consts_SCannotShowModal 65268
+#define Vcl_Consts_SScrollBarRange 65269
+#define Vcl_Consts_SPropertyOutOfRange 65270
+#define Vcl_Consts_SMenuIndexError 65271
+#define Vcl_Consts_SMenuReinserted 65272
+#define Vcl_Consts_SMenuNotFound 65273
+#define Vcl_Consts_SNoTimers 65274
+#define Vcl_Consts_SNotPrinting 65275
+#define Vcl_Consts_SPrinting 65276
+#define Vcl_Consts_SPrinterIndexError 65277
+#define Vcl_Consts_SInvalidPrinter 65278
+#define Vcl_Consts_SDeviceOnPort 65279
+#define Vcl_Consts_SChangeIconSize 65280
+#define Vcl_Consts_SChangeWicSize 65281
+#define Vcl_Consts_SUnknownExtension 65282
+#define Vcl_Consts_SUnknownClipboardFormat 65283
+#define Vcl_Consts_SOutOfResources 65284
+#define Vcl_Consts_SNoCanvasHandle 65285
+#define Vcl_Consts_SInvalidTextFormatFlag 65286
+#define Vcl_Consts_SInvalidImageSize 65287
+#define Vcl_Consts_SInvalidImageList 65288
+#define Vcl_Consts_SReplaceImage 65289
+#define Vcl_Consts_SImageIndexError 65290
+#define Vcl_Consts_SImageReadFail 65291
+#define Vcl_Consts_SImageWriteFail 65292
+#define Vcl_Consts_SWindowDCError 65293
+#define Vcl_Consts_SWindowClass 65294
+#define Vcl_Consts_SCannotFocus 65295
+#define System_RTLConsts_sObserverMultipleSingleCast 65296
+#define System_RTLConsts_sObserverNoInterface 65297
+#define System_RTLConsts_sObserverNoSinglecastFound 65298
+#define System_RTLConsts_sObserverNoMulticastFound 65299
+#define System_RTLConsts_sObserverNotAvailable 65300
+#define System_RTLConsts_SInvalidDateString 65301
+#define System_RTLConsts_SInvalidTimeString 65302
+#define System_RTLConsts_SInvalidOffsetString 65303
+#define System_RTLConsts_sMustWaitOnOneEvent 65304
+#define System_RTLConsts_sBeginInvokeDestroying 65305
+#define Vcl_Consts_SInvalidBitmap 65306
+#define Vcl_Consts_SInvalidIcon 65307
+#define Vcl_Consts_SInvalidMetafile 65308
+#define Vcl_Consts_SInvalidPixelFormat 65309
+#define Vcl_Consts_SInvalidImage 65310
+#define Vcl_Consts_SScanLine 65311
+#define System_RTLConsts_SVersion64 65312
+#define System_RTLConsts_SWindows 65313
+#define System_RTLConsts_SWindowsVista 65314
+#define System_RTLConsts_SWindowsServer2008 65315
+#define System_RTLConsts_SWindows7 65316
+#define System_RTLConsts_SWindowsServer2008R2 65317
+#define System_RTLConsts_SWindows2000 65318
+#define System_RTLConsts_SWindowsXP 65319
+#define System_RTLConsts_SWindowsServer2003 65320
+#define System_RTLConsts_SWindowsServer2003R2 65321
+#define System_RTLConsts_SWindowsServer2012 65322
+#define System_RTLConsts_SWindowsServer2012R2 65323
+#define System_RTLConsts_SWindows8 65324
+#define System_RTLConsts_SWindows8Point1 65325
+#define System_RTLConsts_SWindows10 65326
+#define System_RTLConsts_sObserverUnsupported 65327
+#define System_RTLConsts_SNoSearch 65328
+#define System_RTLConsts_SNoTableOfContents 65329
+#define System_RTLConsts_SNoTopics 65330
+#define System_RTLConsts_SNothingFound 65331
+#define System_RTLConsts_SArgumentOutOfRange 65332
+#define System_RTLConsts_SArgumentNil 65333
+#define System_RTLConsts_SGenericItemNotFound 65334
+#define System_RTLConsts_SGenericDuplicateItem 65335
+#define System_RTLConsts_SInsufficientRtti 65336
+#define System_RTLConsts_SParameterCountMismatch 65337
+#define System_RTLConsts_SNonPublicType 65338
+#define System_RTLConsts_SByRefArgMismatch 65339
+#define System_RTLConsts_SServiceNotFound 65340
+#define System_RTLConsts_SVersionStr 65341
+#define System_RTLConsts_SSPVersionStr 65342
+#define System_RTLConsts_SVersion32 65343
+#define System_RTLConsts_SLocalTimeInvalid 65344
+#define System_RTLConsts_hNoFilterViewer 65345
+#define System_RTLConsts_sArgumentOutOfRange_Index 65346
+#define System_RTLConsts_sInvalidStringAndObjectArrays 65347
+#define System_RTLConsts_sNoConstruct 65348
+#define System_RTLConsts_sInvalidTimeoutValue 65349
+#define System_RTLConsts_sSpinCountOutOfRange 65350
+#define System_RTLConsts_sTimespanTooLong 65351
+#define System_RTLConsts_sInvalidTimespanDuration 65352
+#define System_RTLConsts_sTimespanValueCannotBeNan 65353
+#define System_RTLConsts_sCannotNegateTimespan 65354
+#define System_RTLConsts_sInvalidTimespanFormat 65355
+#define System_RTLConsts_sTimespanElementTooLong 65356
+#define System_RTLConsts_SNoContext 65357
+#define System_RTLConsts_SNoContextFound 65358
+#define System_RTLConsts_SNoIndex 65359
+#define System_RTLConsts_SWriteError 65360
+#define System_RTLConsts_SThreadCreateError 65361
+#define System_RTLConsts_SThreadError 65362
+#define System_RTLConsts_SThreadExternalTerminate 65363
+#define System_RTLConsts_SThreadExternalWait 65364
+#define System_RTLConsts_SThreadStartError 65365
+#define System_RTLConsts_SThreadExternalCheckTerminated 65366
+#define System_RTLConsts_SThreadExternalSetReturnValue 65367
+#define System_RTLConsts_SParamIsNil 65368
+#define System_RTLConsts_SParamIsNegative 65369
+#define System_RTLConsts_SInputBufferExceed 65370
+#define System_RTLConsts_SInvalidCharsInPath 65371
+#define System_RTLConsts_SPathTooLong 65372
+#define System_RTLConsts_SPathNotFound 65373
+#define System_RTLConsts_SPathFormatNotSupported 65374
+#define System_RTLConsts_SFileNotFound 65375
+#define System_RTLConsts_SListCapacityError 65376
+#define System_RTLConsts_SListCountError 65377
+#define System_RTLConsts_SListIndexError 65378
+#define System_RTLConsts_SMemoryStreamError 65379
+#define System_RTLConsts_SNoComSupport 65380
+#define System_RTLConsts_SPropertyException 65381
+#define System_RTLConsts_SReadError 65382
+#define System_RTLConsts_SReadOnlyProperty 65383
+#define System_RTLConsts_SRegCreateFailed 65384
+#define System_RTLConsts_SRegGetDataFailed 65385
+#define System_RTLConsts_SRegSetDataFailed 65386
+#define System_RTLConsts_SResNotFound 65387
+#define System_RTLConsts_SSeekNotImplemented 65388
+#define System_RTLConsts_SSortedListError 65389
+#define System_RTLConsts_SUnknownGroup 65390
+#define System_RTLConsts_SUnknownProperty 65391
+#define System_RTLConsts_SDuplicateItem 65392
+#define System_RTLConsts_SDuplicateName 65393
+#define System_RTLConsts_SDuplicateString 65394
+#define System_RTLConsts_SFCreateErrorEx 65395
+#define System_RTLConsts_SFOpenErrorEx 65396
+#define System_RTLConsts_SIniFileWriteError 65397
+#define System_RTLConsts_SInvalidFileName 65398
+#define System_RTLConsts_SInvalidImage 65399
+#define System_RTLConsts_SInvalidMask 65400
+#define System_RTLConsts_SInvalidName 65401
+#define System_RTLConsts_SInvalidProperty 65402
+#define System_RTLConsts_SInvalidPropertyElement 65403
+#define System_RTLConsts_SInvalidPropertyPath 65404
+#define System_RTLConsts_SInvalidPropertyType 65405
+#define System_RTLConsts_SInvalidPropertyValue 65406
+#define System_RTLConsts_SInvalidRegType 65407
+#define System_SysConst_SInvalidSourceArray 65408
+#define System_SysConst_SInvalidDestinationArray 65409
+#define System_SysConst_SCharIndexOutOfBounds 65410
+#define System_SysConst_SByteIndexOutOfBounds 65411
+#define System_SysConst_SInvalidCharCount 65412
+#define System_SysConst_SInvalidDestinationIndex 65413
+#define System_SysConst_SInvalidCodePage 65414
+#define System_SysConst_SInvalidEncodingName 65415
+#define System_SysConst_SNoMappingForUnicodeCharacter 65416
+#define System_RTLConsts_SAncestorNotFound 65417
+#define System_RTLConsts_SAssignError 65418
+#define System_RTLConsts_SBitsIndexError 65419
+#define System_RTLConsts_SCantWriteResourceStreamError 65420
+#define System_RTLConsts_SCheckSynchronizeError 65421
+#define System_RTLConsts_SClassNotFound 65422
+#define System_RTLConsts_SDuplicateClass 65423
 #define System_SysConst_SLongMonthNameNov 65424
 #define System_SysConst_SLongMonthNameDec 65425
 #define System_SysConst_SShortDayNameSun 65426
@@ -901,87 +807,6 @@
 #define System_SysConst_SEndOfFile 65535
 STRINGTABLE
 BEGIN
-	RzBorder_sRzColorInactiveCaptionText,	L"Inactive Caption Text"
-	RzBorder_sRzColorBtnHighlight,	L"Button Highlight"
-	RzBorder_sRzColor3DDkShadow,	L"3D Dark Shadow"
-	RzBorder_sRzColor3DLight,	L"3D Light"
-	RzBorder_sRzColorInfoText,	L"Info Text"
-	RzBorder_sRzColorInfoBk,	L"Info Background"
-	RzBorder_sRzColorHotLight,	L"Hot Light"
-	RzBorder_sRzColorGradientActiveCaption,	L"Gradient Active Caption"
-	RzBorder_sRzColorGradientInactiveCaption,	L"Gradient Inactive Caption"
-	RzBorder_sRzColorMenuHighlight,	L"Menu Highlight"
-	RzBorder_sRzColorMenuBar,	L"Menu Bar"
-	RzBorder_sRzColorInactiveCaption,	L"Inactive Caption"
-	RzBorder_sRzColorMenu,	L"Menu"
-	RzBorder_sRzColorWindow,	L"Window"
-	RzBorder_sRzColorWindowFrame,	L"Window Frame"
-	RzBorder_sRzColorMenuText,	L"Menu Text"
-	RzBorder_sRzColorWindowText,	L"Window Text"
-	RzBorder_sRzColorCaptionText,	L"Caption Text"
-	RzBorder_sRzColorActiveBorder,	L"Active Border"
-	RzBorder_sRzColorInactiveBorder,	L"Inactive Border"
-	RzBorder_sRzColorAppWorkSpace,	L"App WorkSpace"
-	RzBorder_sRzColorHighlight,	L"Highlight"
-	RzBorder_sRzColorHighlightText,	L"Highlight Text"
-	RzBorder_sRzColorBtnFace,	L"Button Face"
-	RzBorder_sRzColorBtnShadow,	L"Button Shadow"
-	RzBorder_sRzColorGrayText,	L"Gray Text"
-	RzBorder_sRzColorBtnText,	L"Button Text"
-	RzBorder_sRzColorBrightGreen,	L"Bright Green"
-	RzBorder_sRzColorTurquoise,	L"Turquoise"
-	RzBorder_sRzColorSkyBlue,	L"Sky Blue"
-	RzBorder_sRzColorPlum,	L"Plum"
-	RzBorder_sRzColorGray25,	L"Gray 25%"
-	RzBorder_sRzColorRose,	L"Rose"
-	RzBorder_sRzColorTan,	L"Tan"
-	RzBorder_sRzColorLightYellow,	L"Light Yellow"
-	RzBorder_sRzColorLightGreen,	L"Light Green"
-	RzBorder_sRzColorLightTurquoise,	L"Light Turquoise"
-	RzBorder_sRzColorPaleBlue,	L"Pale Blue"
-	RzBorder_sRzColorLavender,	L"Lavender"
-	RzBorder_sRzColorWhite,	L"White"
-	RzBorder_sRzColorScrollBar,	L"Scroll Bar"
-	RzBorder_sRzColorBackground,	L"Background"
-	RzBorder_sRzColorActiveCaption,	L"Active Caption"
-	RzBorder_sRzColorGreen,	L"Green"
-	RzBorder_sRzColorTeal,	L"Teal"
-	RzBorder_sRzColorBlue,	L"Blue"
-	RzBorder_sRzColorBlueGray,	L"Blue Gray"
-	RzBorder_sRzColorGray50,	L"Gray 50%"
-	RzBorder_sRzColorRed,	L"Red"
-	RzBorder_sRzColorLightOrange,	L"Light Orange"
-	RzBorder_sRzColorLime,	L"Lime"
-	RzBorder_sRzColorSeaGreen,	L"Sea Green"
-	RzBorder_sRzColorAqua,	L"Aqua"
-	RzBorder_sRzColorLightBlue,	L"Light Blue"
-	RzBorder_sRzColorViolet,	L"Violet"
-	RzBorder_sRzColorGray40,	L"Gray 40%"
-	RzBorder_sRzColorPink,	L"Pink"
-	RzBorder_sRzColorGold,	L"Gold"
-	RzBorder_sRzColorYellow,	L"Yellow"
-	DXConsts_SInvalidWave,	L"Wave is invalid"
-	DXConsts_SInvalidWaveFormat,	L"Format is invalid"
-	DXConsts_SStreamOpend,	L"Stream is already open"
-	RzCommon_sRzCannotLoadCustomFraming,	L"Cannot load Custom Framing settings--No TRzRegIniFile component specified"
-	RzCommon_sRzCannotSaveCustomFraming,	L"Cannot save Custom Framing settings--No TRzRegIniFile component specified"
-	RzBorder_sRzColorBlack,	L"Black"
-	RzBorder_sRzColorBrown,	L"Brown"
-	RzBorder_sRzColorOliveGreen,	L"Olive Green"
-	RzBorder_sRzColorDarkGreen,	L"Dark Green"
-	RzBorder_sRzColorDarkTeal,	L"Dark Teal"
-	RzBorder_sRzColorDarkBlue,	L"Dark Blue"
-	RzBorder_sRzColorIndigo,	L"Indigo"
-	RzBorder_sRzColorGray80,	L"Gray 80%"
-	RzBorder_sRzColorDarkRed,	L"Dark Red"
-	RzBorder_sRzColorOrange,	L"Orange"
-	RzBorder_sRzColorDarkYellow,	L"Dark Yellow"
-	JclResources_RsIntelCacheDescrFF,	L"CPUID leaf 2 does not report cache descriptor information, use CPUID leaf 4 to query cache parameters"
-	JclResources_RsOSVersionWin8,	L"Windows 8"
-	JclResources_RsOSVersionWinServer2012,	L"Windows Server 2012"
-	JclResources_RsOSVersionWin81,	L"Windows 8.1"
-	JclResources_RsOSVersionWinServer2012R2,	L"Windows Server 2012 R2"
-	DXConsts_SDirectSound,	L"DirectSound"
 	DXConsts_SDirectSoundBuffer,	L"Sound Buffer"
 	DXConsts_SDirectSoundPrimaryBuffer,	L"Primary Buffer"
 	DXConsts_SNotMade,	L"%s not made"
@@ -992,12 +817,9 @@ BEGIN
 	DXConsts_SCannotLock,	L"%s cannot be locked"
 	DXConsts_SDLLNotLoaded,	L"%s is not loaded"
 	DXConsts_SNoForm,	L"Form not found"
-	JclResources_RsIntelCacheDescrD1,	L"3rd-level cache: 1 MByte, 4-way set associative, 64 byte line size"
-	JclResources_RsIntelCacheDescrD2,	L"3rd-level cache: 2 MByte, 4-way set associative, 64 byte line size"
-	JclResources_RsIntelCacheDescrD6,	L"3rd-level cache: 1 MByte, 8-way set associative, 64 byte line size"
-	JclResources_RsIntelCacheDescrD7,	L"3rd-level cache: 2 MByte, 8-way set associative, 64 byte line size"
-	JclResources_RsIntelCacheDescrD8,	L"3rd-level cache: 4 MByte, 8-way set associative, 64 byte line size"
-	JclResources_RsIntelCacheDescrDC,	L"3rd-level cache: 1.5 MByte, 12-way set associative, 64 byte line size"
+	DXConsts_SInvalidWave,	L"Wave is invalid"
+	DXConsts_SInvalidWaveFormat,	L"Format is invalid"
+	DXConsts_SStreamOpend,	L"Stream is already open"
 	JclResources_RsIntelCacheDescrDD,	L"3rd-level cache: 3 MByte, 12-way set associative, 64 byte line size"
 	JclResources_RsIntelCacheDescrDE,	L"3rd-level cache: 6 MByte, 12-way set associative, 64 byte line size"
 	JclResources_RsIntelCacheDescrE2,	L"3rd-level cache: 2 MByte, 16-way set associative, 64 byte line size"
@@ -1008,12 +830,12 @@ BEGIN
 	JclResources_RsIntelCacheDescrEC,	L"3rd-level cache: 24 MByte, 24-way set associative, 64 byte line size"
 	JclResources_RsIntelCacheDescrF0,	L"64-Byte Prefetching"
 	JclResources_RsIntelCacheDescrF1,	L"128-Byte Prefetching"
-	JclResources_RsIntelCacheDescr80,	L"2nd-level cache: 512 KBytes, 8-way set associative, 64 byte line size"
-	JclResources_RsIntelCacheDescr82,	L"2nd-level cache: 256 KBytes, 8-way associative, 32 byte line size"
-	JclResources_RsIntelCacheDescr83,	L"2nd-level cache: 512 KBytes, 8-way associative, 32 byte line size"
-	JclResources_RsIntelCacheDescr84,	L"2nd-level cache: 1 MBytes, 8-way associative, 32 byte line size"
-	JclResources_RsIntelCacheDescr85,	L"2nd-level cache: 2 MBytes, 8-way associative, 32 byte line size"
-	JclResources_RsIntelCacheDescr86,	L"2nd-level cache: 512 KByte, 4-way set associative, 64 byte line size"
+	JclResources_RsIntelCacheDescrFF,	L"CPUID leaf 2 does not report cache descriptor information, use CPUID leaf 4 to query cache parameters"
+	JclResources_RsOSVersionWin8,	L"Windows 8"
+	JclResources_RsOSVersionWinServer2012,	L"Windows Server 2012"
+	JclResources_RsOSVersionWin81,	L"Windows 8.1"
+	JclResources_RsOSVersionWinServer2012R2,	L"Windows Server 2012 R2"
+	DXConsts_SDirectSound,	L"DirectSound"
 	JclResources_RsIntelCacheDescr87,	L"2nd-level cache: 1 MByte, 8-way set associative, 64 byte line size"
 	JclResources_RsIntelCacheDescrB0,	L"Instruction TLB: 4 KByte pages, 4-way set associative, 128 entries"
 	JclResources_RsIntelCacheDescrB1,	L"Instruction TLB: 2 MByte pages, 4-way, 8 entries or 4 MByte pages, 4-way, 4 entries"
@@ -1024,12 +846,12 @@ BEGIN
 	JclResources_RsIntelCacheDescrC0,	L"Data TLB: 4 KByte and 4 MByte pages, 4-way set associative, 8 entries"
 	JclResources_RsIntelCacheDescrCA,	L"Shared 2nd-Level TLB: 4 KByte pages, 4-way associative, 512 entries"
 	JclResources_RsIntelCacheDescrD0,	L"3rd-level cache: 512 KByte, 4-way set associative, 64 byte line size"
-	JclResources_RsIntelCacheDescr60,	L"1st-level data cache: 16 KByte, 8-way set associative, 64 byte line size"
-	JclResources_RsIntelCacheDescr66,	L"1st-level data cache: 8 KBytes, 4-way set associative, 64 byte line size"
-	JclResources_RsIntelCacheDescr67,	L"1st-level data cache: 16 KBytes, 4-way set associative, 64 byte line size"
-	JclResources_RsIntelCacheDescr68,	L"1st-level data cache: 32 KBytes, 4-way set associative, 64 byte line size"
-	JclResources_RsIntelCacheDescr70,	L"Trace cache: 12 K-Ops, 8-way set associative"
-	JclResources_RsIntelCacheDescr71,	L"Trace cache: 16 K-Ops, 8-way set associative"
+	JclResources_RsIntelCacheDescrD1,	L"3rd-level cache: 1 MByte, 4-way set associative, 64 byte line size"
+	JclResources_RsIntelCacheDescrD2,	L"3rd-level cache: 2 MByte, 4-way set associative, 64 byte line size"
+	JclResources_RsIntelCacheDescrD6,	L"3rd-level cache: 1 MByte, 8-way set associative, 64 byte line size"
+	JclResources_RsIntelCacheDescrD7,	L"3rd-level cache: 2 MByte, 8-way set associative, 64 byte line size"
+	JclResources_RsIntelCacheDescrD8,	L"3rd-level cache: 4 MByte, 8-way set associative, 64 byte line size"
+	JclResources_RsIntelCacheDescrDC,	L"3rd-level cache: 1.5 MByte, 12-way set associative, 64 byte line size"
 	JclResources_RsIntelCacheDescr72,	L"Trace cache: 32 K-Ops, 8-way set associative"
 	JclResources_RsIntelCacheDescr73,	L"Trace cache: 64 K-Ops, 8-way set associative"
 	JclResources_RsIntelCacheDescr76,	L"Instruction TLB: 2M/4M pages, fully associative, 8 entries"
@@ -1040,12 +862,12 @@ BEGIN
 	JclResources_RsIntelCacheDescr7C,	L"2nd-level cache: 1 MBytes, 8-way set associative, 64 bytes line size, 2 lines per sector"
 	JclResources_RsIntelCacheDescr7D,	L"2nd-level cache: 2 MBytes, 8-way set associative, 64 byte line size"
 	JclResources_RsIntelCacheDescr7F,	L"2nd-level cache: 512 KBytes, 2-way set associative, 64 byte line size"
-	JclResources_RsIntelCacheDescr4B,	L"3rd-level cache: 8MByte, 16-way set associative, 64 byte line size"
-	JclResources_RsIntelCacheDescr4C,	L"3rd-level cache: 12MByte, 12-way set associative, 64 byte line size"
-	JclResources_RsIntelCacheDescr4D,	L"3rd-level cache: 16MByte, 16-way set associative, 64 byte line size"
-	JclResources_RsIntelCacheDescr4E,	L"2nd-level cache: 6MByte, 24-way set associative, 64 byte line size"
-	JclResources_RsIntelCacheDescr4F,	L"Instruction TLB: 4 KByte pages, 32 Entries"
-	JclResources_RsIntelCacheDescr50,	L"Instruction TLB: 4 KByte and 2 MByte or 4 MByte pages, 64 Entries"
+	JclResources_RsIntelCacheDescr80,	L"2nd-level cache: 512 KBytes, 8-way set associative, 64 byte line size"
+	JclResources_RsIntelCacheDescr82,	L"2nd-level cache: 256 KBytes, 8-way associative, 32 byte line size"
+	JclResources_RsIntelCacheDescr83,	L"2nd-level cache: 512 KBytes, 8-way associative, 32 byte line size"
+	JclResources_RsIntelCacheDescr84,	L"2nd-level cache: 1 MBytes, 8-way associative, 32 byte line size"
+	JclResources_RsIntelCacheDescr85,	L"2nd-level cache: 2 MBytes, 8-way associative, 32 byte line size"
+	JclResources_RsIntelCacheDescr86,	L"2nd-level cache: 512 KByte, 4-way set associative, 64 byte line size"
 	JclResources_RsIntelCacheDescr51,	L"Instruction TLB: 4 KByte and 2 MByte or 4 MByte pages, 128 Entries"
 	JclResources_RsIntelCacheDescr52,	L"Instruction TLB: 4 KByte and 2 MByte or 4 MByte pages, 256 Entries"
 	JclResources_RsIntelCacheDescr55,	L"Instruction TLB: 2-MByte or 4-MByte pages, fully associative, 7 entries"
@@ -1056,12 +878,12 @@ BEGIN
 	JclResources_RsIntelCacheDescr5B,	L"Data TLB: 4 KByte and 4 MByte pages, 64 Entries"
 	JclResources_RsIntelCacheDescr5C,	L"Data TLB: 4 KByte and 4 MByte pages, 128 Entries"
 	JclResources_RsIntelCacheDescr5D,	L"Data TLB: 4 KByte and 4 MByte pages, 256 Entries"
-	JclResources_RsIntelCacheDescr3A,	L"2nd-level cache: 192 KBytes, 6-way set associative, sectored cache, 64-byte line size"
-	JclResources_RsIntelCacheDescr3B,	L"2nd-level cache: 128 KBytes, 2-way set associative, sectored cache, 64-byte line size"
-	JclResources_RsIntelCacheDescr3C,	L"2nd-level cache: 256 KBytes, 4-way set associative, sectored cache, 64-byte line size"
-	JclResources_RsIntelCacheDescr3D,	L"2nd-level cache: 384 KBytes, 6-way set associative, sectored cache, 64-byte line size"
-	JclResources_RsIntelCacheDescr3E,	L"2nd-level cache: 512 KBytes, 4-way set associative, sectored cache, 64-byte line size"
-	JclResources_RsIntelCacheDescr40,	L"No 2nd-level cache or, if processor contains a valid 2nd-level cache, no 3rd-level cache"
+	JclResources_RsIntelCacheDescr60,	L"1st-level data cache: 16 KByte, 8-way set associative, 64 byte line size"
+	JclResources_RsIntelCacheDescr66,	L"1st-level data cache: 8 KBytes, 4-way set associative, 64 byte line size"
+	JclResources_RsIntelCacheDescr67,	L"1st-level data cache: 16 KBytes, 4-way set associative, 64 byte line size"
+	JclResources_RsIntelCacheDescr68,	L"1st-level data cache: 32 KBytes, 4-way set associative, 64 byte line size"
+	JclResources_RsIntelCacheDescr70,	L"Trace cache: 12 K-Ops, 8-way set associative"
+	JclResources_RsIntelCacheDescr71,	L"Trace cache: 16 K-Ops, 8-way set associative"
 	JclResources_RsIntelCacheDescr41,	L"2nd-level cache: 128 KBytes, 4-way set associative, 32 byte line size"
 	JclResources_RsIntelCacheDescr42,	L"2nd-level cache: 256 KBytes, 4-way set associative, 32 byte line size"
 	JclResources_RsIntelCacheDescr43,	L"2nd-level cache: 512 KBytes, 4-way set associative, 32 byte line size"
@@ -1072,12 +894,12 @@ BEGIN
 	JclResources_RsIntelCacheDescr48,	L"3rd-level cache: 8 MByte, 8-way set associative, 64 byte line size"
 	JclResources_RsIntelCacheDescr49,	L"2nd-level cache: 4 MBytes, 16-way set associative, 64 byte line size"
 	JclResources_RsIntelCacheDescr4A,	L"3rd-level cache: 6MByte, 12-way set associative, 64 byte line size"
-	JclResources_RsIntelCacheDescr06,	L"1st level instruction cache: 8 KBytes, 4-way set associative, 32 byte line size"
-	JclResources_RsIntelCacheDescr08,	L"1st level instruction cache: 16 KBytes, 4-way set associative, 32 byte line size"
-	JclResources_RsIntelCacheDescr09,	L"1st level instruction cache: 32 KBytes, 4-way set associative, 64 byte line size"
-	JclResources_RsIntelCacheDescr0A,	L"1st level data cache: 8 KBytes, 2-way set associative, 32 byte line size"
-	JclResources_RsIntelCacheDescr0B,	L"Instruction TLB: 4 MByte pages, 4-way set associative, 4 entries"
-	JclResources_RsIntelCacheDescr0C,	L"1st level data cache: 16 KBytes, 4-way set associative, 32 byte line size"
+	JclResources_RsIntelCacheDescr4B,	L"3rd-level cache: 8MByte, 16-way set associative, 64 byte line size"
+	JclResources_RsIntelCacheDescr4C,	L"3rd-level cache: 12MByte, 12-way set associative, 64 byte line size"
+	JclResources_RsIntelCacheDescr4D,	L"3rd-level cache: 16MByte, 16-way set associative, 64 byte line size"
+	JclResources_RsIntelCacheDescr4E,	L"2nd-level cache: 6MByte, 24-way set associative, 64 byte line size"
+	JclResources_RsIntelCacheDescr4F,	L"Instruction TLB: 4 KByte pages, 32 Entries"
+	JclResources_RsIntelCacheDescr50,	L"Instruction TLB: 4 KByte and 2 MByte or 4 MByte pages, 64 Entries"
 	JclResources_RsIntelCacheDescr0D,	L"1st level data cache: 16 KBytes, 4-way set associative, 64 byte line size"
 	JclResources_RsIntelCacheDescr0E,	L"1st level data cache: 24 KBytes, 6-way set associative, 64 byte line size"
 	JclResources_RsIntelCacheDescr21,	L"2nd level cache: 256 KBytes, 8-way set associative, 64 byte line size"
@@ -1088,12 +910,12 @@ BEGIN
 	JclResources_RsIntelCacheDescr2C,	L"1st level data cache: 32 KBytes, 8-way set associative, 64 byte line size"
 	JclResources_RsIntelCacheDescr30,	L"1st level instruction cache: 32 KBytes, 8-way set associative, 64 byte line size"
 	JclResources_RsIntelCacheDescr39,	L"2nd-level cache: 128 KBytes, 4-way set associative, sectored cache, 64-byte line size"
-	JvResources_RsGradientActiveCaption,	L"Gradient Active Caption"
-	JvResources_RsGradientInactiveCaption,	L"Gradient Inactive Caption"
-	JvResources_RsHotLight,	L"Hot Light"
-	JvResources_RsMenuBar,	L"Menu Bar"
-	JvResources_RsMenuHighlight,	L"Menu Highlight"
-	JclResources_RsEReplacementChar,	L"Failed to get ANSI replacement character"
+	JclResources_RsIntelCacheDescr3A,	L"2nd-level cache: 192 KBytes, 6-way set associative, sectored cache, 64-byte line size"
+	JclResources_RsIntelCacheDescr3B,	L"2nd-level cache: 128 KBytes, 2-way set associative, sectored cache, 64-byte line size"
+	JclResources_RsIntelCacheDescr3C,	L"2nd-level cache: 256 KBytes, 4-way set associative, sectored cache, 64-byte line size"
+	JclResources_RsIntelCacheDescr3D,	L"2nd-level cache: 384 KBytes, 6-way set associative, sectored cache, 64-byte line size"
+	JclResources_RsIntelCacheDescr3E,	L"2nd-level cache: 512 KBytes, 4-way set associative, sectored cache, 64-byte line size"
+	JclResources_RsIntelCacheDescr40,	L"No 2nd-level cache or, if processor contains a valid 2nd-level cache, no 3rd-level cache"
 	JclResources_RsUnableToOpenKeyRead,	L"Unable to open key \"%s\\%s\" for read"
 	JclResources_RsUnableToAccessValue,	L"Unable to open key \"%s\\%s\" and access value \"%s\""
 	JclResources_RsWrongDataType,	L"\"%s\\%s\\%s\" is of wrong kind or size"
@@ -1104,12 +926,12 @@ BEGIN
 	JclResources_RsIntelCacheDescr03,	L"Data TLB: 4 KByte pages, 4-way set associative, 64 entries"
 	JclResources_RsIntelCacheDescr04,	L"Data TLB: 4 MByte pages, 4-way set associative, 8 entries"
 	JclResources_RsIntelCacheDescr05,	L"Data TLB1: 4 MByte pages, 4-way set associative, 32 entries"
-	JvResources_RsClCaptionText,	L"Active window title bar text"
-	JvResources_RsClActiveBorder,	L"Active window border"
-	JvResources_RsClInactiveBorder,	L"Inactive window border"
-	JvResources_RsClAppWorkSpace,	L"Application workspace"
-	JvResources_RsClHighlight,	L"Selection background"
-	JvResources_RsClHighlightText,	L"Selection text"
+	JclResources_RsIntelCacheDescr06,	L"1st level instruction cache: 8 KBytes, 4-way set associative, 32 byte line size"
+	JclResources_RsIntelCacheDescr08,	L"1st level instruction cache: 16 KBytes, 4-way set associative, 32 byte line size"
+	JclResources_RsIntelCacheDescr09,	L"1st level instruction cache: 32 KBytes, 4-way set associative, 64 byte line size"
+	JclResources_RsIntelCacheDescr0A,	L"1st level data cache: 8 KBytes, 2-way set associative, 32 byte line size"
+	JclResources_RsIntelCacheDescr0B,	L"Instruction TLB: 4 MByte pages, 4-way set associative, 4 entries"
+	JclResources_RsIntelCacheDescr0C,	L"1st level data cache: 16 KBytes, 4-way set associative, 32 byte line size"
 	JvResources_RsClBtnFace,	L"Button face"
 	JvResources_RsClBtnShadow,	L"Button shadow"
 	JvResources_RsClGrayText,	L"Dimmed text"
@@ -1120,12 +942,12 @@ BEGIN
 	JvResources_RsCl3DLight,	L"Highlight 3D elements"
 	JvResources_RsClInfoText,	L"Tooltip text"
 	JvResources_RsClInfoBk,	L"Tooltip background"
-	JvResources_RsClRose,	L"Rose"
-	JvResources_RsClTan,	L"Tan"
-	JvResources_RsClLightYellow,	L"Light Yellow"
-	JvResources_RsClLightGreen,	L"Light Green"
-	JvResources_RsClLightTurquoise,	L"Light Turquoise"
-	JvResources_RsClPaleBlue,	L"Pale Blue"
+	JvResources_RsGradientActiveCaption,	L"Gradient Active Caption"
+	JvResources_RsGradientInactiveCaption,	L"Gradient Inactive Caption"
+	JvResources_RsHotLight,	L"Hot Light"
+	JvResources_RsMenuBar,	L"Menu Bar"
+	JvResources_RsMenuHighlight,	L"Menu Highlight"
+	JclResources_RsEReplacementChar,	L"Failed to get ANSI replacement character"
 	JvResources_RsClLavender,	L"Lavender"
 	JvResources_RsClScrollBar,	L"Scrollbar"
 	JvResources_RsClBackground,	L"Desktop background"
@@ -1136,12 +958,12 @@ BEGIN
 	JvResources_RsClWindowFrame,	L"Window frame"
 	JvResources_RsClMenuText,	L"Menu text"
 	JvResources_RsClWindowText,	L"Window text"
-	JvResources_RsClDarkRed,	L"Dark Red"
-	JvResources_RsClOrange,	L"Orange"
-	JvResources_RsClDarkYellow,	L"Dark Yellow"
-	JvResources_RsClBlueGray,	L"Blue Gray"
-	JvResources_RsClGray50,	L"Gray 50%"
-	JvResources_RsClLightOrange,	L"Light Orange"
+	JvResources_RsClCaptionText,	L"Active window title bar text"
+	JvResources_RsClActiveBorder,	L"Active window border"
+	JvResources_RsClInactiveBorder,	L"Inactive window border"
+	JvResources_RsClAppWorkSpace,	L"Application workspace"
+	JvResources_RsClHighlight,	L"Selection background"
+	JvResources_RsClHighlightText,	L"Selection text"
 	JvResources_RsClSeaGreen,	L"Sea Green"
 	JvResources_RsClLightBlue,	L"Light Blue"
 	JvResources_RsClViolet,	L"Violet"
@@ -1152,12 +974,12 @@ BEGIN
 	JvResources_RsClTurquoise,	L"Turquoise"
 	JvResources_RsClPlum,	L"Plum"
 	JvResources_RsClGray25,	L"Gray 25%"
-	JvResources_RsClYellow,	L"Yellow"
-	JvResources_RsClBlue,	L"Blue"
-	JvResources_RsClFuchsia,	L"Fuchsia"
-	JvResources_RsClAqua,	L"Aqua"
-	JvResources_RsClWhite,	L"White"
-	JvResources_RsClMoneyGreen,	L"Money green"
+	JvResources_RsClRose,	L"Rose"
+	JvResources_RsClTan,	L"Tan"
+	JvResources_RsClLightYellow,	L"Light Yellow"
+	JvResources_RsClLightGreen,	L"Light Green"
+	JvResources_RsClLightTurquoise,	L"Light Turquoise"
+	JvResources_RsClPaleBlue,	L"Pale Blue"
 	JvResources_RsClSkyBlue,	L"Sky blue"
 	JvResources_RsClCream,	L"Cream"
 	JvResources_RsClMedGray,	L"Medium gray"
@@ -1168,12 +990,12 @@ BEGIN
 	JvResources_RsClDarkBlue,	L"Dark Blue"
 	JvResources_RsClIndigo,	L"Indigo"
 	JvResources_RsClGray80,	L"Gray 80%"
-	Vcl_Imaging_pnglang_EInvalidSpec,	L"The \"Portable Network Graphics\" could not be created because invalid image type parameters have being provided."
-	GDIPicture_GDIPERRMSG,	L"Could not allocate memory for image"
-	Vcl_Imaging_JConsts_sChangeJPGSize,	L"Cannot change the size of a JPEG image"
-	Vcl_Imaging_JConsts_sJPEGError,	L"JPEG error #%d"
-	Vcl_Imaging_JConsts_sJPEGImageFile,	L"JPEG Image File"
-	JvResources_RsClBlack,	L"Black"
+	JvResources_RsClDarkRed,	L"Dark Red"
+	JvResources_RsClOrange,	L"Orange"
+	JvResources_RsClDarkYellow,	L"Dark Yellow"
+	JvResources_RsClBlueGray,	L"Blue Gray"
+	JvResources_RsClGray50,	L"Gray 50%"
+	JvResources_RsClLightOrange,	L"Light Orange"
 	JvResources_RsClMaroon,	L"Maroon"
 	JvResources_RsClGreen,	L"Green"
 	JvResources_RsClOlive,	L"Olive green"
@@ -1184,12 +1006,12 @@ BEGIN
 	JvResources_RsClSilver,	L"Silver"
 	JvResources_RsClRed,	L"Red"
 	JvResources_RsClLime,	L"Lime"
-	Vcl_Imaging_pnglang_EPNGIHDRNotFirstText,	L"This \"Portable Network Graphics\" image is not supported or it might be invalid.\r\n(IHDR chunk is not the first)"
-	Vcl_Imaging_pnglang_EPNGSizeExceedsText,	L"This \"Portable Network Graphics\" image is not supported because either its width or height exceeds the maximum size of 65535 pixels."
-	Vcl_Imaging_pnglang_EPNGUnknownPalEntryText,	L"There is no such palette entry."
-	Vcl_Imaging_pnglang_EPNGUnknownCriticalChunkText,	L"This \"Portable Network Graphics\" image contains an unknown critical part which could not be decoded."
-	Vcl_Imaging_pnglang_EPNGUnknownCompressionText,	L"This \"Portable Network Graphics\" image is encoded with an unknown compression scheme which could not be decoded."
-	Vcl_Imaging_pnglang_EPNGUnknownInterlaceText,	L"This \"Portable Network Graphics\" image uses an unknown interlace scheme which could not be decoded."
+	JvResources_RsClYellow,	L"Yellow"
+	JvResources_RsClBlue,	L"Blue"
+	JvResources_RsClFuchsia,	L"Fuchsia"
+	JvResources_RsClAqua,	L"Aqua"
+	JvResources_RsClWhite,	L"White"
+	JvResources_RsClMoneyGreen,	L"Money green"
 	Vcl_Imaging_pnglang_EPNGCannotAssignChunkText,	L"The chunks must be compatible to be assigned."
 	Vcl_Imaging_pnglang_EPNGUnexpectedEndText,	L"This \"Portable Network Graphics\" image is invalid because the decoder found an unexpected end of the file."
 	Vcl_Imaging_pnglang_EPNGNoImageDataText,	L"This \"Portable Network Graphics\" image contains no data."
@@ -1200,12 +1022,12 @@ BEGIN
 	Vcl_Imaging_pnglang_EPNGCannotChangeTransparentText,	L"Setting bit transparency color is not allowed for png images containing alpha value for each pixel (COLOR_RGBALPHA and COLOR_GRAYSCALEALPHA)"
 	Vcl_Imaging_pnglang_EPNGHeaderNotPresentText,	L"This operation is not valid because the current image contains no valid header."
 	Vcl_Imaging_pnglang_EInvalidNewSize,	L"The new size provided for image resizing is invalid."
-	OverbyteIcsCharsetUtils_sKoreanEUC,	L"Korean (EUC)"
-	OverbyteIcsCharsetUtils_sLatin9,	L"Latin 9 (ISO)"
-	OverbyteIcsCharsetUtils_sThaiWindows,	L"Thai (Windows)"
-	OverbyteIcsCharsetUtils_sTurkishISO,	L"Turkish (ISO)"
-	OverbyteIcsCharsetUtils_sTurkishWindows,	L"Turkish (Windows)"
-	OverbyteIcsCharsetUtils_sUnicodeUTF7,	L"Unicode (UTF-7)"
+	Vcl_Imaging_pnglang_EInvalidSpec,	L"The \"Portable Network Graphics\" could not be created because invalid image type parameters have being provided."
+	GDIPicture_GDIPERRMSG,	L"Could not allocate memory for image"
+	Vcl_Imaging_JConsts_sChangeJPGSize,	L"Cannot change the size of a JPEG image"
+	Vcl_Imaging_JConsts_sJPEGError,	L"JPEG error #%d"
+	Vcl_Imaging_JConsts_sJPEGImageFile,	L"JPEG Image File"
+	JvResources_RsClBlack,	L"Black"
 	OverbyteIcsCharsetUtils_sUnicodeUTF8,	L"Unicode (UTF-8)"
 	OverbyteIcsCharsetUtils_sVietnameseWindows,	L"Vietnamese (Windows)"
 	OverbyteIcsCharsetUtils_sWesternEuropeanISO,	L"Western European (ISO)"
@@ -1216,12 +1038,12 @@ BEGIN
 	Vcl_Imaging_pnglang_EPNGZLIBErrorText,	L"Could not decompress the image because it contains invalid compressed data.\r\n Description: "
 	Vcl_Imaging_pnglang_EPNGInvalidPaletteText,	L"The \"Portable Network Graphics\" image contains an invalid palette."
 	Vcl_Imaging_pnglang_EPNGInvalidFileHeaderText,	L"The file being read is not a valid \"Portable Network Graphics\" image because it contains an invalid header. This file may be corrupted, try obtaining it again"
-	OverbyteIcsCharsetUtils_sChineseTraditionalBig5,	L"Chinese Traditional (Big5)"
-	OverbyteIcsCharsetUtils_sChineseSimplifiedGB18030,	L"Chinese Simplified (GB18030)"
-	OverbyteIcsCharsetUtils_sChineseSimplifiedGB2312,	L"Chinese Simplified (GB2312)"
-	OverbyteIcsCharsetUtils_sChineseSimplifiedHZ,	L"Chinese Simplified (HZ)"
-	OverbyteIcsCharsetUtils_sCyrillicISO,	L"Cyrillic (ISO)"
-	OverbyteIcsCharsetUtils_sCyrillicKOI8R,	L"Cyrillic (KOI8-R)"
+	Vcl_Imaging_pnglang_EPNGIHDRNotFirstText,	L"This \"Portable Network Graphics\" image is not supported or it might be invalid.\r\n(IHDR chunk is not the first)"
+	Vcl_Imaging_pnglang_EPNGSizeExceedsText,	L"This \"Portable Network Graphics\" image is not supported because either its width or height exceeds the maximum size of 65535 pixels."
+	Vcl_Imaging_pnglang_EPNGUnknownPalEntryText,	L"There is no such palette entry."
+	Vcl_Imaging_pnglang_EPNGUnknownCriticalChunkText,	L"This \"Portable Network Graphics\" image contains an unknown critical part which could not be decoded."
+	Vcl_Imaging_pnglang_EPNGUnknownCompressionText,	L"This \"Portable Network Graphics\" image is encoded with an unknown compression scheme which could not be decoded."
+	Vcl_Imaging_pnglang_EPNGUnknownInterlaceText,	L"This \"Portable Network Graphics\" image uses an unknown interlace scheme which could not be decoded."
 	OverbyteIcsCharsetUtils_sCyrillicKOI8U,	L"Cyrillic (KOI8-U)"
 	OverbyteIcsCharsetUtils_sCyrillicWindows,	L"Cyrillic (Windows)"
 	OverbyteIcsCharsetUtils_sEstonianISO,	L"Estonian (ISO)"
@@ -1232,12 +1054,12 @@ BEGIN
 	OverbyteIcsCharsetUtils_sHebrewWindows,	L"Hebrew (Windows)"
 	OverbyteIcsCharsetUtils_sJapaneseJIS,	L"Japanese (JIS)"
 	OverbyteIcsCharsetUtils_sKorean,	L"Korean"
-	MyConsts_SOpenNextPreparedSQL,	L"Cannot OpenNext if statement is Prepared"
-	MyConsts_SOpenNextVsFetchAll,	L"OpenNext is not compatible with FetchAll = True"
-	MyConsts_STimestampFieldRequired,	L"Timestamp field required"
-	MyConsts_SPrepareNotSupportedC,	L"Prepare/UnPrepare is not supported by this MySQL client version"
-	MyConsts_SPrepareNotSupportedS,	L"Prepare/UnPrepare is not supported by this MySQL server version"
-	MyConsts_SLockTableVsFetchAll,	L"LockTable is not compatible with FetchAll = False"
+	OverbyteIcsCharsetUtils_sKoreanEUC,	L"Korean (EUC)"
+	OverbyteIcsCharsetUtils_sLatin9,	L"Latin 9 (ISO)"
+	OverbyteIcsCharsetUtils_sThaiWindows,	L"Thai (Windows)"
+	OverbyteIcsCharsetUtils_sTurkishISO,	L"Turkish (ISO)"
+	OverbyteIcsCharsetUtils_sTurkishWindows,	L"Turkish (Windows)"
+	OverbyteIcsCharsetUtils_sUnicodeUTF7,	L"Unicode (UTF-7)"
 	MyConsts_SNoRecordToLock,	L"There is no active record to lock"
 	MyConsts_SInvalidClientVersion,	L"Invalid client version"
 	MyConsts_SCannotIntercept,	L"Cannot intercept"
@@ -1248,12 +1070,12 @@ BEGIN
 	OverbyteIcsCharsetUtils_sBalticWindows,	L"Baltic (Windows)"
 	OverbyteIcsCharsetUtils_sCentralEuropeanISO,	L"Central European (ISO)"
 	OverbyteIcsCharsetUtils_sCentralEuropeanWindows,	L"Central European (Windows)"
-	DAConsts_SProtectionCircular,	L"Circular Protection detected, Protection Object is invalid"
-	DAConsts_SNotInitialized,	L"%s is not initialized. Set Key first"
-	DAConsts_SInvalidIV,	L"Invalid Initialization Vector"
-	DAConsts_SInvalidKey,	L"Key is invalid. Set Key or Password first"
-	DAConsts_SInvalidKeySize,	L"Length from Encryption key is invalid.\r\nKeysize for %s must be %d-%d bytes"
-	DAConsts_SEncryptionNotSupported,	L"Data type cannot be encrypted: %s"
+	OverbyteIcsCharsetUtils_sChineseTraditionalBig5,	L"Chinese Traditional (Big5)"
+	OverbyteIcsCharsetUtils_sChineseSimplifiedGB18030,	L"Chinese Simplified (GB18030)"
+	OverbyteIcsCharsetUtils_sChineseSimplifiedGB2312,	L"Chinese Simplified (GB2312)"
+	OverbyteIcsCharsetUtils_sChineseSimplifiedHZ,	L"Chinese Simplified (HZ)"
+	OverbyteIcsCharsetUtils_sCyrillicISO,	L"Cyrillic (ISO)"
+	OverbyteIcsCharsetUtils_sCyrillicKOI8R,	L"Cyrillic (KOI8-R)"
 	DAConsts_SInvalidEncDataSize,	L"Invalid encrypted data size"
 	DAConsts_SInvalidEncData,	L"Encrypted data is corrupt - Invalid encrypted data"
 	DAConsts_SInvalidHash,	L"Encrypted data is corrupt - Invalid hash"
@@ -1264,12 +1086,12 @@ BEGIN
 	MyConsts_SNoResultSet,	L"Query must return exactly result set - use Execute"
 	MyConsts_SEServInitErr,	L"A call to an mysql_server_init failed"
 	MyConsts_SConnectionOpen,	L"Cannot perform this operation on an open connection"
-	DAConsts_SUpdateComponentCircularReferences,	L"Circular references are not allowed between TCustomDADataset and TCustomDAUpdateSQL objects"
-	DAConsts_SUpdateComponentInvalidType,	L"Only %s and %s objects are allowed in update properties"
-	DAConsts_SUpdateObjectEmptySQL,	L"SQL property of InsertObject, ModifyObject, DeleteObject or RefreshObject cannot be empty"
-	DAConsts_SEmptySQLStatement,	L"No SQL statement provided"
-	DAConsts_SInvalidBlobPosition,	L"Invalid BLOB position"
-	DAConsts_SNoConnectionsInTransaction,	L"There are no connections in the transaction"
+	MyConsts_SOpenNextPreparedSQL,	L"Cannot OpenNext if statement is Prepared"
+	MyConsts_SOpenNextVsFetchAll,	L"OpenNext is not compatible with FetchAll = True"
+	MyConsts_STimestampFieldRequired,	L"Timestamp field required"
+	MyConsts_SPrepareNotSupportedC,	L"Prepare/UnPrepare is not supported by this MySQL client version"
+	MyConsts_SPrepareNotSupportedS,	L"Prepare/UnPrepare is not supported by this MySQL server version"
+	MyConsts_SLockTableVsFetchAll,	L"LockTable is not compatible with FetchAll = False"
 	DAConsts_SConnectionInTransactionNotActive,	L"One of the connections in the transaction is not active"
 	DAConsts_SUnsupportedIsolationLevel,	L"Unsupported transaction isolation level"
 	DAConsts_SIsolationLevelNotSupportedWithMTS,	L"Transaction isolation level is not supported with MTS"
@@ -1280,12 +1102,12 @@ BEGIN
 	DAConsts_SUnsupportedMetaDataKind,	L"Unsupported metadata kind"
 	DAConsts_SRestrictionMustBeSet,	L"%s restriction must be set"
 	DAConsts_SMDIsNotMemDataSet,	L"Master dataset must be inherited from TMemDataSet"
-	DAConsts_STransactionNotAssigned,	L"Transaction not assigned"
-	DAConsts_SUpdateFailed,	L"Update failed. Found %d records"
-	DAConsts_SCustomUpdateFailed,	L"Update failed"
-	DAConsts_SRefreshFailed,	L"Refresh failed. Found %d records"
-	DAConsts_SInvalidFetchRows,	L"FetchRows must be 1..65535"
-	DAConsts_SNoCorrespondParam,	L"Not found field corresponding parameter %s"
+	DAConsts_SProtectionCircular,	L"Circular Protection detected, Protection Object is invalid"
+	DAConsts_SNotInitialized,	L"%s is not initialized. Set Key first"
+	DAConsts_SInvalidIV,	L"Invalid Initialization Vector"
+	DAConsts_SInvalidKey,	L"Key is invalid. Set Key or Password first"
+	DAConsts_SInvalidKeySize,	L"Length from Encryption key is invalid.\r\nKeysize for %s must be %d-%d bytes"
+	DAConsts_SEncryptionNotSupported,	L"Data type cannot be encrypted: %s"
 	DAConsts_SUnknownParamDataType,	L"Unknown data type of parameter %s"
 	DAConsts_SRecordChanged,	L"Record was changed by another user"
 	DAConsts_SStoredProcNotDefined,	L"StoredProcName must be defined"
@@ -1296,12 +1118,12 @@ BEGIN
 	DAConsts_sBlobNotCompressed,	L"Blob is not compressed"
 	DAConsts_SCompressorNotLinked,	L"Compressor function is not linked"
 	DAConsts_SUncompressorNotLinked,	L"Uncompressor function is not linked"
-	DAConsts_SBadTableInfoName,	L"TableInfo name must be provided"
-	DAConsts_SBadStatementType,	L"Bad statement type"
-	DAConsts_SBadUpdatingTable,	L"Wrong UpdatingTable value - table %s is unknown"
-	DAConsts_SKeyFieldNotFound,	L"%s: Key field '%s' not found"
-	DAConsts_SInvalidUnComprBlobSize,	L"Invalid uncompressed blob size"
-	DAConsts_SInvalidComprBlobSize,	L"Invalid compressed blob size"
+	DAConsts_SUpdateComponentCircularReferences,	L"Circular references are not allowed between TCustomDADataset and TCustomDAUpdateSQL objects"
+	DAConsts_SUpdateComponentInvalidType,	L"Only %s and %s objects are allowed in update properties"
+	DAConsts_SUpdateObjectEmptySQL,	L"SQL property of InsertObject, ModifyObject, DeleteObject or RefreshObject cannot be empty"
+	DAConsts_SEmptySQLStatement,	L"No SQL statement provided"
+	DAConsts_SInvalidBlobPosition,	L"Invalid BLOB position"
+	DAConsts_SNoConnectionsInTransaction,	L"There are no connections in the transaction"
 	DAConsts_SInvalidComprBlobHeader,	L"Invalid compressed blob header"
 	DAConsts_SInvalidComprBlobData,	L"Invalid compressed blob data"
 	DAConsts_SDataSetIsNotPrepared,	L"DataSet is not prepared"
@@ -1312,12 +1134,12 @@ BEGIN
 	DAConsts_SMacroNotFound,	L"Macro %s not found"
 	DAConsts_SNotInTransaction,	L"Can't perform operation on inactive transaction"
 	DAConsts_SInTransaction,	L"Can't perform operation on active transaction"
-	Data_DBConsts_SInvalidSqlTimeStamp,	L"Invalid SQL date/time values"
-	System_ZLibConst_sTargetBufferTooSmall,	L"ZLib error: target buffer may be too small"
-	System_ZLibConst_sError,	L"Error"
-	DAConsts_SUnknownDataType,	L"Unknown data type"
-	DAConsts_SDataTypeNotSupported,	L"Data type is not supported"
-	DAConsts_SFieldNotFound,	L"Field %s not found"
+	DAConsts_STransactionNotAssigned,	L"Transaction not assigned"
+	DAConsts_SUpdateFailed,	L"Update failed. Found %d records"
+	DAConsts_SCustomUpdateFailed,	L"Update failed"
+	DAConsts_SRefreshFailed,	L"Refresh failed. Found %d records"
+	DAConsts_SInvalidFetchRows,	L"FetchRows must be 1..65535"
+	DAConsts_SNoCorrespondParam,	L"Not found field corresponding parameter %s"
 	DAConsts_SAttributeNotFount,	L"Attribute %s not found"
 	DAConsts_SCannotConvertType,	L"Cannot convert type"
 	DAConsts_SIllegalFilter,	L"Illegal filter expression"
@@ -1328,12 +1150,12 @@ BEGIN
 	DAConsts_SKeyFieldsRequired,	L"Key fields required to call FindKey or FindNearest"
 	DAConsts_SKeyFieldsReq,	L"Unique keyfields required"
 	DAConsts_SNoKeyFields,	L"Key fields not found"
-	Data_DBConsts_SDataSetEmpty,	L"Cannot perform this operation on an empty dataset"
-	Data_DBConsts_SDataSetReadOnly,	L"Cannot modify a read-only dataset"
-	Data_DBConsts_SNestedDataSetClass,	L"Nested dataset must inherit from %s"
-	Data_DBConsts_STextFalse,	L"False"
-	Data_DBConsts_STextTrue,	L"True"
-	Data_DBConsts_SParameterNotFound,	L"Parameter '%s' not found"
+	DAConsts_SBadTableInfoName,	L"TableInfo name must be provided"
+	DAConsts_SBadStatementType,	L"Bad statement type"
+	DAConsts_SBadUpdatingTable,	L"Wrong UpdatingTable value - table %s is unknown"
+	DAConsts_SKeyFieldNotFound,	L"%s: Key field '%s' not found"
+	DAConsts_SInvalidUnComprBlobSize,	L"Invalid uncompressed blob size"
+	DAConsts_SInvalidComprBlobSize,	L"Invalid compressed blob size"
 	Data_DBConsts_SInvalidVersion,	L"Unable to load bind parameters"
 	Data_DBConsts_SBadFieldType,	L"Field '%s' is of an unsupported type"
 	Data_DBConsts_SProviderSQLNotSupported,	L"SQL not supported"
@@ -1344,12 +1166,12 @@ BEGIN
 	Data_DBConsts_SBcdOverflow,	L"BCD overflow"
 	Data_DBConsts_SInvalidBcdValue,	L"%s is not a valid BCD value"
 	Data_DBConsts_SCouldNotParseTimeStamp,	L"Could not parse SQL TimeStamp string"
-	Data_DBConsts_SInvalidVarByteArray,	L"Invalid variant type or size for field '%s'"
-	Data_DBConsts_SFieldOutOfRange,	L"Value of field '%s' is out of range"
-	Data_DBConsts_SFieldRequired,	L"Field '%s' must have a value"
-	Data_DBConsts_SDataSetMissing,	L"Field '%s' has no dataset"
-	Data_DBConsts_SInvalidCalcType,	L"Field '%s' cannot be a calculated or lookup field"
-	Data_DBConsts_SFieldReadOnly,	L"Field '%s' cannot be modified"
+	Data_DBConsts_SInvalidSqlTimeStamp,	L"Invalid SQL date/time values"
+	System_ZLibConst_sTargetBufferTooSmall,	L"ZLib error: target buffer may be too small"
+	System_ZLibConst_sError,	L"Error"
+	DAConsts_SUnknownDataType,	L"Unknown data type"
+	DAConsts_SDataTypeNotSupported,	L"Data type is not supported"
+	DAConsts_SFieldNotFound,	L"Field %s not found"
 	Data_DBConsts_SDuplicateIndexName,	L"Duplicate index name '%s'"
 	Data_DBConsts_SNoIndexForFields,	L"No index for fields '%s'"
 	Data_DBConsts_SIndexNotFound,	L"Index '%s' not found"
@@ -1360,12 +1182,12 @@ BEGIN
 	Data_DBConsts_SDataSetOpen,	L"Cannot perform this operation on an open dataset"
 	Data_DBConsts_SNotEditing,	L"Dataset not in edit or insert mode"
 	Data_DBConsts_SDataSetClosed,	L"Cannot perform this operation on a closed dataset"
-	DSE_PathPlanner_SInvalidNeighborRequest,	L"Invalid neighbor request, index out of range"
-	Data_DBConsts_SInvalidFieldSize,	L"Invalid field size"
-	Data_DBConsts_SInvalidFieldKind,	L"Invalid FieldKind"
-	Data_DBConsts_SUnknownFieldType,	L"Field '%s' is of an unknown type"
-	Data_DBConsts_SFieldNameMissing,	L"Field name missing"
-	Data_DBConsts_SDuplicateFieldName,	L"Duplicate field name '%s'"
+	Data_DBConsts_SDataSetEmpty,	L"Cannot perform this operation on an empty dataset"
+	Data_DBConsts_SDataSetReadOnly,	L"Cannot modify a read-only dataset"
+	Data_DBConsts_SNestedDataSetClass,	L"Nested dataset must inherit from %s"
+	Data_DBConsts_STextFalse,	L"False"
+	Data_DBConsts_STextTrue,	L"True"
+	Data_DBConsts_SParameterNotFound,	L"Parameter '%s' not found"
 	Data_DBConsts_SFieldNotFound,	L"Field '%s' not found"
 	Data_DBConsts_SFieldAccessError,	L"Cannot access field '%s' as type %s"
 	Data_DBConsts_SFieldValueError,	L"Invalid value for field '%s'"
@@ -1376,12 +1198,12 @@ BEGIN
 	Data_DBConsts_SInvalidFloatValue,	L"'%s' is not a valid floating point value for field '%s'"
 	Data_DBConsts_SFieldTypeMismatch,	L"Type mismatch for field '%s', expecting: %s actual: %s"
 	Data_DBConsts_SFieldSizeMismatch,	L"Size mismatch for field '%s', expecting: %d actual: %d"
-	System_Win_ComConst_SOleError,	L"OLE error %.8x"
-	System_Win_ComConst_SNoMethod,	L"Method '%s' not supported by automation object"
-	System_Win_ComConst_SVarNotObject,	L"Variant does not reference an automation object"
-	System_Win_ComConst_STooManyParams,	L"Dispatch methods do not support more than 64 parameters"
-	Vcl_ComStrs_sRichEditInsertError,	L"RichEdit line insertion error"
-	Vcl_ComStrs_sRichEditLoadFail,	L"Failed to Load Stream"
+	Data_DBConsts_SInvalidVarByteArray,	L"Invalid variant type or size for field '%s'"
+	Data_DBConsts_SFieldOutOfRange,	L"Value of field '%s' is out of range"
+	Data_DBConsts_SFieldRequired,	L"Field '%s' must have a value"
+	Data_DBConsts_SDataSetMissing,	L"Field '%s' has no dataset"
+	Data_DBConsts_SInvalidCalcType,	L"Field '%s' cannot be a calculated or lookup field"
+	Data_DBConsts_SFieldReadOnly,	L"Field '%s' cannot be modified"
 	Vcl_ComStrs_sRichEditSaveFail,	L"Failed to Save Stream"
 	Vcl_ComStrs_sInvalidComCtl32,	L"This control requires version 4.70 or greater of COMCTL32.DLL"
 	Vcl_ComStrs_sDateTimeMax,	L"Date exceeds maximum of %s"
@@ -1392,12 +1214,12 @@ BEGIN
 	Vcl_ComStrs_sFailSetCalMinMaxRange,	L"Failed to set calendar min/max range"
 	Vcl_ComStrs_sFailsetCalSelRange,	L"Failed to set calendar selected range"
 	DSE_PathPlanner_SMissingStateFactory,	L"Unable to start search, missing factory"
-	Vcl_Consts_SStyleLoadError,	L"Unable to load style '%s'"
-	Vcl_Consts_SStyleLoadErrors,	L"Unable to load styles: %s"
-	Vcl_Consts_SStyleRegisterError,	L"Style '%s' already registered"
-	Vcl_Consts_SStyleClassRegisterError,	L"Style class '%s' already registered"
-	Vcl_Consts_SStyleNotFound,	L"Style '%s' not found"
-	Vcl_Consts_SStyleClassNotFound,	L"Style class '%s' not found"
+	DSE_PathPlanner_SInvalidNeighborRequest,	L"Invalid neighbor request, index out of range"
+	Data_DBConsts_SInvalidFieldSize,	L"Invalid field size"
+	Data_DBConsts_SInvalidFieldKind,	L"Invalid FieldKind"
+	Data_DBConsts_SUnknownFieldType,	L"Field '%s' is of an unknown type"
+	Data_DBConsts_SFieldNameMissing,	L"Field name missing"
+	Data_DBConsts_SDuplicateFieldName,	L"Duplicate field name '%s'"
 	Vcl_Consts_SStyleInvalidHandle,	L"Invalid style handle"
 	Vcl_Consts_SStyleFormatError,	L"Invalid style format"
 	Vcl_Consts_SStyleHookClassRegistered,	L"Class '%s' is already registered for '%s'"
@@ -1408,40 +1230,28 @@ BEGIN
 	Vcl_Consts_SStyleUnregisterError,	L"Cannot unregister the system style"
 	Vcl_Consts_SStyleNotRegisteredNoName,	L"Style not registered"
 	Vcl_Consts_sBeginInvokeNoHandle,	L"Cannot call BeginInvoke on a control with no parent or window handle"
+	System_Win_ComConst_SOleError,	L"OLE error %.8x"
+	System_Win_ComConst_SNoMethod,	L"Method '%s' not supported by automation object"
+	System_Win_ComConst_SVarNotObject,	L"Variant does not reference an automation object"
+	System_Win_ComConst_STooManyParams,	L"Dispatch methods do not support more than 64 parameters"
+	Vcl_ComStrs_sRichEditInsertError,	L"RichEdit line insertion error"
+	Vcl_ComStrs_sRichEditLoadFail,	L"Failed to Load Stream"
+	Vcl_Consts_SPassword,	L"&Password"
+	Vcl_Consts_SDomain,	L"&Domain"
+	Vcl_Consts_SLogin,	L"Login"
+	Vcl_Consts_SErrorSettingCount,	L"Error setting %s.Count"
 	Vcl_Consts_SListBoxMustBeVirtual,	L"Listbox (%s) style must be virtual in order to set Count"
-	Vcl_Consts_SUnableToSaveSettings,	L"Unable to save settings"
-	Vcl_Consts_SRestoreDefaultSchedule,	L"Would you like to reset to the default Priority Schedule?"
-	Vcl_Consts_SMissingActionBarStyleName,	L"A style named %s has not been registered"
-	Vcl_Consts_SActionBarStyleMissing,	L"No ActionBand style unit present in the uses clause.\rYour application must include either XPStyleActnCtrls, StdStyleActnCtrls or a third party ActionBand style unit in its uses clause"
-	Vcl_Consts_SANSIEncoding,	L"ANSI"
-	Vcl_Consts_SASCIIEncoding,	L"ASCII"
-	Vcl_Consts_SUnicodeEncoding,	L"Unicode"
-	Vcl_Consts_SBigEndianEncoding,	L"Big Endian Unicode"
-	Vcl_Consts_SUTF8Encoding,	L"UTF-8"
-	Vcl_Consts_SUTF7Encoding,	L"UTF-7"
 	Vcl_Consts_STrayIconRemoveError,	L"Cannot remove shell notification icon"
 	Vcl_Consts_SWindowsVistaRequired,	L"%s requires Windows Vista or later"
 	Vcl_Consts_STaskDlgButtonCaption,	L"Button%d"
 	Vcl_Consts_STaskDlgRadioButtonCaption,	L"RadioButton%d"
 	Vcl_Consts_SInvalidTaskDlgButtonCaption,	L"Caption cannot be empty"
-	Vcl_Consts_SPromptArrayEmpty,	L"Prompt array must not be empty"
-	Vcl_Consts_SUsername,	L"&Username"
-	Vcl_Consts_SPassword,	L"&Password"
-	Vcl_Consts_SDomain,	L"&Domain"
-	Vcl_Consts_SLogin,	L"Login"
-	Vcl_Consts_SAssignSubItemError,	L"Cannot assign a subitem to an actionbar when one of it's parent's is already assigned to an actionbar"
-	Vcl_Consts_SDeleteItemWithSubItems,	L"Item %s has subitems, delete anyway?"
-	Vcl_Consts_SDeleteNotAllowed,	L"You are not allowed to delete this item"
-	Vcl_Consts_SMoveNotAllowed,	L"Item %s is not allowed to be moved"
-	Vcl_Consts_SMoreButtons,	L"More Buttons"
-	Vcl_Consts_SExpand,	L"Expand"
-	Vcl_Consts_SErrorLoadingFile,	L"Error loading previously saved settings file: %s\rWould you like to delete it?"
-	Vcl_Consts_SNoName,	L"(No Name)"
-	Vcl_Consts_SCircularReferencesNotAllowed,	L"Circular references not allowed"
-	Vcl_Consts_SCannotHideActionBand,	L"%s does not allow hiding"
-	Vcl_Consts_SErrorSettingCount,	L"Error setting %s.Count"
-	Vcl_Consts_SOutOfRange,	L"Value must be between %d and %d"
-	Vcl_Consts_sAllFilter,	L"All"
+	Vcl_Consts_SStyleLoadError,	L"Unable to load style '%s'"
+	Vcl_Consts_SStyleLoadErrors,	L"Unable to load styles: %s"
+	Vcl_Consts_SStyleRegisterError,	L"Style '%s' already registered"
+	Vcl_Consts_SStyleClassRegisterError,	L"Style class '%s' already registered"
+	Vcl_Consts_SStyleNotFound,	L"Style '%s' not found"
+	Vcl_Consts_SStyleClassNotFound,	L"Style class '%s' not found"
 	Vcl_Consts_SInsertLineError,	L"Unable to insert a line"
 	Vcl_Consts_SInvalidClipFmt,	L"Invalid clipboard format"
 	Vcl_Consts_SIconToClipboard,	L"Clipboard does not support Icons"
@@ -1456,8 +1266,8 @@ BEGIN
 	Vcl_Consts_SDockZoneHasNoCtl,	L" - Dock zone has no control"
 	Vcl_Consts_SDockZoneVersionConflict,	L"Error loading dock zone from the stream. Expecting version %d, but found %d."
 	Vcl_Consts_SPromptArrayTooShort,	L"Length of value array must be >= length of prompt array"
-	Vcl_Consts_SmkcEsc,	L"Esc"
-	Vcl_Consts_SmkcEnter,	L"Enter"
+	Vcl_Consts_SPromptArrayEmpty,	L"Prompt array must not be empty"
+	Vcl_Consts_SUsername,	L"&Username"
 	Vcl_Consts_SmkcSpace,	L"Space"
 	Vcl_Consts_SmkcPgUp,	L"PgUp"
 	Vcl_Consts_SmkcPgDn,	L"PgDn"
@@ -1472,8 +1282,8 @@ BEGIN
 	Vcl_Consts_SmkcShift,	L"Shift+"
 	Vcl_Consts_SmkcCtrl,	L"Ctrl+"
 	Vcl_Consts_SmkcAlt,	L"Alt+"
-	Vcl_Consts_SMsgDlgInformation,	L"Information"
-	Vcl_Consts_SMsgDlgConfirm,	L"Confirm"
+	Vcl_Consts_SOutOfRange,	L"Value must be between %d and %d"
+	Vcl_Consts_sAllFilter,	L"All"
 	Vcl_Consts_SMsgDlgYes,	L"&Yes"
 	Vcl_Consts_SMsgDlgNo,	L"&No"
 	Vcl_Consts_SMsgDlgOK,	L"OK"
@@ -1488,8 +1298,8 @@ BEGIN
 	Vcl_Consts_SMsgDlgClose,	L"&Close"
 	Vcl_Consts_SmkcBkSp,	L"BkSp"
 	Vcl_Consts_SmkcTab,	L"Tab"
-	Vcl_Consts_SCannotDragForm,	L"Cannot drag a form"
-	Vcl_Consts_SVMetafiles,	L"Metafiles"
+	Vcl_Consts_SmkcEsc,	L"Esc"
+	Vcl_Consts_SmkcEnter,	L"Enter"
 	Vcl_Consts_SVEnhMetafiles,	L"Enhanced Metafiles"
 	Vcl_Consts_SVIcons,	L"Icons"
 	Vcl_Consts_SVBitmaps,	L"Bitmaps"
@@ -1504,8 +1314,8 @@ BEGIN
 	Vcl_Consts_SMaskEditErr,	L"Invalid input value.  Use escape key to abandon changes"
 	Vcl_Consts_SMsgDlgWarning,	L"Warning"
 	Vcl_Consts_SMsgDlgError,	L"Error"
-	Vcl_Consts_SInvalidPrinter,	L"Printer selected is not valid"
-	Vcl_Consts_SDeviceOnPort,	L"%s on %s"
+	Vcl_Consts_SMsgDlgInformation,	L"Information"
+	Vcl_Consts_SMsgDlgConfirm,	L"Confirm"
 	Vcl_Consts_SGroupIndexTooLow,	L"GroupIndex cannot be less than a previous menu item's GroupIndex"
 	Vcl_Consts_SNoMDIForm,	L"Cannot create form. No MDI forms are currently active"
 	Vcl_Consts_SImageCanvasNeedsBitmap,	L"Can only modify an image if it contains a bitmap"
@@ -1520,8 +1330,8 @@ BEGIN
 	Vcl_Consts_SRetryButton,	L"&Retry"
 	Vcl_Consts_SAbortButton,	L"Abort"
 	Vcl_Consts_SAllButton,	L"&All"
-	Vcl_Consts_SWindowClass,	L"Error creating window class"
-	Vcl_Consts_SCannotFocus,	L"Cannot focus a disabled or invisible window"
+	Vcl_Consts_SCannotDragForm,	L"Cannot drag a form"
+	Vcl_Consts_SVMetafiles,	L"Metafiles"
 	Vcl_Consts_SParentRequired,	L"Control '%s' has no parent window"
 	Vcl_Consts_SParentGivenNotAParent,	L"Parent given is not a parent of '%s'"
 	Vcl_Consts_SMDIChildNotVisible,	L"Cannot hide an MDI Child Form"
@@ -1536,10 +1346,10 @@ BEGIN
 	Vcl_Consts_SNotPrinting,	L"Printer is not currently printing"
 	Vcl_Consts_SPrinting,	L"Printing in progress"
 	Vcl_Consts_SPrinterIndexError,	L"Printer index out of range"
-	Vcl_Consts_SScanLine,	L"Scan line index out of range"
+	Vcl_Consts_SInvalidPrinter,	L"Printer selected is not valid"
+	Vcl_Consts_SDeviceOnPort,	L"%s on %s"
 	Vcl_Consts_SChangeIconSize,	L"Cannot change the size of an icon"
 	Vcl_Consts_SChangeWicSize,	L"Cannot change the size of a WIC Image"
-	Vcl_Consts_SOleGraphic,	L"Invalid operation on TOleGraphic"
 	Vcl_Consts_SUnknownExtension,	L"Unknown picture file extension (.%s)"
 	Vcl_Consts_SUnknownClipboardFormat,	L"Unsupported clipboard format"
 	Vcl_Consts_SOutOfResources,	L"Out of system resources"
@@ -1552,7 +1362,8 @@ BEGIN
 	Vcl_Consts_SImageReadFail,	L"Failed to read ImageList data from stream"
 	Vcl_Consts_SImageWriteFail,	L"Failed to write ImageList data to stream"
 	Vcl_Consts_SWindowDCError,	L"Error creating window device context"
-	System_RTLConsts_sObserverUnsupported,	L"Observer is not supported"
+	Vcl_Consts_SWindowClass,	L"Error creating window class"
+	Vcl_Consts_SCannotFocus,	L"Cannot focus a disabled or invisible window"
 	System_RTLConsts_sObserverMultipleSingleCast,	L"Cannot have multiple single cast observers added to the observers collection"
 	System_RTLConsts_sObserverNoInterface,	L"The object does not implement the observer interface"
 	System_RTLConsts_sObserverNoSinglecastFound,	L"No single cast observer with ID %d was added to the observer collection"
@@ -1568,7 +1379,7 @@ BEGIN
 	Vcl_Consts_SInvalidMetafile,	L"Metafile is not valid"
 	Vcl_Consts_SInvalidPixelFormat,	L"Invalid pixel format"
 	Vcl_Consts_SInvalidImage,	L"Invalid image"
-	System_RTLConsts_SVersion32,	L"32-bit Edition"
+	Vcl_Consts_SScanLine,	L"Scan line index out of range"
 	System_RTLConsts_SVersion64,	L"64-bit Edition"
 	System_RTLConsts_SWindows,	L"Windows"
 	System_RTLConsts_SWindowsVista,	L"Windows Vista"
@@ -1584,7 +1395,7 @@ BEGIN
 	System_RTLConsts_SWindows8,	L"Windows 8"
 	System_RTLConsts_SWindows8Point1,	L"Windows 8.1"
 	System_RTLConsts_SWindows10,	L"Windows 10"
-	System_RTLConsts_SNoIndex,	L"Unable to open Index"
+	System_RTLConsts_sObserverUnsupported,	L"Observer is not supported"
 	System_RTLConsts_SNoSearch,	L"Unable to open Search"
 	System_RTLConsts_SNoTableOfContents,	L"Unable to find a Table of Contents"
 	System_RTLConsts_SNoTopics,	L"No topic-based help system installed"
@@ -1600,7 +1411,7 @@ BEGIN
 	System_RTLConsts_SServiceNotFound,	L"Specified Login Credential Service not found"
 	System_RTLConsts_SVersionStr,	L"%s (Version %d.%d, Build %d, %5:s)"
 	System_RTLConsts_SSPVersionStr,	L"%s Service Pack %4:d (Version %1:d.%2:d, Build %3:d, %5:s)"
-	System_RTLConsts_SFileNotFound,	L"The specified file was not found"
+	System_RTLConsts_SVersion32,	L"32-bit Edition"
 	System_RTLConsts_SLocalTimeInvalid,	L"The given \"%s\" local time is invalid (situated within the missing period prior to DST)."
 	System_RTLConsts_hNoFilterViewer,	L"No help viewer that supports filters"
 	System_RTLConsts_sArgumentOutOfRange_Index,	L"Index out of range (%d).  Must be >= 0 and < %d"
@@ -1616,7 +1427,7 @@ BEGIN
 	System_RTLConsts_sTimespanElementTooLong,	L"Timespan element too long"
 	System_RTLConsts_SNoContext,	L"No context-sensitive help installed"
 	System_RTLConsts_SNoContextFound,	L"No help found for context %d"
-	System_RTLConsts_SUnknownProperty,	L"Property %s does not exist"
+	System_RTLConsts_SNoIndex,	L"Unable to open Index"
 	System_RTLConsts_SWriteError,	L"Stream write error"
 	System_RTLConsts_SThreadCreateError,	L"Thread creation error: %s"
 	System_RTLConsts_SThreadError,	L"Thread Error: %s (%d)"
@@ -1632,7 +1443,7 @@ BEGIN
 	System_RTLConsts_SPathTooLong,	L"The specified path is too long"
 	System_RTLConsts_SPathNotFound,	L"The specified path was not found"
 	System_RTLConsts_SPathFormatNotSupported,	L"The path format is not supported"
-	System_RTLConsts_SInvalidRegType,	L"Invalid data type for '%s'"
+	System_RTLConsts_SFileNotFound,	L"The specified file was not found"
 	System_RTLConsts_SListCapacityError,	L"List capacity out of bounds (%d)"
 	System_RTLConsts_SListCountError,	L"List count out of bounds (%d)"
 	System_RTLConsts_SListIndexError,	L"List index out of bounds (%d)"
@@ -1648,7 +1459,7 @@ BEGIN
 	System_RTLConsts_SSeekNotImplemented,	L"%s.Seek not implemented"
 	System_RTLConsts_SSortedListError,	L"Operation not allowed on sorted list"
 	System_RTLConsts_SUnknownGroup,	L"%s not in a class registration group"
-	System_RTLConsts_SDuplicateClass,	L"A class named %s already exists"
+	System_RTLConsts_SUnknownProperty,	L"Property %s does not exist"
 	System_RTLConsts_SDuplicateItem,	L"List does not allow duplicates ($0%x)"
 	System_RTLConsts_SDuplicateName,	L"A component named %s already exists"
 	System_RTLConsts_SDuplicateString,	L"String list does not allow duplicates"
@@ -1664,7 +1475,7 @@ BEGIN
 	System_RTLConsts_SInvalidPropertyPath,	L"Invalid property path"
 	System_RTLConsts_SInvalidPropertyType,	L"Invalid property type: %s"
 	System_RTLConsts_SInvalidPropertyValue,	L"Invalid property value"
-	System_SysConst_SCannotCreateDir,	L"Unable to create directory"
+	System_RTLConsts_SInvalidRegType,	L"Invalid data type for '%s'"
 	System_SysConst_SInvalidSourceArray,	L"Invalid source array"
 	System_SysConst_SInvalidDestinationArray,	L"Invalid destination array"
 	System_SysConst_SCharIndexOutOfBounds,	L"Character index out of bounds (%d)"
@@ -1680,6 +1491,7 @@ BEGIN
 	System_RTLConsts_SCantWriteResourceStreamError,	L"Can't write to a read-only resource stream"
 	System_RTLConsts_SCheckSynchronizeError,	L"CheckSynchronize called from thread $%x, which is NOT the main thread"
 	System_RTLConsts_SClassNotFound,	L"Class %s not found"
+	System_RTLConsts_SDuplicateClass,	L"A class named %s already exists"
 	System_SysConst_SLongMonthNameNov,	L"November"
 	System_SysConst_SLongMonthNameDec,	L"December"
 	System_SysConst_SShortDayNameSun,	L"Sun"
@@ -1799,26 +1611,14 @@ END
 /* C:\Time120\Server.dfm */
 /* c:\program files (x86)\embarcadero\studio\17.0\lib\Win32\release\Buttons.res */
 /* E:\libD10\cnvcl\Source\Graphics\CNBUTTONS.RES */
+/* E:\libD10\cnvcl\Source\Graphics\CNSPIN.RES */
 /* E:\libD10\TMS\ASGSPIN.RES */
 /* E:\libD10\TMS\AdvColorPickerDropDown.RES */
 /* E:\libD10\TMS\ADVGRID.RES */
 /* E:\libD10\TMS\ASGRES.RES */
 /* E:\libD10\TMS\ADVMETRO.RES */
 /* E:\libD10\TMS\ASGFLTR.RES */
-/* c:\program files (x86)\embarcadero\studio\17.0\lib\Win32\release\ExtDlgs.res */
-/* E:\libD10\TMS\AdvMenuResources.res */
-/* E:\libD10\TMS\CustomizerBtnU.dfm */
-/* E:\libD10\TMS\CustomizerU.dfm */
-/* E:\libD10\TMS\ADVTOOLBAR.RES */
-/* E:\libD10\TMS\ADVTOOLBARDB.RES */
-/* E:\libD10\TMS\ADVGLOWBUTTONDB.RES */
-/* E:\libD10\TMS\METROICONS.RES */
 /* E:\libD10\jcl-master\jcl\lib\d23\win32\debug\JclUnicode.res */
-/* E:\libD10\Raize\Source\RzCommonBitmaps.res */
-/* E:\libD10\Raize\Source\RzCommonCursors.res */
-/* E:\libD10\Raize\Source\RzCmboBx.res */
-/* E:\libD10\Raize\Source\RzToolbarForm.dfm */
-/* E:\libD10\cnvcl\Source\Graphics\CNSPIN.RES */
 /* C:\Time120\Unit1.dfm */
 /* C:\Time120\Time120.res */
 /* C:\Time120\Time120.drf */

@@ -170,3 +170,4 @@ lbl_Search=Cerca
 lbl_MaxValue=Valore massimo
 warning_nosellgk=Non puoi vendere l'unico portiere che hai.
 warning_max18=Non puoi avere piu' di 18 giocatori.
+warning_nosell_lowprice=Non puoi vendere un giocatore ad un costo inferiore al suo valore di mercato.
