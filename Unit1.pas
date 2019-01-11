@@ -4,7 +4,7 @@
 
       { TODO  : override maglie bianca o nera }
       { TODO : settare il volume audio dei singoli file }
-      { TODO : verificare se advdiceaddrow risolve splashscreen }
+      { TODO : verificare se SE_GridDiceaddrow risolve splashscreen }
       { TODO : risolvere sfarfallio in formation }
       { TODO : finire traduzioni }
       { TODO : verificare bug sound prs e posizione palla}
@@ -118,7 +118,7 @@ type
     CheckBoxAI1: TCheckBox;
     PanelBack: SE_Panel;
     PanelCombatLog: SE_panel;
-    advDice: TAdvStringGrid;
+    SE_GridDice: SE_Grid;
     PanelScore: SE_panel;
     btnTactics: TcnSpeedButton;
     PanelSell: SE_panel;
@@ -286,6 +286,10 @@ type
     procedure Button8Click(Sender: TObject);
     procedure Button6Click(Sender: TObject);
     procedure Button1Click(Sender: TObject);
+    procedure Button3Click(Sender: TObject);
+    procedure CheckBox3Click(Sender: TObject);
+    procedure Button4Click(Sender: TObject);
+    procedure Edit2KeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 
 // Mouse on Theater
     procedure SE_Theater1SpriteMouseMove(Sender: TObject; lstSprite: TObjectList<DSE_theater.SE_Sprite>; Shift: TShiftState);
@@ -338,8 +342,7 @@ type
 
 
 // Combat Log
-    procedure advDiceWriteRow  ( team: integer; attr, Surname, ids, vs,num1: string);
-      function advDiceNextBlank  ( team: integer): Integer;
+    procedure SE_GridDiceWriteRow  ( team: integer; attr, Surname, ids, vs,num1: string);
 
 
 // Uniform
@@ -350,11 +353,7 @@ type
     procedure Btn_UniformAwayClick(Sender: TObject);
 
 
-    procedure Button3Click(Sender: TObject);
-    procedure CheckBox3Click(Sender: TObject);
     procedure btnStandingsClick(Sender: TObject);
-    procedure Button4Click(Sender: TObject);
-    procedure Edit2KeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 
 
   private
@@ -476,6 +475,8 @@ end;
 
 var
   Form1: TForm1;
+  Mutex : Cardinal;
+  oldCellXMouseMove, oldCellYMouseMove: Integer;
   dir_log: string;
   MyBrain: TSoccerBrain;
   MyBrainFormation: TSoccerBrain;
@@ -1037,6 +1038,8 @@ var
   I,x,y: Integer;
   ini : TIniFile;
 begin
+  Mutex:=CreateMutex(nil,false,'tsscript');
+
   {$ifdef tools}
   btnReplay.Visible := True;
   //ToolSpin.Visible := True;
@@ -1224,24 +1227,11 @@ begin
   ShowPanelBack;
   ShowLogin;
 
-
-  advDice.ColWidths [0] := 0;
-  advDice.ColWidths [1] := 70;
-  advDice.ColWidths [2] := 110;
-
-  advDice.ColWidths [3] := 20;
-  advDice.ColWidths [4] := 20;
-  advDice.ColWidths [5] := 20;
-
-  advDice.ColWidths [6] := 110;
-  advDice.ColWidths [7] := 70;
-  advDice.ColWidths [8] := 0 ;
-
   SE_Grid0.thrdAnimate.Priority := tpLowest;
   SE_GridXp0.thrdAnimate.Priority := tpLowest;
   SE_GridAllBrain.thrdAnimate.Priority := tpLowest;
   SE_GridTime.thrdAnimate.Priority := tpLowest;
-
+  SE_GridDice.thrdAnimate.Priority := tplowest;
 
 end;
 procedure TForm1.InitSound;
@@ -1401,6 +1391,8 @@ begin
   for I := 0 to 255 do begin
     MM3[i].Free;
   end;
+  CloseHandle(Mutex);
+
   //  If MyBrainFormation <> nil then MyBrainFormation.free;
 //  if Mybrain <> nil then MyBrain.free;
 end;
@@ -2906,16 +2898,16 @@ procedure TForm1.TackleMouseEnter ( Sender : TObject);
 begin
   hidechances;
   PanelCombatLog.Left := PanelSkill.Left + PanelSkill.Width;
-  advDice.RowCount := 1;
-  advDice.Clear ;
+  SE_GridDice.ClearData ;
+  SE_GridDice.RowCount := 1;
 
   if Mybrain.Ball.Player <> nil then begin
     if  AbsDistance (Mybrain.Ball.Player.CellX ,Mybrain.Ball.Player.CellY, SelectedPlayer.CellX, SelectedPlayer.CellY ) = 1 then begin
 
       CreateArrowDirection ( SelectedPlayer , Mybrain.Ball.Player );
-      advDiceWriteRow  ( SelectedPlayer.Team, UpperCase(Translate('attribute_Defense')),
+      SE_GridDiceWriteRow  ( SelectedPlayer.Team, UpperCase(Translate('attribute_Defense')),
         SelectedPlayer.SurName, SelectedPlayer.Ids, 'VS',IntToStr(SelectedPlayer.Defense + SelectedPlayer.Tal_Toughness));
-      advDiceWriteRow  ( Mybrain.Ball.Player.Team,  UpperCase(Translate('attribute_BallControl')),
+      SE_GridDiceWriteRow  ( Mybrain.Ball.Player.Team,  UpperCase(Translate('attribute_Ball.Control')),
         Mybrain.Ball.Player.SurName, Mybrain.Ball.Player.Ids, 'VS',IntToStr(Mybrain.Ball.Player.BallControl + Mybrain.Ball.Player.Tal_Power));
      // CreateTextChanceValueSE ( Mybrain.Ball.Player.ids, Mybrain.Ball.Player.BallControl + Mybrain.Ball.Player.tal_Power   , 0,0,0,0 );
      // CreateTextChanceValueSE ( SelectedPlayer.ids, SelectedPlayer.Defense + SelectedPlayer.tal_toughness  , 0,0,0,0);
@@ -2936,8 +2928,8 @@ begin
   hidechances;
 
   PanelCombatLog.Left := PanelSkill.Left + PanelSkill.Width;
-  advDice.RowCount := 1;
-  advDice.Clear ;
+  SE_GridDice.ClearData ;
+  SE_GridDice.RowCount := 1;
   if SelectedPlayer = nil then Exit;
   Modifier := 0;
   aDoor := Mybrain.GetOpponentDoor ( SelectedPlayer );
@@ -2951,7 +2943,7 @@ begin
     aGK := Mybrain.GetOpponentGK ( SelectedPlayer.Team );
     BaseShot :=  SelectedPlayer.DefaultShot + Mybrain.MalusPrecisionShot[SelectedPlayer.CellX] +1 + SelectedPlayer.Tal_freekicks;  // . il +1 è importante al shot. è una freekick3
     if BaseShot <= 0 then BaseShot := 1;
-    advDiceWriteRow  ( SelectedPlayer.Team, UpperCase(Translate('attribute_Shot')),  SelectedPlayer.SurName, SelectedPlayer.Ids, 'VS',IntToStr(BaseShot ));
+    SE_GridDiceWriteRow  ( SelectedPlayer.Team, UpperCase(Translate('attribute_Shot')),  SelectedPlayer.SurName, SelectedPlayer.Ids, 'VS',IntToStr(BaseShot ));
   // mostro le 4 chance in barriera
     BarrierCell := MyBrain.GetBarrierCell( MyBrain.TeamFreeKick , MyBrain.Ball.CellX, MyBrain.Ball.CellY  ) ;
     CreateCircle( aGK.Team, BarrierCell.X, BarrierCell.Y );
@@ -2966,18 +2958,18 @@ begin
 
   // mostro la chance el portiere e la mia
     CreateCircle( aGK );
-    advDiceWriteRow  ( aGK.Team, UpperCase(Translate('attribute_Defense')),  aGK.SurName, aGK.Ids, 'VS',IntToStr(aGK.Defense ));
+    SE_GridDiceWriteRow  ( aGK.Team, UpperCase(Translate('attribute_Defense')),  aGK.SurName, aGK.Ids, 'VS',IntToStr(aGK.Defense ));
 
   end
   else if MyBrain.w_FreeKick4 then begin
     BaseShot :=  SelectedPlayer.DefaultShot + modifier_penalty +1;  // . il +1 è importante  per il PRS. è una freekick4
-    advDiceWriteRow  ( SelectedPlayer.Team, UpperCase(Translate('attribute_Shot')),  SelectedPlayer.SurName, SelectedPlayer.Ids, 'VS',IntToStr(BaseShot ));
+    SE_GridDiceWriteRow  ( SelectedPlayer.Team, UpperCase(Translate('attribute_Shot')),  SelectedPlayer.SurName, SelectedPlayer.Ids, 'VS',IntToStr(BaseShot ));
     // il pos non ha quel +1 ma ha la respinta
     if BaseShot <= 0 then BaseShot := 1;
   // mostro la chance el portiere e la mia
     aGK := Mybrain.GetOpponentGK ( SelectedPlayer.Team );
     CreateCircle( aGK );
-    advDiceWriteRow  ( aGK.Team, UpperCase(Translate('attribute_Defense')),  aGK.SurName, aGK.Ids, 'VS',IntToStr(aGK.Defense ));
+    SE_GridDiceWriteRow  ( aGK.Team, UpperCase(Translate('attribute_Defense')),  aGK.SurName, aGK.Ids, 'VS',IntToStr(aGK.Defense ));
 /////    CalculateChance  (BaseShot, aGK.Defense , chanceA,chanceB,chanceColorA,chanceColorB);
 /////    CreateTextChanceValue (SelectedPlayer.ids,BaseShot, dir_skill + 'Precision.Shot',0,0,0,0);
 /////    CreateTextChanceValue (aGK.ids,aGK.Defense,dir_attributes + 'Defense',0,0,0,0);
@@ -2985,7 +2977,7 @@ begin
   else begin
     BaseShot :=  SelectedPlayer.Shot + Mybrain.MalusPrecisionShot[SelectedPlayer.CellX];
     if BaseShot <= 0 then BaseShot := 1;
-    advDiceWriteRow  ( SelectedPlayer.Team, UpperCase(Translate('attribute_Shot')),  SelectedPlayer.SurName, SelectedPlayer.Ids, 'VS',IntToStr(BaseShot ));
+    SE_GridDiceWriteRow  ( SelectedPlayer.Team, UpperCase(Translate('attribute_Shot')),  SelectedPlayer.SurName, SelectedPlayer.Ids, 'VS',IntToStr(BaseShot ));
 
     for Ii := 0 to MyBrain.ShotCells.Count -1 do begin
 
@@ -2999,7 +2991,7 @@ begin
           if Mybrain.GetSoccerPlayer(aPoint.X ,aPoint.Y ).Team <> SelectedPlayer.Team then begin
             if SelectedPlayer.CellX = anOpponent.cellX then Modifier := soccerbrainv3.modifier_defenseShot else Modifier :=0;
             CreateArrowDirection( anOpponent, SelectedPlayer );
-            advDiceWriteRow  ( anOpponent.Team, UpperCase(Translate('attribute_Defense')),  anOpponent.SurName, anOpponent.Ids, 'VS',IntToStr(anOpponent.Defense));
+            SE_GridDiceWriteRow  ( anOpponent.Team, UpperCase(Translate('attribute_Defense')),  anOpponent.SurName, anOpponent.Ids, 'VS',IntToStr(anOpponent.Defense));
 
 ////            CalculateChance  (BaseShot, anOpponent.Defense + Modifier, chanceA,chanceB,chanceColorA,chanceColorB);
 
@@ -3012,7 +3004,7 @@ begin
     // mostro la chance el portiere
     aGK := Mybrain.GetOpponentGK ( SelectedPlayer.Team );
     CreateCircle( aGK );
-    advDiceWriteRow  ( aGK.Team,  UpperCase(Translate('attribute_Defense')),  aGK.SurName, aGK.Ids, 'VS',IntToStr(aGK.Defense ) );
+    SE_GridDiceWriteRow  ( aGK.Team,  UpperCase(Translate('attribute_Defense')),  aGK.SurName, aGK.Ids, 'VS',IntToStr(aGK.Defense ) );
 /////    CalculateChance  (BaseShot, aGK.Defense + Modifier, chanceA,chanceB,chanceColorA,chanceColorB);
 /////    CreateTextChanceValue (SelectedPlayer.ids,BaseShot,dir_skill + 'Precision.Shot',0,0,0,0);
 /////    CreateTextChanceValue (aGK.ids,aGK.Defense + Modifier,dir_attributes + 'Defense',0,0,0,0);
@@ -3058,8 +3050,8 @@ var
 begin
 //  hidechances;
   PanelCombatLog.Left :=  (PanelBack.Width div 2 ) - (PanelCombatLog.Width div 2 );   ;
-  advDice.RowCount := 1;
-  advDice.Clear ;
+  SE_GridDice.ClearData;
+  SE_GridDice.RowCount := 1;
   if SelectedPlayer = nil then Exit;
   if  SelectedPlayer.HasBall then begin
     MoveValue := SelectedPlayer.Speed -1;
@@ -3102,8 +3094,8 @@ var
 begin
   hidechances;
   PanelCombatLog.Left :=  (PanelBack.Width div 2 ) - (PanelCombatLog.Width div 2 );   ;
-  advDice.RowCount := 1;
-  advDice.Clear ;
+  SE_GridDice.ClearData ;
+  SE_GridDice.RowCount := 1;
   if SelectedPlayer = nil then Exit;
 
   aCellList:= TList<TPoint>.Create;
@@ -3131,8 +3123,8 @@ var
 begin
   hidechances;
   PanelCombatLog.Left :=  (PanelBack.Width div 2 ) - (PanelCombatLog.Width div 2 );   ;
-  advDice.RowCount := 1;
-  advDice.Clear ;
+  SE_GridDice.ClearData ;
+  SE_GridDice.RowCount := 1;
   if SelectedPlayer = nil then Exit;
 
   aCellList:= TList<TPoint>.Create;
@@ -3156,92 +3148,84 @@ begin
 end;
 procedure TForm1.mainThreadTimer(Sender: TObject);
 begin
+  WaitForSingleObject(Mutex,INFINITE);
 
   GCD := GCD - SE_ThreadTimer ( Sender).Interval;
-  if GameScreen = ScreenFormation  then Exit;
+  if (GameScreen = ScreenLiveMatch) or (GameScreen = ScreenWatchLive ) then Begin
 
 
-  if AnimationScript.Index = -1 then begin
-  // iratheater1.thrdAnimate.OnTimer ( iratheater1.thrdAnimate);
-      SetGlobalCursor  ( crHandpoint);
-//   Application.ProcessMessages ;
-   exit;
-  end;
+    if AnimationScript.Index = -1 then begin
+     SetGlobalCursor  ( crHandpoint);
+     ReleaseMutex(Mutex);
+     exit;
+    end;
 
-  if ( SE_ball.IsAnySpriteMoving  ) then begin   // la palla sta roteando
-      se_Theater1.thrdAnimate.OnTimer (se_Theater1.thrdAnimate);
-      Application.ProcessMessages ;
-     // SetGlobalCursor  ( crHourGlass);
-      exit;
-  end;
-
-  if (AnimationScript.waitMovingPlayers) then begin // se devo apsettare i players
-
-     if se_players.IsAnySpriteMoving  then  begin
+    if ( SE_ball.IsAnySpriteMoving  ) then begin   // la palla sta roteando
         se_Theater1.thrdAnimate.OnTimer (se_Theater1.thrdAnimate);
         Application.ProcessMessages ;
-
-     //   SetGlobalCursor  ( crHourGlass);
+        ReleaseMutex(Mutex);
         exit;
-     end;
-  end;
+    end;
 
-  if AnimationScript.wait > -1 then begin
-    AnimationScript.wait := AnimationScript.wait - MainThread.Interval ;
-    if AnimationScript.wait <=0 then begin
-//      iraTheater1.thrdAnimate.Priority := tpNormal;
-      AnimationScript.wait :=-1;
+    if (AnimationScript.waitMovingPlayers) then begin // se devo apsettare i players
+
+       if se_players.IsAnySpriteMoving  then  begin
+          se_Theater1.thrdAnimate.OnTimer (se_Theater1.thrdAnimate);
+          Application.ProcessMessages ;
+
+           ReleaseMutex(Mutex);
+          exit;
+       end;
+    end;
+
+    if AnimationScript.wait > -1 then begin
+      AnimationScript.wait := AnimationScript.wait - MainThread.Interval ;
+      if AnimationScript.wait <=0 then begin
+        AnimationScript.wait :=-1;
+      end
+      else begin
+        Application.ProcessMessages ;
+
+        ReleaseMutex(Mutex);
+        exit;
+      end;
+    end;
+
+
+    if AnimationScript.Index <= AnimationScript.Ts.Count -1  then begin
+      if se_ball.IsAnySpriteMoving then begin
+       ReleaseMutex(Mutex);
+       exit;
+      end;
+
+
+    {$ifdef tools}
+      toolSpin.Visible := false;
+    {$endif tools}
+      Animating:= True;
+      anim (AnimationScript.Ts[ AnimationScript.Index ]);
+      AnimationScript.Index := AnimationScript.Index + 1;
     end
     else begin
-      Application.ProcessMessages ;
+      AnimationScript.Index := -1;
 
-      exit;
+    {$ifdef tools}
+      if viewReplay then
+        toolSpin.Visible := true;
+    {$endif tools}
+      Animating:= false;
+
+     // qui sotto non penso sia da fare perchè dai freekick arrivano dei playermove
+     //if not Cl_BrainLoaded then // se non caricato durante i freekick
+      ClientLoadBrainMM ( CurrentIncMove ) ;
+      SpriteReset;
+      UpdateSubSprites;
+      IncMove [CurrentIncMove] := True; // caricato e completamente eseguito
+  //    inc ( CurrentIncMove );
     end;
+
   end;
-
-
-  if AnimationScript.Index <= AnimationScript.Ts.Count -1  then begin
-//      if not Mybrain.Ball.Se_Sprite.DestinationReached  then exit;
-    if se_ball.IsAnySpriteMoving then begin
-//    if MyBrain.Ball.Moving  then begin   // la palla sta roteando
-     //   se_Theater1.thrdAnimate.OnTimer (se_Theater1.thrdAnimate);
-   //   SetGlobalCursor  ( crHourGlass);
-//      Application.ProcessMessages ;
-        exit;
-    end;
-
-   // SetGlobalCursor  ( crHourGlass);
-
-
-  {$ifdef tools}
-    toolSpin.Visible := false;
-  {$endif tools}
-    Animating:= True;
-    anim (AnimationScript.Ts[ AnimationScript.Index ]);
-    AnimationScript.Index := AnimationScript.Index + 1;
-  end
-  else begin
-    AnimationScript.Index := -1;
-
-//    if (MyBrain.w_CornerSetup) or ( MyBrain.w_FreeKickSetup2 ) or ( MyBrain.w_FreeKick2 ) or ( MyBrain.w_FreeKickSetup3 ) or ( MyBrain.w_FreeKick3 ) then
-//      goto skipReset;
-//    SpriteReset( true );
-//SkipReset:
-  {$ifdef tools}
-    if viewReplay then
-      toolSpin.Visible := true;
-  {$endif tools}
-    Animating:= false;
-
-   // qui sotto non penso sia da fare perchè dai freekick arrivano dei playermove
-   //if not Cl_BrainLoaded then // se non caricato durante i freekick
-    ClientLoadBrainMM ( CurrentIncMove ) ;
-    SpriteReset;
-    UpdateSubSprites;
-    IncMove [CurrentIncMove] := True; // caricato e completamente eseguito
-//    inc ( CurrentIncMove );
-  end;
-
+  ReleaseMutex(Mutex);
 
 
 end;
@@ -3258,8 +3242,8 @@ var
   aPlayer: TSoccerPlayer;
 begin
   hidechances;
-  advDice.RowCount := 1;
-  advDice.Clear ;
+  SE_GridDice.ClearData ;
+  SE_GridDice.RowCount := 1;
   if SelectedPlayer = nil then Exit;
 
   aCellList:= TList<TPoint>.Create;
@@ -3291,8 +3275,8 @@ var
 begin
   hidechances;
   PanelCombatLog.Left :=  (PanelBack.Width div 2 ) - (PanelCombatLog.Width div 2 );   ;
-  advDice.RowCount := 1;
-  advDice.Clear ;
+  SE_GridDice.ClearData ;
+  SE_GridDice.RowCount := 1;
   if SelectedPlayer = nil then Exit;
 
   aPlayerList:= TObjectList<TSoccerPlayer>.create(False);
@@ -3321,8 +3305,8 @@ var
 begin
   hidechances;
   PanelCombatLog.Left := PanelSkill.Left + PanelSkill.Width;
-  advDice.RowCount := 1;
-  advDice.Clear ;
+  SE_GridDice.ClearData ;
+  SE_GridDice.RowCount := 1;
   if SelectedPlayer = nil then Exit;
   Modifier := 0;
   aDoor := Mybrain.GetOpponentDoor ( SelectedPlayer );
@@ -3332,27 +3316,27 @@ begin
     aGK := Mybrain.GetOpponentGK ( SelectedPlayer.Team );
     BaseShot :=  SelectedPlayer.DefaultShot + Mybrain.MalusPrecisionShot[SelectedPlayer.CellX] +1 + SelectedPlayer.Tal_freekicks;  // . il +1 è importante al shot. è una freekick3
     if BaseShot <= 0 then BaseShot := 1;
-    advDiceWriteRow  ( SelectedPlayer.Team, UpperCase(Translate('attribute_Shot')),  SelectedPlayer.SurName, SelectedPlayer.Ids, 'VS',IntToStr(BaseShot));
+    SE_GridDiceWriteRow  ( SelectedPlayer.Team, UpperCase(Translate('attribute_Shot')),  SelectedPlayer.SurName, SelectedPlayer.Ids, 'VS',IntToStr(BaseShot));
   // mostro le 4 chance in barriera
     BarrierCell := MyBrain.GetBarrierCell( MyBrain.TeamFreeKick , MyBrain.Ball.CellX, MyBrain.Ball.CellY  ) ;
     CreateCircle( aGK.Team, BarrierCell.X, BarrierCell.Y );
 
     CreateCircle( aGK );
-    advDiceWriteRow  ( aGK.Team,  UpperCase(Translate('attribute_Defense')),  aGK.SurName, aGK.Ids, 'VS',IntToStr(aGK.Defense ) );
+    SE_GridDiceWriteRow  ( aGK.Team,  UpperCase(Translate('attribute_Defense')),  aGK.SurName, aGK.Ids, 'VS',IntToStr(aGK.Defense ) );
   end
   else if MyBrain.w_FreeKick4 then begin
     BaseShot :=  SelectedPlayer.DefaultShot + modifier_penalty ;  // . il +2 è importante al shot. è una freekick4
     if BaseShot <= 0 then BaseShot := 1;
-    advDiceWriteRow  ( SelectedPlayer.Team, UpperCase(Translate('attribute_Shot')),  SelectedPlayer.SurName, SelectedPlayer.Ids, 'VS',IntToStr(BaseShot));
+    SE_GridDiceWriteRow  ( SelectedPlayer.Team, UpperCase(Translate('attribute_Shot')),  SelectedPlayer.SurName, SelectedPlayer.Ids, 'VS',IntToStr(BaseShot));
 
     aGK := Mybrain.GetOpponentGK ( SelectedPlayer.Team );
     CreateCircle( aGK );
-    advDiceWriteRow  ( aGK.Team,  UpperCase(Translate('attribute_Defense')),  aGK.SurName, aGK.Ids, 'VS',IntToStr(aGK.Defense ));
+    SE_GridDiceWriteRow  ( aGK.Team,  UpperCase(Translate('attribute_Defense')),  aGK.SurName, aGK.Ids, 'VS',IntToStr(aGK.Defense ));
   end
   else begin
     BaseShot :=  SelectedPlayer.Shot + Mybrain.MalusPowerShot[SelectedPlayer.CellX]  ;
     if BaseShot <= 0 then BaseShot := 1;
-    advDiceWriteRow  ( SelectedPlayer.Team, UpperCase(Translate('attribute_Shot')),  SelectedPlayer.SurName, SelectedPlayer.Ids, 'VS',IntToStr(BaseShot));
+    SE_GridDiceWriteRow  ( SelectedPlayer.Team, UpperCase(Translate('attribute_Shot')),  SelectedPlayer.SurName, SelectedPlayer.Ids, 'VS',IntToStr(BaseShot));
 
     for Ii := 0 to MyBrain.ShotCells.Count -1 do begin
 
@@ -3366,7 +3350,7 @@ begin
           if Mybrain.GetSoccerPlayer(aPoint.X ,aPoint.Y ).Team <> SelectedPlayer.Team then begin
             if SelectedPlayer.CellX = anOpponent.cellX then Modifier := soccerbrainv3.modifier_defenseShot else Modifier :=0;
             CreateArrowDirection( anOpponent, SelectedPlayer );
-            advDiceWriteRow  ( anOpponent.Team,  UpperCase(Translate('attribute_Defense')),  anOpponent.SurName, anOpponent.Ids, 'VS',IntToStr(anOpponent.Defense ));
+            SE_GridDiceWriteRow  ( anOpponent.Team,  UpperCase(Translate('attribute_Defense')),  anOpponent.SurName, anOpponent.Ids, 'VS',IntToStr(anOpponent.Defense ));
 
           end;
         end;
@@ -3375,7 +3359,7 @@ begin
 
     aGK := Mybrain.GetOpponentGK ( SelectedPlayer.Team );
     CreateCircle( aGK );
-    advDiceWriteRow  ( aGK.Team,  UpperCase(Translate('attribute_Defense')),  aGK.SurName, aGK.Ids, 'VS',IntToStr(aGK.Defense ) );
+    SE_GridDiceWriteRow  ( aGK.Team,  UpperCase(Translate('attribute_Defense')),  aGK.SurName, aGK.Ids, 'VS',IntToStr(aGK.Defense ) );
   end;
 
 end;
@@ -3726,8 +3710,8 @@ end;
 
 procedure Tform1.PrepareAnim;
 begin
-  advDice.Clear ;
-  advDice.RowCount :=1;
+  SE_GridDice.ClearData ;
+  SE_GridDice.RowCount :=1;
  // RemoveChancesAndInfo;
   HideChances;
   AnimationScript.Reset ;
@@ -4727,7 +4711,7 @@ begin
       application.ProcessMessages ;
     end;
     aPlayer:= MyBrain.GetSoccerPlayer2(ids);
-    advdicewriterow ( aplayer.Team, Translate('lbl_RedCard'),  aplayer.surname,  aplayer.ids , 'FAULT','');
+    SE_GridDicewriterow ( aplayer.Team, Translate('lbl_RedCard'),  aplayer.surname,  aplayer.ids , 'FAULT','');
     MyBrain.PutInReserveSlot(aPlayer); // anticipa quello che farà il server
     MoveInReserves (aPlayer);
 
@@ -4742,7 +4726,7 @@ begin
       application.ProcessMessages ;
     end;
     aPlayer:= MyBrain.GetSoccerPlayer2(ids);
-    advdicewriterow ( aplayer.Team, Translate('lbl_YellowCard'),  aplayer.surname,  aplayer.ids , 'FAULT','');
+    SE_GridDicewriterow ( aplayer.Team, Translate('lbl_YellowCard'),  aplayer.surname,  aplayer.ids , 'FAULT','');
 
 end;
 procedure Tform1.i_injured ( ids: string );
@@ -4754,7 +4738,7 @@ begin
       application.ProcessMessages ;
     end;
      aPlayer:= MyBrain.GetSoccerPlayer2(ids);
-     advdicewriterow ( aplayer.Team, Translate('lbl_Injured'),  aplayer.surname,  aplayer.ids , 'FAULT','');
+     SE_GridDicewriterow ( aplayer.Team, Translate('lbl_Injured'),  aplayer.surname,  aplayer.ids , 'FAULT','');
      // MoveInReserves (aPlayer);
      // aPlayer.Sprite.Visible := false;
      // AdvScoreClickCell(advScore,0,0); btntactics
@@ -4776,7 +4760,7 @@ begin
 //    IntTostr(aPlayer.Passing)+',Short.Passing,'+ aPlayer.ids+','+IntTostr(Roll.value) + ',' + Roll.fatigue +',0');
     aPlayer :=  MyBrain.GetSoccerPlayer (  tsCmd[6] );
 
-    advDice.ScrollInView(0, advDice.RowCount -1, spLeading);                                                  //F o N
+    SE_GridDice.SetViewXY( 0 ,SE_GridDice.Virtualheight - 1  );
     AnimationScript.Tsadd ('cl_showroll,' + aPlayer.Ids + ',' + tsCmd[3]  + ',' + tsCmd[5] + ',' + tsCmd[8] );
   end
   else if tsCmd[0]= 'sc_ai.movetoball' then begin   // movetoball prima di aimoveall
@@ -4784,7 +4768,7 @@ begin
   end
   else if tsCmd[0]= 'sc_mtbDICE' then begin
     aPlayer :=  MyBrain.GetSoccerPlayer (  tsCmd[6] );
-    advDice.ScrollInView(0, advDice.RowCount -1, spLeading);
+    SE_GridDice.SetViewXY( 0 ,SE_GridDice.Virtualheight - 1  );
     AnimationScript.Tsadd ('cl_mtbshowroll,' + aPlayer.Ids + ',' + tsCmd[3]  + ',' + tsCmd[5]);
     AnimationScript.Tsadd ('cl_wait,1600');
   end
@@ -6881,8 +6865,8 @@ begin
 
     // o è una skill o è un attributo nel panelcombat
     if Translate ( 'skill_' + ts[3]) <> '' then
-      advdicewriterow ( aplayer.Team,  UpperCase( Translate ( 'skill_' + ts[3])),  aplayer.surname,  aPlayer.ids , ts[2], '' )
-      else advdicewriterow ( aplayer.Team,  UpperCase( Translate ( 'attribute_' + ts[3])),  aplayer.surname,  aPlayer.ids , ts[2], '' );
+      SE_GridDicewriterow ( aplayer.Team,  UpperCase( Translate ( 'skill_' + ts[3])),  aplayer.surname,  aPlayer.ids , ts[2], '' )
+      else SE_GridDicewriterow ( aplayer.Team,  UpperCase( Translate ( 'attribute_' + ts[3])),  aplayer.surname,  aPlayer.ids , ts[2], '' );
 
     SeSprite := se_numbers.CreateSprite( sebmp.bitmap, 'numbers', 1, 1, 100, aPlayer.SE_Sprite.Position.X  , aPlayer.SE_Sprite.Position.Y , true );
     SeSprite.LifeSpan := ShowRollLifeSpan;
@@ -6906,7 +6890,7 @@ begin
     if length(ts[2]) = 1 then
       sebmp.Bitmap.Canvas.TextOut( 12,8, ts[2])
       else sebmp.Bitmap.Canvas.TextOut( 7,8, ts[2]);
-    advdicewriterow ( aplayer.Team,  UpperCase( Translate ( 'skill_Move')),  aplayer.surname,  aPlayer.ids , ts[2], '' );
+    SE_GridDicewriterow ( aplayer.Team,  UpperCase( Translate ( 'skill_Move')),  aplayer.surname,  aPlayer.ids , ts[2], '' );
 
     SeSprite := se_numbers.CreateSprite( sebmp.bitmap, 'numbers', 1, 1, 100, aPlayer.SE_Sprite.Position.X  , aPlayer.SE_Sprite.Position.Y , true );
     SeSprite.LifeSpan := ShowRollLifeSpan;
@@ -6934,7 +6918,7 @@ begin
     ASize:=sebmp.Bitmap.Canvas.TextExtent(ts[1]);
     sebmp.Resize( aSize.Width, aSize.Height, $007B5139  );
       sebmp.Bitmap.Canvas.TextOut( 1,0, ts[1]);
-//    advdicewriterow ( ts[1], aplayer.surname,  aPlayer.ids , 'VS');
+//    SE_GridDicewriterow ( ts[1], aplayer.surname,  aPlayer.ids , 'VS');
 
     posY := aSEField.Position.Y - 30;
     if PosY < 20 then posY := 30;
@@ -6964,7 +6948,7 @@ begin
      aPlayer2:= MyBrain.GetSoccerPlayer2(ts[2]);
      // sono veramente già swappati quindi la sefield è di aplayer2 , quello che verrà sostituito
 
-     advdicewriterow ( aplayer.Team, Translate('lbl_Substitution'),  aplayer.surname,  aplayer2.surname , 'FAULT','');
+     SE_GridDicewriterow ( aplayer.Team, Translate('lbl_Substitution'),  aplayer.surname,  aplayer2.surname , 'FAULT','');
      InOutBitmap:= SE_Bitmap.Create ( InOutBitmap );
      aSeField := SE_field.FindSprite( IntToStr(aPlayer2.CellX )+ '.' + IntToStr(aPlayer2.CellY ) );
      seSprite:= SE_interface.CreateSprite(InOutBitmap.BITMAP ,'inout',1,1,10,aSEField.Position.X, aSEField.Position.Y,true  );
@@ -6975,7 +6959,7 @@ begin
   end
   else if ts[0] = 'cl_tactic' then begin
      aPlayer:= MyBrain.GetSoccerPlayer2(ts[1]);
-     advdicewriterow ( aplayer.Team, Translate('lbl_Tactic'),  aplayer.surname,  aplayer.ids , 'FAULT','');
+     SE_GridDicewriterow ( aplayer.Team, Translate('lbl_Tactic'),  aplayer.surname,  aplayer.ids , 'FAULT','');
 
   end
   else if ts[0] = 'cl_sound' then begin
@@ -7340,10 +7324,10 @@ begin
     AnimationScript.TsAdd  ( 'cl_wait,3000');
   end
   else if ts[0]= 'cl_splash.gol' then begin
-    advdicewriterow ( 0,   'Gol!!!',  '',  '' , '', '' );
+    SE_GridDicewriterow ( 0,   'Gol!!!',  '',  '' , '', '' );
   end
   else if ts[0]= 'cl_splash.gameover' then begin
-    advdicewriterow ( 0,  UpperCase( Translate ( 'lbl_GameOver' )),  '',  '' , '', '' );
+    SE_GridDicewriterow ( 0,  UpperCase( Translate ( 'lbl_GameOver' )),  '',  '' , '', '' );
 //  playsound ( pchar (dir_sound +  'gameover.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
     AudioGameOver.Position:=0;
     AudioGameOver.Play;
@@ -7369,7 +7353,7 @@ begin
 
       tscoa.Clear;
       //CreateSplash ('Corner',msSplashTurn);
-      advdicewriterow ( 0,  UpperCase( Translate ( 'lbl_Corner' )),  '',  '' , '', '' );
+      SE_GridDicewriterow ( 0,  UpperCase( Translate ( 'lbl_Corner' )),  '',  '' , '', '' );
 
 
   end
@@ -7405,7 +7389,7 @@ begin
     tscoa.Clear;
     tscod.clear;
 
-    advdicewriterow ( 0,  UpperCase( Translate ( 'lbl_FreeKick' )),  '',  '' , '', '' );
+    SE_GridDicewriterow ( 0,  UpperCase( Translate ( 'lbl_FreeKick' )),  '',  '' , '', '' );
 
 
   end
@@ -7417,7 +7401,7 @@ begin
     end;
       tscoa.Clear;
       tscod.clear;
-    advdicewriterow ( 0,  UpperCase( Translate ( 'lbl_FreeKick' )),  '',  '' , '', '' );
+    SE_GridDicewriterow ( 0,  UpperCase( Translate ( 'lbl_FreeKick' )),  '',  '' , '', '' );
 
 
   end
@@ -7430,7 +7414,7 @@ begin
     end;
       tscoa.Clear;
       tscod.clear;
-    advdicewriterow ( 0,  UpperCase( Translate ( 'lbl_FreeKick' )),  '',  '' , '', '' );
+    SE_GridDicewriterow ( 0,  UpperCase( Translate ( 'lbl_FreeKick' )),  '',  '' , '', '' );
 
 
   end
@@ -7443,7 +7427,7 @@ begin
     end;
       tscoa.Clear;
       tscod.clear;
-    advdicewriterow ( 0,  UpperCase( Translate ( 'lbl_FreeKick' )),  '',  '' , '', '' );
+    SE_GridDicewriterow ( 0,  UpperCase( Translate ( 'lbl_FreeKick' )),  '',  '' , '', '' );
 
   end
 
@@ -7521,7 +7505,7 @@ begin
 //   playsound ( pchar (dir_sound +  'faul.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
      AudioFaul.Position:=0;
      AudioFaul.Play;
-     advdicewriterow ( aplayer.Team, Translate('lbl_Fault'),  aplayer.surname,  aPlayer.ids , 'FAULT','');
+     SE_GridDicewriterow ( aplayer.Team, Translate('lbl_Fault'),  aplayer.surname,  aPlayer.ids , 'FAULT','');
 
   end
   else if ts[0]= 'sc_fault.cheatballgk' then begin
@@ -7531,12 +7515,12 @@ begin
      seSprite:= SE_interface.CreateSprite(FaultBitmap.BITMAP ,'fault',1,1,10,aSEField.Position.X, aSEField.Position.Y,true  );
      FaultBitmap.Free;
      seSprite.LifeSpan := ShowFaultLifeSpan;
-     advdicewriterow ( 0,  UpperCase( Translate ( 'lbl_Fault' )),  '',  '' , '', '' );
+     SE_GridDicewriterow ( 0,  UpperCase( Translate ( 'lbl_Fault' )),  '',  '' , '', '' );
 //     playsound ( pchar (dir_sound +  'faul.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
      AudioFaul.Position:=0;
      AudioFaul.Play;
 
-     advdicewriterow ( aplayer.Team, Translate('lbl_Fault'),  '',  '' , 'FAULT','');
+     SE_GridDicewriterow ( aplayer.Team, Translate('lbl_Fault'),  '',  '' , 'FAULT','');
   end
   else if ts[0]= 'sc_fault.cheatball' then begin
      FaultBitmap:= SE_Bitmap.Create ( FaultBitmapBW );
@@ -7545,7 +7529,7 @@ begin
      seSprite:= SE_interface.CreateSprite(FaultBitmap.BITMAP ,'fault',1,1,10,aSEField.Position.X, aSEField.Position.Y,true  );
      FaultBitmap.Free;
      seSprite.LifeSpan := ShowFaultLifeSpan;
-     advdicewriterow ( aplayer.Team, Translate('lbl_Fault'),  '',  '' , 'FAULT','');
+     SE_GridDicewriterow ( aplayer.Team, Translate('lbl_Fault'),  '',  '' , 'FAULT','');
 //     playsound ( pchar (dir_sound +  'faul.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
      AudioFaul.Position:=0;
      AudioFaul.Play;
@@ -7634,10 +7618,12 @@ begin
       AudioCrowd.Stop;
       ToolSpin.Visible := false;
       ViewReplay := false;
-      while (se_ball.IsAnySpriteMoving ) or (se_players.IsAnySpriteMoving ) or (Animating) do begin
+      WaitForSingleObject(Mutex,INFINITE);
+      while (se_ball.IsAnySpriteMoving ) or (se_players.IsAnySpriteMoving )  do begin
         se_Theater1.thrdAnimate.OnTimer (se_Theater1.thrdAnimate);
         application.ProcessMessages ;
       end;
+      ReleaseMutex(Mutex);
 
       gamescreen := ScreenLogin;
     end
@@ -7645,10 +7631,12 @@ begin
       AudioCrowd.Stop;
       viewMatch := False;
       tcp.SendStr( 'closeviewmatch' + EndofLine);
-      while (se_ball.IsAnySpriteMoving ) or (se_players.IsAnySpriteMoving ) or (Animating) do begin
+      WaitForSingleObject(Mutex,INFINITE);
+      while (se_ball.IsAnySpriteMoving ) or (se_players.IsAnySpriteMoving ) do begin
         se_Theater1.thrdAnimate.OnTimer (se_Theater1.thrdAnimate);
         application.ProcessMessages ;
       end;
+      ReleaseMutex(Mutex);
       gamescreen := ScreenMain;
     end;
 
@@ -8681,8 +8669,7 @@ procedure TForm1.SE_Theater1SpriteMouseMove(Sender: TObject; lstSprite: TObjectL
 var
   aPlayer,aFriend,anOpponent: TSoccerPlayer;
   SE_GridAttributes : SE_grid;
-  btnxp : TcnSpeedButton;
-  btnTalentBmp: TCnSpeedButton;
+  btnxp,btnBmp : TCnSpeedButton;
   portrait : TCnSpeedButton;
   lbls,lblt,lbldescrT: TLabel;
   i,x,y: Integer;
@@ -8747,7 +8734,7 @@ begin
             lbls := se_lblSurname0;
             lblt:= lbl_Talent0;
             lbldescrT:= lbl_descrtalent0;
-            btnTalentBmp :=btnTalentBmp0;
+            btnBmp :=btnTalentBmp0;
             portrait := Portrait0;
 
           end;
@@ -8756,7 +8743,7 @@ begin
             lbls := se_lblSurname1;
             lblt:= lbl_Talent1;
             lbldescrT:= lbl_descrtalent1;
-            btnTalentBmp :=btnTalentBmp1;
+            btnBmp :=btnTalentBmp1;
             portrait := Portrait1;
           end;
         end;
@@ -8786,10 +8773,10 @@ begin
            lbldescrT.Caption := Translate('descr_talent_' + aPlayer.Talents);
               //          lblR.Caption := '';
            if aPlayer.Talents <> '' then begin
-               btnTalentBmp.Glyph.LoadFromFile ( dir_talent + aPlayer.Talents + '.bmp' );
-               btnTalentBmp.Visible := True;
+               btnBmp.Glyph.LoadFromFile( dir_talent + aPlayer.Talents + '.bmp' );
+               btnBmp.Visible := True;
            end
-           else btnTalentBmp.Visible := False;
+           else btnBmp.Visible := False;
 
 
       end;
@@ -8808,13 +8795,13 @@ begin
       CellX := aPoint.X;
       CellY := aPoint.Y;
 
-//      advDice.Clear ;         // inizializza la advDice ogni volta che cambia di cella  ma solo se c'è un waitForXY
-//      advDice.RowCount := 1;
+//      SE_GridDice.ClearData;         // inizializza la SE_GridDice ogni volta che cambia di cella  ma solo se c'è un waitForXY
+//      SE_GridDice.RowCount := 1;
       if GameScreen = ScreenLiveMatch then begin
 
         if WaitForXY_Shortpass then begin       // shp su friend o cella vuota
-          advDice.Clear ;
-          advDice.RowCount := 1;
+          SE_GridDice.ClearData;
+          SE_GridDice.RowCount := 1;
           ToEmptyCell := true;
           SE_interface.removeallSprites;
           if (absDistance (MyBrain.Ball.Player.CellX , MyBrain.Ball.Player.CellY, Cellx, Celly  ) > (ShortPassRange +  MyBrain.Ball.Player.Tal_LongPass))
@@ -8825,12 +8812,12 @@ begin
             if (aFriend.Ids = MyBrain.Ball.Player.ids) or (aFriend.Team <> MyBrain.Ball.Player.Team ) then continue;
             ToEmptyCell := false;
           end;
-          advDiceWriteRow( SelectedPlayer.Team, UpperCase(Translate('attribute_Passing')) , SelectedPlayer.SurName , SelectedPlayer.Ids ,'VS',IntToStr(SelectedPlayer.Passing) );
+          SE_GridDiceWriteRow( SelectedPlayer.Team, UpperCase(Translate('attribute_Passing')) , SelectedPlayer.SurName , SelectedPlayer.Ids ,'VS',IntToStr(SelectedPlayer.Passing) );
           ArrowShowShpIntercept ( CellX, CellY, ToEmptyCell) ;
         end
         else if WaitForXY_Move then begin       // di 2 o più mostro intercept autocontrasto
-          advDice.Clear ;
-          advDice.RowCount := 1;
+          SE_GridDice.ClearData;
+          SE_GridDice.RowCount := 1;
           SE_interface.removeallSprites;  // rimuovo le frecce,  non rimuovo gli highlight
          // HighLightFieldFriendly_hide;
 
@@ -8856,15 +8843,15 @@ begin
             // ultimo del path, non cellx celly
             HighLightField (SelectedPlayer.MovePath[SelectedPlayer.MovePath.count-1].X , SelectedPlayer.MovePath[SelectedPlayer.MovePath.count-1].Y, 0 );
             if  SelectedPlayer.HasBall then begin
-              advDiceWriteRow( SelectedPlayer.Team, UpperCase(Translate('attribute_BallControl')) , SelectedPlayer.SurName , SelectedPlayer.Ids ,'VS',IntToStr(SelectedPlayer.BallControl)  );
+              SE_GridDiceWriteRow( SelectedPlayer.Team, UpperCase(Translate('attribute_BallControl')) , SelectedPlayer.SurName , SelectedPlayer.Ids ,'VS',IntToStr(SelectedPlayer.BallControl)  );
               ArrowShowMoveAutoTackle  ( SelectedPlayer.MovePath[SelectedPlayer.MovePath.count-1].X , SelectedPlayer.MovePath[SelectedPlayer.MovePath.count-1].Y) ;
               HighLightField (SelectedPlayer.MovePath[SelectedPlayer.MovePath.count-1].X , SelectedPlayer.MovePath[SelectedPlayer.MovePath.count-1].Y, 0 );
             end;
           end;
         end
         else if WaitForXY_LoftedPass then begin  // mostro i colpi di testa difensivi o chi arriva sulla palla
-          advDice.Clear ;
-          advDice.RowCount := 1;
+          SE_GridDice.ClearData;
+          SE_GridDice.RowCount := 1;
           ToEmptyCell := true;
           SE_interface.removeallSprites;
           if ( MyBrain.Ball.Player.Role <> 'G' ) and
@@ -8886,17 +8873,17 @@ begin
             ToEmptyCell := false;
           end;
 
-          advDiceWriteRow( SelectedPlayer.Team, UpperCase(Translate('attribute_Passing')) , SelectedPlayer.SurName , SelectedPlayer.Ids ,'VS',IntToStr(SelectedPlayer.Passing) );
+          SE_GridDiceWriteRow( SelectedPlayer.Team, UpperCase(Translate('attribute_Passing')) , SelectedPlayer.SurName , SelectedPlayer.Ids ,'VS',IntToStr(SelectedPlayer.Passing) );
           ArrowShowLopHeading( CellX, CellY, ToEmptyCell) ;
           if aFriend <> nil then begin
-            advDiceWriteRow( aFriend.Team, UpperCase(Translate('attribute_BallControl')) , aFriend.SurName , aFriend.Ids ,'VS', IntToStr(aFriend.BallControl) );
+            SE_GridDiceWriteRow( aFriend.Team, UpperCase(Translate('attribute_BallControl')) , aFriend.SurName , aFriend.Ids ,'VS', IntToStr(aFriend.BallControl) );
             if aFriend.InCrossingArea then
-              advDiceWriteRow( aFriend.Team, '10: ' + UpperCase(Translate('skill_Volley')) , aFriend.SurName , aFriend.Ids ,'VS',IntToStr(aFriend.Shot) );
+              SE_GridDiceWriteRow( aFriend.Team, '10: ' + UpperCase(Translate('skill_Volley')) , aFriend.SurName , aFriend.Ids ,'VS',IntToStr(aFriend.Shot) );
           end;
         end
         else if WaitForXY_Crossing then begin   // mostro i colpi di testa difensivi o chi arriva sulla palla
-          advDice.Clear ;
-          advDice.RowCount := 1;
+          SE_GridDice.ClearData;
+          SE_GridDice.RowCount := 1;
           SE_interface.removeallSprites;
           if (absDistance ( MyBrain.ball.Player.CellX ,  MyBrain.ball.Player.CellY, CellX, CellY  ) > (CrossingRangeMax + MyBrain.ball.Player.tal_longpass ) )
             or (absDistance ( MyBrain.ball.Player.CellX ,  MyBrain.ball.Player.CellY, CellX, CellY  ) < CrossingRangeMin)  then begin
@@ -8906,17 +8893,17 @@ begin
           if aFriend <> nil then begin
             if (aFriend.Ids = MyBrain.Ball.Player.ids) or (aFriend.Team <> MyBrain.Ball.Player.Team ) then continue;
             if aFriend.InCrossingArea then begin
-              advDiceWriteRow( SelectedPlayer.Team, UpperCase(Translate('attribute_Passing')) , SelectedPlayer.SurName , SelectedPlayer.Ids ,'VS',IntToStr(SelectedPlayer.Passing) );
+              SE_GridDiceWriteRow( SelectedPlayer.Team, UpperCase(Translate('attribute_Passing')) , SelectedPlayer.SurName , SelectedPlayer.Ids ,'VS',IntToStr(SelectedPlayer.Passing) );
               ArrowShowCrossingHeading( CellX, CellY) ;
-              advDiceWriteRow( aFriend.Team, UpperCase(Translate('attribute_Heading')) , aFriend.SurName , aFriend.Ids ,'VS',IntToStr(aFriend.heading) );
+              SE_GridDiceWriteRow( aFriend.Team, UpperCase(Translate('attribute_Heading')) , aFriend.SurName , aFriend.Ids ,'VS',IntToStr(aFriend.heading) );
             end;
           end
           else continue;
 
         end
         else if WaitForXY_Dribbling then begin  // mostro freccia su opponent da dribblare
-          advDice.Clear ;
-          advDice.RowCount := 1;
+          SE_GridDice.ClearData;
+          SE_GridDice.RowCount := 1;
           SE_interface.removeallSprites;
           anOpponent := MyBrain.GetSoccerPlayer(CellX,CellY);
           if anOpponent = nil then continue;
@@ -8941,72 +8928,74 @@ begin
     end;
   end;
 end;
-procedure TForm1.advDiceWriteRow  ( team: integer; attr, Surname, ids, vs,num1: string);
+procedure TForm1.SE_GridDiceWriteRow  ( team: integer; attr, Surname, ids, vs,num1: string);
 var
   Row: Integer;
 begin
-
-  //advDiceAddRow trova la prima parte vuota e scrive li' . addrow è opzionale
-  Row := advDiceNextBlank ( team ); // riporta comunque l'ultima se non trova prima un blank ( addrow precedenti aggiungono blank )
-// es.  advDiceWriteRow  ( SelectedPlayer.Team, IntToStr(SelectedPlayer.Defense ) + ' ' + UpperCase(Translate('attribute_Defense')),
+  Row := SE_GridDice.RowCount -1;
+//  Exit;
+// es.  SE_GridDiceWriteRow  ( SelectedPlayer.Team, IntToStr(SelectedPlayer.Defense ) + ' ' + UpperCase(Translate('attribute_Defense')),
 //        SelectedPlayer.SurName, SelectedPlayer.Ids, 'VS');
 
-  advDice.Colors [4, Row ] := advDice.Color ;
-  advDice.FontColors [4, Row ] := clYellow;
-  if vs <> 'FAULT' then advDice.Cells[ 4, Row] := vs;
+  SE_GridDice.Cells [4, Row ].BackColor := SE_GridDice.BackColor ;
+  SE_GridDice.cells [4, Row ].FontColor := clYellow;
+  if vs <> 'FAULT' then SE_GridDice.Cells[ 4, Row].Text := vs;
 
 
   if team = 0 then begin
 
     if vs <> 'FAULT' then begin
-      advDice.Colors [1, Row ] := MyBrain.Score.DominantColor[0];
-      advDice.Colors [2, Row ] := MyBrain.Score.DominantColor[0];
-      advDice.Colors [3, Row ] := MyBrain.Score.DominantColor[0];
-      advDice.FontColors [1, Row ] := GetContrastColor( MyBrain.Score.DominantColor[0]);
-      advDice.FontColors [2, Row ] := GetContrastColor( MyBrain.Score.DominantColor[0]);
-      advDice.FontColors [3, Row ] := GetContrastColor( MyBrain.Score.DominantColor[0]);
+      SE_GridDice.Cells [1, Row ].BackColor := MyBrain.Score.DominantColor[0];
+      SE_GridDice.Cells [2, Row ].BackColor := MyBrain.Score.DominantColor[0];
+      SE_GridDice.Cells [3, Row ].BackColor := MyBrain.Score.DominantColor[0];
+      SE_GridDice.Cells [1, Row ].FontColor := GetContrastColor( MyBrain.Score.DominantColor[0]);
+      SE_GridDice.Cells [2, Row ].FontColor := GetContrastColor( MyBrain.Score.DominantColor[0]);
+      SE_GridDice.Cells [3, Row ].FontColor := GetContrastColor( MyBrain.Score.DominantColor[0]);
     end
     else begin
-      advDice.Colors [1, Row ] := clGray;
-      advDice.Colors [2, Row ] := clGray;
-      advDice.Colors [3, Row ] := clGray;
-      advDice.FontColors [1, Row ] := clyellow;
-      advDice.FontColors [2, Row ] := clyellow;
-      advDice.FontColors [3, Row ] := clyellow;
+      SE_GridDice.Cells [1, Row ].BackColor := clGray;
+      SE_GridDice.Cells [2, Row ].BackColor := clGray;
+      SE_GridDice.Cells [3, Row ].BackColor := clGray;
+      SE_GridDice.Cells [1, Row ].FontColor := clyellow;
+      SE_GridDice.Cells [2, Row ].FontColor := clyellow;
+      SE_GridDice.Cells [3, Row ].FontColor := clyellow;
     end;
-    advDice.Cells[ 3, Row] := num1;
-    advDice.Cells[ 2, Row] := UpperCase(attr);
-    advDice.Cells[ 1, Row] := Surname;
-    advDice.Cells[ 0, Row] := ids;
-    advDice.AddRow ;
+    SE_GridDice.Cells[ 3, Row].Text := num1;
+    SE_GridDice.Cells[ 2, Row].Text := UpperCase(attr);
+    SE_GridDice.Cells[ 1, Row].Text := Surname;
+    SE_GridDice.Cells[ 0, Row].Text := ids;   // utile per link futuro
+
+    SE_GridDice.AddRow;
 
   end
   else begin
     if vs <> 'FAULT' then begin
-      advDice.Colors [5, Row ] := MyBrain.Score.DominantColor[1];
-      advDice.Colors [6, Row ] := MyBrain.Score.DominantColor[1];
-      advDice.Colors [7, Row ] := MyBrain.Score.DominantColor[1];
-      advDice.FontColors [5, Row ] := GetContrastColor( MyBrain.Score.DominantColor[1]);
-      advDice.FontColors [6, Row ] := GetContrastColor( MyBrain.Score.DominantColor[1]);
-      advDice.FontColors [7, Row ] := GetContrastColor( MyBrain.Score.DominantColor[1]);
+      SE_GridDice.Cells [5, Row ].BackColor := MyBrain.Score.DominantColor[1];
+      SE_GridDice.Cells [6, Row ].BackColor := MyBrain.Score.DominantColor[1];
+      SE_GridDice.Cells [7, Row ].BackColor := MyBrain.Score.DominantColor[1];
+      SE_GridDice.Cells [5, Row ].FontColor := GetContrastColor( MyBrain.Score.DominantColor[1]);
+      SE_GridDice.Cells [6, Row ].FontColor := GetContrastColor( MyBrain.Score.DominantColor[1]);
+      SE_GridDice.Cells [7, Row ].FontColor := GetContrastColor( MyBrain.Score.DominantColor[1]);
     end
     else begin
-      advDice.Colors [5, Row ] :=clGray;
-      advDice.Colors [6, Row ] := clGray;
-      advDice.Colors [7, Row ] := clGray;
-      advDice.FontColors [5, Row ] := clyellow;
-      advDice.FontColors [6, Row ] := clyellow;
-      advDice.FontColors [7, Row ] := clyellow;
+      SE_GridDice.Cells [5, Row ].BackColor :=clGray;
+      SE_GridDice.Cells [6, Row ].BackColor := clGray;
+      SE_GridDice.Cells [7, Row ].BackColor := clGray;
+      SE_GridDice.Cells [5, Row ].FontColor := clyellow;
+      SE_GridDice.Cells [6, Row ].FontColor := clyellow;
+      SE_GridDice.Cells [7, Row ].FontColor := clyellow;
     end;
 
-    advDice.Alignments [7, Row ] := taRightJustify;
-    advDice.Cells[ 5, Row] := num1;
-    advDice.Cells[ 6, Row] := UpperCase(attr);
-    advDice.Cells[ 7, Row] := Surname;
-    advDice.Cells[ 8, Row] := ids;
-    advDice.AddRow ;
+    SE_GridDice.cells [7, Row ].CellAlignmentH := hRight;
+    SE_GridDice.Cells[ 5, Row].Text := num1;
+    SE_GridDice.Cells[ 6, Row].Text := UpperCase(attr);
+    SE_GridDice.Cells[ 7, Row].Text := Surname;
+    SE_GridDice.Cells[ 8, Row].Text := ids; // utile per link futuro
+    SE_GridDice.AddRow ;
 
   end;
+
+
 end;
 procedure TForm1.advMarketClickCell(Sender: TObject; ARow, ACol: Integer);
 begin
@@ -9022,32 +9011,6 @@ begin
 
 end;
 
-function TForm1.advDiceNextBlank  ( team: integer): Integer;
-var
-  y: Integer;
-begin
-  Result := advDice.RowCount -1;
-  Exit;
-
-    for y := 0 to advDice.rowcount -1 do begin
-      if team = 0 then begin
-
-        if advDice.Cells[ 0, Y] = '' then begin    // ids
-          result := Y;
-        end;
-
-      end
-      else begin
-
-        if advDice.Cells[ 8, Y] = '' then begin   // ids
-          result := Y;
-        end;
-
-      end;
-
-    end;
-//
-end;
 
 procedure TForm1.ArrowShowMoveAutoTackle ( CellX, CellY : Integer);
 var
@@ -9077,7 +9040,7 @@ begin
       for au := 0 to lstInteractivePlayers.Count -1 do begin
         lstInteractivePlayers[au].Attribute := atDefense;
         CreateArrowDirection( lstInteractivePlayers[au].Player  , lstInteractivePlayers[au].Cell.X ,lstInteractivePlayers[au].Cell.Y );
-        advDiceWriteRow  ( lstInteractivePlayers[au].Player.Team, UpperCase(Translate('attribute_Defense')),  lstInteractivePlayers[au].Player.SurName, lstInteractivePlayers[au].Player.Ids, 'VS',IntToStr(lstInteractivePlayers[au].Player.Defense));
+        SE_GridDiceWriteRow  ( lstInteractivePlayers[au].Player.Team, UpperCase(Translate('attribute_Defense')),  lstInteractivePlayers[au].Player.SurName, lstInteractivePlayers[au].Player.Ids, 'VS',IntToStr(lstInteractivePlayers[au].Player.Defense));
       end;
 
       break; //goto MyExit;
@@ -9119,7 +9082,7 @@ begin
             aInteractivePlayer.Attribute := atDefense;
             lstInteractivePlayers.add (aInteractivePlayer);
             CreateArrowDirection( anOpponent, aPath[i].X,aPath[i].Y );
-            advDiceWriteRow  ( anOpponent.Team, UpperCase(Translate('attribute_Defense')),  anOpponent.SurName, anOpponent.Ids, 'VS',IntToStr(anOpponent.Defense) );
+            SE_GridDiceWriteRow  ( anOpponent.Team, UpperCase(Translate('attribute_Defense')),  anOpponent.SurName, anOpponent.Ids, 'VS',IntToStr(anOpponent.Defense) );
           end;
       end
 
@@ -9133,8 +9096,8 @@ begin
             aFriend := MyBrain.GetSoccerPlayer ( CellX , CellY);
             if aFriend = nil then
    { toemptycells lo devo riportare adesso }
-             advDiceWriteRow  ( anIntercept.Team, UpperCase(Translate('attribute_Defense')),  anIntercept.SurName, anIntercept.Ids, 'VS',IntToStr(anIntercept.Defense))
-            else advDiceWriteRow  ( anIntercept.Team, UpperCase(Translate('attribute_Defense')),  anIntercept.SurName, anIntercept.Ids, 'VS',
+             SE_GridDiceWriteRow  ( anIntercept.Team, UpperCase(Translate('attribute_Defense')),  anIntercept.SurName, anIntercept.Ids, 'VS',IntToStr(anIntercept.Defense))
+            else SE_GridDiceWriteRow  ( anIntercept.Team, UpperCase(Translate('attribute_Defense')),  anIntercept.SurName, anIntercept.Ids, 'VS',
                                       IntToStr(anIntercept.Defense -1));
           end
         end;
@@ -9150,7 +9113,7 @@ begin
     for Y := 0 to LstMoving.count -1 do begin
       LstMoving[Y].Attribute := atSpeed;
       CreateArrowDirection( LstMoving[Y].Player, CellX,CellY );
-      advDiceWriteRow  ( LstMoving[Y].Player.Team, UpperCase(Translate('attribute_Speed')),  LstMoving[Y].Player.SurName, LstMoving[Y].Player.Ids, 'VS',IntToStr(LstMoving[Y].Player.Speed ));
+      SE_GridDiceWriteRow  ( LstMoving[Y].Player.Team, UpperCase(Translate('attribute_Speed')),  LstMoving[Y].Player.SurName, LstMoving[Y].Player.Ids, 'VS',IntToStr(LstMoving[Y].Player.Speed ));
     end;
 
     LstMoving.Free;
@@ -9181,7 +9144,7 @@ begin
             // CalculateChance  ( SelectedPlayer.Passing , aHeading.Heading  , chanceA,chanceB,chanceColorA,chanceColorB);
             lstInteractivePlayers[Y].Attribute := atHeading;
             CreateArrowDirection( aHeading, CellX,CellY );
-            advDiceWriteRow  ( aHeading.Team, UpperCase(Translate('attribute_Heading')),  aHeading.SurName, aHeading.Ids, 'VS',IntToStr(aHeading.Passing));
+            SE_GridDiceWriteRow  ( aHeading.Team, UpperCase(Translate('attribute_Heading')),  aHeading.SurName, aHeading.Ids, 'VS',IntToStr(aHeading.Passing));
 
       end;
 
@@ -9197,7 +9160,7 @@ begin
     for Y := 0 to LstMoving.count -1 do begin
       LstMoving[Y].Attribute := atSpeed;
       CreateArrowDirection( LstMoving[Y].Player, CellX,CellY );
-      advDiceWriteRow  ( LstMoving[Y].Player.Team, UpperCase(Translate('attribute_Speed')),  LstMoving[Y].Player.SurName, LstMoving[Y].Player.Ids, 'VS',IntToStr(LstMoving[Y].Player.Speed));
+      SE_GridDiceWriteRow  ( LstMoving[Y].Player.Team, UpperCase(Translate('attribute_Speed')),  LstMoving[Y].Player.SurName, LstMoving[Y].Player.Ids, 'VS',IntToStr(LstMoving[Y].Player.Speed));
     end;
 
     LstMoving.Free;
@@ -9230,7 +9193,7 @@ begin
      //     BaseHeading :=  LstHeading[Y].Player.Heading + BonusDefenseHeading;
      //     if Baseheading <= 0 then Baseheading :=1;
       CreateArrowDirection( lstInteractivePlayers[Y].Player, CellX,CellY );
-      advDiceWriteRow  ( aHeading.Team, UpperCase(Translate('attribute_Heading')),  aHeading.SurName, aHeading.Ids, 'VS',
+      SE_GridDiceWriteRow  ( aHeading.Team, UpperCase(Translate('attribute_Heading')),  aHeading.SurName, aHeading.Ids, 'VS',
                          IntToStr(aHeading.heading + BonusDefenseHeading ));
      //     CreateTextChanceValue ( LstHeading[Y].Player.ids, BaseHeading  ,dir_attributes +  'Heading',0,0,0,0);
 
@@ -9250,9 +9213,9 @@ begin
   anInteractivePlayer.Cell.Y := cellY;
   anInteractivePlayer.Attribute := atDefense;
   CreateArrowDirection(  MyBrain.ball.Player, CellX,CellY );
-  advDiceWriteRow  ( SelectedPlayer.Team, UpperCase(Translate('attribute_BallControl')),  SelectedPlayer.SurName, SelectedPlayer.Ids, 'VS',
+  SE_GridDiceWriteRow  ( SelectedPlayer.Team, UpperCase(Translate('attribute_Ball.Control')),  SelectedPlayer.SurName, SelectedPlayer.Ids, 'VS',
                       IntToStr(SelectedPlayer.BallControl + SelectedPlayer.Tal_Dribbling ) );
-  advDiceWriteRow  ( anOpponent.Team, UpperCase(Translate('attribute_Defense')),  anOpponent.SurName, anOpponent.Ids, 'VS',
+  SE_GridDiceWriteRow  ( anOpponent.Team, UpperCase(Translate('attribute_Defense')),  anOpponent.SurName, anOpponent.Ids, 'VS',
                       IntToStr(anOpponent.Defense ));
 
 end;
@@ -9481,7 +9444,7 @@ begin
   GridXP.Cells[0,0].Text :=  Translate('attribute_Speed');
   GridXP.Cells[0,1].Text :=  Translate('attribute_Defense');
   GridXP.Cells[0,2].Text :=  Translate('attribute_Passing');
-  GridXP.Cells[0,3].Text :=  Translate('attribute_BallControl');
+  GridXP.Cells[0,3].Text :=  Translate('attribute_Ball.Control');
   GridXP.Cells[0,4].Text :=  Translate('attribute_Shot');
   GridXP.Cells[0,5].Text :=  Translate('attribute_Heading');
 
@@ -9637,7 +9600,7 @@ begin
     GridAT.Cells[0,0].text:= Translate('attribute_Speed');
     GridAT.Cells[0,1].text:= Translate('attribute_Defense');
     GridAT.Cells[0,2].text:= Translate('attribute_Passing');
-    GridAT.Cells[0,3].text:= Translate('attribute_BallControl');
+    GridAT.Cells[0,3].text:= Translate('attribute_Ball.Control');
     GridAT.Cells[0,4].text:= Translate('attribute_Shot');
     GridAT.Cells[0,5].text:= Translate('attribute_Heading');
     GridAT.Cells[0,6].text:= Translate('lbl_Age');
@@ -9855,7 +9818,8 @@ begin
     end
     else if MidStr( tmpStr,1,10 )= 'BEGINBRAIN' then begin   { il byte incmove nella stringa}
 
-      MemoC.Lines.Add( 'Compressed size: ' + IntToStr(Len) );
+
+        MemoC.Lines.Add( 'Compressed size: ' + IntToStr(Len) );
 
         LastTcpIncMove := ord (buf [10]);
         MemoC.Lines.Add('BEGINBRAIN '+  IntToStr(LastTcpIncMove) );
@@ -9875,30 +9839,30 @@ begin
   //      CopyMemory( @Buf3, mm3.Memory , mm3.size  ); // copia del buf per non essere sovrascritti
         CopyMemory( @Buf3[LastTcpIncMove], mm3[LastTcpIncMove].Memory , mm3[LastTcpIncMove].size  ); // copia del buf per non essere sovrascritti
         MM3[LastTcpIncMove].SaveToFile( dir_data + IntToStr(LastTcpIncMove) + '.IS');
-  firstload:
-      if viewMatch or LiveMatch then begin
-        if not FirstLoadOK  then begin   // avvio partita o ricollegamento
-          InitializeTheaterMatch;
-          GameScreen:= ScreenLiveMatch; // initializetheatermAtch
-          CurrentIncMove := LastTcpIncMove;
-          ClientLoadBrainMM (CurrentIncMove) ;   // (incmove)
-          FirstLoadOK := True;
-          for I := 0 to 255 do begin
-           IncMove [i] := false;
-          end;
-          for I := 0 to CurrentIncMove do begin
-           IncMove [i] := true; // caricato e completamente eseguito
-          end;
+    firstload:
+        if viewMatch or LiveMatch then begin
+          if not FirstLoadOK  then begin   // avvio partita o ricollegamento
+            InitializeTheaterMatch;
+            GameScreen:= ScreenLiveMatch; // initializetheatermAtch
+            CurrentIncMove := LastTcpIncMove;
+            ClientLoadBrainMM (CurrentIncMove) ;   // (incmove)
+            FirstLoadOK := True;
+            for I := 0 to 255 do begin
+             IncMove [i] := false;
+            end;
+            for I := 0 to CurrentIncMove do begin
+             IncMove [i] := true; // caricato e completamente eseguito
+            end;
 
 
-          SpriteReset;
-          ThreadCurMove.Enabled := true;
+            SpriteReset;
+            ThreadCurMove.Enabled := true;
+
+          end;
 
         end;
-
-      end;
-        MM.Free;
-        Exit;
+          MM.Free;
+          Exit;
     end
     else if MidStr(tmpStr,1,9 )= 'BEGINTEAM' then begin
       ThreadCurMove.Enabled := false; // parte solo in beginbrain
@@ -10024,7 +9988,7 @@ end;
 
 procedure TForm1.tcpSessionClosed(Sender: TObject; ErrCode: Word);
 begin
-      advDice.ClearAll ;
+      SE_GridDice.Active := False;
       FirstLoadOK:= False;
       MyGuidTeam := 0;
       Timer1.Enabled := true;
@@ -10385,7 +10349,28 @@ begin
       SE_GridTime.Active := true;
 
     ShowScore;
-    advDice.ClearAll ;
+    SE_GridDice.ClearData;
+    SE_GridDice.DefaultColWidth := 16;
+    SE_GridDice.DefaultRowHeight := 16;
+    SE_GridDice.ColCount :=9;
+    SE_GridDice.RowCount :=1;
+    SE_GridDice.Columns [0].Width := 1;
+    SE_GridDice.Columns [1].Width := 70;
+    SE_GridDice.Columns [2].Width := 110;
+
+    SE_GridDice.Columns [3].Width := 20;
+    SE_GridDice.Columns [4].Width := 20;
+    SE_GridDice.Columns [5].Width := 20;
+
+    SE_GridDice.Columns [6].Width := 110;
+    SE_GridDice.Columns [7].Width := 70;
+    SE_GridDice.Columns [8].Width := 1 ;
+
+   // SE_GridDice.Height := 16*9;// 9 righe
+   // GridAT.Width := 80+30+10+(12*9);
+    SE_GridDice.rows[0].Height := 16;
+
+
   end
   else if fGameScreen = ScreenWaitingWatchLive then begin // si accede cliccando l'icona TV
     AudioCrowd.Stop;
@@ -10645,7 +10630,7 @@ begin
   advMarket.Cells[3,0]:= Translate('attribute_Speed');
   advMarket.Cells[4,0]:= Translate('attribute_Defense');
   advMarket.Cells[5,0]:= Translate('attribute_Passing');
-  advMarket.Cells[6,0]:= Translate('attribute_BallControl');
+  advMarket.Cells[6,0]:= Translate('attribute_Ball.Control');
   advMarket.Cells[7,0]:= Translate('attribute_Shot');
   advMarket.Cells[8,0]:= Translate('attribute_Heading');
   advMarket.Cells[9,0]:= Translate('lbl_Talent');
