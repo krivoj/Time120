@@ -2,14 +2,13 @@
 {$DEFINE TOOLS}
 // conflitto eurekalog con dxsound. rimuovere eurekalog nella  build finale
 
+      { TODO  : Eliminare Directx. Usare PlaySound }
       { TODO  : override maglie bianca o nera }
       { TODO : settare il volume audio dei singoli file }
-      { TODO : verificare se SE_GridDiceaddrow risolve splashscreen }
       { TODO : risolvere sfarfallio in formation }
       { TODO : finire traduzioni }
       { TODO : verificare bug sound prs e posizione palla}
       { TODO : sostituire grid con se_grid. la gridLog non deve resettarsi, ma mantenere gli ultimi 50 eventi e fare pan automatico}
-      { TODO : sostituire jvshaped con se_grid.}
       { TODO : gestire il fine partita }
       { TODO : bug sui pulsanti tattiche. il player rimane sospeso  }
       { TODO : sul rigore che diventa gol manca il suono della folla  }
@@ -19,6 +18,8 @@
 
       // procedure importanti:
       //    procedure SE_GridSkillGridCellMouseDown  click sulla skill ---> input verso il server
+      //    procedure tcpDataAvailable <--- input dal server
+      //    procedure ClientLoadBrainMM  ( incMove: Byte ) Carica il brain arrivato dal server
 
 interface
 uses
@@ -46,7 +47,7 @@ uses
   Dxwave,DXSounds,                    // DelphiX (Audio)
   ZLIBEX,                             // delphizlib invio dati compressi tra server e client
 
-   // RaizeComponents
+
   OverbyteIcsWndControl, OverbyteIcsWSocket  ;  // OverByteIcsWSocketE ics con modifica. vedi directory External.Packages\overbyteICS del progetto
 
 const GCD_DEFAULT = 200;        // global cooldown, minimo 200 ms tra un input verso il server e l'altro ( anti-cheating )
@@ -59,10 +60,9 @@ const ShowFaultLifeSpan = 1600; // ms notifica in caso di fallo
 const msSplashTurn = 1600;
 const STANDARD_MP_MS = 50;
 const EndOfLine = 'ENDSOCCER';  // tutti i pacchetti Tcp tra server e client finiscono con questo marker
-type TArcDirection = (adCounterClockWise, adClockWise);  // traiettorie ad arco della palla. non  usate in questo prototipo
 type TArray8192 = array [0..8191] of AnsiChar; // i buf[0..255] of  TArray8192 contengono il buffer Tcp in entrata
 
-type TSpriteArrowDirection = record
+type TSpriteArrowDirection = record  // le frecce durante waitforSomething
   offset : TPoint;
   angle : single;
 end;
@@ -438,6 +438,8 @@ type
     procedure CreateArrowDirection ( Player1 : TSoccerPlayer;  CellX, CellY: integer ); overload;
     procedure CreateCircle(  Player : TSoccerPlayer  ); overload;
     procedure CreateCircle(  Team,  CellX, CellY: integer  );overload;
+
+// Mouse movement sulla SE_GridSkill
     procedure TackleMouseEnter ( Sender : TObject);
     procedure MovMouseEnter ( Sender : TObject);
     procedure ShpMouseEnter ( Sender : TObject);
@@ -6819,7 +6821,6 @@ var
   netgol,head: Integer;
   aPath: dse_pathPlanner.Tpath;
   aStep: dse_pathPlanner.TpathStep ;
-  ClockWise: TArcDirection;
   aCell,aCell2: TSoccerCell;
   aPlayer,aPlayer2, aTackle, aGK, aBarrierPlayer : TSoccerPlayer;
   srcCellX, srcCellY, dstCellX, dstCellY,Z : integer; // Source e destination Cells
@@ -8221,7 +8222,7 @@ procedure TForm1.LoadAdvTeam ( team : integer; Stat:string; clearMark: boolean )
 var
   i,Y: integer;
 begin
-    if ClearMark then advTeam.ClearAll ;
+    if ClearMark then advTeam.ClearAll ;  // sul corner i COA seguono il COF e il COF non può essere anche un COA
 
     PanelSkill.Visible := False;
     SE_GridSkill.Active := False;
@@ -8795,15 +8796,16 @@ begin
       CellX := aPoint.X;
       CellY := aPoint.Y;
 
-//      SE_GridDice.ClearData;         // inizializza la SE_GridDice ogni volta che cambia di cella  ma solo se c'è un waitForXY
-//      SE_GridDice.RowCount := 1;
       if GameScreen = ScreenLiveMatch then begin
 
+        SE_GridDice.ClearData;
+        SE_GridDice.RowCount := 1;
+        SE_interface.removeallSprites; // rimuovo le frecce,  non rimuovo gli highlight
+        SE_interface.ProcessSprites(1);
+         // HighLightFieldFriendly_hide;
+
         if WaitForXY_Shortpass then begin       // shp su friend o cella vuota
-          SE_GridDice.ClearData;
-          SE_GridDice.RowCount := 1;
           ToEmptyCell := true;
-          SE_interface.removeallSprites;
           if (absDistance (MyBrain.Ball.Player.CellX , MyBrain.Ball.Player.CellY, Cellx, Celly  ) > (ShortPassRange +  MyBrain.Ball.Player.Tal_LongPass))
           or (absDistance (MyBrain.Ball.Player.CellX , MyBrain.Ball.Player.CellY, Cellx, Celly  ) = 0)
           then continue;
@@ -8816,10 +8818,6 @@ begin
           ArrowShowShpIntercept ( CellX, CellY, ToEmptyCell) ;
         end
         else if WaitForXY_Move then begin       // di 2 o più mostro intercept autocontrasto
-          SE_GridDice.ClearData;
-          SE_GridDice.RowCount := 1;
-          SE_interface.removeallSprites;  // rimuovo le frecce,  non rimuovo gli highlight
-         // HighLightFieldFriendly_hide;
 
           if  SelectedPlayer.HasBall then begin
             MoveValue := SelectedPlayer.Speed -1;
@@ -8850,10 +8848,7 @@ begin
           end;
         end
         else if WaitForXY_LoftedPass then begin  // mostro i colpi di testa difensivi o chi arriva sulla palla
-          SE_GridDice.ClearData;
-          SE_GridDice.RowCount := 1;
           ToEmptyCell := true;
-          SE_interface.removeallSprites;
           if ( MyBrain.Ball.Player.Role <> 'G' ) and
           ( (absDistance (MyBrain.Ball.Player.CellX , MyBrain.Ball.Player.CellY, Cellx, Celly  ) >( LoftedPassRangeMax +  MyBrain.Ball.Player.Tal_LongPass))
            or (absDistance (MyBrain.Ball.Player.CellX , MyBrain.Ball.Player.CellY, Cellx, Celly  )   < LoftedPassRangeMin ) )
@@ -8882,9 +8877,6 @@ begin
           end;
         end
         else if WaitForXY_Crossing then begin   // mostro i colpi di testa difensivi o chi arriva sulla palla
-          SE_GridDice.ClearData;
-          SE_GridDice.RowCount := 1;
-          SE_interface.removeallSprites;
           if (absDistance ( MyBrain.ball.Player.CellX ,  MyBrain.ball.Player.CellY, CellX, CellY  ) > (CrossingRangeMax + MyBrain.ball.Player.tal_longpass ) )
             or (absDistance ( MyBrain.ball.Player.CellX ,  MyBrain.ball.Player.CellY, CellX, CellY  ) < CrossingRangeMin)  then begin
              continue;
@@ -8902,9 +8894,6 @@ begin
 
         end
         else if WaitForXY_Dribbling then begin  // mostro freccia su opponent da dribblare
-          SE_GridDice.ClearData;
-          SE_GridDice.RowCount := 1;
-          SE_interface.removeallSprites;
           anOpponent := MyBrain.GetSoccerPlayer(CellX,CellY);
           if anOpponent = nil then continue;
             if (anOpponent.Team = SelectedPlayer.Team)  or (anOpponent.Ids = SelectedPlayer.ids) or
@@ -8933,7 +8922,6 @@ var
   Row: Integer;
 begin
   Row := SE_GridDice.RowCount -1;
-//  Exit;
 // es.  SE_GridDiceWriteRow  ( SelectedPlayer.Team, IntToStr(SelectedPlayer.Defense ) + ' ' + UpperCase(Translate('attribute_Defense')),
 //        SelectedPlayer.SurName, SelectedPlayer.Ids, 'VS');
 
@@ -9177,10 +9165,8 @@ var
   LstMoving: TList<TInteractivePlayer>;
 
 begin
-//          CreateTextChanceValue (SelectedPlayer.ids, SelectedPlayer.passing + SelectedPlayer.Tal_Crossing , dir_skill + 'Crossing',0,0,0,0);
 
   HighLightField (CellX ,CellY,0);
-
 
   BonusDefenseHeading := MyBrain.GetCrossDefenseBonus (SelectedPlayer, CellX, CellY );
   // CRO Precompilo la lista di possibili Heading perchè non si ripetano
