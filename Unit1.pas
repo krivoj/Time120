@@ -2,19 +2,19 @@
 {$DEFINE TOOLS}
 // conflitto eurekalog con dxsound. rimuovere eurekalog nella  build finale
 
+      { TODO  : bug se_griskill mousemove }
+      { TODO  : verificare sostituzioni }
       { TODO  : setgamescreen --> refreshsurface }
-      { TODO  : Eliminare Directx. Usare PlaySound }
+      { TODO  : Eliminare Directx. Usare PlaySoundverificare bug sound prs e posizione palla}
       { TODO  : override maglie bianca o nera }
       { TODO : settare il volume audio dei singoli file }
       { TODO : risolvere sfarfallio in formation }
       { TODO : finire traduzioni }
-      { TODO : verificare bug sound prs e posizione palla}
       { TODO : sostituire grid con se_grid. la gridLog non deve resettarsi, ma mantenere gli ultimi 50 eventi e fare pan automatico}
       { TODO : gestire il fine partita }
       { TODO : bug sui pulsanti tattiche. il player rimane sospeso  }
       { TODO : sul rigore che diventa gol manca il suono della folla  }
       { TODO : bug sui setuniform. avolte va in db.realmd.cheatdetected  }
-      { TODO : bug su closeviewmatch }
 
 
       // procedure importanti:
@@ -1691,20 +1691,35 @@ end;
 procedure TForm1.SE_GridSkillGridCellMouseMove(Sender: TObject; Shift: TShiftState; CellX, CellY: Integer; Sprite: SE_Sprite);
 var
   aSeField : SE_Sprite;
+  y: integer;
 begin
   // se ho già cliccato sulla skill passando sul mouse sopra ad un'altyra skill non creo i circle
-  if WaitForXY_Move or  WaitForXY_ShortPass or WaitForXY_LoftedPass or WaitForXY_Crossing or  WaitForXY_Dribbling
-    then Exit;
-
+  if WaitForXY_Move or  WaitForXY_ShortPass or WaitForXY_LoftedPass or WaitForXY_Crossing or  WaitForXY_Dribbling  then begin
+    Exit;
+  end;
 
   if (CellX = se_gridskilloldCol) and (CellY = se_gridskilloldRow) then Exit;
   se_gridskilloldCol := CellX;
   se_gridskilloldRow := CellY;
 
   SE_interface.RemoveAllSprites;
-  //SE_circle.RemoveAllSprites;
   HighLightFieldFriendly_hide;
 
+  for y := 0 to SE_GridSkill.RowCount -1 do begin
+    SE_GridSkill.Cells[0,y].BackColor := $007B5139;
+    SE_GridSkill.Cells[0,y].FontColor := clyellow; // $0041BEFF;
+    SE_GridSkill.Cells[1,y].BackColor := $007B5139;
+    SE_GridSkill.Cells[1,y].FontColor  := clyellow; //$0041BEFF;
+  end;
+  SE_GridSkill.Cells [0, CellY ].FontColor := $0041BEFF;
+  SE_GridSkill.Cells [1, CellY ].FontColor := $0041BEFF;
+  SE_GridSkill.CellsEngine.ProcessSprites(2000);
+  SE_GridSkill.refreshSurface ( SE_GridSkill );
+
+
+  Exit;
+
+    
   if se_gridskill.Cells[0,CellY].Ids = 'Tackle' then
     TackleMouseEnter ( nil )
   else if se_gridskill.Cells[0,CellY].Ids = 'Move' then
@@ -2900,6 +2915,8 @@ begin
   PanelCombatLog.Left := PanelSkill.Left + PanelSkill.Width;
   SE_GridDice.ClearData ;
   SE_GridDice.RowCount := 1;
+  SE_GridDice.CellsEngine.ProcessSprites(2000);
+  SE_GridDice.refreshSurface (SE_GridDice);
 
   if Mybrain.Ball.Player <> nil then begin
     if  AbsDistance (Mybrain.Ball.Player.CellX ,Mybrain.Ball.Player.CellY, SelectedPlayer.CellX, SelectedPlayer.CellY ) = 1 then begin
@@ -2930,6 +2947,9 @@ begin
   PanelCombatLog.Left := PanelSkill.Left + PanelSkill.Width;
   SE_GridDice.ClearData ;
   SE_GridDice.RowCount := 1;
+  SE_GridDice.CellsEngine.ProcessSprites(2000);
+  SE_GridDice.refreshSurface (SE_GridDice);
+
   if SelectedPlayer = nil then Exit;
   Modifier := 0;
   aDoor := Mybrain.GetOpponentDoor ( SelectedPlayer );
@@ -3052,6 +3072,9 @@ begin
   PanelCombatLog.Left :=  (PanelBack.Width div 2 ) - (PanelCombatLog.Width div 2 );   ;
   SE_GridDice.ClearData;
   SE_GridDice.RowCount := 1;
+  SE_GridDice.CellsEngine.ProcessSprites(2000);
+  SE_GridDice.refreshSurface (SE_GridDice);
+
   if SelectedPlayer = nil then Exit;
   if  SelectedPlayer.HasBall then begin
     MoveValue := SelectedPlayer.Speed -1;
@@ -3096,6 +3119,8 @@ begin
   PanelCombatLog.Left :=  (PanelBack.Width div 2 ) - (PanelCombatLog.Width div 2 );   ;
   SE_GridDice.ClearData ;
   SE_GridDice.RowCount := 1;
+  SE_GridDice.CellsEngine.ProcessSprites(2000);
+  SE_GridDice.refreshSurface (SE_GridDice);
   if SelectedPlayer = nil then Exit;
 
   aCellList:= TList<TPoint>.Create;
@@ -3125,6 +3150,8 @@ begin
   PanelCombatLog.Left :=  (PanelBack.Width div 2 ) - (PanelCombatLog.Width div 2 );   ;
   SE_GridDice.ClearData ;
   SE_GridDice.RowCount := 1;
+  SE_GridDice.CellsEngine.ProcessSprites(2000);
+  SE_GridDice.refreshSurface (SE_GridDice);
 
   if SelectedPlayer = nil then Exit;
 
@@ -3256,6 +3283,8 @@ begin
   hidechances;
   SE_GridDice.ClearData ;
   SE_GridDice.RowCount := 1;
+  SE_GridDice.CellsEngine.ProcessSprites(2000);
+  SE_GridDice.refreshSurface (SE_GridDice);
   if SelectedPlayer = nil then Exit;
 
   aCellList:= TList<TPoint>.Create;
@@ -3289,6 +3318,8 @@ begin
   PanelCombatLog.Left :=  (PanelBack.Width div 2 ) - (PanelCombatLog.Width div 2 );   ;
   SE_GridDice.ClearData ;
   SE_GridDice.RowCount := 1;
+  SE_GridDice.CellsEngine.ProcessSprites(2000);
+  SE_GridDice.refreshSurface (SE_GridDice);
   if SelectedPlayer = nil then Exit;
 
   aPlayerList:= TObjectList<TSoccerPlayer>.create(False);
@@ -3319,6 +3350,8 @@ begin
   PanelCombatLog.Left := PanelSkill.Left + PanelSkill.Width;
   SE_GridDice.ClearData ;
   SE_GridDice.RowCount := 1;
+  SE_GridDice.CellsEngine.ProcessSprites(2000);
+  SE_GridDice.refreshSurface (SE_GridDice);
   if SelectedPlayer = nil then Exit;
   Modifier := 0;
   aDoor := Mybrain.GetOpponentDoor ( SelectedPlayer );
@@ -3724,6 +3757,8 @@ procedure Tform1.PrepareAnim;
 begin
   SE_GridDice.ClearData ;
   SE_GridDice.RowCount :=1;
+  SE_GridDice.CellsEngine.ProcessSprites(2000);
+  SE_GridDice.refreshSurface (SE_GridDice);
  // RemoveChancesAndInfo;
   HideChances;
   AnimationScript.Reset ;
@@ -3824,7 +3859,7 @@ var
   Cur: Integer;
   TotPlayer,TotReserve: byte;
   aSEField, aSprite: se_Sprite;
-  i,aAge,aCellX,aCellY,aTeam,aGuidTeam,nMatchesPlayed,nMatchesLeft,pcount,rndY,aStamina: integer;
+  i,ii , aAge,aCellX,aCellY,aTeam,aGuidTeam,nMatchesPlayed,nMatchesLeft,pcount,rndY,aStamina: integer;
   DefaultCellX,DefaultCellY: ShortInt;
   aTalentID: Byte;
   aPlayer: TSoccerPlayer;
@@ -4099,7 +4134,7 @@ begin
     Attributes:= IntTostr( DefaultSpeed) + ',' + IntTostr( DefaultDefense) + ',' + IntTostr( DefaultPassing) + ',' + IntTostr( DefaultBallControl) + ',' +
                  IntTostr( DefaultShot) + ',' + IntTostr( DefaultHeading) ;
 
-    if FirstTime then
+    if FirstTime then begin
       aPlayer:= TSoccerPlayer.Create( aTeam,
                                  MyBrain.Score.TeamGuid [aTeam] ,
                                  nMatchesPlayed,
@@ -4107,10 +4142,25 @@ begin
                                  aName,
                                  aSurname,
                                  aTalents,
-                                 Attributes  )     // attributes e defaultAttrributes sono uguali
-    else
-      aPlayer := MyBrain.GetSoccerPlayer2 (aIds);
+                                 Attributes  );     // attributes e defaultAttrributes sono uguali
+      MyBrain.AddSoccerPlayer(aPlayer);       // lo aggiune per la prima ed unica volta
+    end
+    else begin
+      aPlayer := MyBrain.GetSoccerPlayer (aIds);
+      if aPlayer = nil then begin  // è entrato una riserva
+        // è per forza nelle riserve
+        aPlayer := MyBrain.GetSoccerPlayer2 (aIds);
+        MyBrain.AddSoccerPlayer(aPlayer);       // lo aggiune per la prima ed unica volta
+        for ii := MyBrain.lstSoccerReserve.Count -1 downto 0 do begin   // lo elimino dalle riserve
+          if MyBrain.lstSoccerReserve[ii].Ids = aPlayer.ids then begin
+            MyBrain.lstSoccerReserve.Delete(ii);                        // non elimina l'oggetto
+            Break;
+          end;
 
+        end;
+
+      end;
+    end;
     aPlayer.Stamina := aStamina;
     aPlayer.TalentId:= aTalentID;
 
@@ -4215,7 +4265,6 @@ begin
       aPlayer.Se_Sprite.Scale:= ScaleSprites;
       aPlayer.Se_Sprite.ModPriority := i+2;
       aPlayer.Se_Sprite.MoverData.Speed := 3;
-      MyBrain.AddSoccerPlayer(aPlayer);       // lo aggiune per la prima ed unica volta
 
     end;
 
@@ -4316,7 +4365,7 @@ begin
     Attributes:= IntTostr( DefaultSpeed) + ',' + IntTostr( DefaultDefense) + ',' + IntTostr( DefaultPassing) + ',' + IntTostr( DefaultBallControl) + ',' +
                  IntTostr( DefaultShot) + ',' + IntTostr( DefaultHeading) ;
 
-    if FirstTime then
+    if FirstTime then begin
       aPlayer:= TSoccerPlayer.Create( aTeam,
                                  MyBrain.Score.TeamGuid [aTeam] ,
                                  nMatchesPlayed,
@@ -4324,7 +4373,9 @@ begin
                                  aName,
                                  aSurname,
                                  aTalents,
-                                 Attributes  )     // attributes e defaultAttrributes sono uguali
+                                 Attributes  );     // attributes e defaultAttrributes sono uguali
+      MyBrain.AddSoccerReserve(aPlayer);
+    end
     else
       aPlayer := MyBrain.GetSoccerPlayer2 (aIds);
 
@@ -4396,7 +4447,6 @@ begin
       aPlayer.SE_sprite.Scale:= ScaleSprites;
       aPlayer.SE_sprite.ModPriority := i+2;
       aPlayer.SE_sprite.MoverData.Speed := 3;
-      MyBrain.AddSoccerReserve(aPlayer);
     end;
 
       //        aPlayer.aPlayerrite.SoundFolder := dir_sound;
@@ -4696,8 +4746,8 @@ begin
 
   SE_GridTime.AddProgressBar(2,0,100,clWhite,pbStandard);
 
-  SE_GridTime.CellsEngine.ProcessSprites(2000);
-  SE_GridTime.RefreshSurface (SE_GridTime);
+ // SE_GridTime.CellsEngine.ProcessSprites(2000);
+ // SE_GridTime.RefreshSurface (SE_GridTime);
 
 end;
 
@@ -8859,7 +8909,7 @@ begin
         SE_GridDice.refreshSurface (SE_GridDice);
         SE_interface.removeallSprites; // rimuovo le frecce,  non rimuovo gli highlight
         SE_interface.ProcessSprites(2000);
-         // HighLightFieldFriendly_hide;
+        HighLightFieldFriendly_hide;
 
         if WaitForXY_Shortpass then begin       // shp su friend o cella vuota
           ToEmptyCell := true;
@@ -8873,6 +8923,7 @@ begin
           end;
           SE_GridDiceWriteRow( SelectedPlayer.Team, UpperCase(Translate('attribute_Passing')) , SelectedPlayer.SurName , SelectedPlayer.Ids ,'VS',IntToStr(SelectedPlayer.Passing) );
           ArrowShowShpIntercept ( CellX, CellY, ToEmptyCell) ;
+          HighLightField( CellX, CellY, 0);
         end
         else if WaitForXY_Move then begin       // di 2 o più mostro intercept autocontrasto
 
@@ -8927,6 +8978,7 @@ begin
 
           SE_GridDiceWriteRow( SelectedPlayer.Team, UpperCase(Translate('attribute_Passing')) , SelectedPlayer.SurName , SelectedPlayer.Ids ,'VS',IntToStr(SelectedPlayer.Passing) );
           ArrowShowLopHeading( CellX, CellY, ToEmptyCell) ;
+          HighLightField( CellX, CellY, 0);
           if aFriend <> nil then begin
             SE_GridDiceWriteRow( aFriend.Team, UpperCase(Translate('attribute_BallControl')) , aFriend.SurName , aFriend.Ids ,'VS', IntToStr(aFriend.BallControl) );
             if aFriend.InCrossingArea then
@@ -8945,6 +8997,7 @@ begin
               SE_GridDiceWriteRow( SelectedPlayer.Team, UpperCase(Translate('attribute_Passing')) , SelectedPlayer.SurName , SelectedPlayer.Ids ,'VS',IntToStr(SelectedPlayer.Passing) );
               ArrowShowCrossingHeading( CellX, CellY) ;
               SE_GridDiceWriteRow( aFriend.Team, UpperCase(Translate('attribute_Heading')) , aFriend.SurName , aFriend.Ids ,'VS',IntToStr(aFriend.heading) );
+              HighLightField( CellX, CellY, 0);
             end;
           end
           else continue;
@@ -8959,6 +9012,8 @@ begin
             end;
 
           ArrowShowDribbling( anOpponent, CellX, CellY);
+          HighLightField( CellX, CellY, 0);
+
   //          CalculateChance  (SelectedPlayer.BallControl + SelectedPlayer.tal_Dribbling -2, anOpponent.Defense , chanceA,chanceB,chanceColorA,chanceColorB);
         end
         else if WaitForXY_PowerShot then begin // mostro opponent, intercept, e portiere
@@ -10169,6 +10224,8 @@ begin
         if LocalSeconds < 0 then LocalSeconds := 0;
 
         SE_GridTime.Cells[2,0].ProgressBarValue :=  (localseconds * 100) div 120;
+        //SE_GridTime.CellsEngine.ProcessSprites(2000);
+        //SE_GridTime.RefreshSurface (SE_GridTime);
 //        if ProgressSeconds.PercentDone  < 50 then
 //          ProgressSeconds.Font.Color := clWhite
 //          else ProgressSeconds.Font.Color := GetContrastColor(MyBrain.Score.DominantColor [  MyBrain.TeamTurn ]) ;
@@ -10440,6 +10497,8 @@ begin
    // SE_GridDice.Height := 16*9;// 9 righe
     SE_GridDice.Width := 1+70+110+60+110+71;//SE_GridDice.VirtualWidth;
     SE_GridDice.rows[0].Height := 16;
+    SE_GridDice.CellsEngine.ProcessSprites(2000);
+    SE_GridDice.refreshSurface (SE_GridDice);
 
 
   end

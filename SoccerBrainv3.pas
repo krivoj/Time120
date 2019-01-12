@@ -464,7 +464,7 @@ end;
     procedure SetMinute ( const Value: byte );
   protected
     public
-      lstSoccerPlayer : TObjectList<TSoccerPlayer>;
+      lstSoccerPlayer : TObjectList<TSoccerPlayer>;   // lista dei 22 iniziali + subentrati
       lstSoccerReserve : TObjectList<TSoccerPlayer>;
       LogUser: array [0..1] of integer;
       MMbraindata,MMbraindataZIP: TMemoryStream;
@@ -7944,7 +7944,7 @@ reason:='';
     AddSoccerPlayer(aPlayer);
 
     // lo cancello dalla lstreserve, è entrato in partita (per i conteggi finali)
-    for ii := 0 to lstSoccerReserve.Count -1 do begin
+    for ii := lstSoccerReserve.Count -1 downto 0 do begin
       if lstSoccerReserve[ii].Ids = aPlayer.ids then begin
         lstSoccerReserve.Delete(ii);
         Break;

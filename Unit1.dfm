@@ -695,7 +695,6 @@ object Form1: TForm1
         ShowPerformance = False
         VirtualWidth = 212
         Virtualheight = 294
-        Passive = True
         TabOrder = 1
         CellBorder = CellBorderNone
         CellBorderColor = clGray
