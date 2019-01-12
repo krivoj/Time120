@@ -262,11 +262,12 @@ object Form1: TForm1
         ShowPerformance = False
         VirtualWidth = 212
         Virtualheight = 212
+        Passive = True
         TabOrder = 0
         CellBorder = CellBorderNone
         Font.Charset = ANSI_CHARSET
         Font.Color = clWhite
-        Font.Height = -13
+        Font.Height = -11
         Font.Name = 'Verdana'
         Font.Style = [fsBold]
       end
@@ -694,6 +695,7 @@ object Form1: TForm1
         ShowPerformance = False
         VirtualWidth = 212
         Virtualheight = 294
+        Passive = True
         TabOrder = 1
         CellBorder = CellBorderNone
         CellBorderColor = clGray
@@ -1137,192 +1139,60 @@ object Form1: TForm1
         ShowPerformance = False
         VirtualWidth = 212
         Virtualheight = 212
+        Passive = True
         TabOrder = 0
         OnGridCellMouseDown = SE_GridAllBrainGridCellMouseDown
         CellBorder = CellBorderNone
         Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
+        Font.Color = clWhite
         Font.Height = -11
         Font.Name = 'Tahoma'
         Font.Style = []
       end
     end
     object PanelCorner: SE_Panel
-      Left = 833
-      Top = 108
+      Left = 1034
+      Top = 548
       Width = 316
       Height = 238
       Color = 8081721
       TabOrder = 6
       Visible = False
-      object AdvTeam: TAdvStringGrid
+      object SE_GridFreeKick: SE_Grid
         Left = 11
-        Top = 3
+        Top = 11
         Width = 286
         Height = 222
-        Cursor = crHandPoint
-        TabStop = False
-        BorderStyle = bsNone
-        Color = 8081721
-        ColCount = 4
-        DefaultColWidth = 120
-        DefaultRowHeight = 16
-        DrawingStyle = gdsClassic
-        FixedCols = 0
-        RowCount = 12
-        FixedRows = 0
-        Font.Charset = ANSI_CHARSET
+        MouseScrollRate = 1.000000000000000000
+        MouseWheelInvert = False
+        MouseWheelValue = 10
+        MouseWheelZoom = False
+        MousePan = False
+        MouseScroll = False
+        BackColor = 8081721
+        AnimationInterval = 20
+        GridInfoCell = False
+        GridVisible = False
+        GridColor = clSilver
+        GridCellWidth = 40
+        GridCellHeight = 30
+        GridCellsX = 10
+        GridCellsY = 4
+        GridHexSmallWidth = 10
+        CollisionDelay = 0
+        ShowPerformance = False
+        VirtualWidth = 212
+        Virtualheight = 212
+        Passive = True
+        TabOrder = 0
+        OnGridCellMouseDown = SE_GridFreeKickGridCellMouseDown
+        CellBorder = CellBorderNone
+        CellBorderColor = clGray
+        Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
-        Font.Name = 'Calibri'
+        Font.Name = 'Verdana'
         Font.Style = []
-        GridLineWidth = 0
-        Options = [goVertLine]
-        ParentFont = False
-        ParentShowHint = False
-        ScrollBars = ssNone
-        ShowHint = False
-        TabOrder = 0
-        HoverRow = True
-        HoverRowColor = clBlue
-        HoverRowColorTo = clBlue
-        HoverRowCells = [hcNormal, hcSelected]
-        OnClickCell = AdvTeamClickCell
-        DragDropSettings.ShowCells = False
-        DragDropSettings.OleAcceptFiles = False
-        DragDropSettings.OleAcceptText = False
-        DragDropSettings.OleAcceptURLs = False
-        HTMLHint = True
-        ActiveCellFont.Charset = DEFAULT_CHARSET
-        ActiveCellFont.Color = clWindowText
-        ActiveCellFont.Height = -11
-        ActiveCellFont.Name = 'Tahoma'
-        ActiveCellFont.Style = [fsBold]
-        ControlLook.FixedGradientHoverFrom = clGray
-        ControlLook.FixedGradientHoverTo = clWhite
-        ControlLook.FixedGradientDownFrom = clGray
-        ControlLook.FixedGradientDownTo = clSilver
-        ControlLook.DropDownHeader.Font.Charset = DEFAULT_CHARSET
-        ControlLook.DropDownHeader.Font.Color = clWindowText
-        ControlLook.DropDownHeader.Font.Height = -11
-        ControlLook.DropDownHeader.Font.Name = 'Tahoma'
-        ControlLook.DropDownHeader.Font.Style = []
-        ControlLook.DropDownHeader.Visible = True
-        ControlLook.DropDownHeader.Buttons = <>
-        ControlLook.DropDownFooter.Font.Charset = DEFAULT_CHARSET
-        ControlLook.DropDownFooter.Font.Color = clWindowText
-        ControlLook.DropDownFooter.Font.Height = -11
-        ControlLook.DropDownFooter.Font.Name = 'Tahoma'
-        ControlLook.DropDownFooter.Font.Style = []
-        ControlLook.DropDownFooter.Visible = True
-        ControlLook.DropDownFooter.Buttons = <>
-        EnableHTML = False
-        EnableWheel = False
-        EnhRowColMove = False
-        Filter = <>
-        FilterDropDown.Font.Charset = DEFAULT_CHARSET
-        FilterDropDown.Font.Color = clWindowText
-        FilterDropDown.Font.Height = -11
-        FilterDropDown.Font.Name = 'Tahoma'
-        FilterDropDown.Font.Style = []
-        FilterDropDown.TextChecked = 'Checked'
-        FilterDropDown.TextUnChecked = 'Unchecked'
-        FilterDropDownClear = '(All)'
-        FilterEdit.TypeNames.Strings = (
-          'Starts with'
-          'Ends with'
-          'Contains'
-          'Not contains'
-          'Equal'
-          'Not equal'
-          'Larger than'
-          'Smaller than'
-          'Clear')
-        FixedColWidth = 120
-        FixedRowHeight = 16
-        FixedFont.Charset = DEFAULT_CHARSET
-        FixedFont.Color = clWindowText
-        FixedFont.Height = -11
-        FixedFont.Name = 'Tahoma'
-        FixedFont.Style = [fsBold]
-        FloatFormat = '%.2f'
-        HoverButtons.Buttons = <>
-        HoverButtons.Position = hbLeftFromColumnLeft
-        Hovering = True
-        HTMLSettings.ImageFolder = 'images'
-        HTMLSettings.ImageBaseName = 'img'
-        IntelliPan = ipNone
-        IntelliZoom = False
-        MouseActions.AutoSizeColOnDblClick = False
-        Navigation.AdvanceOnEnterLoop = False
-        Navigation.AdvanceAutoEdit = False
-        Navigation.AdvanceSkipReadOnlyCells = False
-        Navigation.AutoComboSelect = False
-        Navigation.AllowCtrlEnter = False
-        Navigation.AllowClipboardRowGrow = False
-        Navigation.AllowClipboardColGrow = False
-        Navigation.EditSelectAll = False
-        Navigation.ComboGetUpDown = False
-        Navigation.CursorWalkAlwaysEdit = False
-        Navigation.LeftRightRowSelect = False
-        Navigation.CopyHTMLTagsToClipboard = False
-        PrintSettings.DateFormat = 'dd/mm/yyyy'
-        PrintSettings.Font.Charset = DEFAULT_CHARSET
-        PrintSettings.Font.Color = clWindowText
-        PrintSettings.Font.Height = -11
-        PrintSettings.Font.Name = 'Tahoma'
-        PrintSettings.Font.Style = []
-        PrintSettings.FixedFont.Charset = DEFAULT_CHARSET
-        PrintSettings.FixedFont.Color = clWindowText
-        PrintSettings.FixedFont.Height = -11
-        PrintSettings.FixedFont.Name = 'Tahoma'
-        PrintSettings.FixedFont.Style = []
-        PrintSettings.HeaderFont.Charset = DEFAULT_CHARSET
-        PrintSettings.HeaderFont.Color = clWindowText
-        PrintSettings.HeaderFont.Height = -11
-        PrintSettings.HeaderFont.Name = 'Tahoma'
-        PrintSettings.HeaderFont.Style = []
-        PrintSettings.FooterFont.Charset = DEFAULT_CHARSET
-        PrintSettings.FooterFont.Color = clWindowText
-        PrintSettings.FooterFont.Height = -11
-        PrintSettings.FooterFont.Name = 'Tahoma'
-        PrintSettings.FooterFont.Style = []
-        PrintSettings.PageNumSep = '/'
-        SearchFooter.FindNextCaption = 'Find &next'
-        SearchFooter.FindPrevCaption = 'Find &previous'
-        SearchFooter.Font.Charset = DEFAULT_CHARSET
-        SearchFooter.Font.Color = clWindowText
-        SearchFooter.Font.Height = -11
-        SearchFooter.Font.Name = 'Tahoma'
-        SearchFooter.Font.Style = []
-        SearchFooter.HighLightCaption = 'Highlight'
-        SearchFooter.HintClose = 'Close'
-        SearchFooter.HintFindNext = 'Find next occurrence'
-        SearchFooter.HintFindPrev = 'Find previous occurrence'
-        SearchFooter.HintHighlight = 'Highlight occurrences'
-        SearchFooter.MatchCaseCaption = 'Match case'
-        ShowSelection = False
-        ShowDesignHelper = False
-        SortSettings.DefaultFormat = ssAutomatic
-        Version = '7.9.0.3'
-        ColWidths = (
-          120
-          120
-          120
-          120)
-        RowHeights = (
-          16
-          16
-          16
-          16
-          16
-          16
-          16
-          16
-          16
-          16
-          16
-          16)
       end
     end
     object PanelLogin: SE_Panel
@@ -1695,6 +1565,7 @@ object Form1: TForm1
         ShowPerformance = False
         VirtualWidth = 212
         Virtualheight = 212
+        Passive = True
         TabOrder = 0
         CellBorder = CellBorderNone
         CellBorderColor = clGray
@@ -2006,6 +1877,7 @@ object Form1: TForm1
         ShowPerformance = False
         VirtualWidth = 212
         Virtualheight = 212
+        Passive = True
         TabOrder = 0
         CellBorder = CellBorderNone
         CellBorderColor = clGray
@@ -2052,6 +1924,7 @@ object Form1: TForm1
         ShowPerformance = False
         VirtualWidth = 212
         Virtualheight = 212
+        Passive = True
         TabOrder = 0
         OnGridCellMouseDown = SE_GridSkillGridCellMouseDown
         OnGridCellMouseMove = SE_GridSkillGridCellMouseMove
@@ -2118,6 +1991,7 @@ object Form1: TForm1
         ShowPerformance = False
         VirtualWidth = 212
         Virtualheight = 212
+        Passive = True
         TabOrder = 0
         OnGridCellMouseDown = SE_GridXP0GridCellMouseDown
         OnGridCellMouseMove = SE_GridXP0GridCellMouseMove
@@ -2835,15 +2709,15 @@ object Form1: TForm1
     Interval = 30
     KeepAlive = True
     OnTimer = mainThreadTimer
-    Left = 880
-    Top = 832
+    Left = 768
+    Top = 1016
   end
   object ThreadCurMove: SE_ThreadTimer
     Interval = 300
     KeepAlive = True
     OnTimer = ThreadCurMoveTimer
-    Left = 920
-    Top = 928
+    Left = 824
+    Top = 1016
   end
   object FolderDialog1: TFolderDialog
     Caption = 'Select Folder Replay'
