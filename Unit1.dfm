@@ -236,7 +236,7 @@ object Form1: TForm1
         MouseScrollRate = 1.000000000000000000
         MouseWheelInvert = False
         MouseWheelValue = 10
-        MouseWheelZoom = True
+        MouseWheelZoom = False
         MousePan = True
         MouseScroll = False
         BackColor = 8081721
@@ -898,6 +898,7 @@ object Form1: TForm1
         Font.Style = [fsBold]
         Margin = 4
         ParentFont = False
+        OnClick = btnSelCountryTeamClick
       end
       object SE_GridCountryTeam: SE_Grid
         Left = 3
@@ -908,7 +909,7 @@ object Form1: TForm1
         MouseScrollRate = 1.000000000000000000
         MouseWheelInvert = False
         MouseWheelValue = 10
-        MouseWheelZoom = True
+        MouseWheelZoom = False
         MousePan = True
         MouseScroll = False
         BackColor = 8081721
@@ -2193,7 +2194,7 @@ object Form1: TForm1
         MouseScrollRate = 1.000000000000000000
         MouseWheelInvert = False
         MouseWheelValue = 10
-        MouseWheelZoom = True
+        MouseWheelZoom = False
         MousePan = True
         MouseScroll = False
         BackColor = 8081721

@@ -1,4 +1,5 @@
 ﻿unit Unit1;
+{$DEFINE MYDAC}
 {$DEFINE TOOLS}
 // conflitto eurekalog con dxsound. rimuovere eurekalog nella  build finale
 
@@ -342,6 +343,7 @@ type
     procedure btnStandingsClick(Sender: TObject);
     procedure SE_GridFreeKickGridCellMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; CellX, CellY: Integer; Sprite: SE_Sprite);
     procedure CnColorGrid1SelectCell(Sender: TObject; ACol, ARow: Integer; var CanSelect: Boolean);
+    procedure btnSelCountryTeamClick(Sender: TObject);
 
 
   private
@@ -460,6 +462,7 @@ end;
 
 var
   Form1: TForm1;
+  SelCountryTeam: string;
   MutexAnimation, MutexMouseMove : Cardinal;
   oldCellXMouseMove, oldCellYMouseMove: Integer;
   dir_log: string;
@@ -796,6 +799,21 @@ begin
 
 end;
 
+
+procedure TForm1.btnSelCountryTeamClick(Sender: TObject);
+begin
+  // una volta all'inizio del gioco
+  if (GCD <= 0) and ( StrToIntDef(SelCountryTeam,0) <> 0 ) then begin
+    if GameScreen =  ScreenSelectCountry then
+    tcp.SendStr( 'selectedcountry,' + SelCountryTeam + EndofLine)
+    else if GameScreen =  ScreenSelectTeam then begin
+      WAITING_GETFORMATION:= True;
+      tcp.SendStr(  'selectedteam,' + SelCountryTeam + EndofLine);
+    end;
+    GCD := GCD_DEFAULT;
+  end;
+
+end;
 
 procedure TForm1.btnsell0Click(Sender: TObject);
 var
@@ -6272,7 +6290,7 @@ begin
       if SE_GridAllBrain.Cells[0,CellY].ids <> ''  then begin
         if (not viewMatch)  then begin
           gameScreen := ScreenWaitingWatchLive ;
-          MemoC.Lines.Add('>tcp: viewmatch,' + SE_GridAllBrain.Cells[0,CellY].ids ); // col 0 = brainIds
+          MemoC.Lines.Add('--->Tcp : viewmatch,' + SE_GridAllBrain.Cells[0,CellY].ids ); // col 0 = brainIds
           tcp.SendStr(  'viewmatch,' + SE_GridAllBrain.Cells[0,CellY].ids + EndofLine );
           viewMatch := True;
           SetGlobalCursor( crHourGlass);
@@ -6285,19 +6303,19 @@ begin
 
 end;
 
-procedure TForm1.SE_GridCountryTeamGridCellMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; CellX, CellY: Integer;
-  Sprite: SE_Sprite);
+procedure TForm1.SE_GridCountryTeamGridCellMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; CellX, CellY: Integer;  Sprite: SE_Sprite);
+var
+  y: Integer;
 begin
-  // una volta all'inizio del gioco
-  if GCD <= 0 then begin
-    if GameScreen =  ScreenSelectCountry then
-    tcp.SendStr( 'selectedcountry,' + SE_GridCountryTeam.Cells[0,CellY].ids + EndofLine)
-    else if GameScreen =  ScreenSelectTeam then begin
-      WAITING_GETFORMATION:= True;
-      tcp.SendStr(  'selectedteam,' + SE_GridCountryTeam.Cells[0,CellY].ids + EndofLine);
-    end;
-    GCD := GCD_DEFAULT;
+
+  SelCountryTeam := SE_GridCountryTeam.Cells[0, CellY].ids;
+  for y:= SE_GridCountryTeam.RowCount -1 downto 0 do begin
+    SE_GridCountryTeam.Cells[0,y].FontColor := clWhite;
   end;
+
+  SE_GridCountryTeam.Cells[0,CellY].FontColor := clYellow;
+  SE_GridCountryTeam.CellsEngine.ProcessSprites(20);
+  SE_GridCountryTeam.refreshSurface ( SE_GridCountryTeam );
 
 end;
 
@@ -7072,7 +7090,7 @@ procedure TForm1.btnWatchLiveClick(Sender: TObject);
 begin
 
     if GCD <= 0 then begin
-      MemoC.Lines.Add('>tcp: listmatch'  );
+      MemoC.Lines.Add('--->Tcp : listmatch'  );
       if (not viewMatch) and (not LiveMatch) then tcp.SendStr( 'listmatch' + EndofLine );
       GCD := GCD_DEFAULT;
     end;
@@ -9707,7 +9725,7 @@ begin
     Ts.StrictDelimiter := True;
     ts.CommaText := RemoveEndOfLine(String(Buf));
 //    ts.CommaText := RemoveEndOfLine(aaa);
-    MemoC.Lines.Add('<tcp:'+ Ts.CommaText);
+    MemoC.Lines.Add('<---Tcp:'+ Ts.CommaText);
     if rightstr(ts[0],4) = 'guid' then begin   // guid,guidteam,teamname,nextha,mi
       MyGuidTeam := StrToInt(ts[1]);
       MyGuidTeamName := ts[2];
@@ -9961,8 +9979,8 @@ begin
         SE_GridCountryTeam.Cells[0,y].FontName := 'Verdana';
         SE_GridCountryTeam.Cells[0,y].FontSize := 8;
         SE_GridCountryTeam.cells [0,y].FontColor := clWhite;
-        SE_GridCountryTeam.Cells[0,y].Ids:= TsWorldCountries.ValueFromIndex[y];
-        SE_GridCountryTeam.Cells[0,y].Text:= TsWorldCountries.Names[y];
+        SE_GridCountryTeam.Cells[0,y].Text:= TsWorldCountries.ValueFromIndex[y];
+        SE_GridCountryTeam.Cells[0,y].Ids:= TsWorldCountries.Names[y];
       end;
     end
     else if fGameScreen = ScreenSelectTeam then begin
@@ -9973,14 +9991,14 @@ begin
         SE_GridCountryTeam.Cells[0,y].FontName := 'Verdana';
         SE_GridCountryTeam.Cells[0,y].FontSize := 8;
         SE_GridCountryTeam.cells [0,y].FontColor := clWhite;
-        SE_GridCountryTeam.Cells[0,y].ids:= TsNationTeams.ValueFromIndex[y];
-        SE_GridCountryTeam.Cells[0,y].Text:= TsNationTeams.Names[y];
+        SE_GridCountryTeam.Cells[0,y].Text:= TsNationTeams.ValueFromIndex[y];
+        SE_GridCountryTeam.Cells[0,y].Ids:= TsNationTeams.Names[y];
       end;
     end;
 
-    SE_GridCountryTeam.CellsEngine.ProcessSprites(20);
-    SE_GridCountryTeam.refreshSurface ( SE_GridAllBrain );
     PanelCountryTeam.Visible := True;
+    SE_GridCountryTeam.CellsEngine.ProcessSprites(20);
+    SE_GridCountryTeam.refreshSurface ( SE_GridCountryTeam );
 
   end
   else if fGameScreen = ScreenWaitingFormation then begin // si accede cliccando back - settcpformation, in attesa
