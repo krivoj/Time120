@@ -115,10 +115,10 @@ object FormServer: TFormServer
   end
   object CheckBox2: TCheckBox
     Left = 8
-    Top = 373
+    Top = 333
     Width = 97
     Height = 17
-    Caption = 'Log all '
+    Caption = 'Log all in'
     TabOrder = 9
   end
   object SE_GridLiveMatches: SE_Grid

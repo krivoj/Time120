@@ -5,7 +5,6 @@
 //{$DEFINE  Setposprsgol}
 //{$DEFINE  Setposprscorner}
 unit SoccerBrainv3;
-   { TODO : tutti i clicli lstsoccerpolayer.count e simili in downto 0 }
    { TODO :  le db query uppdate senza +1 locale, ma direttammete le deve fare mysql }
    { TODO  : Gameplay: Valutare se Pos (tiro potente) può innescare autogol }
 
@@ -14,6 +13,7 @@ unit SoccerBrainv3;
    { TODO valutare aggiiunta talento agression e talento buff reparto }
    { TODO creare più formazioni  }
    { TODO verificare tackle not underpressure}
+   { TODO : verificare bug pressing }
 
       { TODO  : valutare utilità marketvalue team sul db }
       { TODO  : cmd_login = 0 cmd_plm=101. tutti i validate semplificati. da valutare. ordinrali per performance }

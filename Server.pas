@@ -5,7 +5,7 @@ unit Server;
 // procedure MatchThreadTimer <-- in caso di bot o disconessione, esegue l'intelligenza artificiale TSoccerBrain.AI_think
 // procedure CreateAndLoadMatch <-- crea una partita (brain)
 
-{$DEFINE MYDAC}    //  uso devart Mydac.
+//{$DEFINE MYDAC}    //  uso devart Mydac.
 {$DEFINE BOTS}     // se uso i bot o solo partite di player reali
 {$DEFINE useMemo}  // se uso il debug a video delle informazioni importanti
 interface
@@ -13,7 +13,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics, System.Hash , DateUtils, ZLIBEX,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Strutils,generics.collections, generics.defaults, Data.DB,
-  Vcl.ExtCtrls, Vcl.Mask, Vcl.Grids, inifiles,
+  Vcl.ExtCtrls, Vcl.Mask, Vcl.Grids, inifiles, System.Types,
 
   Soccerbrainv3,
 
@@ -23,13 +23,14 @@ uses
   DSE_theater,
   DSE_GRID,
 
+  {$IFDEF  MYDAC}
   MyAccess, DBAccess,
-
-  {$IFNDEF  MYDAC}
   FireDAC.Stan.Intf,  FireDAC.Stan.Option, FireDAC.Stan.Error,  FireDAC.UI.Intf, FireDAC.Phys.Intf, FireDAC.Stan.Def, FireDAC.Stan.Pool,
+  {$ELSE}
   FireDAC.Stan.Async,  FireDAC.Phys,  FireDAC.Comp.Client,
   FireDAC.Phys.MySQLDef, FireDAC.Phys.MySQL,FireDAC.DApt, FireDAC.VCLUI.Wait,
   {$ENDIF}
+
 
   OverbyteIcsWndControl, OverbyteIcsWSocket, OverbyteIcsWSocketS, OverbyteIcsWSocketTS;
 
@@ -429,7 +430,7 @@ begin
   {$ELSE}
   ConnAccount :=TFDConnection.Create(nil);
   ConnAccount.Params.DriverID := 'MySQL';
-  ConnAccount.Params.Add(MySqlServerAccount);
+  ConnAccount.Params.Add('Server=' + MySqlServerAccount);
   ConnAccount.Params.Database := 'realmd';
   ConnAccount.Params.UserName := 'root';
   ConnAccount.Params.Password := 'root';
@@ -491,7 +492,7 @@ begin
   {$ELSE}
   ConnAccount :=TFDConnection.Create(nil);
   ConnAccount.Params.DriverID := 'MySQL';
-  ConnAccount.Params.Add(MySqlServerAccount);
+  ConnAccount.Params.Add('Server=' + MySqlServerAccount);
   ConnAccount.Params.Database := 'realmd';
   ConnAccount.Params.UserName := 'root';
   ConnAccount.Params.Password := 'root';
@@ -500,7 +501,7 @@ begin
 
   ConnGame :=TFDConnection.Create(nil);
   ConnGame.Params.DriverID := 'MySQL';
-  ConnGame.Params.Add(MySqlServerGame);
+  ConnGame.Params.Add('Server=' + MySqlServerGame);
   ConnGame.Params.Database := 'game';
   ConnGame.Params.UserName := 'root';
   ConnGame.Params.Password := 'root';
@@ -593,7 +594,6 @@ var
   i,ii,SpectatorCliId: Integer;
   NewData: string;
   MyQueryCheat: {$IFDEF  MYDAC}TMyQuery{$ELSE}TFDQuery{$ENDIF};
-  tmp: Integer;
   ConnAccount : {$IFDEF  MYDAC}TMyConnection{$ELSE}TFDConnection{$ENDIF};
 begin
 
@@ -609,7 +609,7 @@ begin
   {$ELSE}
     ConnAccount :=TFDConnection.Create(nil);
     ConnAccount.Params.DriverID := 'MySQL';
-    ConnAccount.Params.Add(MySqlServerAccount);
+    ConnAccount.Params.Add('Server=' + MySqlServerAccount);
     ConnAccount.Params.Database := 'realmd';
     ConnAccount.Params.UserName := 'root';
     ConnAccount.Params.Password := 'root';
@@ -682,7 +682,7 @@ begin
   {$ELSE}
             ConnAccount :=TFDConnection.Create(nil);
             ConnAccount.Params.DriverID := 'MySQL';
-            ConnAccount.Params.Add(MySqlServerAccount);
+            ConnAccount.Params.Add('Server=' + MySqlServerAccount);
             ConnAccount.Params.Database := 'realmd';
             ConnAccount.Params.UserName := 'root';
             ConnAccount.Params.Password := 'root';
@@ -791,7 +791,7 @@ begin
     {$ELSE}
     ConnGame :=TFDConnection.Create(nil);
     ConnGame.Params.DriverID := 'MySQL';
-    ConnGame.Params.Add(MySqlServerGame);
+    ConnGame.Params.Add('Server=' + MySqlServerGame);
     ConnGame.Params.Database := 'game';
     ConnGame.Params.UserName := 'root';
     ConnGame.Params.Password := 'root';
@@ -1546,6 +1546,7 @@ begin
 
   ini := TIniFile.Create  ( ExtractFilePath(Application.ExeName) + 'server.ini');
   dir_log := ini.ReadString('setup','dir_log','');
+  CheckBox2.Caption := 'Log All: ' + dir_log;
 
   MySqlServerGame := ini.ReadString('Tcp','Address','localhost');
   MySqlServerWorld := ini.ReadString('Tcp','Address','localhost');
@@ -1561,7 +1562,7 @@ begin
   {$ELSE}
   ConnGame :=TFDConnection.Create(nil);
   ConnGame.Params.DriverID := 'MySQL';
-  ConnGame.Params.Add(MySqlServerGame);
+  ConnGame.Params.Add('Server=' + MySqlServerGame);
   ConnGame.Params.Database := 'game';
   ConnGame.Params.UserName := 'root';
   ConnGame.Params.Password := 'root';
@@ -2010,7 +2011,7 @@ begin
   {$ELSE}
             ConnGame :=TFDConnection.Create(nil);
             ConnGame.Params.DriverID := 'MySQL';
-            ConnGame.Params.Add(MySqlServerGame);
+            ConnGame.Params.Add('Server=' + MySqlServerGame);
             ConnGame.Params.Database := 'game';
             ConnGame.Params.UserName := 'root';
             ConnGame.Params.Password := 'root';
@@ -2252,7 +2253,7 @@ begin
   {$ELSE}
           ConnAccount :=TFDConnection.Create(nil);
           ConnAccount.Params.DriverID := 'MySQL';
-          ConnAccount.Params.Add(MySqlServerAccount);
+          ConnAccount.Params.Add('Server=' + MySqlServerAccount);
           ConnAccount.Params.Database := 'realmd';
           ConnAccount.Params.UserName := 'root';
           ConnAccount.Params.Password := 'root';
@@ -2301,7 +2302,7 @@ begin
   {$ELSE}
         ConnAccount :=TFDConnection.Create(nil);
         ConnAccount.Params.DriverID := 'MySQL';
-        ConnAccount.Params.Add(MySqlServerAccount);
+        ConnAccount.Params.Add('Server=' + MySqlServerAccount);
         ConnAccount.Params.Database := 'realmd';
         ConnAccount.Params.UserName := 'root';
         ConnAccount.Params.Password := 'root';
@@ -2326,11 +2327,11 @@ begin
 end;
 function TFormServer.TrylevelUp ( ids, attrortalentid: string; s,d,p,b,sh,h,  chanceA,chanceT,talentID,Age: integer; history,xp:string ): TLevelUp;
 var
-  MyQueryGamePlayers: TMyQuery;
   arnd: Integer;
   aPlayer: TSoccerPlayer;
   tsXP,tsXPHistory: TStringList;
-  ConnGame : TMyConnection;
+  ConnGame : {$IFDEF MYDAC}TMyConnection{$ELSE}TFDConnection{$ENDIF};
+  MyQueryGamePlayers: {$IFDEF MYDAC}TMyQuery{$ELSE}TFDQuery{$ENDIF};
   label myexit;
 begin
   // il player è già validato e conosco le chance e le altre info che mi servono
@@ -2340,7 +2341,7 @@ begin
   aRnd := RndGenerate( 100 );
 //ultimo valore 6 1% . calcolare numero calciatori reali a 6 su 500 calciatori
 //Speed e heading incrementano al massimo di 1 e mai più
-//Scelta direzione  Difesa esclude tiro e viceversa
+//Scelta direzione: Difesa esclude tiro e viceversa
 
 
   // creo un player virtuale
@@ -2735,16 +2736,31 @@ begin
 
 //   le commatext sono già pronte per storarle
 //  devo aggiornare anche in caso di false perchè ho speso i punti XP
+    {$IFDEF MYDAC}
     ConnGame := TMyConnection.Create(nil);
     ConnGame.Server := MySqlServerGame;
     ConnGame.Username:='root';
     Conngame.Password:='root';
     ConnGame.Database:='game';
     ConnGame.Connected := True;
+    {$ELSE}
+    ConnGame :=TFDConnection.Create(nil);
+    ConnGame.Params.DriverID := 'MySQL';
+    ConnGame.Params.Add('Server=' + MySqlServerGame);
+    ConnGame.Params.Database := 'game';
+    ConnGame.Params.UserName := 'root';
+    ConnGame.Params.Password := 'root';
+    ConnGame.LoginPrompt := False;
+    ConnGame.Connected := True;
+    {$ENDIF}
 
   if Result.value then begin
 
+    {$IFDEF MYDAC}
     MyQueryGamePlayers := TMyQuery.Create(nil);
+    {$ELSE}
+    MyQueryGamePlayers := TFDQuery.Create(nil);
+    {$ENDIF}
     MyQueryGamePlayers.Connection := ConnGame;   // game
 
     MyQueryGamePlayers.SQL.text := 'UPDATE game.players SET ' +
@@ -2761,7 +2777,11 @@ begin
     MyQueryGamePlayers.Free;
   end
   else begin  // aggirno solo la perdita di xp
+    {$IFDEF MYDAC}
     MyQueryGamePlayers := TMyQuery.Create(nil);
+    {$ELSE}
+    MyQueryGamePlayers := TFDQuery.Create(nil);
+    {$ENDIF}
     MyQueryGamePlayers.Connection := ConnGame;   // game
 
     MyQueryGamePlayers.SQL.text := 'UPDATE game.players SET ' +
@@ -2828,30 +2848,46 @@ var
   CompressedStream: TZCompressionStream;
   MM, MM2 : TMemoryStream;
   SS: TStringStream;
-  MyQueryTeam: TMyQuery;
-  MyQueryGamePlayers: TMyQuery;
-  ini : TIniFile;
   i,age: Integer;
-  AT: string;
   tmps: string[255];
   tmpi: Integer;
   tmpb: Byte;
-  ConnGame : TMyConnection;
+  ConnGame :{$IFDEF  MYDAC} TMyConnection{$ELSE}TFDConnection{$ENDIF};
+  MyQueryTeam, MyQueryGamePlayers: {$IFDEF  MYDAC}TMyQuery{$ELSE}TFDQuery{$ENDIF};
   face: integer;
 begin
 
+  {$IFDEF  MYDAC}
   ConnGame := TMyConnection.Create(nil);
   ConnGame.Server := MySqlServerGame;
   ConnGame.Username:='root';
   Conngame.Password:='root';
   ConnGame.Database:='game';
   ConnGame.Connected := True;
+  {$ELSE}
+  ConnGame :=TFDConnection.Create(nil);
+  ConnGame.Params.DriverID := 'MySQL';
+  ConnGame.Params.Add('Server=' + MySqlServerGame);
+  ConnGame.Params.Database := 'game';
+  ConnGame.Params.UserName := 'root';
+  ConnGame.Params.Password := 'root';
+  ConnGame.LoginPrompt := False;
+  ConnGame.Connected := True;
+  {$ENDIF}
+
   // Team in generale
+  {$IFDEF  MYDAC}
   MyQueryTeam := TMyQuery.Create(nil);
   MyQueryTeam.Connection := ConnGame;   // game
   MyQueryTeam.SQL.text := 'SELECT guid, worldteam, teamName, uniforma, uniformh, nextha, mi, points,matchesplayed,money,rank FROM game.teams where guid = ' + IntToStr(GuidTeam) ;
-
   MyQueryTeam.Execute ;
+  {$ELSE}
+  MyQueryTeam := TFDQuery.Create(nil);
+  MyQueryTeam.Connection := ConnGame;   // game
+  MyQueryTeam.Open ( 'SELECT guid, worldteam, teamName, uniforma, uniformh, nextha, mi, points,matchesplayed,money,rank FROM game.teams where guid = ' + IntToStr(GuidTeam) );
+  {$ENDIF}
+
+
   MM := TMemoryStream.Create;
   MM.Size:=0;
 
@@ -2880,6 +2916,7 @@ begin
 
 
   // Singoli players
+  {$IFDEF  MYDAC}
   MyQueryGamePlayers := TMyQuery.Create(nil);
   MyQueryGamePlayers.Connection := ConnGame;   // game
   MyQueryGamePlayers.SQL.text := 'SELECT guid,Team,Name,Matches_Played,Matches_Left,'+
@@ -2888,6 +2925,15 @@ begin
                                                   ' from game.players WHERE team =' + IntToStr(GuidTeam);
 
   MyQueryGamePlayers.Execute ;
+  {$ELSE}
+  MyQueryGamePlayers := TFDQuery.Create(nil);
+  MyQueryGamePlayers.Connection := ConnGame;   // game
+  MyQueryGamePlayers.Open ( 'SELECT guid,Team,Name,Matches_Played,Matches_Left,'+
+                                                  'talent, speed,defense,passing,ballcontrol,heading,shot,stamina,'+
+                                                  'formation_x,formation_y,injured,totyellowcard,disqualified,xp,history,onmarket,face'+
+                                                  ' from game.players WHERE team =' + IntToStr(GuidTeam));
+  {$ENDIF}
+
   tmpi:= MyQueryGamePlayers.RecordCount;
   MM.Write( @tmpi , SizeOf(Byte) ) ;
 
@@ -2952,7 +2998,6 @@ begin
 
   end;
 
-  ini.Free;
   MyQueryGamePlayers.Free;
   ConnGame.Connected := false;
   ConnGame.Free;
@@ -2984,7 +3029,7 @@ var
   MM,MM2: TMemoryStream;
 
 begin
-            { TODO -cfuturismi : in futuro overload con nazione, team username ecc...una query in memoria }
+            { TODO : in futuro overload con nazione, team username ecc...una query in memoria }
 
   WaitForSingleObject(Mutex,INFINITE);
   if BrainManager.lstbrain.count > 0 then begin
@@ -3039,28 +3084,47 @@ var
   SS: TStringStream;
   i: Integer;
   MM,MM2: TMemoryStream;
-  MyQuerymarket: TMyQuery;
   mValue : Integer;
-  name,history : Shortstring;
+  name : Shortstring;
   guidplayer, sellprice ,  speed ,  defense,  passing, ballcontrol, shot, heading, talent,matches_played,matches_left : Integer;
   Count: Integer;
-  ConnGame : TMyConnection;
+  ConnGame : {$IFDEF  MYDAC}TMyConnection{$ELSE}TFDConnection{$ENDIF};
+  MyQuerymarket: {$IFDEF  MYDAC}TMyQuery{$ELSE}TFDQuery{$ENDIF};
 begin
 // MyTeam è except , non trova i suoi giocatori in vendita
+  {$IFDEF  MYDAC}
   ConnGame := TMyConnection.Create(nil);
   ConnGame.Server := MySqlServerGame;
   ConnGame.Username:='root';
   Conngame.Password:='root';
   ConnGame.Database:='game';
   ConnGame.Connected := True;
+  {$ELSE}
+  ConnGame :=TFDConnection.Create(nil);
+  ConnGame.Params.DriverID := 'MySQL';
+  ConnGame.Params.Add('Server=' + MySqlServerGame);
+  ConnGame.Params.Database := 'game';
+  ConnGame.Params.UserName := 'root';
+  ConnGame.Params.Password := 'root';
+  ConnGame.LoginPrompt := False;
+  ConnGame.Connected := True;
+  {$ENDIF}
 
 
+
+  {$IFDEF  MYDAC}
   MyQuerymarket := TMyQuery.Create(nil);
   MyQuerymarket.Connection := ConnGame;   // game
-
   MyQuerymarket.SQL.text := 'SELECT *  FROM game.market where sellprice <=' + IntToStr(Maxvalue) + ' and guidteam <> ' +
                              IntToStr( MyTeam)  +' limit 40';
   MyQuerymarket.Execute ;
+  {$ELSE}
+  MyQuerymarket := TFDQuery.Create(nil);
+  MyQuerymarket.Connection := ConnGame;   // game
+  MyQuerymarket.Open ( 'SELECT *  FROM game.market where sellprice <=' + IntToStr(Maxvalue) + ' and guidteam <> ' +
+                             IntToStr( MyTeam)  +' limit 40');
+  {$ENDIF}
+
 
   Count := MyQuerymarket.RecordCount;
 
@@ -3126,25 +3190,42 @@ end;
 
 function TFormServer.GetMarketValueTeam ( Guidteam: Integer ) : Integer;
 var
-  MyQueryGamePlayers: TMyQuery;
+  MyQueryGamePlayers:{$IFDEF  MYDAC} TMyQuery{$ELSE}TFDQuery{$ENDIF};
   i,pTot: Integer;
-  ConnGame : TMyConnection;
+  ConnGame : {$IFDEF  MYDAC}TMyConnection{$ELSE}TFDConnection{$ENDIF};
 begin
   Result := 0;
   // Singoli players   . uguale a getmarketvalue
+  {$IFDEF  MYDAC}
   ConnGame := TMyConnection.Create(nil);
   ConnGame.Server := MySqlServerGame;
   ConnGame.Username:='root';
   Conngame.Password:='root';
   ConnGame.Database:='game';
   ConnGame.Connected := True;
+  {$ELSE}
+  ConnGame :=TFDConnection.Create(nil);
+  ConnGame.Params.DriverID := 'MySQL';
+  ConnGame.Params.Add('Server=' + MySqlServerGame);
+  ConnGame.Params.Database := 'game';
+  ConnGame.Params.UserName := 'root';
+  ConnGame.Params.Password := 'root';
+  ConnGame.LoginPrompt := False;
+  ConnGame.Connected := True;
+  {$ENDIF}
 
 
+  {$IFDEF  MYDAC}
   MyQueryGamePlayers := TMyQuery.Create(nil);
   MyQueryGamePlayers.Connection := ConnGame;   // game
   MyQueryGamePlayers.SQL.text := 'SELECT talent, speed,defense,passing,ballcontrol,heading,shot,matches_left from game.players WHERE team =' + IntToStr(GuidTeam);
-
   MyQueryGamePlayers.Execute ;
+  {$ELSE}
+  MyQueryGamePlayers := TFDQuery.Create(nil);
+  MyQueryGamePlayers.Connection := ConnGame;   // game
+  MyQueryGamePlayers.Open ('SELECT talent, speed,defense,passing,ballcontrol,heading,shot,matches_left from game.players WHERE team =' + IntToStr(GuidTeam));
+  {$ENDIF}
+
   for I := 0 to MyQueryGamePlayers.RecordCount -1 do begin
     if MyQueryGamePlayers.FieldByName('talent').AsString <> 'goalkeeper' then
 
@@ -3226,7 +3307,7 @@ begin
   {$ELSE}
   ConnWorld :=TFDConnection.Create(nil);
   ConnWorld.Params.DriverID := 'MySQL';
-  ConnWorld.Params.Add(MySqlServerWorld);
+  ConnWorld.Params.Add('Server=' + MySqlServerWorld);
   ConnWorld.Params.Database := 'World';
   ConnWorld.Params.UserName := 'root';
   ConnWorld.Params.Password := 'root';
@@ -3276,7 +3357,7 @@ begin
   {$ELSE}
   ConnWorld :=TFDConnection.Create(nil);
   ConnWorld.Params.DriverID := 'MySQL';
-  ConnWorld.Params.Add(MySqlServerWorld);
+  ConnWorld.Params.Add('Server=' + MySqlServerWorld);
   ConnWorld.Params.Database := 'world';
   ConnWorld.Params.UserName := 'root';
   ConnWorld.Params.Password := 'root';
@@ -3325,7 +3406,7 @@ begin
   {$ELSE}
   ConnWorld :=TFDConnection.Create(nil);
   ConnWorld.Params.DriverID := 'MySQL';
-  ConnWorld.Params.Add(MySqlServerWorld);
+  ConnWorld.Params.Add('Server=' + MySqlServerWorld);
   ConnWorld.Params.Database := 'world';
   ConnWorld.Params.UserName := 'root';
   ConnWorld.Params.Password := 'root';
@@ -3384,7 +3465,7 @@ begin
   {$ELSE}
   ConnWorld :=TFDConnection.Create(nil);
   ConnWorld.Params.DriverID := 'MySQL';
-  ConnWorld.Params.Add(MySqlServerWorld);
+  ConnWorld.Params.Add('Server=' + MySqlServerWorld);
   ConnWorld.Params.Database := 'world';
   ConnWorld.Params.UserName := 'root';
   ConnWorld.Params.Password := 'root';
@@ -3439,23 +3520,35 @@ begin
 end;
 procedure TFormServer.GetGuidTeamOpponentBOT ( WorldTeam: integer; Rank, NextHA: byte; var BotGuidTeam: Integer; var BotUserName: string );
 var
-  MyQueryGameTeams: TMyQuery;
+  MyQueryGameTeams:{$IFDEF  MYDAC} TMyQuery{$ELSE}TFDQuery{$ENDIF};
 //  MinGap,MaxGap: Integer;
-  ConnGame : TMyConnection;
+  ConnGame :{$IFDEF  MYDAC} TMyConnection{$ELSE}TFDConnection{$ENDIF};
 begin
     BotGuidTeam := 0;
     BotUserName := '';
  //   MinGap := MarketValueTeam - GAP_QUEUE;
  //   MaxGap := MarketValueTeam + GAP_QUEUE;
   // WorldTeam esclude automaticamente anche se stessi. Qui cerco sul db un bot
-    ConnGame := TMyConnection.Create(nil);
-    ConnGame.Server := MySqlServerGame;
-    ConnGame.Username:='root';
-    Conngame.Password:='root';
-    ConnGame.Database:='game';
-    ConnGame.Connected := True;
+  {$IFDEF  MYDAC}
+  ConnGame := TMyConnection.Create(nil);
+  ConnGame.Server := MySqlServerGame;
+  ConnGame.Username:='root';
+  Conngame.Password:='root';
+  ConnGame.Database:='game';
+  ConnGame.Connected := True;
+  {$ELSE}
+  ConnGame :=TFDConnection.Create(nil);
+  ConnGame.Params.DriverID := 'MySQL';
+  ConnGame.Params.Add('Server=' + MySqlServerGame);
+  ConnGame.Params.Database := 'game';
+  ConnGame.Params.UserName := 'root';
+  ConnGame.Params.Password := 'root';
+  ConnGame.LoginPrompt := False;
+  ConnGame.Connected := True;
+  {$ENDIF}
 
 
+  {$IFDEF  MYDAC}
     MyQueryGameTeams := TMyQuery.Create(nil);
     MyQueryGameTeams.Connection := ConnGame;   // game
 {    MyQueryGameTeams.SQL.text := 'SELECT guid, username from game.teams INNER JOIN realmd.account ON realmd.account.id = game.teams.account WHERE (MarketValue between ' +
@@ -3469,13 +3562,16 @@ begin
                                   ') and (nextha <> ' + IntToStr(nextha) +
                                   ') order by rand() limit 1';
     MyQueryGameTeams.Execute;
-{SELECT
-  guid, username
-FROM
-  game.teams
-  INNER JOIN realmd.account ON realmd.account.id = game.teams.account
-WHERE
-  guid = 41;  }
+  {$ELSE}
+    MyQueryGameTeams := TFDQuery.Create(nil);
+    MyQueryGameTeams.Connection := ConnGame;   // game
+    MyQueryGameTeams.Open ('SELECT guid, username from game.teams INNER JOIN realmd.account ON realmd.account.id = game.teams.account WHERE (rank=' +
+                                  IntToStr(Rank) + ') and (WorldTeam <> ' + IntTostr(WorldTeam) +
+                                  ') and (bot <> 0' +
+                                  ') and (nextha <> ' + IntToStr(nextha) +
+                                  ') order by rand() limit 1');
+  {$ENDIF}
+
     if MyQueryGameTeams.RecordCount > 0 then begin
       BotGuidTeam := MyQueryGameTeams.FieldByName('Guid').AsInteger;
       BotUserName := MyQueryGameTeams.FieldByName('username').AsString;
@@ -3520,7 +3616,7 @@ var
   ServerOpponent: array [0..1] of TServerOpponent;
   aBrain: TSoccerBrain;
   OpponentBOT: TServerOpponent;
-  BrainIDS,UserName0,UserName1: string;
+  BrainIDS: string;
   Cli: TWSocketClient;
   label vsBots;
 begin
@@ -3663,11 +3759,9 @@ vsBots:
 end;
 function TFormServer.GetbrainIds ( GuidTeam0, GuidTeam1: string ) : string;
 var
-  myDate : TDateTime;
   myYear, myMonth, myDay : word;
   myHour, myMin, mySec, myMilli : word;
   brainIds: string;
-  i: Integer;
 begin
 
     DecodeDateTime(Now, myYear, myMonth, myDay,
@@ -3717,12 +3811,12 @@ var
   TvCell,TvReserveCell,aPoint: TPoint;
   GuidTeam: array[0..1] of Integer;
   UserName: array[0..1] of string;
-  MyQueryGameTeams,MyQueryGamePlayers,MyQueryWT : TMyQuery;
   Dummy: word;
   Sp: TSoccerPlayer;
   aName, aSurname,  aTalents,Attributes,aIds: string;
   Injured: Integer;
-  ConnGame : TMyConnection;
+  ConnGame :{$IFDEF  MYDAC} TMyConnection{$ELSE}TFDConnection{$ENDIF};
+  MyQueryGameTeams,MyQueryGamePlayers,MyQueryWT :{$IFDEF MYDAC} TMyQuery{$ELSE}TFDQuery{$ENDIF};
 begin
 
   GuidTeam[0]:= Guidteam0;
@@ -3770,24 +3864,49 @@ begin
   brain.Ball.CellY := 3;
 
 
+  {$IFDEF  MYDAC}
   ConnGame := TMyConnection.Create(nil);
   ConnGame.Server := MySqlServerGame;
   ConnGame.Username:='root';
   Conngame.Password:='root';
   ConnGame.Database:='game';
   ConnGame.Connected := True;
+  {$ELSE}
+  ConnGame :=TFDConnection.Create(nil);
+  ConnGame.Params.DriverID := 'MySQL';
+  ConnGame.Params.Add('Server=' + MySqlServerGame);
+  ConnGame.Params.Database := 'game';
+  ConnGame.Params.UserName := 'root';
+  ConnGame.Params.Password := 'root';
+  ConnGame.LoginPrompt := False;
+  ConnGame.Connected := True;
+  {$ENDIF}
+
+
 
   for I := 0 to 1 do begin
 
+  {$IFDEF  MYDAC}
     MyQueryGameTeams := TMyQuery.Create(nil);
     MyQueryGameTeams.Connection := ConnGame;   // game
     MyQueryGameTeams.SQL.text := 'SELECT guid,worldteam,uniforma,uniformh,mi from game.teams WHERE guid = ' + IntToStr(GuidTeam[i]);
     MyQueryGameTeams.Execute;
+  {$ELSE}
+    MyQueryGameTeams := TFDQuery.Create(nil);
+    MyQueryGameTeams.Connection := ConnGame;   // game
+    MyQueryGameTeams.Open ('SELECT guid,worldteam,uniforma,uniformh,mi from game.teams WHERE guid = ' + IntToStr(GuidTeam[i]));
+  {$ENDIF}
 
+  {$IFDEF  MYDAC}
     MyQueryWT := TMyQuery.Create(nil);
     MyQueryWT.Connection := ConnGame;   // world
     MyQueryWT.SQL.text := 'SELECT name, country from world.teams WHERE guid = ' + MyQueryGameTeams.FieldByName('worldteam').AsString ;
     MyQueryWT.Execute;
+  {$ELSE}
+    MyQueryWT := TFDQuery.Create(nil);
+    MyQueryWT.Connection := ConnGame;   // world
+    MyQueryWT.Open ('SELECT name, country from world.teams WHERE guid = ' + MyQueryGameTeams.FieldByName('worldteam').AsString) ;
+  {$ENDIF}
 
 
     brain.Score.UserName [i] := Username [I];
@@ -3811,17 +3930,28 @@ begin
 
   pCount:=0;
 
+  {$IFDEF  MYDAC}
   MyQueryGamePlayers := TMyQuery.Create(nil);
+  {$ELSE}
+  MyQueryGamePlayers := TFDQuery.Create(nil);
+  {$ENDIF}
   MyQueryGamePlayers.Connection := ConnGame;   // game
 
   for TT := 0 to 1 do begin
 
+  {$IFDEF  MYDAC}
     MyQueryGamePlayers.SQL.text := 'SELECT guid,Team,Name,Matches_Played,Matches_Left,'+
                                                     'talent, speed,defense,passing,ballcontrol,heading,shot,stamina,'+
                                                     'formation_x,formation_y,injured,totyellowcard,disqualified,face'+
                                                     ' from game.players WHERE team =' + IntToStr(GuidTeam[TT]);
 
     MyQueryGamePlayers.Execute ;
+  {$ELSE}
+    MyQueryGamePlayers.Open ('SELECT guid,Team,Name,Matches_Played,Matches_Left,'+
+                                                    'talent, speed,defense,passing,ballcontrol,heading,shot,stamina,'+
+                                                    'formation_x,formation_y,injured,totyellowcard,disqualified,face'+
+                                                    ' from game.players WHERE team =' + IntToStr(GuidTeam[TT]));
+  {$ENDIF}
 
 
     for I := 0 to MyQueryGamePlayers.RecordCount -1 do begin
@@ -3963,7 +4093,7 @@ begin
   {$ELSE}
   ConnWorld :=TFDConnection.Create(nil);
   ConnWorld.Params.DriverID := 'MySQL';
-  ConnWorld.Params.Add(MySqlServerWorld);
+  ConnWorld.Params.Add('Server=' + MySqlServerWorld);
   ConnWorld.Params.Database := 'world';
   ConnWorld.Params.UserName := 'root';
   ConnWorld.Params.Password := 'root';
@@ -4007,7 +4137,7 @@ begin
   {$ELSE}
   ConnGame :=TFDConnection.Create(nil);
   ConnGame.Params.DriverID := 'MySQL';
-  ConnGame.Params.Add(MySqlServerGame);
+  ConnGame.Params.Add('Server=' + MySqlServerGame);
   ConnGame.Params.Database := 'game';
   ConnGame.Params.UserName := 'root';
   ConnGame.Params.Password := 'root';
@@ -4311,7 +4441,7 @@ var
   aReserveSlot: TPoint;
   found: Boolean;
   OldfinalFormation: string;
-  ConnGame :  {$IFDEF MYDAC}TMyConnection{$ELSE}TFDQuery{$ENDIF};
+  ConnGame :  {$IFDEF MYDAC}TMyConnection{$ELSE}TFDConnection{$ENDIF};
   MyQueryGamePlayers : {$IFDEF MYDAC} TMyQuery{$ELSE}TFDQuery{$ENDIF};
   label nextplayer,NoFormation;
 
@@ -4330,7 +4460,7 @@ begin
   {$ELSE}
   ConnGame :=TFDConnection.Create(nil);
   ConnGame.Params.DriverID := 'MySQL';
-  ConnGame.Params.Add(MySqlServerGame);
+  ConnGame.Params.Add('Server=' + MySqlServerGame);
   ConnGame.Params.Database := 'game';
   ConnGame.Params.UserName := 'root';
   ConnGame.Params.Password := 'root';
@@ -5360,33 +5490,54 @@ begin
 end;
 procedure TFormServer.MarketBuy ( Cli: TWSocketThrdClient; CommaText: string  );
 var
-  MyQueryGamePlayers,MyQuerymarket,MyQueryGameTeams: TMyQuery;
   i : Integer;
   price,MoneyA,MoneyB,GuidTeamSell: Integer;
   ts: TStringList;
-  ConnGame : TMyConnection;
   ReserveSlot : TTheArray;
   aReserveSlot: TPoint;
+  ConnGame : {$IFDEF MYDAC}TMyConnection{$ELSE}TFDConnection{$ENDIF};
+  MyQueryGamePlayers,MyQuerymarket,MyQueryGameTeams:{$IFDEF MYDAC} TMyQuery{$ELSE}TFDQuery{$ENDIF};
 begin
   ts:= TStringList.Create ;
   ts.CommaText := CommaText;
   // check e spostamento denaro
+  {$IFDEF MYDAC}
   ConnGame := TMyConnection.Create(nil);
   ConnGame.Server := MySqlServerGame;
   ConnGame.Username:='root';
   Conngame.Password:='root';
   ConnGame.Database:='game';
   ConnGame.Connected := True;
+  {$ELSE}
+  ConnGame :=TFDConnection.Create(nil);
+  ConnGame.Params.DriverID := 'MySQL';
+  ConnGame.Params.Add('Server=' + MySqlServerGame);
+  ConnGame.Params.Database := 'game';
+  ConnGame.Params.UserName := 'root';
+  ConnGame.Params.Password := 'root';
+  ConnGame.LoginPrompt := False;
+  ConnGame.Connected := True;
+  {$ENDIF}
 
+  {$IFDEF MYDAC}
   MyQueryGameTeams := TMyQuery.Create(nil);
   MyQueryGameTeams.Connection := ConnGame;   // game
   MyQueryGamePlayers := TMyQuery.Create(nil);
   MyQueryGamePlayers.Connection := ConnGame;   // game
   MyQuerymarket := TMyQuery.Create(nil);
   MyQuerymarket.Connection := ConnGame;   // game
-
   MyQueryGamePlayers.SQL.text := 'SELECT count(guid) FROM game.players where team=' + IntToStr(Cli.GuidTeam);
   MyQueryGamePlayers.Execute ;
+  {$ELSE}
+  MyQueryGameTeams := TFDQuery.Create(nil);
+  MyQueryGameTeams.Connection := ConnGame;   // game
+  MyQueryGamePlayers := TFDQuery.Create(nil);
+  MyQueryGamePlayers.Connection := ConnGame;   // game
+  MyQuerymarket := TFDQuery.Create(nil);
+  MyQuerymarket.Connection := ConnGame;   // game
+  MyQueryGamePlayers.Open ('SELECT count(guid) FROM game.players where team=' + IntToStr(Cli.GuidTeam));
+  {$ENDIF}
+
   if MyQueryGamePlayers.RecordCount >= 18 then  begin
     Cli.sreason := 'marketbuy linit 18 player';
     MyQueryGameTeams.Free;
@@ -5400,11 +5551,18 @@ begin
   end;
 
 
+  {$IFDEF MYDAC}
   MyQueryGameTeams.SQL.text := 'SELECT money FROM game.teams where guid=' + IntToStr(Cli.GuidTeam);
   MyQueryGameTeams.Execute ;
-                                                                                                              // non i suoi
+                                                                                                             // non i suoi
   MyQuerymarket.SQL.text := 'SELECT sellprice,guidteam FROM game.market where guidplayer=' + ts[1] + ' and guidteam <> ' + IntToStr(Cli.GuidTeam);
   MyQuerymarket.Execute ;
+  {$ELSE}
+  MyQueryGameTeams.Open ( 'SELECT money FROM game.teams where guid=' + IntToStr(Cli.GuidTeam));
+                                                                                                             // non i suoi
+  MyQuerymarket.Open( 'SELECT sellprice,guidteam FROM game.market where guidplayer=' + ts[1] + ' and guidteam <> ' + IntToStr(Cli.GuidTeam));
+  {$ENDIF}
+
   if MyQuerymarket.RecordCount = 0 then begin
     Cli.sreason := 'marketbuy player not found';
     MyQueryGameTeams.Free;
@@ -5437,8 +5595,13 @@ begin
   MoneyA := MoneyA - price;
   MyQueryGameTeams.SQL.text := 'UPDATE game.teams set money=' + IntToStr(MoneyA) + ' WHERE guid =' + IntToStr(cli.GuidTeam);
   MyQueryGameTeams.Execute ;
+  {$IFDEF MYDAC}
   MyQueryGameTeams.SQL.text := 'SELECT money FROM game.teams where guid=' +  IntToStr (GuidTeamSell);
   MyQueryGameTeams.Execute ;
+  {$ELSE}
+  MyQueryGameTeams.Open ( 'SELECT money FROM game.teams where guid=' +  IntToStr (GuidTeamSell));
+  {$ENDIF}
+
   if MyQuerymarket.RecordCount = 0 then begin
     Cli.sreason := 'marketbuy no vendor team';
     MyQueryGameTeams.Free;
@@ -5465,13 +5628,20 @@ begin
   MyQuerymarket.Execute ;
 
 
-  MyQueryGamePlayers := TMyQuery.Create(nil);
-  MyQueryGamePlayers.Connection := ConnGame;   // game
-
   // ottengo il prossimo slot delle riserve
   CleanReserveSlot ( ReserveSlot );
+  {$IFDEF MYDAC}
+  MyQueryGamePlayers := TMyQuery.Create(nil);
+  MyQueryGamePlayers.Connection := ConnGame;   // game
   MyQueryGamePlayers.SQL.text := 'SELECT guid,formation_x,formation_y from game.players WHERE  team=' + IntToStr(Cli.GuidTeam);
   MyQueryGamePlayers.Execute ;
+  {$ELSE}
+  MyQueryGamePlayers := TFDQuery.Create(nil);
+  MyQueryGamePlayers.Connection := ConnGame;   // game
+  MyQueryGamePlayers.Open ('SELECT guid,formation_x,formation_y from game.players WHERE  team=' + IntToStr(Cli.GuidTeam));
+  {$ENDIF}
+
+
   for i := MyQueryGamePlayers.RecordCount -1 downto 0 do begin
 
     if isReserveSlot ( MyQueryGamePlayers.FieldByName('formation_x').AsInteger, MyQueryGamePlayers.FieldByName('formation_y').AsInteger) then
@@ -5501,28 +5671,47 @@ begin
 end;
 procedure TFormServer.MarketSell ( Cli: TWSocketThrdClient; CommaText: string ); // mette un player sul mercato
 var
-  MyQueryGamePlayers,MyQuerymarket,MyQueryGamePlayersGK: TMyQuery;
   mValue : Integer;
   price: Integer;
   ts: TStringList;
-  ConnGame : TMyConnection;
+  ConnGame : {$IFDEF MYDAC}TMyConnection {$ELSE}TFDConnection{$ENDIF};
+  MyQueryGamePlayers,MyQuerymarket,MyQueryGamePlayersGK: {$IFDEF MYDAC}TMyQuery {$ELSE}TFDQuery{$ENDIF};
 begin
   ts:= TStringList.Create ;
   ts.CommaText := CommaText;
   price := StrToInt ( ts[2] );
 
+  {$IFDEF MYDAC}
   ConnGame := TMyConnection.Create(nil);
   ConnGame.Server := MySqlServerGame;
   ConnGame.Username:='root';
   Conngame.Password:='root';
   ConnGame.Database:='game';
   ConnGame.Connected := True;
+  {$ELSE}
+  ConnGame :=TFDConnection.Create(nil);
+  ConnGame.Params.DriverID := 'MySQL';
+  ConnGame.Params.Add('Server=' + MySqlServerGame);
+  ConnGame.Params.Database := 'game';
+  ConnGame.Params.UserName := 'root';
+  ConnGame.Params.Password := 'root';
+  ConnGame.LoginPrompt := False;
+  ConnGame.Connected := True;
+  {$ENDIF}
 
+
+  {$IFDEF MYDAC}
   MyQueryGamePlayers := TMyQuery.Create(nil);
   MyQueryGamePlayers.Connection := ConnGame;   // game
   MyQueryGamePlayers.SQL.text := 'SELECT guid,team,name,matches_played,matches_left,speed,defense,passing,ballcontrol,shot,heading,talent,history,xp,onmarket' +
                                 ' from game.players WHERE onmarket=0 and guid =' + ts[1] + ' and team=' + IntToStr(Cli.GuidTeam); // per essere sicuri anche cli.guidteam
   MyQueryGamePlayers.Execute ;
+  {$ELSE}
+  MyQueryGamePlayers := TFDQuery.Create(nil);
+  MyQueryGamePlayers.Connection := ConnGame;   // game
+  MyQueryGamePlayers.Open ('SELECT guid,team,name,matches_played,matches_left,speed,defense,passing,ballcontrol,shot,heading,talent,history,xp,onmarket' +
+                                ' from game.players WHERE onmarket=0 and guid =' + ts[1] + ' and team=' + IntToStr(Cli.GuidTeam)); // per essere sicuri anche cli.guidteam
+  {$ENDIF}
 
   if MyQueryGamePlayers.RecordCount = 0 then begin
     Cli.sreason := 'marketsell player not found';
@@ -5549,10 +5738,17 @@ begin
 
 
     // è un goalkeeper, se è l'unico non posso venderlo
+  {$IFDEF MYDAC}
     MyQueryGamePlayersGK := TMyQuery.Create(nil);
     MyQueryGamePlayersGK.Connection := ConnGame;   // game
     MyQueryGamePlayersGK.SQL.text := 'SELECT guid from game.players WHERE talent=1 and guid <>' + ts[1] +' and team=' + IntToStr(Cli.GuidTeam);
     MyQueryGamePlayersGK.Execute ;
+  {$ELSE}
+    MyQueryGamePlayersGK := TFDQuery.Create(nil);
+    MyQueryGamePlayersGK.Connection := ConnGame;   // game
+    MyQueryGamePlayersGK.Open ( 'SELECT guid from game.players WHERE talent=1 and guid <>' + ts[1] +' and team=' + IntToStr(Cli.GuidTeam));
+  {$ENDIF}
+
     if MyQueryGamePlayersGK.RecordCount = 0 then begin
       Cli.sreason := 'marketsell only 1 goalkeeper';
       MyQueryGamePlayers.Free;
@@ -5578,10 +5774,17 @@ begin
   end;
 
   // non deve essere presente sul mercato
+  {$IFDEF MYDAC}
   MyQuerymarket := TMyQuery.Create(nil);
   MyQuerymarket.Connection := ConnGame;   // game
   MyQuerymarket.SQL.text := 'SELECT guid from game.market WHERE guid =' + ts[1];
   MyQuerymarket.Execute ;
+  {$ELSE}
+  MyQuerymarket := TFDQuery.Create(nil);
+  MyQuerymarket.Connection := ConnGame;   // game
+  MyQuerymarket.Open ( 'SELECT guid from game.market WHERE guid =' + ts[1]);
+  {$ENDIF}
+
   if MyQuerymarket.RecordCount > 0 then begin
     Cli.sreason := 'marketsell player already on market';
     MyQueryGamePlayers.Free;
@@ -5593,8 +5796,12 @@ begin
   end;
 
   // sul mercato massimo 3 player
+  {$IFDEF MYDAC}
   MyQuerymarket.SQL.text := 'SELECT guid from game.market WHERE guidteam =' + IntToStr(Cli.GuidTeam);
   MyQuerymarket.Execute ;
+  {$ELSE}
+  MyQuerymarket.Open ('SELECT guid from game.market WHERE guidteam =' + IntToStr(Cli.GuidTeam));
+  {$ENDIF}
   if MyQuerymarket.RecordCount >= 3 then begin
     Cli.sreason := 'marketsell max 3 player';
     MyQueryGamePlayers.Free;
@@ -5637,28 +5844,45 @@ begin
 end;
 procedure TFormServer.MarketCancelSell ( Cli: TWSocketThrdClient; CommaText: string );
 var
-  MyQueryGamePlayers,MyQuerymarket: TMyQuery;
+  MyQueryGamePlayers,MyQuerymarket:{$IFDEF MYDAC} TMyQuery{$ELSE}TFDQuery{$ENDIF};
   mValue : Integer;
   ts: TStringList;
-  ConnGame : TMyConnection;
+  ConnGame :{$IFDEF MYDAC} TMyConnection{$ELSE}TFDConnection{$ENDIF};
 begin
   ts:= TStringList.Create ;
   ts.CommaText := CommaText;
 
 
   //  deve essere presente sul mercato
+  {$IFDEF MYDAC}
   ConnGame := TMyConnection.Create(nil);
   ConnGame.Server := MySqlServerGame;
   ConnGame.Username:='root';
   Conngame.Password:='root';
   ConnGame.Database:='game';
   ConnGame.Connected := True;
+  {$ELSE}
+  ConnGame :=TFDConnection.Create(nil);
+  ConnGame.Params.DriverID := 'MySQL';
+  ConnGame.Params.Add('Server=' + MySqlServerGame);
+  ConnGame.Params.Database := 'game';
+  ConnGame.Params.UserName := 'root';
+  ConnGame.Params.Password := 'root';
+  ConnGame.LoginPrompt := False;
+  ConnGame.Connected := True;
+  {$ENDIF}
 
+  {$IFDEF MYDAC}
   MyQuerymarket := TMyQuery.Create(nil);
   MyQuerymarket.Connection :=  ConnGame;
-
   MyQuerymarket.SQL.text := 'SELECT guid from game.market WHERE guidplayer =' + ts[1] + ' and guidteam=' + IntToStr(Cli.GuidTeam); // per essere sicuri anche cli.guidteam
   MyQuerymarket.Execute ;
+  {$ELSE}
+  MyQuerymarket := TFDQuery.Create(nil);
+  MyQuerymarket.Connection :=  ConnGame;
+  MyQuerymarket.Open ('SELECT guid from game.market WHERE guidplayer =' + ts[1] + ' and guidteam=' + IntToStr(Cli.GuidTeam)); // per essere sicuri anche cli.guidteam
+  {$ENDIF}
+
   if MyQuerymarket.RecordCount = 0 then begin
     Cli.sreason := 'marketcancelsell player not on market';
     MyQuerymarket.Free;
@@ -5672,7 +5896,12 @@ begin
   MyQuerymarket.SQL.text := 'DELETE FROM game.market where guidplayer=' + ts[1] + ' and guidteam=' + IntToStr(Cli.GuidTeam);
   MyQuerymarket.Execute ;
 
+  {$IFDEF MYDAC}
   MyQueryGamePlayers := TMyQuery.Create(nil);
+  {$ELSE}
+  MyQueryGamePlayers := TFDQuery.Create(nil);
+  {$ENDIF}
+
   MyQueryGamePlayers.Connection := ConnGame;   // game
   MyQueryGamePlayers.SQL.text := 'UPDATE game.players set onmarket=0 WHERE guid =' + ts[1] + ' and team=' + IntToStr(Cli.GuidTeam); // per essere sicuri anche cli.guidteam
   MyQueryGamePlayers.Execute ;
@@ -5686,37 +5915,59 @@ begin
 end;
 procedure TFormServer.DismissPlayer ( Cli: TWSocketThrdClient; CommaText: string );
 var
-  MyQueryGamePlayers,MyQuerymarket: TMyQuery;
+  MyQueryGamePlayers,MyQuerymarket: {$IFDEF MYDAC}TMyQuery{$ELSE}TFDQuery{$ENDIF};
   aPlayer: TSoccerPlayer;
   mValue : Integer;
   ts: TStringList;
-  ConnGame : TMyConnection;
+  ConnGame :{$IFDEF MYDAC} TMyConnection{$ELSE}TFDConnection{$ENDIF};
 begin
   ts:= TStringList.Create ;
   ts.CommaText := CommaText;
 
 
   //  deve essere presente sul mercato
+  {$IFDEF MYDAC}
   ConnGame := TMyConnection.Create(nil);
   ConnGame.Server := MySqlServerGame;
   ConnGame.Username:='root';
   Conngame.Password:='root';
   ConnGame.Database:='game';
   ConnGame.Connected := True;
-
-  MyQuerymarket := TMyQuery.Create(nil);
-  MyQuerymarket.Connection :=  ConnGame;
+  {$ELSE}
+  ConnGame :=TFDConnection.Create(nil);
+  ConnGame.Params.DriverID := 'MySQL';
+  ConnGame.Params.Add('Server=' + MySqlServerGame);
+  ConnGame.Params.Database := 'game';
+  ConnGame.Params.UserName := 'root';
+  ConnGame.Params.Password := 'root';
+  ConnGame.LoginPrompt := False;
+  ConnGame.Connected := True;
+  {$ENDIF}
 
   // se presente sul mercato lo elimino
+  {$IFDEF MYDAC}
+  MyQuerymarket := TMyQuery.Create(nil);
+  MyQuerymarket.Connection :=  ConnGame;
   MyQuerymarket.SQL.text := 'SELECT guid from game.market WHERE guidplayer =' + ts[1] + ' and guidteam=' + IntToStr(Cli.GuidTeam); // per essere sicuri anche cli.guidteam
   MyQuerymarket.Execute ;
+  {$ELSE}
+  MyQuerymarket := TFDQuery.Create(nil);
+  MyQuerymarket.Connection :=  ConnGame;
+  MyQuerymarket.Open ( 'SELECT guid from game.market WHERE guidplayer =' + ts[1] + ' and guidteam=' + IntToStr(Cli.GuidTeam)); // per essere sicuri anche cli.guidteam
+  {$ENDIF}
+
   if MyQuerymarket.RecordCount = 1 then begin
     MyQuerymarket.SQL.text := 'DELETE FROM game.market where guidplayer=' + ts[1] + ' and guidteam=' + IntToStr(Cli.GuidTeam);
     MyQuerymarket.Execute ;
   end;
 
   // team = 0 significa di nessun team , licenziato
+  {$IFDEF MYDAC}
   MyQueryGamePlayers := TMyQuery.Create(nil);
+  {$ELSE}
+  MyQueryGamePlayers := TFDQuery.Create(nil);
+  {$ENDIF}
+
   MyQueryGamePlayers.Connection := ConnGame;   // game
   MyQueryGamePlayers.SQL.text := 'UPDATE game.players set team=0 WHERE guid =' + ts[1] + ' and team=' + IntToStr(Cli.GuidTeam); // per essere sicuri anche cli.guidteam
   MyQueryGamePlayers.Execute ;
@@ -5732,8 +5983,8 @@ procedure TFormServer.store_Uniform ( Guidteam: integer; CommaText: string );
 var
   ts,UniformH,UniformA: TStringList;
   i: Integer;
-  MyQueryGameTeams: TMyQuery;
-  ConnGame : TMyConnection;
+  MyQueryGameTeams: {$IFDEF MYDAC}TMyQuery{$ELSE}TFDQuery{$ENDIF};
+  ConnGame :{$IFDEF MYDAC} TMyConnection{$ELSE}TFDConnection{$ENDIF};
 begin
   ts:= TStringList.Create ;
   ts.CommaText := CommaText;
@@ -5750,14 +6001,31 @@ begin
   end;
 
 
+  {$IFDEF MYDAC}
   ConnGame := TMyConnection.Create(nil);
   ConnGame.Server := MySqlServerGame;
   ConnGame.Username:='root';
   Conngame.Password:='root';
   ConnGame.Database:='game';
   ConnGame.Connected := True;
+  {$ELSE}
+  ConnGame :=TFDConnection.Create(nil);
+  ConnGame.Params.DriverID := 'MySQL';
+  ConnGame.Params.Add('Server=' + MySqlServerGame);
+  ConnGame.Params.Database := 'game';
+  ConnGame.Params.UserName := 'root';
+  ConnGame.Params.Password := 'root';
+  ConnGame.LoginPrompt := False;
+  ConnGame.Connected := True;
+  {$ENDIF}
 
+
+  {$IFDEF MYDAC}
   MyQueryGameTeams := TMyQuery.Create(nil);
+  {$ELSE}
+  MyQueryGameTeams := TFDQuery.Create(nil);
+  {$ENDIF}
+
   MyQueryGameTeams.Connection := ConnGame;   // game
 
   MyQueryGameTeams.SQL.text := 'UPDATE game.teams set uniformh="' + UniformH.CommaText + '",uniforma="' +
@@ -5779,22 +6047,38 @@ var
   ts: TStringList;
   strCells: string;
   tscells: TStringList;
-  MyQueryGamePlayers: TMyQuery;
-  ConnGame : TMyConnection;
+  MyQueryGamePlayers: {$IFDEF MYDAC}TMyQuery{$ELSE}TFDQuery{$ENDIF};
+  ConnGame : {$IFDEF MYDAC}TMyConnection{$ELSE}TFDConnection{$ENDIF};
 begin
 
   ts:= TStringList.Create ;
   ts.CommaText := CommaText;
   ts.Delete(0); // SetFormation
 
+  {$IFDEF MYDAC}
   ConnGame := TMyConnection.Create(nil);
   ConnGame.Server := MySqlServerGame;
   ConnGame.Username:='root';
   Conngame.Password:='root';
   ConnGame.Database:='game';
   ConnGame.Connected := True;
+  {$ELSE}
+  ConnGame :=TFDConnection.Create(nil);
+  ConnGame.Params.DriverID := 'MySQL';
+  ConnGame.Params.Add('Server=' + MySqlServerGame);
+  ConnGame.Params.Database := 'game';
+  ConnGame.Params.UserName := 'root';
+  ConnGame.Params.Password := 'root';
+  ConnGame.LoginPrompt := False;
+  ConnGame.Connected := True;
+  {$ENDIF}
 
+
+  {$IFDEF MYDAC}
   MyQueryGamePlayers := TMyQuery.Create(nil);
+  {$ELSE}
+  MyQueryGamePlayers := TFDQuery.Create(nil);
+  {$ENDIF}
   MyQueryGamePlayers.Connection := ConnGame;   // game
 
 
@@ -5821,25 +6105,47 @@ procedure TFormServer.Reset_Formation ( Cli:TWSocketThrdClient  );
 var
   i: Integer;
   aReserveSlot: TPoint;
-  MyQueryGamePlayers, MyQueryUpdate : TMyQuery;
+  MyQueryGamePlayers, MyQueryUpdate : {$IFDEF MYDAC}TMyQuery{$ELSE}TFDQuery{$ENDIF};
   ReserveSlot : TTheArray;
-  ConnGame : TMyConnection;
+  ConnGame :{$IFDEF MYDAC} TMyConnection{$ELSE}TFDConnection{$ENDIF};
 begin
   CleanReserveSlot ( ReserveSlot );
   // Singoli players
+  {$IFDEF MYDAC}
   ConnGame := TMyConnection.Create(nil);
   ConnGame.Server := MySqlServerGame;
   ConnGame.Username:='root';
   Conngame.Password:='root';
   ConnGame.Database:='game';
   ConnGame.Connected := True;
+  {$ELSE}
+  ConnGame :=TFDConnection.Create(nil);
+  ConnGame.Params.DriverID := 'MySQL';
+  ConnGame.Params.Add('Server=' + MySqlServerGame);
+  ConnGame.Params.Database := 'game';
+  ConnGame.Params.UserName := 'root';
+  ConnGame.Params.Password := 'root';
+  ConnGame.LoginPrompt := False;
+  ConnGame.Connected := True;
+  {$ENDIF}
 
+
+  {$IFDEF MYDAC}
   MyQueryGamePlayers := TMyQuery.Create(nil);
   MyQueryGamePlayers.Connection := ConnGame;   // game
   MyQueryGamePlayers.SQL.text := 'SELECT guid,formation_x,formation_y from game.players WHERE team =' + IntToStr(Cli.GuidTeam);
   MyQueryGamePlayers.Execute ;
+  {$ELSE}
+  MyQueryGamePlayers := TFDQuery.Create(nil);
+  MyQueryGamePlayers.Connection := ConnGame;   // game
+  MyQueryGamePlayers.Open ( 'SELECT guid,formation_x,formation_y from game.players WHERE team =' + IntToStr(Cli.GuidTeam));
+  {$ENDIF}
 
+  {$IFDEF MYDAC}
   MyQueryUpdate := TMyQuery.Create(nil);
+  {$ELSE}
+  MyQueryUpdate := TFDQuery.Create(nil);
+  {$ENDIF}
   MyQueryUpdate.Connection := ConnGame;   // game
 
   for I := 0 to MyQueryGamePlayers.RecordCount -1 do begin
@@ -6128,25 +6434,43 @@ begin
 end;
 procedure TFormServer.validate_player ( const guid: integer; Cli:TWSocketThrdClient;  var s,d,p,b,sh,h, disqualified, chancelvlUp, chancetalentlvlUp,talentID,age : integer;var history,xp:string );
 var
-  MyQueryGamePlayers: TMyQuery;
-  ConnGame : TMyConnection;
+  MyQueryGamePlayers:{$IFDEF MYDAC} TMyQuery{$ELSE}TFDQuery{$ENDIF};
+  ConnGame : {$IFDEF MYDAC}TMyConnection{$ELSE}TFDConnection{$ENDIF};
 begin
   (* Valido il player, disqualified è solo una info aggiuntiva che chi chiama gestisce*)
+  {$IFDEF MYDAC}
   ConnGame := TMyConnection.Create(nil);
   ConnGame.Server := MySqlServerGame;
   ConnGame.Username:='root';
   Conngame.Password:='root';
   ConnGame.Database:='game';
   ConnGame.Connected := True;
+  {$ELSE}
+  ConnGame :=TFDConnection.Create(nil);
+  ConnGame.Params.DriverID := 'MySQL';
+  ConnGame.Params.Add('Server=' + MySqlServerGame);
+  ConnGame.Params.Database := 'game';
+  ConnGame.Params.UserName := 'root';
+  ConnGame.Params.Password := 'root';
+  ConnGame.LoginPrompt := False;
+  ConnGame.Connected := True;
+  {$ENDIF}
 
+
+  {$IFDEF MYDAC}
   MyQueryGamePlayers := TMyQuery.Create(nil);
   MyQueryGamePlayers.Connection := ConnGame;   // game
-
-
   MyQueryGamePlayers.SQL.text := 'SELECT guid, disqualified, Matches_Played,growth1,growth2,growth3,talent1,talent2,talent3,history,xp,' +
                                   'speed,defense,passing,ballcontrol,shot,heading,talent '+
                                   'from game.players WHERE team =' + IntToStr(Cli.GuidTeam) + ' and guid = ' + IntToStr(guid);
   MyQueryGamePlayers.Execute ;
+  {$ELSE}
+  MyQueryGamePlayers := TFDQuery.Create(nil);
+  MyQueryGamePlayers.Connection := ConnGame;   // game
+  MyQueryGamePlayers.Open ('SELECT guid, disqualified, Matches_Played,growth1,growth2,growth3,talent1,talent2,talent3,history,xp,' +
+                                  'speed,defense,passing,ballcontrol,shot,heading,talent '+
+                                  'from game.players WHERE team =' + IntToStr(Cli.GuidTeam) + ' and guid = ' + IntToStr(guid));
+  {$ENDIF}
 
   if MyQueryGamePlayers.RecordCount <= 0 then begin
     cli.sReason:= 'Player not found ' + IntToStr(guid);
@@ -6194,24 +6518,41 @@ end;
 function TFormServer.checkformation ( Cli:TWSocketThrdClient ): Boolean;
 var
   i,pdisq,pcount: Integer;
-  MyQueryGamePlayers: TMyQuery;
-  ConnGame : TMyConnection;
+  MyQueryGamePlayers:{$IFDEF MYDAC} TMyQuery{$ELSE}TFDQuery{$ENDIF};
+  ConnGame : {$IFDEF MYDAC}TMyConnection{$ELSE}TFDConnection{$ENDIF};
   label skip;
 begin
   // controlla se sono schierati 11 giocatori a parte i disqualified. se può farlo deve giocare col massimo dei giocatori
   Result:= False;
+  {$IFDEF MYDAC}
   ConnGame := TMyConnection.Create(nil);
   ConnGame.Server := MySqlServerGame;
   ConnGame.Username:='root';
   Conngame.Password:='root';
   ConnGame.Database:='game';
   ConnGame.Connected := True;
+  {$ELSE}
+  ConnGame :=TFDConnection.Create(nil);
+  ConnGame.Params.DriverID := 'MySQL';
+  ConnGame.Params.Add('Server=' + MySqlServerGame);
+  ConnGame.Params.Database := 'game';
+  ConnGame.Params.UserName := 'root';
+  ConnGame.Params.Password := 'root';
+  ConnGame.LoginPrompt := False;
+  ConnGame.Connected := True;
+  {$ENDIF}
 
+
+  {$IFDEF MYDAC}
   MyQueryGamePlayers := TMyQuery.Create(nil);
   MyQueryGamePlayers.Connection := ConnGame;   // game
-
   MyQueryGamePlayers.SQL.text := 'SELECT guid, formation_x,formation_y,disqualified from game.players WHERE team =' + IntToStr(Cli.GuidTeam);
   MyQueryGamePlayers.Execute ;
+  {$ELSE}
+  MyQueryGamePlayers := TFDQuery.Create(nil);
+  MyQueryGamePlayers.Connection := ConnGame;   // game
+  MyQueryGamePlayers.Open( 'SELECT guid, formation_x,formation_y,disqualified from game.players WHERE team =' + IntToStr(Cli.GuidTeam));
+  {$ENDIF}
 
   pcount:=0;
   pdisq:=0;
@@ -6616,7 +6957,7 @@ end;
 
 procedure TFormServer.Button2Click(Sender: TObject);
 var
-  i,arnd: Integer;
+  i: Integer;
   THEWORLDTEAM : string;
   cli: TWSocketThrdClient;
   ConnAccount,ConnWorld : {$IFDEF MYDAC}TMyConnection{$ELSE}TFDConnection{$ENDIF};
@@ -6632,7 +6973,7 @@ begin
   {$ELSE}
   ConnAccount :=TFDConnection.Create(nil);
   ConnAccount.Params.DriverID := 'MySQL';
-  ConnAccount.Params.Add(MySqlServerAccount);
+  ConnAccount.Params.Add('Server=' + MySqlServerAccount);
   ConnAccount.Params.Database := 'realmd';
   ConnAccount.Params.UserName := 'root';
   ConnAccount.Params.Password := 'root';
@@ -6650,7 +6991,7 @@ begin
   {$ELSE}
   ConnWorld :=TFDConnection.Create(nil);
   ConnWorld.Params.DriverID := 'MySQL';
-  ConnWorld.Params.Add(MySqlServerWorld);
+  ConnWorld.Params.Add('Server=' + MySqlServerWorld);
   ConnWorld.Params.Database := 'world';
   ConnWorld.Params.UserName := 'root';
   ConnWorld.Params.Password := 'root';
@@ -6682,7 +7023,7 @@ begin
     MyQueryWT.SQL.Text := 'select guid from world.teams where serie=1 and rank=1 order by rand() limit 1';
     MyQueryWT.Execute;
   {$ELSE}
-    MyQueryWT.SQL.Open ( 'select guid from world.teams where serie=1 and rank=1 order by rand() limit 1');
+    MyQueryWT.Open ( 'select guid from world.teams where serie=1 and rank=1 order by rand() limit 1');
   {$ENDIF}
 
     THEWORLDTEAM :=  MyQueryWT.FieldByName('guid').AsString;
@@ -6700,19 +7041,20 @@ begin
 end;
 procedure TFormServer.Button3Click(Sender: TObject);
 var
-  MyQueryGameTeams,MyQueryWT: TMyQuery;
   i: Integer;
-  ConnGame,ConnWorld : TMyConnection;
+  MyQueryWT ,MyQueryGamePlayers,MyQueryGameTeams:{$IFDEF MYDAC} TMyQuery{$ELSE}TFDQuery{$ENDIF};
+  ConnWorld, ConnGame : {$IFDEF MYDAC}TMyConnection{$ELSE}TFDConnection{$ENDIF};
 begin
 // Prende i colori del team reale db.world e lo trasmette a tutti i team eisstenti in db.game
 // in questo modo aggiornando solo le maglie di tutte le squadre reali, si aggiornano tutti i team dei giocatori
 // eventualmente un oggetto cosmetico può essere quello di una uniforme personalizzata
 
+  {$IFDEF MYDAC}
   ConnWorld := TMyConnection.Create(nil);
   ConnWorld.Server := MySqlServerWorld;
   ConnWorld.Username:='root';
   ConnWorld.Password:='root';
-  ConnWorld.Database:='World';
+  ConnWorld.Database:='world';
   ConnWorld.Connected := True;
 
   ConnGame := TMyConnection.Create(nil);
@@ -6721,14 +7063,42 @@ begin
   Conngame.Password:='root';
   ConnGame.Database:='game';
   ConnGame.Connected := True;
+  {$ELSE}
+  ConnWorld :=TFDConnection.Create(nil);
+  ConnWorld.Params.DriverID := 'MySQL';
+  ConnWorld.Params.Add('Server=' + MySqlServerWorld);
+  ConnWorld.Params.Database := 'world';
+  ConnWorld.Params.UserName := 'root';
+  ConnWorld.Params.Password := 'root';
+  ConnWorld.LoginPrompt := False;
+  ConnWorld.Connected := True;
 
+  ConnGame :=TFDConnection.Create(nil);
+  ConnGame.Params.DriverID := 'MySQL';
+  ConnGame.Params.Add('Server=' + MySqlServerGame);
+  ConnGame.Params.Database := 'game';
+  ConnGame.Params.UserName := 'root';
+  ConnGame.Params.Password := 'root';
+  ConnGame.LoginPrompt := False;
+  ConnGame.Connected := True;
+  {$ENDIF}
+
+  {$IFDEF MYDAC}
   MyQueryGameTeams := TMyQuery.Create(nil);
-  MyQueryGameTeams.Connection := ConnGame;   // game
   MyQueryWT := TMyQuery.Create(nil);
+  MyQueryGameTeams.Connection := ConnGame;   // game
   MyQueryWT.Connection := ConnWorld;   // world
-
   MyQueryWT.SQL.Text := 'select guid, uniformh,uniforma from world.teams';
   MyQueryWT.Execute;
+  {$ELSE}
+  MyQueryGameTeams := TFDQuery.Create(nil);
+  MyQueryWT := TFDQuery.Create(nil);
+  MyQueryGameTeams.Connection := ConnGame;   // game
+  MyQueryWT.Connection := ConnWorld;   // world
+  MyQueryWT.Open ( 'select guid, uniformh,uniforma from world.teams');
+  {$ENDIF}
+
+
   for I := 0 to MyQueryWT.RecordCount -1 do begin
     MyQueryGameTeams.SQL.Text := 'UPDATE game.teams set uniformh="' +
                                   MyQueryWT.FieldByName('uniformh').AsString + '",uniforma="' +
@@ -6751,19 +7121,34 @@ end;
 procedure TFormServer.CreateRandomBotMatch;
 var
   aRnd : Integer;
-  MyQueryGameTeams: TMyQuery;
   OpponentBOT: TServerOpponent;
-  ConnGame : TMyConnection;
+  MyQueryGameTeams:{$IFDEF MYDAC} TMyQuery{$ELSE}TFDQuery{$ENDIF};
+  ConnGame : {$IFDEF MYDAC}TMyConnection{$ELSE}TFDConnection{$ENDIF};
   label retry1, retry2;
 begin
+  {$IFDEF MYDAC}
   ConnGame := TMyConnection.Create(nil);
   ConnGame.Server := MySqlServerGame;
   ConnGame.Username:='root';
   Conngame.Password:='root';
   ConnGame.Database:='game';
   ConnGame.Connected := True;
+  {$ELSE}
+  ConnGame :=TFDConnection.Create(nil);
+  ConnGame.Params.DriverID := 'MySQL';
+  ConnGame.Params.Add('Server=' + MySqlServerGame);
+  ConnGame.Params.Database := 'game';
+  ConnGame.Params.UserName := 'root';
+  ConnGame.Params.Password := 'root';
+  ConnGame.LoginPrompt := False;
+  ConnGame.Connected := True;
+  {$ENDIF}
 
+  {$IFDEF MYDAC}
   MyQueryGameTeams := TMyQuery.Create(nil);
+  {$ELSE}
+  MyQueryGameTeams := TFDQuery.Create(nil);
+  {$ENDIF}
   MyQueryGameTeams.Connection := ConnGame;   // game
 
 //  while BrainManager.lstBrain.Count < 10 do begin
@@ -6772,10 +7157,14 @@ begin
 
 retry1:
       aRnd := RndGenerate (100);
+  {$IFDEF MYDAC}
       MyQueryGameTeams.SQL.text := 'SELECT username, guid, worldTeam, rank, nextha, bot from realmd.account INNER JOIN game.teams ON realmd.account.id = game.teams.account WHERE ' +
                                     'username = "TEST' + IntTostr(aRnd) + '" and bot <> 0 and nextha = 0'; // parto dal team0
-
       MyQueryGameTeams.Execute ;
+  {$ELSE}
+      MyQueryGameTeams.Open ( 'SELECT username, guid, worldTeam, rank, nextha, bot from realmd.account INNER JOIN game.teams ON realmd.account.id = game.teams.account WHERE ' +
+                                    'username = "TEST' + IntTostr(aRnd) + '" and bot <> 0 and nextha = 0'); // parto dal team0
+  {$ENDIF}
 
       if MyQueryGameTeams.RecordCount = 0 then goto retry1; // non nextha
      // if MyQueryGameTeams.RecordCount > 0 then begin

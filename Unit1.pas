@@ -428,7 +428,6 @@ type
     procedure CreateCircle(  Team,  CellX, CellY: integer  );overload;
 
 // Mouse movement sulla SE_GridSkill
-    procedure TackleMouseEnter ( Sender : TObject);
     procedure PrsMouseEnter ( Sender : TObject);
     procedure PosMouseEnter ( Sender : TObject);
 
@@ -1004,7 +1003,7 @@ end;
 
 procedure TForm1.FormCreate(Sender: TObject);
 var
-  I,x,y: Integer;
+  I: Integer;
   ini : TIniFile;
 begin
   Mutex:=CreateMutex(nil,false,'tsscript');
@@ -1633,7 +1632,6 @@ end;  }
 procedure TForm1.InitializeTheaterMatch;
 var
   i: Integer;
-  aField: Se_Sprite;
 begin
   se_theater1.Active := False;
   for I := 0 to se_theater1.EngineCount -1 do begin
@@ -1665,7 +1663,6 @@ begin
 end;
 function TForm1.softlight(aColor:Tcolor): TColor;
 var
-  g, b, r: integer;
   aRGB: TRGB;
 begin
   aRGB := TColor2TRGB(aColor);
@@ -1675,16 +1672,9 @@ begin
   result := TRGB2TColor ( aRGB );
 end;
 function TForm1.DarkColor(aColor: TColor): TColor;
-const
-  Initial_Darken_Level = 0.25;
-  Darkness_Reduction = 0.5;
 var
-  iX, iY: integer;
-  ppx: pRGB;
   aRGB: TRGB;
-  rr, gg, bb: integer;
-  iFadeStep: integer;
-  bDoDarken: Boolean;
+  rr: integer;
 begin
   if aColor= clblack then begin
    Result:=aColor;
@@ -2540,7 +2530,7 @@ end;
 procedure TForm1.CreateCircle( Team, CellX, CellY: integer );
 var
   filename : string;
-  X1,X2,Y1,Y2,posX,posY: Integer;
+  posX,posY: Integer;
   ArrowDirection : TSpriteArrowDirection;
   Circle : SE_Sprite;
   aSeField: SE_Sprite;
@@ -2721,30 +2711,6 @@ begin
   Arrow.Angle := ArrowDirection.angle ;
   Arrow.Scale := 16;
   ColorizeArrowCircle ( Player1.team,   Arrow.BMP );
-
-end;
-
-procedure TForm1.TackleMouseEnter ( Sender : TObject);
-begin
-  hidechances;
-  PanelCombatLog.Left := PanelSkill.Left + PanelSkill.Width;
-  SE_GridDice.ClearData ;
-  SE_GridDice.RowCount := 1;
-  SE_GridDice.CellsEngine.ProcessSprites(2000);
-  SE_GridDice.refreshSurface (SE_GridDice);
-
-  if Mybrain.Ball.Player <> nil then begin
-    if  AbsDistance (Mybrain.Ball.Player.CellX ,Mybrain.Ball.Player.CellY, SelectedPlayer.CellX, SelectedPlayer.CellY ) = 1 then begin
-
-      CreateArrowDirection ( SelectedPlayer , Mybrain.Ball.Player );
-      SE_GridDiceWriteRow  ( SelectedPlayer.Team, UpperCase(Translate('attribute_Defense')),
-        SelectedPlayer.SurName, SelectedPlayer.Ids, 'VS',IntToStr(SelectedPlayer.Defense + SelectedPlayer.Tal_Toughness));
-      SE_GridDiceWriteRow  ( Mybrain.Ball.Player.Team,  UpperCase(Translate('attribute_Ball.Control')),
-        Mybrain.Ball.Player.SurName, Mybrain.Ball.Player.Ids, 'VS',IntToStr(Mybrain.Ball.Player.BallControl + Mybrain.Ball.Player.Tal_Power));
-     // CreateTextChanceValueSE ( Mybrain.Ball.Player.ids, Mybrain.Ball.Player.BallControl + Mybrain.Ball.Player.tal_Power   , 0,0,0,0 );
-     // CreateTextChanceValueSE ( SelectedPlayer.ids, SelectedPlayer.Defense + SelectedPlayer.tal_toughness  , 0,0,0,0);
-    end;
-  end;
 
 end;
 
@@ -2980,10 +2946,10 @@ end;
 
 procedure TForm1.PosMouseEnter ( Sender : TObject);
 var
-  i,ii,c : Integer;
+  ii,c : Integer;
   anOpponent,aGK: TSoccerPlayer;
   aPoint : PPointL;
-  Modifier,BaseShot,chanceA,chanceB: Integer;
+  Modifier,BaseShot: Integer;
   BarrierCell: TPoint;
   aDoor: TPoint;
 
@@ -3122,8 +3088,7 @@ end;
 
 function TForm1.CheckFormationTeamMemory : Boolean;
 var
-  i,i2,pcount,pdisq,Formation_x,formation_y,disqualified: Integer;
-  ini : TInifile;
+  i,i2,pcount,pdisq: Integer;
   aPlayer: TSoccerPlayer;
   CellPoint : TPoint;
   lstCellPoint: TList<TPoint>;
@@ -3248,7 +3213,7 @@ var
   i: integer;
   aPlayer: TsoccerPlayer;
   aSEField: SE_Sprite;
-  rndy,X,Y: Integer;
+  rndy: Integer;
   ACellBarrier,TvReserveCell: TPoint;
 
 begin
@@ -4431,8 +4396,6 @@ begin
 
 end;
 procedure Tform1.i_tuc ( team: string );
-var
-  fore,back: TColor;
 begin
 
     while (MyBrain.GameStarted ) and (se_players.IsAnySpriteMoving ) do begin
@@ -7006,7 +6969,9 @@ begin
      SE_GridDicewriterow ( 0,  UpperCase( Translate ( 'lbl_Fault' )),  '',  '' , '', '' );
      playsound ( pchar (dir_sound +  'faul.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
 
-     SE_GridDicewriterow ( aplayer.Team, Translate('lbl_Fault'),  '',  '' , 'FAULT','');
+     // sul server: TsScript.add ('sc_fault.cheatballgk,' + intTostr(TeamFaultFavour) +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
+
+     SE_GridDicewriterow ( StrToInt(ts[1]), Translate('lbl_Fault'),  '',  '' , 'FAULT','');
   end
   else if ts[0]= 'sc_fault.cheatball' then begin
      FaultBitmap:= SE_Bitmap.Create ( FaultBitmapBW );
@@ -7015,7 +6980,9 @@ begin
      seSprite:= SE_interface.CreateSprite(FaultBitmap.BITMAP ,'fault',1,1,10,aSEField.Position.X, aSEField.Position.Y,true  );
      FaultBitmap.Free;
      seSprite.LifeSpan := ShowFaultLifeSpan;
-     SE_GridDicewriterow ( aplayer.Team, Translate('lbl_Fault'),  '',  '' , 'FAULT','');
+// sul server:  TsScript.add ('sc_fault.cheatball,' + intTostr(TeamFaultFavour) + ',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
+
+     SE_GridDicewriterow ( StrToInt(ts[1]), Translate('lbl_Fault'),  '',  '' , 'FAULT','');
      playsound ( pchar (dir_sound +  'faul.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
 
   end;
@@ -7261,7 +7228,6 @@ begin
 end;
 procedure TForm1.MoveInDefaultField ( aPlayer: TSoccerPlayer );
 var
-  SelectedPoly: TSoccerCell;
   aSEField : SE_Sprite;
 begin
   aSEField := SE_field.FindSprite(IntToStr (aPlayer.DefaultCellX ) + '.' + IntToStr (aPlayer.DefaultCellY ));
@@ -7445,7 +7411,6 @@ procedure Tform1.SelectedPlayerPopupSkill ( CellX, CellY: integer);
 var
   i,y: integer;
   tmp: integer;
-  PosX: integer;
   aList : TObjectList<TSoccerPlayer>;
   label LoadGridSkill,PreloadGridSkill;
 procedure setupBMp (bmp:TBitmap; aColor: Tcolor);
@@ -7688,7 +7653,7 @@ end;
 procedure TForm1.SE_GridFreeKickGridCellMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; CellX, CellY: Integer;
   Sprite: SE_Sprite);
 var
-  aCellBarrier, aCellPenalty: TPoint;
+  aCellBarrier : TPoint;
   CornerMap: tCornerMap;
   SwapPlayer: TSoccerPlayer;
   TeamCornerOrfreeKick: Integer;
@@ -10717,6 +10682,29 @@ begin
 
 end;
 
+procedure TForm1.TackleMouseEnter ( Sender : TObject);
+begin
+  hidechances;
+  PanelCombatLog.Left := PanelSkill.Left + PanelSkill.Width;
+  SE_GridDice.ClearData ;
+  SE_GridDice.RowCount := 1;
+  SE_GridDice.CellsEngine.ProcessSprites(2000);
+  SE_GridDice.refreshSurface (SE_GridDice);
+
+  if Mybrain.Ball.Player <> nil then begin
+    if  AbsDistance (Mybrain.Ball.Player.CellX ,Mybrain.Ball.Player.CellY, SelectedPlayer.CellX, SelectedPlayer.CellY ) = 1 then begin
+
+      CreateArrowDirection ( SelectedPlayer , Mybrain.Ball.Player );
+      SE_GridDiceWriteRow  ( SelectedPlayer.Team, UpperCase(Translate('attribute_Defense')),
+        SelectedPlayer.SurName, SelectedPlayer.Ids, 'VS',IntToStr(SelectedPlayer.Defense + SelectedPlayer.Tal_Toughness));
+      SE_GridDiceWriteRow  ( Mybrain.Ball.Player.Team,  UpperCase(Translate('attribute_Ball.Control')),
+        Mybrain.Ball.Player.SurName, Mybrain.Ball.Player.Ids, 'VS',IntToStr(Mybrain.Ball.Player.BallControl + Mybrain.Ball.Player.Tal_Power));
+     // CreateTextChanceValueSE ( Mybrain.Ball.Player.ids, Mybrain.Ball.Player.BallControl + Mybrain.Ball.Player.tal_Power   , 0,0,0,0 );
+     // CreateTextChanceValueSE ( SelectedPlayer.ids, SelectedPlayer.Defense + SelectedPlayer.tal_toughness  , 0,0,0,0);
+    end;
+  end;
+
+end;
 
 }
 end.
