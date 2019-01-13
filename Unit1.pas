@@ -2,25 +2,26 @@
 {$DEFINE TOOLS}
 // conflitto eurekalog con dxsound. rimuovere eurekalog nella  build finale
 
-      { TODO  : bug se_griskill mousemove }
+      { TODO  : testare creazione nuovo utente }
+      { TODO  : AudioCrowd }
+      { TODO  : allargare se_gridMarket e relativo panel }
       { TODO  : verificare sostituzioni }
-      { TODO  : setgamescreen --> refreshsurface }
-      { TODO  : Eliminare Directx. Usare PlaySoundverificare bug sound prs e posizione palla}
+      { TODO : piccolo bug Show Uniform per la prima volta }
+      { TODO  : Eliminare Directx. Usare PlaySoundverificare bug sound prs e posizione palla.sul rigore che diventa gol manca il suono della folla}
       { TODO  : override maglie bianca o nera }
-      { TODO : settare il volume audio dei singoli file }
       { TODO : risolvere sfarfallio in formation }
       { TODO : finire traduzioni }
       { TODO : sostituire grid con se_grid. la gridLog non deve resettarsi, ma mantenere gli ultimi 50 eventi e fare pan automatico}
       { TODO : gestire il fine partita }
-      { TODO : bug sui pulsanti tattiche. il player rimane sospeso  }
-      { TODO : sul rigore che diventa gol manca il suono della folla  }
-      { TODO : bug sui setuniform. avolte va in db.realmd.cheatdetected  }
+      { TODO : verifica bug sui pulsanti tattiche. il player rimane sospeso  }
+      { TODO : bug sui setuniform. a volte va in db.realmd.cheatdetected  }
 
 
       // procedure importanti:
       //    procedure SE_GridSkillGridCellMouseDown  click sulla skill ---> input verso il server
       //    procedure tcpDataAvailable <--- input dal server
       //    procedure ClientLoadBrainMM  ( incMove: Byte ) Carica il brain arrivato dal server
+      //    procedure Anim --> esegue realmente l'animazione
 
 interface
 uses
@@ -39,17 +40,16 @@ uses
   DSE_SearchFiles,
   DSE_GRID,
   DSE_Panel,
-  SoccerBrainv3,   // si occupa della singola partita
 
+  SoccerBrainv3,   // ilcuore del gioco si occupa della singola partita
 
-  CnButtons,CnSpin,CnAAFont, CnAACtrls,  // CnVCLPack
+  CnButtons,CnSpin,CnAAFont, CnAACtrls, CnColorGrid, // CnVCLPack
 
-  BaseGrid, AdvGrid, AdvObj,    // TMS grids and Panel
-  Dxwave,DXSounds,                    // DelphiX (Audio)
   ZLIBEX,                             // delphizlib invio dati compressi tra server e client
 
+  OverbyteIcsWndControl, OverbyteIcsWSocket   ;  // OverByteIcsWSocketE ics con modifica. vedi directory External.Packages\overbyteICS del progetto
 
-  OverbyteIcsWndControl, OverbyteIcsWSocket  ;  // OverByteIcsWSocketE ics con modifica. vedi directory External.Packages\overbyteICS del progetto
+
 
 const GCD_DEFAULT = 200;        // global cooldown, minimo 200 ms tra un input verso il server e l'altro ( anti-cheating )
 const ScaleSprites = 40;        // riduzione generica di tutto gli sprite player
@@ -107,7 +107,6 @@ type
     Memo3: TMemo;
     Button6: TButton;
     Button2: TButton;
-    DXSound1: TDXSound;
     Button7: TButton;
     Button8: TButton;
     Button10: TButton;
@@ -126,7 +125,7 @@ type
     edtSell: TEdit;
     PanelMain: SE_panel;
     PanelCountryTeam: SE_panel;
-    advCountryTeam: TAdvStringGrid;
+    SE_GridCountryTeam: SE_Grid;
     PanelListMatches: SE_panel;
     PanelCorner: SE_panel;
     PanelLogin: SE_panel;
@@ -175,10 +174,9 @@ type
     PanelUniform: SE_panel;
     btnUniformBack: TcnSpeedButton;
     UniformPortrait: TcnSpeedButton;
-    se_gridColors: TAdvStringGrid;
     btnConfirmSell: TcnSpeedButton;
     PanelMarket: SE_panel;
-    advMarket: TAdvStringGrid;
+    SE_GridMarket: SE_Grid;
     btnMarketBack: TcnSpeedButton;
     btnMarketRefresh: TcnSpeedButton;
     edtsearchprice: TEdit;
@@ -208,15 +206,6 @@ type
     PanelDismiss: SE_panel;
     btnConfirmDismiss: TcnSpeedButton;
     lbl_ConfirmDismiss: TLabel;
-    DXSound2: TDXSound;
-    DXSound3: TDXSound;
-    DXSound4: TDXSound;
-    DXSound5: TDXSound;
-    DXSound6: TDXSound;
-    DXSound7: TDXSound;
-    DXSound8: TDXSound;
-    DXSound9: TDXSound;
-    DXSound10: TDXSound;
     lbl_TeamName: TLabel;
     Button4: TButton;
     SE_GridXP0: SE_Grid;
@@ -241,12 +230,11 @@ type
     btn_UniformHome: TCnSpeedButton;
     btn_UniformAway: TCnSpeedButton;
     SE_GridTime: SE_Grid;
-    imgshpfree: TImage;
     SE_GridFreeKick: SE_Grid;
+    CnColorGrid1: TCnColorGrid;
 // General
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
-    procedure InitSound;
     procedure btnMainPlayClick(Sender: TObject);
     procedure btnErrorOKClick(Sender: TObject);
     procedure btnExitClick(Sender: TObject);
@@ -255,8 +243,7 @@ type
 
 
 // first time select country and team
-    procedure advCountryTeamKeyPress(Sender: TObject; var Key: Char);
-    procedure btnSelCountryTeamClick(Sender: TObject);
+    procedure SE_GridCountryTeamGridCellMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; CellX, CellY: Integer; Sprite: SE_Sprite);
 
 // LiveMatch GamePlay utilities
     procedure btnTacticsClick(Sender: TObject);
@@ -308,8 +295,8 @@ type
     procedure btnMarketBackClick(Sender: TObject);
     procedure btnMarketClick(Sender: TObject);
     procedure btnMarketRefreshClick(Sender: TObject);
-    procedure advMarketClickCell(Sender: TObject; ARow, ACol: Integer);
     procedure ClientLoadMarket;
+    procedure SE_GridMarketGridCellMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; CellX, CellY: Integer; Sprite: SE_Sprite);
     procedure btnConfirmSellClick(Sender: TObject);
     procedure btnConfirmDismissClick(Sender: TObject);
     procedure btnDismiss0Click(Sender: TObject);
@@ -348,13 +335,13 @@ type
 // Uniform
     procedure BtnFormationUniformClick(Sender: TObject);
     procedure btnUniformBackClick(Sender: TObject);
-    procedure se_gridColorsClickCell(Sender: TObject; ARow, ACol: Integer);
     procedure Btn_UniformHomeClick(Sender: TObject);
     procedure Btn_UniformAwayClick(Sender: TObject);
 
 
     procedure btnStandingsClick(Sender: TObject);
     procedure SE_GridFreeKickGridCellMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; CellX, CellY: Integer; Sprite: SE_Sprite);
+    procedure CnColorGrid1SelectCell(Sender: TObject; ACol, ARow: Integer; var CanSelect: Boolean);
 
 
   private
@@ -419,6 +406,7 @@ type
       function i_softlight(ib, ia: integer): integer;
 
       procedure ColorizeFault( Team:Byte;  var FaultBitmap: SE_Bitmap);
+      procedure ColorizeArrowCircle( Team:Byte;   ShapeBitmap: SE_Bitmap);
 
     function RndGenerate( Upper: integer ): integer;
     function RndGenerate0( Upper: integer ): integer;
@@ -442,11 +430,6 @@ type
 
 // Mouse movement sulla SE_GridSkill
     procedure TackleMouseEnter ( Sender : TObject);
-    procedure MovMouseEnter ( Sender : TObject);
-    procedure ShpMouseEnter ( Sender : TObject);
-    procedure LopMouseEnter ( Sender : TObject);
-    procedure CroMouseEnter ( Sender : TObject);
-    procedure DriMouseEnter ( Sender : TObject);
     procedure PrsMouseEnter ( Sender : TObject);
     procedure PosMouseEnter ( Sender : TObject);
 
@@ -547,9 +530,6 @@ var
 
   Rewards : array [1..4, 1..20] of Integer;
 
-  tsFtpXXX: TStringList;
-
-
   lstInteractivePlayers: TList<TInteractivePlayer>; // lista che contiene i player interagiscono durante il turno dell'avversario
   MarkingMoveAll: Boolean;
 
@@ -575,17 +555,6 @@ var
   TotMarket: Integer;           // Valore totale dei player
 
   //sounds
-  AudioCrowd : TAudioFileStream;
-  AudioFaul : TAudioFileStream;
-  AudioCrossbar : TAudioFileStream;
-  AudioBounce : TAudioFileStream;
-  AudioNoGol : TAudioFileStream;
-  AudioGol : TAudioFileStream;
-  AudioNet : TAudioFileStream;
-  AudioShot : TAudioFileStream;
-  AudioTackle : TAudioFileStream;
-  AudioGameOver : TAudioFileStream;
-  WaveFormat: TWaveFormatEx;
 
   procedure RoundCornerOf(Control: TWinControl) ;
 implementation
@@ -827,22 +796,6 @@ begin
 
 end;
 
-procedure TForm1.btnSelCountryTeamClick(Sender: TObject);
-begin
-  // una volta all'inizio del gioco
-  if GCD <= 0 then begin
-    if GameScreen =  ScreenSelectCountry then
-    tcp.SendStr( 'selectedcountry,' + advCountryTeam.Cells[0,advCountryTeam.row] + EndofLine)
-    else if GameScreen =  ScreenSelectTeam then begin
-      WAITING_GETFORMATION:= True;
-      tcp.SendStr(  'selectedteam,' + advCountryTeam.Cells[0,advCountryTeam.row] + EndofLine);
-    end;
-    GCD := GCD_DEFAULT;
-  end;
-end;
-
-
-
 
 procedure TForm1.btnsell0Click(Sender: TObject);
 var
@@ -1073,8 +1026,6 @@ begin
   MyBrainFormation:= TSoccerBrain.Create ('Formation');
 
   GCD:= 0;
-  tsFtpXXX:= TStringList.Create ;
-
   //form1.Height  := iraTheater1.Top + iraTheater1.Height +35;
   MyBrain := TSoccerBrain.Create(  '') ;
   MyBrain.incMove := 0; // +1 nella ricerca .ini
@@ -1182,21 +1133,6 @@ begin
   InOutBitmap := SE_Bitmap.Create (dir_interface + 'inout.bmp');
   InOutBitmap.Stretch( 40,40 );
 
-  se_gridColors.DefaultColWidth := se_gridColors.Width div 13;
-  se_gridColors.Colors[0,0]:= clwhite;
-  se_gridColors.Colors[1,0]:= clBlack;
-  se_gridColors.Colors[2,0]:= clgray;
-  se_gridColors.Colors[3,0]:= clred;
-  se_gridColors.Colors[4,0]:= $004080FF;
-  se_gridColors.Colors[5,0]:= clyellow;
-  se_gridColors.Colors[6,0]:= clGreen;
-  se_gridColors.Colors[7,0]:= clLime;
-  se_gridColors.Colors[8,0]:= claqua;
-  se_gridColors.Colors[9,0]:= clBlue;
-  se_gridColors.Colors[10,0]:= $00FF0080; // purple
-  se_gridColors.Colors[11,0]:= $00FF80FF;
-  se_gridColors.Colors[12,0]:= clMaroon;
-
 
   TsWorldCountries:= TStringList.Create;
   TsNationTeams:= TStringList.Create;
@@ -1213,8 +1149,6 @@ begin
   DeleteDirData;
 
 
-  InitSound;
-
   ini := TIniFile.Create  ( ExtractFilePath(Application.ExeName) + 'client.ini');
   dir_log := ini.ReadString('directory','log','c:\temp');
   btnAudioStadium.Down := not  ( ini.ReadBool('sound','stadium',true)); //1=suona 0=no     down è 0, non suonare
@@ -1227,109 +1161,7 @@ begin
   ShowPanelBack;
   ShowLogin;
 
-//  SE_Grid0.thrdAnimate.Priority := tpLowest;
-//  SE_GridXp0.thrdAnimate.Priority := tpLowest;
-//  SE_GridAllBrain.thrdAnimate.Priority := tpLowest;
-//  SE_GridTime.thrdAnimate.Priority := tpLowest;
- // SE_GridDice.thrdAnimate.Priority := tplowest;
- // SE_GridSkill.thrdAnimate.Priority := tplowest;
-
-end;
-procedure TForm1.InitSound;
-begin
-  DXSound1.Initialize;
-  AudioCrowd := TAudioFileStream.Create(DXSound1.DSound);
-  AudioCrowd.AutoUpdate := True;
-  AudioCrowd.BufferLength := 1000;
-  AudioCrowd.FileName := dir_sound +  'crowd.wav';
-  AudioCrowd.Looped := true;
-
-  {  Setting of format of primary buffer.  }
-  MakePCMWaveFormatEx(WaveFormat, 44100, AudioCrowd.Format.wBitsPerSample, 2);
-  DXSound1.Primary.SetFormat(WaveFormat);
-
-  DXSound2.Initialize;
-  Audionogol := TAudioFileStream.Create(DXSound2.DSound);
-  Audionogol.AutoUpdate := True;
-  Audionogol.BufferLength := 1000;
-  Audionogol.FileName := dir_sound + 'nogol.wav';
-
-  MakePCMWaveFormatEx(WaveFormat, 44100, Audionogol.Format.wBitsPerSample, 2);
-  DXSound2.Primary.SetFormat(WaveFormat);
-
-
-  DXSound3.Initialize;
-  AudioCrossbar := TAudioFileStream.Create(DXSound3.DSound);
-  AudioCrossbar.AutoUpdate := True;
-  AudioCrossbar.BufferLength := 1000;
-  AudioCrossbar.FileName := dir_sound + 'crossbar.wav';
-
-  MakePCMWaveFormatEx(WaveFormat, 44100, AudioCrossbar.Format.wBitsPerSample, 2);
-  DXSound3.Primary.SetFormat(WaveFormat);
-
-  DXSound4.Initialize;
-  AudioBounce := TAudioFileStream.Create(DXSound4.DSound);
-  AudioBounce.AutoUpdate := True;
-  AudioBounce.BufferLength := 1000;
-  AudioBounce.FileName :=dir_sound +  'bounce.wav';
-
-  MakePCMWaveFormatEx(WaveFormat, 44100, AudioBounce.Format.wBitsPerSample, 2);
-  DXSound4.Primary.SetFormat(WaveFormat);
-
-  DXSound5.Initialize;
-  Audiogol := TAudioFileStream.Create(DXSound5.DSound);
-  Audiogol.AutoUpdate := True;
-  Audiogol.BufferLength := 1000;
-  Audiogol.FileName := dir_sound + 'gol.wav';
-
-  MakePCMWaveFormatEx(WaveFormat, 44100, Audiogol.Format.wBitsPerSample, 2);
-  DXSound5.Primary.SetFormat(WaveFormat);
-
-  DXSound6.Initialize;
-  AudioFaul := TAudioFileStream.Create(DXSound6.DSound);
-  AudioFaul.AutoUpdate := True;
-  AudioFaul.BufferLength := 1000;
-  AudioFaul.FileName := dir_sound + 'faul.wav';
-
-  MakePCMWaveFormatEx(WaveFormat, 44100, AudioFaul.Format.wBitsPerSample, 2);
-  DXSound6.Primary.SetFormat(WaveFormat);
-
-  DXSound7.Initialize;
-  AudioNet := TAudioFileStream.Create(DXSound7.DSound);
-  AudioNet.AutoUpdate := True;
-  AudioNet.BufferLength := 1000;
-  AudioNet.FileName :=dir_sound +  'net.wav';
-
-  MakePCMWaveFormatEx(WaveFormat, 44100, AudioNet.Format.wBitsPerSample, 2);
-  DXSound7.Primary.SetFormat(WaveFormat);
-
-  DXSound8.Initialize;
-  AudioShot := TAudioFileStream.Create(DXSound8.DSound);
-  AudioShot.AutoUpdate := True;
-  AudioShot.BufferLength := 1000;
-  AudioShot.FileName :=dir_sound +  'shot.wav';
-
-  MakePCMWaveFormatEx(WaveFormat, 44100, AudioShot.Format.wBitsPerSample, 2);
-  DXSound8.Primary.SetFormat(WaveFormat);
-
-  DXSound9.Initialize;
-  AudioTackle := TAudioFileStream.Create(DXSound9.DSound);
-  AudioTackle.AutoUpdate := True;
-  AudioTackle.BufferLength := 1000;
-  AudioTackle.FileName :=dir_sound +  'tackle.wav';
-
-  MakePCMWaveFormatEx(WaveFormat, 44100, AudioTackle.Format.wBitsPerSample, 2);
-  DXSound9.Primary.SetFormat(WaveFormat);
-
-  DXSound10.Initialize;
-  AudioGameOver := TAudioFileStream.Create(DXSound10.DSound);
-  AudioGameOver.AutoUpdate := True;
-  AudioGameOver.BufferLength := 1000;
-  AudioGameOver.FileName :=dir_sound +  'gameover.wav';
-
-  MakePCMWaveFormatEx(WaveFormat, 44100, AudioGameOver.Format.wBitsPerSample, 2);
-  DXSound10.Primary.SetFormat(WaveFormat);
-
+  SE_GridTime.thrdAnimate.Priority := tplowest;
 
 end;
 procedure TForm1.FormDestroy(Sender: TObject);
@@ -1348,28 +1180,6 @@ begin
 
   lstInteractivePlayers.Free;
   RandGen.free;
-  tsFtpXXX.Free;
-  AudioCrowd.free;
-  AudioFaul.free;
-  AudioCrossbar.free;
-  AudioBounce.free;
-  AudioNoGol.free;
-  AudioGol.free;
-  AudioNet.free;
-  AudioShot.Free;
-  AudioTackle.Free;
-  AudioGameOver.Free;
-
-  DXSound1.Finalize;
-  DXSound2.Finalize;
-  DXSound3.Finalize;
-  DXSound4.Finalize;
-  DXSound5.Finalize;
-  DXSound6.Finalize;
-  DXSound7.Finalize;
-  DXSound8.Finalize;
-  DXSound9.Finalize;
-  DXSound10.Finalize;
 
   se_players.RemoveAllSprites ;
   se_ball.RemoveAllSprites ;
@@ -1422,33 +1232,21 @@ begin
  if inGolPosition (ASprite.Position ) then  begin
 
 
-   AudioNet.Position := 0;
-   AudioNet.Play;
-//   playsound ( pchar (dir_sound +  'net.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
-//   ASprite.PositionY:= ASprite.Position.Y +1; // fix sound net 2 volte
-//   Sleep(300);
-//   playsound ( pchar (dir_sound +  'gol.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
-   AudioGol.Position := 0;
-   AudioGol.Play;
+   playsound ( pchar (dir_sound +  'net.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
+   ASprite.PositionY:= ASprite.Position.Y +1; // fix sound net 2 volte
+   Sleep(300);
+   playsound ( pchar (dir_sound +  'gol.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
  end
  else if inCrossBarPosition (ASprite.Position ) then begin
-//   playsound ( pchar (dir_sound +  'crossbar.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
-   AudioCrossBar.Position := 0;
-   AudioCrossBar.Play;
+   playsound ( pchar (dir_sound +  'crossbar.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
 
-//   ASprite.PositionY:= ASprite.Position.Y +1; // fix sound crossbar 2 volte
-//   Sleep(300);
-   AudioBounce.Position := 0;
-   AudioBounce.Play;
+   ASprite.PositionY:= ASprite.Position.Y +1; // fix sound crossbar 2 volte
+   Sleep(300);
 
-//   playsound ( pchar (dir_sound +  'nogol.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
-   AudioNoGol.Position := 0;
-   AudioNoGol.Play;
+   playsound ( pchar (dir_sound +  'nogol.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
  end
  else if inGKCenterPosition (ASprite.Position ) then begin
-//   playsound ( pchar (dir_sound +  'nogol.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
-   AudioNoGol.Position := 0;
-   AudioNoGol.Play;
+   playsound ( pchar (dir_sound +  'nogol.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
  end;
 end;
 
@@ -1485,32 +1283,6 @@ begin
   PanelUniform.Visible:= True;
 
 end;
-
-procedure TForm1.se_gridColorsClickCell(Sender: TObject; ARow, ACol: Integer);
-var
-  UniformBitmap: SE_Bitmap;
-  ha : Byte;
-begin
-    if btn_UniformHome.Down then
-     ha := 0
-     else ha :=1;
-    if ck_Jersey1.Down then
-      TSUniforms[ha][0] := IntToStr( aCol )
-      else if ck_Jersey2.Down then
-      TSUniforms[ha][1] := IntToStr( aCol )
-      else if ck_Shorts.Down then
-      TSUniforms[ha][2] := IntToStr( aCol )
-      else if ck_Socks1.Down then
-      TSUniforms[ha][3] := IntToStr( aCol )
-      else if ck_Socks2.Down then
-      TSUniforms[ha][4] := IntToStr( aCol );
-
-    UniformBitmap := SE_Bitmap.Create (dir_player + 'bw.bmp');
-    PreLoadUniform( ha, UniformBitmap   );  // usa tsuniforms e  UniformBitmapBW
-    UniformBitmap.free;
-    UniformPortrait.Glyph.LoadFromFile(dir_tmp + 'color' + IntToStr(ha)+ '.bmp');
-end;
-
 
 procedure TForm1.SE_GridSkillGridCellMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; CellX, CellY: Integer;
   Sprite: SE_Sprite);
@@ -1717,25 +1489,18 @@ begin
   SE_GridSkill.refreshSurface ( SE_GridSkill );
 
 
-  Exit;
-
-    
-  if se_gridskill.Cells[0,CellY].Ids = 'Tackle' then
-    TackleMouseEnter ( nil )
-  else if se_gridskill.Cells[0,CellY].Ids = 'Move' then
-    MovMouseEnter ( nil )
-  else if se_gridskill.Cells[0,CellY].Ids = 'Short.Passing' then
-    ShpMouseEnter ( nil )
-  else if se_gridskill.Cells[0,CellY].Ids = 'Lofted.Pass' then
-    LopMouseEnter ( nil )
-  else if se_gridskill.Cells[0,CellY].Ids = 'Crossing' then
-    CroMouseEnter ( nil )
-  else if se_gridskill.Cells[0,CellY].Ids = 'Dribbling' then
-    DriMouseEnter ( nil )
-  else if se_gridskill.Cells[0,CellY].Ids = 'Precision.Shot' then
+  if se_gridskill.Cells[0,CellY].Ids = 'Precision.Shot' then
     PrsMouseEnter ( nil )
   else if se_gridskill.Cells[0,CellY].Ids = 'Power.Shot' then
-    PosMouseEnter ( nil );
+    PosMouseEnter ( nil )
+  else begin
+    SE_GridDice.ClearData ;
+    SE_GridDice.RowCount := 1;
+    SE_GridDice.CellsEngine.ProcessSprites(2000);
+    SE_GridDice.refreshSurface (SE_GridDice);
+
+  end;
+
 
 
 end;
@@ -2023,22 +1788,22 @@ begin
 
 
             if UniformBitmapBW.Bitmap.Canvas.Pixels[x,y] = clBlack then
-              UniformBitmap.Bitmap.Canvas.Pixels [x,y] := se_gridcolors.Colors [  StrToInt(TsUniforms[ha][0]), 0]  //<-- se fuori casa prende la maglia giusta
+              UniformBitmap.Bitmap.Canvas.Pixels [x,y] := StringToColor ( CnColorgrid1.CustomColors [  StrToInt(TsUniforms[ha][0])])  //<-- se fuori casa prende la maglia giusta
             else if UniformBitmapBW.Bitmap.Canvas.Pixels[x,y]= clWhite then
-              UniformBitmap.Bitmap.Canvas.Pixels[x,y]  := se_gridcolors.Colors [  StrToInt(TsUniforms[ha][1]), 0];
+              UniformBitmap.Bitmap.Canvas.Pixels[x,y]  := StringToColor ( CnColorgrid1.CustomColors [  StrToInt(TsUniforms[ha][1])]);
 
            end
 
            else if (y > 55) and (y <= 70) then begin // pantaloncini
             if UniformBitmapBW.Bitmap.Canvas.Pixels[x,y]= clWhite then
-              UniformBitmap.Bitmap.Canvas.Pixels [x,y] := se_gridcolors.Colors [  StrToInt(TsUniforms[ha][2]), 0]  //<-- se fuori casa prende la maglia giusta
+              UniformBitmap.Bitmap.Canvas.Pixels [x,y] := StringToColor ( CnColorgrid1.CustomColors [  StrToInt(TsUniforms[ha][2])])  //<-- se fuori casa prende la maglia giusta
            end
 
            else if (y > 77) then begin // calzettoni
             if UniformBitmapBW.Bitmap.Canvas.Pixels[x,y]= clBlack then
-              UniformBitmap.Bitmap.Canvas.Pixels[x,y]  := se_gridcolors.Colors [  StrToInt(TsUniforms[ha][3]), 0]  //<-- se fuori casa prende la maglia giusta
+              UniformBitmap.Bitmap.Canvas.Pixels[x,y]  := StringToColor ( CnColorgrid1.CustomColors [  StrToInt(TsUniforms[ha][3])])  //<-- se fuori casa prende la maglia giusta
             else if UniformBitmapBW.Bitmap.Canvas.Pixels[x,y]= clWhite then
-              UniformBitmap.Bitmap.Canvas.Pixels [x,y] := se_gridcolors.Colors [  StrToInt(TsUniforms[ha][4]), 0];
+              UniformBitmap.Bitmap.Canvas.Pixels [x,y] := StringToColor ( CnColorgrid1.CustomColors [  StrToInt(TsUniforms[ha][4])]);
            end;
 
         end
@@ -2049,22 +1814,22 @@ begin
 
 
             if UniformBitmapBW.Bitmap.Canvas.Pixels[x,y]= clBlack then
-              UniformBitmap.Bitmap.Canvas.Pixels[x,y]  := DarkColor( se_gridcolors.Colors [  StrToInt(TsUniforms[ha][0]), 0])  //<-- se fuori casa prende la maglia giusta
+              UniformBitmap.Bitmap.Canvas.Pixels[x,y]  := DarkColor( StringToColor (  CnColorgrid1.CustomColors [  StrToInt(TsUniforms[ha][0]) ]))  //<-- se fuori casa prende la maglia giusta
             else if UniformBitmapBW.Bitmap.Canvas.Pixels[x,y]= clWhite then
-              UniformBitmap.Bitmap.Canvas.Pixels [x,y] := DarkColor( se_gridcolors.Colors [  StrToInt(TsUniforms[ha][1]), 0]);
+              UniformBitmap.Bitmap.Canvas.Pixels [x,y] := DarkColor( StringToColor (  CnColorgrid1.CustomColors [  StrToInt(TsUniforms[ha][1]) ]));
 
            end
 
            else if (y > 55) and (y <= 70) then begin // pantaloncini
             if UniformBitmapBW.Bitmap.Canvas.Pixels[x,y]= clWhite then
-              UniformBitmap.Bitmap.Canvas.Pixels[x,y]  := DarkColor( se_gridcolors.Colors [  StrToInt(TsUniforms[ha][2]), 0])  //<-- se fuori casa prende la maglia giusta
+              UniformBitmap.Bitmap.Canvas.Pixels[x,y]  := DarkColor( StringToColor (  CnColorgrid1.CustomColors [  StrToInt(TsUniforms[ha][2]) ]))  //<-- se fuori casa prende la maglia giusta
            end
 
            else if (y > 77) then begin // calzettoni
             if UniformBitmapBW.Bitmap.Canvas.Pixels[x,y]= clBlack then
-              UniformBitmap.Bitmap.Canvas.Pixels[x,y]  := DarkColor( se_gridcolors.Colors [  StrToInt(TsUniforms[ha][3]), 0])  //<-- se fuori casa prende la maglia giusta
+              UniformBitmap.Bitmap.Canvas.Pixels[x,y]  := DarkColor( StringToColor (  CnColorgrid1.CustomColors [  StrToInt(TsUniforms[ha][3]) ]))  //<-- se fuori casa prende la maglia giusta
             else if UniformBitmapBW.Bitmap.Canvas.Pixels[x,y]= clWhite then
-              UniformBitmap.Bitmap.Canvas.Pixels[x,y]  := DarkColor( se_gridcolors.Colors [  StrToInt(TsUniforms[ha][4]), 0]);
+              UniformBitmap.Bitmap.Canvas.Pixels[x,y]  := DarkColor( StringToColor ( CnColorgrid1.CustomColors [  StrToInt(TsUniforms[ha][4]) ]));
            end;
         end;
 
@@ -2147,7 +1912,7 @@ begin
 
              // maglia 1
             if FaultBitmapBW.Bitmap.Canvas.Pixels[x,y] = clBlack then
-              FaultBitmap.Bitmap.Canvas.Pixels [x,y] := se_gridcolors.Colors [  StrToInt(TsUniforms[Team][0]), 0];
+              FaultBitmap.Bitmap.Canvas.Pixels [x,y] := StringToColor (  CnColorgrid1.CustomColors [  StrToInt(TsUniforms[Team][0])]);
 
 
         end
@@ -2156,7 +1921,7 @@ begin
 
              // maglia 2
             if FaultBitmapBW.Bitmap.Canvas.Pixels[x,y] = clBlack then
-              FaultBitmap.Bitmap.Canvas.Pixels [x,y] := se_gridcolors.Colors [  StrToInt(TsUniforms[Team][1]), 0];
+              FaultBitmap.Bitmap.Canvas.Pixels [x,y] := StringToColor (  CnColorgrid1.CustomColors [  StrToInt(TsUniforms[Team][1])]);
 
         end;
 
@@ -2165,6 +1930,37 @@ begin
     end;
 
 //    FaultBitmap.Bitmap.SaveToFile(dir_tmp + 'color.bmp');
+end;
+procedure TForm1.ColorizeArrowCircle( Team:Byte;  ShapeBitmap: SE_Bitmap);
+var
+  x,y: Integer;
+begin
+(* mantengo x per i 2 colori *)
+    for x := 0 to ShapeBitmap.Width-1 do begin
+      for y := 0 to ShapeBitmap.height-1 do begin
+
+        if x > (ShapeBitmap.Width div 2) then begin
+
+
+             // maglia 1
+            if ShapeBitmap.Bitmap.Canvas.Pixels[x,y] = clBlack then
+              ShapeBitmap.Bitmap.Canvas.Pixels [x,y] := StringToColor (  CnColorgrid1.CustomColors [  StrToInt(TsUniforms[Team][0])]);
+
+
+        end
+
+        else begin
+
+             // maglia 2
+            if ShapeBitmap.Bitmap.Canvas.Pixels[x,y] = clBlack then
+              ShapeBitmap.Bitmap.Canvas.Pixels [x,y] := StringToColor (  CnColorgrid1.CustomColors [  StrToInt(TsUniforms[Team][1])]);
+
+        end;
+
+
+      end;
+    end;
+
 end;
 procedure TForm1.ClientLoadFormation ;
 var
@@ -2767,7 +2563,7 @@ begin
 
   // se uguale creo un circle ed esco
   if (X1=X2) and (Y1=Y2) then begin
-    fileName := dir_interface + 'circle' + IntToStr(Player1.team) + '.bmp';
+    fileName := dir_interface + 'circle.bmp';
     if Player1.team = 0 then begin
       ArrowDirection.offset.X := -10;
       ArrowDirection.offset.Y := +10;
@@ -2782,10 +2578,11 @@ begin
 
     Arrow := SE_interface.CreateSprite(filename,'arrow', 1,1,1000,  posX,posY, true);
     Arrow.Scale := 10;
+    ColorizeArrowCircle ( Player1.team,   Arrow.BMP );
     Exit;
   end;
 
-  fileName := dir_interface + 'arrow' + IntToStr(Player1.team) + '.bmp';
+  fileName := dir_interface + 'arrow.bmp';
 
   ArrowDirection.angle :=   AngleOfLine ( Player1.se_sprite.Position , Player2.se_sprite.Position );
 
@@ -2829,6 +2626,7 @@ begin
   Arrow := SE_interface.CreateSprite(filename,'arrow', 1,1,1000,  posX,posY, true);
   Arrow.Angle := ArrowDirection.angle ;
   Arrow.Scale := 16;
+  ColorizeArrowCircle ( Player1.team,   Arrow.BMP );
 
 end;
 procedure TForm1.CreateArrowDirection ( Player1 : TSoccerPlayer; CellX, CellY: integer );
@@ -2845,7 +2643,7 @@ begin
 
   // se uguale creo un circle ed esco
   if (X1=X2) and (Y1=Y2) then begin
-    fileName := dir_interface + 'circle' + IntToStr(Player1.team) + '.bmp';
+    fileName := dir_interface + 'circle.bmp';
     if Player1.team = 0 then begin
       ArrowDirection.offset.X := -10;
       ArrowDirection.offset.Y := +10;
@@ -2859,11 +2657,12 @@ begin
     posY := Player1.se_sprite.Position.Y + ArrowDirection.offset.Y;
     Arrow := SE_interface.CreateSprite(filename,'arrow', 1,1,1000,  posX,posY, true);
     Arrow.Scale := 10;
+    ColorizeArrowCircle ( Player1.team,   Arrow.BMP );
     Exit;
   end;
 
 
-  fileName := dir_interface + 'arrow' + IntToStr(Player1.team) + '.bmp';
+  fileName := dir_interface + 'arrow.bmp';
 
   ArrowDirection.angle :=   AngleOfLine ( Point(Player1.CellX,Player1.CellY) , Point ( CellX, CellY));
 
@@ -2906,6 +2705,7 @@ begin
   Arrow := SE_interface.CreateSprite(filename,'arrow', 1,1,1000,  posX,posY, true);
   Arrow.Angle := ArrowDirection.angle ;
   Arrow.Scale := 16;
+  ColorizeArrowCircle ( Player1.team,   Arrow.BMP );
 
 end;
 
@@ -3062,118 +2862,6 @@ begin
     UniformPortrait.Glyph.LoadFromFile(dir_tmp + 'color' + IntToStr(ha) +'.bmp');
 end;
 
-procedure TForm1.MovMouseEnter ( Sender : TObject);
-var
-  I, MoveValue: Integer;
-  FriendlyWall, OpponentWall,FinalWall: Boolean;
-  aCellList: TList<TPoint>;
-begin
-//  hidechances;
-  PanelCombatLog.Left :=  (PanelBack.Width div 2 ) - (PanelCombatLog.Width div 2 );   ;
-  SE_GridDice.ClearData;
-  SE_GridDice.RowCount := 1;
-  SE_GridDice.CellsEngine.ProcessSprites(2000);
-  SE_GridDice.refreshSurface (SE_GridDice);
-
-  if SelectedPlayer = nil then Exit;
-  if  SelectedPlayer.HasBall then begin
-    MoveValue := SelectedPlayer.Speed -1;
-    if MoveValue <=0 then MoveValue:=1;
-
-    FriendlyWall := true;
-    OpponentWall := true;
-    FinalWall := true;
-  end
-  else begin
-    MoveValue := SelectedPlayer.Speed ;
-    FriendlyWall := false;
-    OpponentWall := false;
-    FinalWall := true;
-  end;
-
-  aCellList:= TList<TPoint>.Create;
-
-  MyBrain.GetNeighbournsCells( SelectedPlayer.CellX, SelectedPlayer.CellY, MoveValue,True,true , True,aCellList); // noplayer,noOutside
-  for I := 0 to aCellList.Count -1 do begin
-
-          MyBrain.GetPath (SelectedPlayer.Team , SelectedPlayer.CellX , SelectedPlayer.Celly, aCellList[i].X, aCellList[i].Y,
-                                MoveValue{Limit},false{useFlank},FriendlyWall{FriendlyWall},
-                                OpponentWall{OpponentWall},FinalWall{FinalWall},ExcludeNotOneDir{OneDir}, SelectedPlayer.MovePath );
-      if SelectedPlayer.MovePath.Count > 0 then begin
-        HighLightField (aCellList[i].X, aCellList[i].Y, 0 );
-      end;
-
-  end;
-  aCellList.Free;
-
-
-end;
-
-procedure TForm1.ShpMouseEnter ( Sender : TObject);
-var
-  I: Integer;
-  aCellList: TList<TPoint>;
-  aPlayer: TSoccerPlayer;
-begin
-  hidechances;
-  PanelCombatLog.Left :=  (PanelBack.Width div 2 ) - (PanelCombatLog.Width div 2 );   ;
-  SE_GridDice.ClearData ;
-  SE_GridDice.RowCount := 1;
-  SE_GridDice.CellsEngine.ProcessSprites(2000);
-  SE_GridDice.refreshSurface (SE_GridDice);
-  if SelectedPlayer = nil then Exit;
-
-  aCellList:= TList<TPoint>.Create;
-
-  MyBrain.GetNeighbournsCells( SelectedPlayer.CellX, SelectedPlayer.CellY, ShortPassRange + SelectedPlayer.tal_longpass  ,false,True,true ,aCellList); // noplayer,noOutside
-
-  for I := 0 to aCellList.Count -1 do begin
-    aPlayer := MyBrain.GetSoccerPlayer(aCellList[i].X, aCellList[i].Y);
-    if aPlayer <> nil then begin
-      if (aPlayer.Team <> SelectedPlayer.team) or (aPlayer.Ids = SelectedPlayer.Ids) then Continue;
-    end;
-   // HighLightField2 ( aCellList[i].X, aCellList[i].Y );
-    HighLightField (aCellList[i].X, aCellList[i].Y, 0);
-
-  end;
-  aCellList.Free;
-
-
-end;
-procedure TForm1.LopMouseEnter ( Sender : TObject);
-var
-  I: Integer;
-  aCellList: TList<TPoint>;
-  aPlayer: TSoccerPlayer;
-begin
-  hidechances;
-  PanelCombatLog.Left :=  (PanelBack.Width div 2 ) - (PanelCombatLog.Width div 2 );   ;
-  SE_GridDice.ClearData ;
-  SE_GridDice.RowCount := 1;
-  SE_GridDice.CellsEngine.ProcessSprites(2000);
-  SE_GridDice.refreshSurface (SE_GridDice);
-
-  if SelectedPlayer = nil then Exit;
-
-  aCellList:= TList<TPoint>.Create;
-
-  MyBrain.GetNeighbournsCells( SelectedPlayer.CellX, SelectedPlayer.CellY, LoftedPassRangeMax + SelectedPlayer.tal_longpass  ,false, True, true,aCellList); // noplayer,noOutside
-
-
-  for I := 0 to aCellList.Count -1 do begin
-    if AbsDistance(SelectedPlayer.CellX, SelectedPlayer.CellY,aCellList[i].X, aCellList[i].Y) < LoftedPassRangeMin then Continue;
-
-    aPlayer := MyBrain.GetSoccerPlayer(aCellList[i].X, aCellList[i].Y);
-    if aPlayer <> nil then begin
-      if aPlayer.Team <> SelectedPlayer.team then Continue;
-    end;
-    HighLightField (aCellList[i].X, aCellList[i].Y , 0);
-
-  end;
-  aCellList.Free;
-
-
-end;
 procedure TForm1.mainThreadTimer(Sender: TObject);
 var
   FirstTickCount: longint;
@@ -3272,67 +2960,6 @@ procedure TForm1.SetGlobalCursor ( aCursor: Tcursor);
 begin
     SE_GridAllbrain.Cursor := aCursor;
     SE_Theater1.Cursor := aCursor;
-
-end;
-procedure TForm1.CroMouseEnter ( Sender : TObject);
-var
-  I: Integer;
-  aCellList: TList<TPoint>;
-  aPlayer: TSoccerPlayer;
-begin
-  hidechances;
-  SE_GridDice.ClearData ;
-  SE_GridDice.RowCount := 1;
-  SE_GridDice.CellsEngine.ProcessSprites(2000);
-  SE_GridDice.refreshSurface (SE_GridDice);
-  if SelectedPlayer = nil then Exit;
-
-  aCellList:= TList<TPoint>.Create;
-
-  MyBrain.GetNeighbournsCells( SelectedPlayer.CellX, SelectedPlayer.CellY,CrossingRangeMax + SelectedPlayer.tal_longpass  ,false,True,True, aCellList); // noplayer,noOutside
-
-
-  for I := 0 to aCellList.Count -1 do begin
-    if AbsDistance(SelectedPlayer.CellX, SelectedPlayer.CellY,aCellList[i].X, aCellList[i].Y) < CrossingRangeMin then Continue;
-
-    aPlayer := MyBrain.GetSoccerPlayer(aCellList[i].X, aCellList[i].Y);
-    if aPlayer <> nil then begin
-      if aPlayer.Team <> SelectedPlayer.team then Continue;
-      if not aPlayer.InCrossingArea  then Continue;
-      HighLightField (aCellList[i].X, aCellList[i].Y,0);
-
-    end;
-
-  end;
-  aCellList.Free;
-
-
-end;
-procedure TForm1.DriMouseEnter ( Sender : TObject);
-var
-  I: Integer;
-  aPlayerList: TObjectList<TSoccerPlayer>;
-  aPlayer: TSoccerPlayer;
-begin
-  hidechances;
-  PanelCombatLog.Left :=  (PanelBack.Width div 2 ) - (PanelCombatLog.Width div 2 );   ;
-  SE_GridDice.ClearData ;
-  SE_GridDice.RowCount := 1;
-  SE_GridDice.CellsEngine.ProcessSprites(2000);
-  SE_GridDice.refreshSurface (SE_GridDice);
-  if SelectedPlayer = nil then Exit;
-
-  aPlayerList:= TObjectList<TSoccerPlayer>.create(False);
-
-  MyBrain.GetNeighbournsOpponent( SelectedPlayer.CellX, SelectedPlayer.CellY, SelectedPlayer.Team ,aPlayerList);
-
-  for I := 0 to aPlayerList.Count -1 do begin
-   // HighLightField2 ( aCellList[i].X, aCellList[i].Y );
-      HighLightField (aPlayerList[i].cellX, aPlayerList[i].cellY,0);
-  end;
-
-  aPlayerList.Free;
-
 
 end;
 
@@ -3851,6 +3478,33 @@ begin
   result := Mybrain.tsScript.Count;
 end;
 
+procedure TForm1.CnColorGrid1SelectCell(Sender: TObject; ACol, ARow: Integer; var CanSelect: Boolean);
+var
+  UniformBitmap: SE_Bitmap;
+  ha : Byte;
+begin
+    // non salvo il colore in sè, ma un index
+    if btn_UniformHome.Down then
+     ha := 0
+     else ha :=1;
+    if ck_Jersey1.Down then
+      TSUniforms[ha][0] := IntToStr( aCol )
+      else if ck_Jersey2.Down then
+      TSUniforms[ha][1] := IntToStr( aCol )
+      else if ck_Shorts.Down then
+      TSUniforms[ha][2] := IntToStr( aCol )
+      else if ck_Socks1.Down then
+      TSUniforms[ha][3] := IntToStr( aCol )
+      else if ck_Socks2.Down then
+      TSUniforms[ha][4] := IntToStr( aCol );
+
+    UniformBitmap := SE_Bitmap.Create (dir_player + 'bw.bmp');
+    PreLoadUniform( ha, UniformBitmap   );  // usa tsuniforms e  UniformBitmapBW
+    UniformBitmap.free;
+    UniformPortrait.Glyph.LoadFromFile(dir_tmp + 'color' + IntToStr(ha)+ '.bmp');
+
+end;
+
 procedure Tform1.ClientLoadBrainMM  ( incMove: Byte; FirstTime: boolean );
 var
   SS : TStringStream;
@@ -3948,15 +3602,15 @@ begin
   UniformBitmapGK := SE_Bitmap.Create (dir_player + 'bw.bmp');
   PreLoadUniformGK (1, UniformBitmapGK );
   { TODO : override maglie if checkbox ... black or white }
-  MyBrain.Score.DominantColor[0]:=  se_gridColors.Colors [ StrToInt( TsUniforms[0][0] ),0 ];
+  MyBrain.Score.DominantColor[0]:=  StringToColor( CnColorgrid1.CustomColors [ StrToInt( TsUniforms[0][0] )]);
   if TsUniforms[0][0] = TsUniforms[0][1] then
-    MyBrain.Score.FontColor[0]:= GetContrastColor( se_gridColors.Colors [ StrToInt(TsUniforms[0][0]),0 ] )
-    else MyBrain.Score.FontColor[0]:= se_gridColors.Colors [ StrToInt( TsUniforms[0].Strings[1] ),0];
+    MyBrain.Score.FontColor[0]:= GetContrastColor( StringToColor( CnColorgrid1.CustomColors [ StrToInt(TsUniforms[0][0])]) )
+    else MyBrain.Score.FontColor[0]:= StringToColor( CnColorgrid1.CustomColors [ StrToInt( TsUniforms[0].Strings[1] )]);
 
-  MyBrain.Score.DominantColor[1]:= se_gridColors.Colors [ StrToInt( TsUniforms[1][0] ),0 ];
+  MyBrain.Score.DominantColor[1]:= StringToColor( CnColorgrid1.CustomColors [ StrToInt( TsUniforms[1][0] ) ]);
   if TsUniforms[1][0] = TsUniforms[1][1] then
-    MyBrain.Score.FontColor[1]:= GetContrastColor( se_gridColors.Colors [ StrToInt(TsUniforms[1][0]),0 ] )
-    else MyBrain.Score.FontColor[1]:= se_gridColors.Colors [StrToInt( TsUniforms[1][1] ),0];
+    MyBrain.Score.FontColor[1]:= GetContrastColor( StringToColor( CnColorgrid1.CustomColors [ StrToInt(TsUniforms[1][0])]) )
+    else MyBrain.Score.FontColor[1]:= StringToColor( CnColorgrid1.CustomColors [StrToInt( TsUniforms[1][1] )]);
 
   MyBrain.Score.Gol [0] :=  Ord( buf3[incMove][ cur ]);
   cur := cur + 1 ;
@@ -4647,9 +4301,9 @@ begin
     end;
      SetGlobalCursor(crHandPoint );
 
-     if (not AudioCrowd.Playing) and ( not btnAudioStadium.Down) then begin
-      AudioCrowd.Play;
-     end;
+     //if (not AudioCrowd.Playing) and ( not btnAudioStadium.Down) then begin
+     // AudioCrowd.Play;
+     //end;
 
    if MyBrain.w_CornerSetup or MyBrain.w_FreeKickSetup1 or MyBrain.w_FreeKickSetup2 or MyBrain.w_FreeKickSetup3 or MyBrain.w_FreeKickSetup4
     or (Mybrain.Score.TeamGuid [ Mybrain.TeamTurn ]  <> MyGuidTeam) then begin
@@ -6631,18 +6285,21 @@ begin
 
 end;
 
-procedure TForm1.advCountryTeamKeyPress(Sender: TObject; var Key: Char);
-var
-  i: Integer;
+procedure TForm1.SE_GridCountryTeamGridCellMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; CellX, CellY: Integer;
+  Sprite: SE_Sprite);
 begin
-  for I := 0 to advCountryTeam.RowCount -1 do begin
-    if UpperCase(LeftStr(advCountryTeam.Cells[1,i],1)) = UpperCase(key) then begin
-      advCountryTeam.Row := i;
-      Break;
+  // una volta all'inizio del gioco
+  if GCD <= 0 then begin
+    if GameScreen =  ScreenSelectCountry then
+    tcp.SendStr( 'selectedcountry,' + SE_GridCountryTeam.Cells[0,CellY].ids + EndofLine)
+    else if GameScreen =  ScreenSelectTeam then begin
+      WAITING_GETFORMATION:= True;
+      tcp.SendStr(  'selectedteam,' + SE_GridCountryTeam.Cells[0,CellY].ids + EndofLine);
     end;
+    GCD := GCD_DEFAULT;
   end;
-end;
 
+end;
 
 procedure TForm1.Anim ( Script: string );
 var
@@ -6796,14 +6453,10 @@ begin
   end
   else if ts[0] = 'cl_sound' then begin
     if ts[1]='soundishot' then begin
-//      playsound ( pchar (dir_sound +  'shot.wav' ) , 0, SND_FILENAME OR SND_ASYNC)
-      AudioShot.Position := 0;
-      Audioshot.Play;
+      playsound ( pchar (dir_sound +  'shot.wav' ) , 0, SND_FILENAME OR SND_ASYNC)
     end
     else if ts[1]='soundtackle' then begin
-//       playsound ( pchar (dir_sound +  'tackle.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
-      AudioTackle.Position := 0;
-      AudioTackle.Play;
+       playsound ( pchar (dir_sound +  'tackle.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
     end;
   end
   else if ts[0] = 'cl_red' then begin
@@ -7065,18 +6718,11 @@ begin
    //QUI tsCmd [4] e tsCmd [5] indicano la cella di uscita - MyBrain.,ball è già sulla cella del corner
 
     if (ts[0] = 'cl_ball.bounce') or (ts[0] = 'cl_ball.bounce.heading') or (ts[0] = 'cl_ball.bounce.back') then begin
-      AudioBounce.Position:=0;
-      AudioBounce.Play;
+      playsound ( pchar (dir_sound +  'bounce.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
     end
 
     else if (ts[0] = 'cl_ball.bounce.gk') then  begin
-//      playsound ( pchar (dir_sound +  'nogol.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
-      AudioBounce.Position:=0;
-      AudioBounce.Play;
-//      Sleep(300);
-
-      AudioNoGol.Position:=0;
-      AudioNoGol.Play;
+      playsound ( pchar (dir_sound +  'nogol.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
     end;
 
 //    (ts[0] = 'cl_ball.bounce.crossbar') <-- gestita in se_ball.destinationreached
@@ -7160,9 +6806,7 @@ begin
   end
   else if ts[0]= 'cl_splash.gameover' then begin
     SE_GridDicewriterow ( 0,  UpperCase( Translate ( 'lbl_GameOver' )),  '',  '' , '', '' );
-//  playsound ( pchar (dir_sound +  'gameover.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
-    AudioGameOver.Position:=0;
-    AudioGameOver.Play;
+    playsound ( pchar (dir_sound +  'gameover.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
     se_Theater1.thrdAnimate.OnTimer (se_Theater1.thrdAnimate);
     Sleep(2000);
     AnimationScript.Reset ;
@@ -7333,9 +6977,7 @@ begin
      seSprite:= SE_interface.CreateSprite(FaultBitmap.BITMAP ,'fault',1,1,10,aSEField.Position.X, aSEField.Position.Y,true  );
      FaultBitmap.Free;
      seSprite.LifeSpan := ShowFaultLifeSpan;
-//   playsound ( pchar (dir_sound +  'faul.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
-     AudioFaul.Position:=0;
-     AudioFaul.Play;
+     playsound ( pchar (dir_sound +  'faul.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
      SE_GridDicewriterow ( aplayer.Team, Translate('lbl_Fault'),  aplayer.surname,  aPlayer.ids , 'FAULT','');
 
   end
@@ -7347,9 +6989,7 @@ begin
      FaultBitmap.Free;
      seSprite.LifeSpan := ShowFaultLifeSpan;
      SE_GridDicewriterow ( 0,  UpperCase( Translate ( 'lbl_Fault' )),  '',  '' , '', '' );
-//     playsound ( pchar (dir_sound +  'faul.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
-     AudioFaul.Position:=0;
-     AudioFaul.Play;
+     playsound ( pchar (dir_sound +  'faul.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
 
      SE_GridDicewriterow ( aplayer.Team, Translate('lbl_Fault'),  '',  '' , 'FAULT','');
   end
@@ -7361,9 +7001,7 @@ begin
      FaultBitmap.Free;
      seSprite.LifeSpan := ShowFaultLifeSpan;
      SE_GridDicewriterow ( aplayer.Team, Translate('lbl_Fault'),  '',  '' , 'FAULT','');
-//     playsound ( pchar (dir_sound +  'faul.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
-     AudioFaul.Position:=0;
-     AudioFaul.Play;
+     playsound ( pchar (dir_sound +  'faul.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
 
   end;
 
@@ -7445,7 +7083,7 @@ procedure TForm1.btnWatchLiveExitClick(Sender: TObject);
 begin
   if GCD <= 0 then begin
     if ViewReplay then begin
-      AudioCrowd.Stop;
+      //AudioCrowd.Stop;
       ToolSpin.Visible := false;
       ViewReplay := false;
       WaitForSingleObject(MutexAnimation ,INFINITE);
@@ -7458,7 +7096,7 @@ begin
       gamescreen := ScreenLogin;
     end
     else if viewMatch then begin
-      AudioCrowd.Stop;
+      //AudioCrowd.Stop;
       viewMatch := False;
       tcp.SendStr( 'closeviewmatch' + EndofLine);
       WaitForSingleObject(MutexAnimation,INFINITE);
@@ -7490,6 +7128,7 @@ end;
 
 procedure TForm1.btnAudioStadiumClick(Sender: TObject);
 begin
+{
   if not btnAudioStadium.Down then begin
 
     btnAudioStadium.NumGlyphs := 1;
@@ -7503,7 +7142,7 @@ begin
       AudioCrowd.Stop;
     end;
 
-  end;
+  end;   }
 end;
 
 
@@ -8308,6 +7947,21 @@ begin
   end;
 end;
 
+procedure TForm1.SE_GridMarketGridCellMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; CellX, CellY: Integer;
+  Sprite: SE_Sprite);
+begin
+  if GCD <= 0 then begin
+
+    if MyBrainFormation.lstSoccerPlayer.Count < 18 then begin
+      WAITING_GETFORMATION:= True;
+      tcp.SendStr( 'buy,'+ SE_GridMarket.Cells[0,CellY].ids + EndofLine)
+    end
+      else ShowError(Translate('warning_max18'));
+    GCD := GCD_DEFAULT;
+  end;
+
+end;
+
 procedure TForm1.LoadGridFreeKick ( team : integer; Stat:string; clearMark: boolean );
 var
   i,Y: integer;
@@ -9102,20 +8756,6 @@ begin
 
 
 end;
-procedure TForm1.advMarketClickCell(Sender: TObject; ARow, ACol: Integer);
-begin
-  if GCD <= 0 then begin
-
-    if MyBrainFormation.lstSoccerPlayer.Count < 18 then begin
-      WAITING_GETFORMATION:= True;
-      tcp.SendStr( 'buy,'+ advMarket.Cells[0,ARow] + EndofLine)
-    end
-      else ShowError(Translate('warning_max18'));
-    GCD := GCD_DEFAULT;
-  end;
-
-end;
-
 
 procedure TForm1.ArrowShowMoveAutoTackle ( CellX, CellY : Integer);
 var
@@ -10032,8 +9672,8 @@ begin
       MM2.free;     // endsoccer si perde da solo decomprimendo
       DeCompressedStream.Free;
       CopyMemory( @Buf3[0][0], mm3[0].Memory , mm3[0].size  ); // copia del buf per non essere sovrascritti
-      ClientLoadMarket;
       GameScreen := ScreenMarket;
+      ClientLoadMarket;
       MM.Free;
       Exit;
     end
@@ -10286,7 +9926,7 @@ end;
 
 procedure TForm1.SetGameScreen (const aGameScreen:TGameScreen);
 var
-  i: Integer;
+  i,y: Integer;
   aPlayer: TSoccerPlayer;
   aSeField: SE_Sprite;
 
@@ -10295,52 +9935,56 @@ begin
   fGameScreen:= aGameScreen;
 
   if fGameScreen = ScreenLogin then begin
-    AudioCrowd.Stop;
+    //AudioCrowd.Stop;
     viewMatch := False;
     ShowLogin;
 
   end
-  else if fGameScreen = ScreenSelectCountry then begin
-    AudioCrowd.Stop;
+  else if (fGameScreen = ScreenSelectCountry) or (fGameScreen = ScreenSelectTeam )then begin
+    //AudioCrowd.Stop;
     SE_Theater1.Visible := false;
     PanelMain.Visible := false;
     PanelLogin.Visible := false;
-    PanelListMatches.Visible := false;
-    // file data\world.countries.ini riempe advCountry
-    advCountryTeam.ColWidths [0] := 0;
 
-    advCountryTeam.RowCount := TsWorldCountries.count;
-    for I := 0 to advCountryTeam.RowCount -1 do begin
-      advCountryTeam.Cells[0,i]:= TsWorldCountries.Names[i];
-      advCountryTeam.Cells[1,i]:= TsWorldCountries.ValueFromIndex[i];
+    SE_GridCountryTeam.ClearData;   // importante anche pr memoryleak
+    SE_GridCountryTeam.DefaultColWidth := 16;
+    SE_GridCountryTeam.DefaultRowHeight := 16;
+    SE_GridCountryTeam.ColCount :=1; // nazione o team
+    SE_GridCountryTeam.Columns [0].Width := SE_GridCountryTeam.Width;
+
+
+    if fGameScreen = ScreenSelectCountry then begin
+
+      SE_GridCountryTeam.RowCount := TsWorldCountries.count;
+      for y := 0 to SE_GridCountryTeam.RowCount -1 do begin
+        SE_GridCountryTeam.Rows[y].Height := 16;
+        SE_GridCountryTeam.Cells[0,y].FontName := 'Verdana';
+        SE_GridCountryTeam.Cells[0,y].FontSize := 8;
+        SE_GridCountryTeam.cells [0,y].FontColor := clWhite;
+        SE_GridCountryTeam.Cells[0,y].Ids:= TsWorldCountries.ValueFromIndex[y];
+        SE_GridCountryTeam.Cells[0,y].Text:= TsWorldCountries.Names[y];
+      end;
+    end
+    else if fGameScreen = ScreenSelectTeam then begin
+
+      SE_GridCountryTeam.RowCount := TsNationTeams.Count;
+      for y := 0 to SE_GridCountryTeam.RowCount -1 do begin
+        SE_GridCountryTeam.Rows[y].Height := 16;
+        SE_GridCountryTeam.Cells[0,y].FontName := 'Verdana';
+        SE_GridCountryTeam.Cells[0,y].FontSize := 8;
+        SE_GridCountryTeam.cells [0,y].FontColor := clWhite;
+        SE_GridCountryTeam.Cells[0,y].ids:= TsNationTeams.ValueFromIndex[y];
+        SE_GridCountryTeam.Cells[0,y].Text:= TsNationTeams.Names[y];
+      end;
     end;
 
-    advCountryTeam.Row := 0;
-    PanelCountryTeam.Visible := True;
-//  GridXP.CellsEngine.ProcessSprites(20);
-//  sequellachesara  SE_GridAllBrain.refreshSurface ( SE_GridAllBrain );
-
-  end
-  else if fGameScreen = ScreenSelectTeam then begin
-    AudioCrowd.Stop;
-    SE_Theater1.Visible := false;
-    PanelMain.Visible := false;
-    PanelLogin.Visible := false;
-    PanelListMatches.Visible := false;
-    // file data\world.teamss.ini riempe advCountry
-    advCountryTeam.RowCount := TsNationTeams.Count;
-    for I := 0 to advCountryTeam.RowCount -1 do begin
-      advCountryTeam.Cells[0,i]:= TsNationTeams.Names[i];
-      advCountryTeam.Cells[1,i]:= TsNationTeams.ValueFromIndex[i];
-    end;
-
-
-    advCountryTeam.Row := 0;
+    SE_GridCountryTeam.CellsEngine.ProcessSprites(20);
+    SE_GridCountryTeam.refreshSurface ( SE_GridAllBrain );
     PanelCountryTeam.Visible := True;
 
   end
   else if fGameScreen = ScreenWaitingFormation then begin // si accede cliccando back - settcpformation, in attesa
-    AudioCrowd.Stop;
+    //AudioCrowd.Stop;
     SetTheaterMatchSize;
     PanelInfoPlayer0.Visible := False;
     PanelMarket.Visible:= False;
@@ -10352,7 +9996,7 @@ begin
   end
   else if fGameScreen = ScreenFormation then begin    // diversa da ScreenLiveFormations che prende i dati dal brain
 
-    AudioCrowd.Stop;
+    //AudioCrowd.Stop;
     FirstLoadOK:= False;
     PanelCombatLog.Visible := False;
     SE_Theater1.Visible := false;
@@ -10438,7 +10082,7 @@ begin
 
 
   else if fGameScreen = ScreenMain then begin
-    AudioCrowd.Stop;
+    //AudioCrowd.Stop;
     ThreadCurMove.Enabled := false; // parte solo in beginbrain
     FirstLoadOK:= False;
     btnWatchLiveExit.Visible := false;
@@ -10455,7 +10099,7 @@ begin
 
   end
   else if fGameScreen = ScreenWaitingLiveMatch then begin // si accede cliccando queue
-    AudioCrowd.Stop;
+    //AudioCrowd.Stop;
     SE_Theater1.Visible := True;
     PanelMain.Visible := false;
     PanelLogin.Visible := false;
@@ -10503,7 +10147,7 @@ begin
 
   end
   else if fGameScreen = ScreenWaitingWatchLive then begin // si accede cliccando l'icona TV
-    AudioCrowd.Stop;
+    //AudioCrowd.Stop;
     SE_Theater1.Visible := True;
     PanelMain.Visible := false;
     PanelLogin.Visible := false;
@@ -10513,7 +10157,7 @@ begin
 
   end
   else if fGameScreen = ScreenSelectLiveMatch then begin
-    AudioCrowd.Stop;
+    //AudioCrowd.Stop;
     btnWatchLiveExit.Visible := false;
     FirstLoadOK:= False;
     PanelLogin.Visible := false;
@@ -10524,7 +10168,7 @@ begin
     SE_GridAllBrain.refreshSurface ( SE_GridAllBrain );
   end
   else if fGameScreen = ScreenMarket then begin
-    AudioCrowd.Stop;
+    //AudioCrowd.Stop;
     btnWatchLiveExit.Visible := false;
     FirstLoadOK:= False;
     PanelLogin.Visible := false;
@@ -10708,7 +10352,7 @@ var
   SS : TStringStream;
   dataStr: string;
   MatchesPlayed,MatchesLeft: Word;
-  y: Integer;
+  x,y: Integer;
 begin
 {
     MM.Write( @Count , SizeOf(word) );
@@ -10739,90 +10383,114 @@ begin
   dataStr := SS.DataString;
   SS.Free;
 
-  advMarket.ClearAll ;
-  advMarket.RowCount :=1;
-  advMarket.ColWidths [0]:=0;      // guidplayer
-  advMarket.ColWidths [1]:=100;     // name
-  advMarket.ColWidths [2]:=65;     // sell
-  advMarket.ColWidths [3]:=35;    // s
-  advMarket.ColWidths [4]:=35;     // d
-  advMarket.ColWidths [5]:=35;     // p
-  advMarket.ColWidths [6]:=35;    // bc
-  advMarket.ColWidths [7]:=35;     // sh
-  advMarket.ColWidths [8]:=35;     // h
-  advMarket.ColWidths [9]:=35;  // talent
-  advMarket.ColWidths [10]:=35;  // age
-  advMarket.ColWidths [11]:=35;  // matches left
-  advMarket.ColWidths [12]:=60;  // BUY
+  SE_GridMarket.ClearData;   // importante anche pr memoryleak
+  SE_GridMarket.DefaultColWidth := 16;
+  SE_GridMarket.DefaultRowHeight := 22;
+  SE_GridMarket.ColCount :=13; // descrizione, vuoto, valore, bitmaps o progressbar
+  SE_GridMarket.RowCount :=1;
+  SE_GridMarket.Columns [0].Width :=1;      // guidplayer
+  SE_GridMarket.Columns [1].Width :=100;     // name
+  SE_GridMarket.Columns [2].Width :=65;     // sell
+  SE_GridMarket.Columns [3].Width :=35;    // s
+  SE_GridMarket.Columns [4].Width :=35;     // d
+  SE_GridMarket.Columns [5].Width :=35;     // p
+  SE_GridMarket.Columns [6].Width :=35;    // bc
+  SE_GridMarket.Columns [7].Width :=35;     // sh
+  SE_GridMarket.Columns [8].Width :=35;     // h
+  SE_GridMarket.Columns [9].Width :=35;  // talent
+  SE_GridMarket.Columns [10].Width :=35;  // age
+  SE_GridMarket.Columns [11].Width :=35;  // matches left
+  SE_GridMarket.Columns [12].Width :=60;  // BUY
+  SE_GridMarket.Width := SE_GridMarket.TotalCellsWidth;
 
-  advMarket.Cells[0,0]:= '';
-  advMarket.Cells[1,0]:= Translate('lbl_Surname');
-  advMarket.Cells[2,0]:= Translate('lbl_Price');
-  advMarket.Cells[3,0]:= Translate('attribute_Speed');
-  advMarket.Cells[4,0]:= Translate('attribute_Defense');
-  advMarket.Cells[5,0]:= Translate('attribute_Passing');
-  advMarket.Cells[6,0]:= Translate('attribute_Ball.Control');
-  advMarket.Cells[7,0]:= Translate('attribute_Shot');
-  advMarket.Cells[8,0]:= Translate('attribute_Heading');
-  advMarket.Cells[9,0]:= Translate('lbl_Talent');
-  advMarket.Cells[10,0]:= Translate('lbl_Age');
-  advMarket.Cells[11,0]:= Translate('lbl_MatchesLeft');
+  SE_GridMarket.Cells[0,0].Text := '';
+  SE_GridMarket.Cells[1,0].Text := Translate('lbl_Surname');
+  SE_GridMarket.Cells[2,0].Text := Translate('lbl_Price');
+  SE_GridMarket.Cells[3,0].Text := Translate('attribute_Speed');
+  SE_GridMarket.Cells[4,0].Text := Translate('attribute_Defense');
+  SE_GridMarket.Cells[5,0].Text := Translate('attribute_Passing');
+  SE_GridMarket.Cells[6,0].Text := Translate('attribute_Ball.Control');
+  SE_GridMarket.Cells[7,0].Text := Translate('attribute_Shot');
+  SE_GridMarket.Cells[8,0].Text := Translate('attribute_Heading');
+  SE_GridMarket.Cells[9,0].Text := Translate('lbl_Talent');
+  SE_GridMarket.Cells[10,0].Text := Translate('lbl_Age');
+  SE_GridMarket.Cells[11,0].Text := Translate('lbl_MatchesLeft');
 
+  SE_GridMarket.Cells [2,0].CellAlignmentH := hCenter;
+  SE_GridMarket.Cells [3,0].CellAlignmentH := hCenter;
+  SE_GridMarket.Cells [4,0].CellAlignmentH := hCenter;
+  SE_GridMarket.Cells [5,0].CellAlignmentH := hCenter;
+  SE_GridMarket.Cells [6,0].CellAlignmentH := hCenter;
+  SE_GridMarket.Cells [7,0].CellAlignmentH := hCenter;
+  SE_GridMarket.Cells [8,0].CellAlignmentH := hCenter;
+  SE_GridMarket.Cells [9,0].CellAlignmentH := hCenter;
+  SE_GridMarket.Cells [10,0].CellAlignmentH := hCenter;
+  SE_GridMarket.Cells [11,0].CellAlignmentH := hCenter;
+
+  SE_GridMarket.Rows[0].Height := 22;
+
+  for x := 0 to SE_GridMarket.ColCount -1 do begin
+
+    SE_GridMarket.Cells[x,y].FontName := 'Verdana';
+    SE_GridMarket.Cells[x,y].FontSize := 8;
+    SE_GridMarket.cells [x,y].FontColor := clYellow;
+  end;
 
   // a 0 c'è la word che indica dove comincia
   cur := 0;
   RecordCount:=   PWORD(@buf3[0][ cur ])^;                // ragiona in base 0
-  advMarket.RowCount := RecordCount + 1; // intestazione presente
-    advMarket.Alignments [2,0] := taCenter;
-    advMarket.Alignments [3,0] := taCenter;
-    advMarket.Alignments [4,0] := taCenter;
-    advMarket.Alignments [5,0] := taCenter;
-    advMarket.Alignments [6,0] := taCenter;
-    advMarket.Alignments [7,0] := taCenter;
-    advMarket.Alignments [8,0] := taCenter;
-    advMarket.Alignments [9,0] := taCenter;
-    advMarket.Alignments [10,0] := taCenter;
-    advMarket.Alignments [11,0] := taCenter;
+  SE_GridMarket.RowCount := RecordCount + 1; // intestazione presente
+  SE_GridMarket.Virtualheight := SE_GridMarket.TotalCellsHeight;
 
-  for y := 1 to advMarket.RowCount -1 do begin  // Non intestazione
-    advMarket.Alignments [2,y] := taRightJustify;
-    advMarket.Alignments [3,y] := taCenter;
-    advMarket.Alignments [4,y] := taCenter;
-    advMarket.Alignments [5,y] := taCenter;
-    advMarket.Alignments [6,y] := taCenter;
-    advMarket.Alignments [7,y] := taCenter;
-    advMarket.Alignments [8,y] := taCenter;
-    advMarket.Alignments [10,y] := taCenter;
-    advMarket.Alignments [11,y] := taRightJustify;
+  for y := 1 to SE_GridMarket.RowCount -1 do begin
+
+    for x := 0 to SE_GridMarket.ColCount -1 do begin
+
+      SE_GridMarket.Rows[y].Height := 22;
+      SE_GridMarket.Cells[x,y].FontName := 'Verdana';
+      SE_GridMarket.Cells[x,y].FontSize := 8;
+      SE_GridMarket.cells [x,y].FontColor := clWhite;
+    end;
   end;
 
+  for y := 1 to SE_GridMarket.RowCount -1 do begin  // Non intestazione
+    SE_GridMarket.Cells [2,y].CellAlignmentH := hright;
+    SE_GridMarket.Cells [3,y].CellAlignmentH := hcenter;
+    SE_GridMarket.Cells [4,y].CellAlignmentH := hcenter;
+    SE_GridMarket.Cells [5,y].CellAlignmentH := hcenter;
+    SE_GridMarket.Cells [6,y].CellAlignmentH := hcenter;
+    SE_GridMarket.Cells [7,y].CellAlignmentH := hcenter;
+    SE_GridMarket.Cells [8,y].CellAlignmentH := hcenter;
+    SE_GridMarket.Cells [10,y].CellAlignmentH := hcenter;
+    SE_GridMarket.Cells [11,y].CellAlignmentH := hright;
+  end;
 
 
   Cur := Cur + 2; // è una word
 
   for I := 0 to RecordCount -1 do begin
     I1 := i +1;                                  // intestazione grid
-    advMarket.Cells[0,i1]  := IntToStr( PDWORD(@buf3[0][ cur ])^);
+    SE_GridMarket.Cells[0,i1].ids  := IntToStr( PDWORD(@buf3[0][ cur ])^); // ids servirà per comprare
     Cur := Cur + 4;
 
     LSurname :=  Ord( buf3[0][ cur ]);
-    advMarket.Cells[1,i1]  := MidStr( dataStr, cur + 2  , LSurname );// ragiona in base 1
+    SE_GridMarket.Cells[1,i1].Text  := MidStr( dataStr, cur + 2  , LSurname );// ragiona in base 1
     cur  := cur + LSurname + 1;
 
-    advMarket.Cells[2,i1]  :=  IntToStr( PDWORD(@buf3[0][ cur ])^); // sellprice
+    SE_GridMarket.Cells[2,i1].Text  :=  IntToStr( PDWORD(@buf3[0][ cur ])^); // sellprice
     Cur := Cur + 4;
 
-    advMarket.Cells[3,i1]  :=  IntToStr( Ord( buf3[0][ cur ]));  // speed
+    SE_GridMarket.Cells[3,i1].Text  :=  IntToStr( Ord( buf3[0][ cur ]));  // speed
     Cur := Cur + 1;
-    advMarket.Cells[4,i1]  :=  IntToStr( Ord( buf3[0][ cur ]));  //
+    SE_GridMarket.Cells[4,i1].Text  :=  IntToStr( Ord( buf3[0][ cur ]));  //
     Cur := Cur + 1;
-    advMarket.Cells[5,i1]  :=  IntToStr( Ord( buf3[0][ cur ]));  //
+    SE_GridMarket.Cells[5,i1].Text  :=  IntToStr( Ord( buf3[0][ cur ]));  //
     Cur := Cur + 1;
-    advMarket.Cells[6,i1]  :=  IntToStr( Ord( buf3[0][ cur ]));  //
+    SE_GridMarket.Cells[6,i1].Text  :=  IntToStr( Ord( buf3[0][ cur ]));  //
     Cur := Cur + 1;
-    advMarket.Cells[7,i1]  :=  IntToStr( Ord( buf3[0][ cur ]));  //
+    SE_GridMarket.Cells[7,i1].Text  :=  IntToStr( Ord( buf3[0][ cur ]));  //
     Cur := Cur + 1;
-    advMarket.Cells[8,i1]  :=  IntToStr( Ord( buf3[0][ cur ]));  // heading
+    SE_GridMarket.Cells[8,i1].Text  :=  IntToStr( Ord( buf3[0][ cur ]));  // heading
     Cur := Cur + 1;
 
     talentID :=  Ord( buf3[0][ cur ]);
@@ -10831,7 +10499,7 @@ begin
     if talentID <> 0 then begin
       cBitmap := SE_Bitmap.Create ( dir_talent + tsTalents[talentID-1]+'.bmp' ) ;
       cBitmap.Stretch(30,22);
-      advMarket.AddBitmap(9,i1,cBitmap.Bitmap,false, haLeft, vaTop);
+      SE_GridMarket.AddSE_Bitmap (9,i1,1, cBitmap,true);
     end;
 
     MatchesPlayed :=  PWORD(@buf3[0][ cur ])^;
@@ -10842,19 +10510,200 @@ begin
 
     Age:= Trunc(  MatchesPlayed  div SEASON_MATCHES) + 18 ;
 
-    advMarket.Cells[10,i1]  :=  IntToStr( age );
-    advMarket.Cells[11,i1]  :=  IntToStr( MatchesLeft );
+    SE_GridMarket.Cells[10,i1].Text  :=  IntToStr( age );
+    SE_GridMarket.Cells[11,i1].Text  :=  IntToStr( MatchesLeft );
 
-    advMarket.Colors[12,i1] := clGray;
-    advMarket.FontColors[12,i1] := $0041BEFF;
-    advMarket.cells[12,i1] := Translate('lbl_Buy');
+    SE_GridMarket.Cells[12,i1].BackColor := clGray;
+    SE_GridMarket.Cells[12,i1].FontColor := $0041BEFF;
+    SE_GridMarket.cells[12,i1].Text := Translate('lbl_Buy');
+
 
   end;
+
+  SE_GridMarket.CellsEngine.ProcessSprites(2000);
+  SE_GridMarket.refreshSurface ( SE_GridMarket );
+
+
+end;
+
+// utilities
+{
+procedure TForm1.MovMouseEnter ( Sender : TObject);
+var
+  I, MoveValue: Integer;
+  FriendlyWall, OpponentWall,FinalWall: Boolean;
+  aCellList: TList<TPoint>;
+begin
+//  hidechances;
+  PanelCombatLog.Left :=  (PanelBack.Width div 2 ) - (PanelCombatLog.Width div 2 );   ;
+  SE_GridDice.ClearData;
+  SE_GridDice.RowCount := 1;
+  SE_GridDice.CellsEngine.ProcessSprites(2000);
+  SE_GridDice.refreshSurface (SE_GridDice);
+
+  if SelectedPlayer = nil then Exit;
+  if  SelectedPlayer.HasBall then begin
+    MoveValue := SelectedPlayer.Speed -1;
+    if MoveValue <=0 then MoveValue:=1;
+
+    FriendlyWall := true;
+    OpponentWall := true;
+    FinalWall := true;
+  end
+  else begin
+    MoveValue := SelectedPlayer.Speed ;
+    FriendlyWall := false;
+    OpponentWall := false;
+    FinalWall := true;
+  end;
+
+  aCellList:= TList<TPoint>.Create;
+
+  MyBrain.GetNeighbournsCells( SelectedPlayer.CellX, SelectedPlayer.CellY, MoveValue,True,true , True,aCellList); // noplayer,noOutside
+  for I := 0 to aCellList.Count -1 do begin
+
+          MyBrain.GetPath (SelectedPlayer.Team , SelectedPlayer.CellX , SelectedPlayer.Celly, aCellList[i].X, aCellList[i].Y,
+                                MoveValue,false,FriendlyWall,
+                                OpponentWall,FinalWall,ExcludeNotOneDir, SelectedPlayer.MovePath );
+      if SelectedPlayer.MovePath.Count > 0 then begin
+        HighLightField (aCellList[i].X, aCellList[i].Y, 0 );
+      end;
+
+  end;
+  aCellList.Free;
+
+
+end;
+
+procedure TForm1.ShpMouseEnter ( Sender : TObject);
+var
+  I: Integer;
+  aCellList: TList<TPoint>;
+  aPlayer: TSoccerPlayer;
+begin
+  hidechances;
+  PanelCombatLog.Left :=  (PanelBack.Width div 2 ) - (PanelCombatLog.Width div 2 );   ;
+  SE_GridDice.ClearData ;
+  SE_GridDice.RowCount := 1;
+  SE_GridDice.CellsEngine.ProcessSprites(2000);
+  SE_GridDice.refreshSurface (SE_GridDice);
+  if SelectedPlayer = nil then Exit;
+
+  aCellList:= TList<TPoint>.Create;
+
+  MyBrain.GetNeighbournsCells( SelectedPlayer.CellX, SelectedPlayer.CellY, ShortPassRange + SelectedPlayer.tal_longpass  ,false,True,true ,aCellList); // noplayer,noOutside
+
+  for I := 0 to aCellList.Count -1 do begin
+    aPlayer := MyBrain.GetSoccerPlayer(aCellList[i].X, aCellList[i].Y);
+    if aPlayer <> nil then begin
+      if (aPlayer.Team <> SelectedPlayer.team) or (aPlayer.Ids = SelectedPlayer.Ids) then Continue;
+    end;
+   // HighLightField2 ( aCellList[i].X, aCellList[i].Y );
+    HighLightField (aCellList[i].X, aCellList[i].Y, 0);
+
+  end;
+  aCellList.Free;
+
+
+end;
+procedure TForm1.LopMouseEnter ( Sender : TObject);
+var
+  I: Integer;
+  aCellList: TList<TPoint>;
+  aPlayer: TSoccerPlayer;
+begin
+  hidechances;
+  PanelCombatLog.Left :=  (PanelBack.Width div 2 ) - (PanelCombatLog.Width div 2 );   ;
+  SE_GridDice.ClearData ;
+  SE_GridDice.RowCount := 1;
+  SE_GridDice.CellsEngine.ProcessSprites(2000);
+  SE_GridDice.refreshSurface (SE_GridDice);
+
+  if SelectedPlayer = nil then Exit;
+
+  aCellList:= TList<TPoint>.Create;
+
+  MyBrain.GetNeighbournsCells( SelectedPlayer.CellX, SelectedPlayer.CellY, LoftedPassRangeMax + SelectedPlayer.tal_longpass  ,false, True, true,aCellList); // noplayer,noOutside
+
+
+  for I := 0 to aCellList.Count -1 do begin
+    if AbsDistance(SelectedPlayer.CellX, SelectedPlayer.CellY,aCellList[i].X, aCellList[i].Y) < LoftedPassRangeMin then Continue;
+
+    aPlayer := MyBrain.GetSoccerPlayer(aCellList[i].X, aCellList[i].Y);
+    if aPlayer <> nil then begin
+      if aPlayer.Team <> SelectedPlayer.team then Continue;
+    end;
+    HighLightField (aCellList[i].X, aCellList[i].Y , 0);
+
+  end;
+  aCellList.Free;
+
+
+end;
+procedure TForm1.CroMouseEnter ( Sender : TObject);
+var
+  I: Integer;
+  aCellList: TList<TPoint>;
+  aPlayer: TSoccerPlayer;
+begin
+  hidechances;
+  SE_GridDice.ClearData ;
+  SE_GridDice.RowCount := 1;
+  SE_GridDice.CellsEngine.ProcessSprites(2000);
+  SE_GridDice.refreshSurface (SE_GridDice);
+  if SelectedPlayer = nil then Exit;
+
+  aCellList:= TList<TPoint>.Create;
+
+  MyBrain.GetNeighbournsCells( SelectedPlayer.CellX, SelectedPlayer.CellY,CrossingRangeMax + SelectedPlayer.tal_longpass  ,false,True,True, aCellList); // noplayer,noOutside
+
+
+  for I := 0 to aCellList.Count -1 do begin
+    if AbsDistance(SelectedPlayer.CellX, SelectedPlayer.CellY,aCellList[i].X, aCellList[i].Y) < CrossingRangeMin then Continue;
+
+    aPlayer := MyBrain.GetSoccerPlayer(aCellList[i].X, aCellList[i].Y);
+    if aPlayer <> nil then begin
+      if aPlayer.Team <> SelectedPlayer.team then Continue;
+      if not aPlayer.InCrossingArea  then Continue;
+      HighLightField (aCellList[i].X, aCellList[i].Y,0);
+
+    end;
+
+  end;
+  aCellList.Free;
+
+
+end;
+procedure TForm1.DriMouseEnter ( Sender : TObject);
+var
+  I: Integer;
+  aPlayerList: TObjectList<TSoccerPlayer>;
+  aPlayer: TSoccerPlayer;
+begin
+  hidechances;
+  PanelCombatLog.Left :=  (PanelBack.Width div 2 ) - (PanelCombatLog.Width div 2 );   ;
+  SE_GridDice.ClearData ;
+  SE_GridDice.RowCount := 1;
+  SE_GridDice.CellsEngine.ProcessSprites(2000);
+  SE_GridDice.refreshSurface (SE_GridDice);
+  if SelectedPlayer = nil then Exit;
+
+  aPlayerList:= TObjectList<TSoccerPlayer>.create(False);
+
+  MyBrain.GetNeighbournsOpponent( SelectedPlayer.CellX, SelectedPlayer.CellY, SelectedPlayer.Team ,aPlayerList);
+
+  for I := 0 to aPlayerList.Count -1 do begin
+   // HighLightField2 ( aCellList[i].X, aCellList[i].Y );
+      HighLightField (aPlayerList[i].cellX, aPlayerList[i].cellY,0);
+  end;
+
+  aPlayerList.Free;
 
 
 end;
 
 
+}
 end.
 
 

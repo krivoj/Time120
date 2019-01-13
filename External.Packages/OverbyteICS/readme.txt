@@ -1,8 +1,12 @@
-Install Overbyte Packages.
+1) Install this Package 
+	
+		  OR
+
+2) Install latest version of Overbyte ICS Gold Packages.
 http://www.overbyte.eu/frame_index.html
 
 
-Changes unit OverbyteIcsWSocketS.pas: 
+3) AND MODIFY unit OverbyteIcsWSocketS.pas: 
 
     TWSocketClient = class(TWSocket)
     protected

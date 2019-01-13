@@ -126,13 +126,13 @@ begin
   Form1.ck_Socks2.Left := Form1.UniformPortrait.Left + Form1.UniformPortrait.Width  + 100 - Form1.ck_Socks2.width;
 
 
-  Form1.SE_gridColors.Left := (Form1.PanelUniform.Width div 2) - (Form1.SE_gridColors.Width div 2 );
+  Form1.CnColorGrid1.Left := (Form1.PanelUniform.Width div 2) - (Form1.CnColorGrid1.Width div 2 );
   Form1.ck_Jersey1.Top := Form1.UniformPortrait.Top + Form1.UniformPortrait.Height;
   Form1.ck_Jersey2.Top := Form1.ck_Jersey1.Top;
   Form1.ck_Shorts.Top := Form1.ck_Jersey1.Top + Form1.ck_Jersey1.Height;
   Form1.ck_Socks1.Top := Form1.ck_Shorts.Top + Form1.ck_Shorts.Height;
   Form1.ck_Socks2.Top := Form1.ck_Socks1.Top;
-  Form1.SE_gridColors.top := Form1.ck_Socks1.Top +  Form1.ck_Socks1.Height + 20;
+  Form1.CnColorGrid1.top := Form1.ck_Socks1.Top +  Form1.ck_Socks1.Height + 20;
 
 
   if Form1.PanelBack.Background = nil  then Form1.PanelBack.Background := SE_Bitmap.create ( dir_stadium + 'background.bmp');
