@@ -1,13 +1,10 @@
 ﻿unit Unit1;
-{$DEFINE MYDAC}
 {$DEFINE TOOLS}
 // conflitto eurekalog con dxsound. rimuovere eurekalog nella  build finale
 
-      { TODO  : testare creazione nuovo utente }
       { TODO  : AudioCrowd }
       { TODO  : allargare se_gridMarket e relativo panel }
       { TODO  : verificare sostituzioni }
-      { TODO : piccolo bug Show Uniform per la prima volta }
       { TODO  : Eliminare Directx. Usare PlaySoundverificare bug sound prs e posizione palla.sul rigore che diventa gol manca il suono della folla}
       { TODO  : override maglie bianca o nera }
       { TODO : risolvere sfarfallio in formation }
@@ -2084,8 +2081,8 @@ begin
     // in caso di nero e bianco ho i preset grigi.
     UniformBitmap := SE_Bitmap.Create (dir_player + 'bw.bmp');
     PreLoadUniform(NextHa, UniformBitmap);  // usa tsuniforms e  UniformBitmapBW
-    UniformPortrait.Glyph.LoadFromFile(dir_tmp + 'color0.bmp');
-    Portrait0.Glyph.LoadFromFile(dir_tmp + 'color0.bmp');
+    UniformPortrait.Glyph.LoadFromFile(dir_tmp + 'color' + IntToStr(NextHa) +'.bmp');
+    Portrait0.Glyph.LoadFromFile(dir_tmp + 'color' + IntToStr(NextHa) +'.bmp');
 
     if NextHa = 0 then
       btn_UniformHome.Down:= True
