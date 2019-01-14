@@ -460,6 +460,7 @@ end;
 var
   Form1: TForm1;
   SelCountryTeam: string;
+  Language: string;
   MutexAnimation, MutexMouseMove : Cardinal;
   oldCellXMouseMove, oldCellYMouseMove: Integer;
   dir_log: string;
@@ -1068,6 +1069,13 @@ begin
   dir_attributes := ExtractFilePath(application.exename) + 'bmp\attributes\';
   dir_help := ExtractFilePath(application.exename) + 'help\';
   dir_talent := ExtractFilePath(application.exename) +  'bmp\talent\';
+
+  ini := TIniFile.Create  ( ExtractFilePath(Application.ExeName) + 'client.ini');
+  dir_log := ini.ReadString('directory','log','c:\temp');
+  btnAudioStadium.Down := not  ( ini.ReadBool('sound','stadium',true)); //1=suona 0=no     down è 0, non suonare
+  Language := ini.ReadString('LANGUAGE','Text','EN');
+  ini.Free;
+
   LoadTranslations;
 
 
@@ -1164,10 +1172,6 @@ begin
   DeleteDirData;
 
 
-  ini := TIniFile.Create  ( ExtractFilePath(Application.ExeName) + 'client.ini');
-  dir_log := ini.ReadString('directory','log','c:\temp');
-  btnAudioStadium.Down := not  ( ini.ReadBool('sound','stadium',true)); //1=suona 0=no     down è 0, non suonare
-  ini.Free;
 
 
 
@@ -3409,7 +3413,7 @@ begin
   TranslateMessages.StrictDelimiter := True;
 
 
-  ini:= TIniFile.Create(dir_data + 'text\it\messages.txt' );
+  ini:= TIniFile.Create(dir_data + 'text\' + language + '\messages.txt' );
   ini.ReadSectionValues ('Messages',TranslateMessages ) ;
   ini.Free;
 
