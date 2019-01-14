@@ -3261,11 +3261,8 @@ begin
 end;
 procedure TSoccerBrain.CompileMovingList (MaxDistance, CellX,CellY: integer; var lstMoving: TList<TInteractivePlayer> );
 var
-  p,x,y,i: integer;
+  p: integer;
   aPlayer : TSoccerPlayer;
-  aCell,dstCell: TPoint;
-  Toball: Boolean;
-  DstX: integer;
   aList: TObjectList<TSoccerPlayer>;
   aInteractivePlayer: TInteractivePlayer;
 //  aList: TList<TSoccerPlayer>;
@@ -4037,7 +4034,7 @@ end;
 procedure TSoccerBrain.GetAggressionCellPath ( aSoccerPlayer: TSoccerPlayer; X2, Y2: integer );
 var
   aSearchMap : TSearchableMap;
-  i,j,P: integer;
+  j,P: integer;
   aStep: TpathStep;
   acellList: Tlist<TPoint>;
   aPoint: Tpoint;
@@ -11960,7 +11957,6 @@ var
   Listfriends: TList<TCellAndPlayer>;
   aFriend: TSoccerPlayer;
   aCellandPlayer: TCellAndPlayer;
-  VirtualCellX, VirtualCellY: Integer;
   AVirtualPlayer: TVirtualPlayer;
   lstVirtualSoccer: TList<TVirtualPlayer>;
   aPlayerR: TSoccerPlayer;
@@ -12144,16 +12140,12 @@ begin
    // cerco solo come raggiungere la palla
 end;
 procedure TSoccerbrain.AI_Think_neutralball_middle ( Team: integer  );
-var
-  aPlayer: TSoccerPlayer;
 begin
       // Dummy AI
       // provo sempre a raggiungere la palla
       DummyReachTheBall (Team);
 end;
 procedure TSoccerbrain.AI_Think_neutralball_iAttack ( Team: integer );
-var
-  aPlayer: TSoccerPlayer;
 begin
       // Dummy AI
       // provo sempre a raggiungere la palla
@@ -12165,7 +12157,6 @@ function TSoccerbrain.ai_check_shpCell ( Team: Integer ): TAIMidChance;
 var
   aList: TList<TAimidChance>;
   pick : TAimidChance;
-  I: Integer;
 begin
   Result.Chance := -1;
   Result.inputAI := 'PASS,' + IntTostr (Team);

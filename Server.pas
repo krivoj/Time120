@@ -5,7 +5,7 @@ unit Server;
 // procedure MatchThreadTimer <-- in caso di bot o disconessione, esegue l'intelligenza artificiale TSoccerBrain.AI_think
 // procedure CreateAndLoadMatch <-- crea una partita (brain)
 
-//{$DEFINE MYDAC}    //  uso devart Mydac.
+{$DEFINE MYDAC}    //  uso devart Mydac.
 {$DEFINE BOTS}     // se uso i bot o solo partite di player reali
 {$DEFINE useMemo}  // se uso il debug a video delle informazioni importanti
 interface
