@@ -2,6 +2,7 @@
 {$DEFINE TOOLS}
 // conflitto eurekalog con dxsound. rimuovere eurekalog nella  build finale
 
+      { TODO  : grixp.active := false/true }
       { TODO  : Stay-free removeSubSprites bug }
       { TODO  : AudioCrowd }
       { TODO  : allargare se_gridMarket e relativo panel }
@@ -40,7 +41,7 @@ uses
   DSE_GRID,
   DSE_Panel,
 
-  SoccerBrainv3,   // ilcuore del gioco si occupa della singola partita
+  SoccerBrainv3,   // il cuore del gioco, si occupa della singola partita
 
   CnButtons,CnSpin,CnAAFont, CnAACtrls, CnColorGrid, // CnVCLPack
 
@@ -461,7 +462,7 @@ var
   Form1: TForm1;
   SelCountryTeam: string;
   Language: string;
-  MutexAnimation, MutexMouseMove : Cardinal;
+  MutexAnimation : Cardinal;
   oldCellXMouseMove, oldCellYMouseMove: Integer;
   dir_log: string;
   MyBrain: TSoccerBrain;
@@ -1008,8 +1009,8 @@ var
   I: Integer;
   ini : TIniFile;
 begin
-  Mutex:=CreateMutex(nil,false,'tsscript');
-  MutexMouseMove := CreateMutex(nil,false,'mousemove');
+  MutexAnimation:=CreateMutex(nil,false,'tsscript');
+  SE_GridCountryTeam.Active := false;
 
   {$ifdef tools}
   btnReplay.Visible := True;
@@ -1221,7 +1222,6 @@ begin
     MM3[i].Free;
   end;
   CloseHandle(Mutex);
-  CloseHandle(MutexMouseMove);
 
   //  If MyBrainFormation <> nil then MyBrainFormation.free;
 //  if Mybrain <> nil then MyBrain.free;
@@ -6279,8 +6279,8 @@ begin
   end;
 
   SE_GridCountryTeam.Cells[0,CellY].FontColor := clYellow;
-  SE_GridCountryTeam.CellsEngine.ProcessSprites(20);
-  SE_GridCountryTeam.refreshSurface ( SE_GridCountryTeam );
+//  SE_GridCountryTeam.CellsEngine.ProcessSprites(20);
+//  SE_GridCountryTeam.refreshSurface ( SE_GridCountryTeam );
 
 end;
 
@@ -9158,7 +9158,6 @@ begin
   GridXp.Columns[2].Width := 40;
   GridXp.Width := GridXp.VirtualWidth;
 
-
   for y := 0 to gridXP.RowCount -1 do begin
     GridXp.Rows[y].Height := 16;
     gridXP.Cells[0,y].FontName := 'Verdana';
@@ -9168,6 +9167,8 @@ begin
     gridXP.Cells[1,y].CellAlignmentH := hRight;
     gridXP.AddProgressBar(1,y, 0 ,$00804000,pbstandard);
   end;
+  GridXp.VirtualHeight := GridXP.TotalCellsHeight;
+
   GridXP.Cells[0,0].Text :=  Translate('attribute_Speed');
   GridXP.Cells[0,1].Text :=  Translate('attribute_Defense');
   GridXP.Cells[0,2].Text :=  Translate('attribute_Passing');
@@ -9620,6 +9621,7 @@ begin
           Exit;
     end
     else if MidStr(tmpStr,1,9 )= 'BEGINTEAM' then begin
+      SE_GridCountryTeam.Active := false;
       ThreadCurMove.Enabled := false; // parte solo in beginbrain
       MemoC.Lines.Add( 'Compressed size: ' + IntToStr(Len) );
 
@@ -9700,12 +9702,14 @@ begin
       GameScreen := ScreenMain;
     end
     else if  ts[0] = 'BEGINWT' then begin  // lista team della country selezionata
+      SE_GridCountryTeam.Active := true;
       ts.Delete(0); // BEGINWT
       TsNationTeams.CommaText := ts.CommaText;
       GameScreen := ScreenSelectTeam;
 
     end
     else if  ts[0] = 'BEGINWC' then begin // lista country
+      SE_GridCountryTeam.Active := true;
       ts.Delete(0); // BEGINWC
       TsWorldCountries.CommaText := ts.CommaText;
       GameScreen := ScreenSelectCountry;
@@ -9964,8 +9968,8 @@ begin
     end;
 
     PanelCountryTeam.Visible := True;
-    SE_GridCountryTeam.CellsEngine.ProcessSprites(20);
-    SE_GridCountryTeam.refreshSurface ( SE_GridCountryTeam );
+  //  SE_GridCountryTeam.CellsEngine.ProcessSprites(20);
+  //  SE_GridCountryTeam.refreshSurface ( SE_GridCountryTeam );
 
   end
   else if fGameScreen = ScreenWaitingFormation then begin // si accede cliccando back - settcpformation, in attesa

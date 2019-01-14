@@ -926,7 +926,6 @@ object Form1: TForm1
         ShowPerformance = False
         VirtualWidth = 212
         Virtualheight = 212
-        Passive = True
         TabOrder = 0
         OnGridCellMouseDown = SE_GridCountryTeamGridCellMouseDown
         CellBorder = CellBorderNone
@@ -1865,7 +1864,6 @@ object Form1: TForm1
         ShowPerformance = False
         VirtualWidth = 212
         Virtualheight = 212
-        Passive = True
         TabOrder = 0
         OnGridCellMouseDown = SE_GridXP0GridCellMouseDown
         OnGridCellMouseMove = SE_GridXP0GridCellMouseMove
