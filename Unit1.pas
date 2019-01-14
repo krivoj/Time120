@@ -2,6 +2,7 @@
 {$DEFINE TOOLS}
 // conflitto eurekalog con dxsound. rimuovere eurekalog nella  build finale
 
+      { TODO  : Stay-free removeSubSprites bug }
       { TODO  : AudioCrowd }
       { TODO  : allargare se_gridMarket e relativo panel }
       { TODO  : verificare sostituzioni }

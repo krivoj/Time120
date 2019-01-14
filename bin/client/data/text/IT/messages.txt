@@ -24,7 +24,7 @@ skill_Tackle=Contrasto
 skill_Pressing=Pressing
 skill_Pass=Passa turno.
 skill_Stay=Rimani.
-skill_free=Libera.
+skill_Free=Libera.
 skill_Corner.Kick=Calcio d'angolo
 skill_Volley=Tiro al volo
 
