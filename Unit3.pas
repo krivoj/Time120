@@ -1,6 +1,6 @@
 unit Unit3;
 interface
-uses Vcl.Graphics, System.Types, System.SysUtils,  generics.collections, generics.defaults,math,iraSearchFiles,vcl.forms;
+uses Vcl.Graphics, System.Types, System.SysUtils,  generics.collections, generics.defaults,math,DSE_SearchFiles,vcl.forms;
 procedure CreateFormationsPreset;
 
 procedure DeleteDirData;
@@ -81,9 +81,9 @@ end;
 procedure DeleteDirData;
 var
   i: Integer;
-  sf : TiraSearchFiles;
+  sf : SE_SearchFiles;
 begin
-  sf :=  TiraSearchFiles.Create(nil);
+  sf :=  SE_SearchFiles.Create(nil);
 
   sf.MaskInclude.add ('*.is');
   sf.FromPath := dir_data;
