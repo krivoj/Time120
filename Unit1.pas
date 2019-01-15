@@ -1,17 +1,14 @@
 ﻿unit Unit1;
 {$DEFINE TOOLS}
-// conflitto eurekalog con dxsound. rimuovere eurekalog nella  build finale
 
-      { TODO  : grixp.active := false/true }
+
       { TODO  : Stay-free removeSubSprites bug }
-      { TODO  : AudioCrowd }
-      { TODO  : allargare se_gridMarket e relativo panel }
+      { TODO  : AudioCrowd in sottofondo }
       { TODO  : verificare sostituzioni }
-      { TODO  : Eliminare Directx. Usare PlaySoundverificare bug sound prs e posizione palla.sul rigore che diventa gol manca il suono della folla}
+      { TODO  : verificare suoni, sul rigore è mancata l'esultanza}
       { TODO  : override maglie bianca o nera }
       { TODO : risolvere sfarfallio in formation }
       { TODO : finire traduzioni }
-      { TODO : sostituire grid con se_grid. la gridLog non deve resettarsi, ma mantenere gli ultimi 50 eventi e fare pan automatico}
       { TODO : gestire il fine partita }
       { TODO : verifica bug sui pulsanti tattiche. il player rimane sospeso  }
       { TODO : bug sui setuniform. a volte va in db.realmd.cheatdetected  }
@@ -695,16 +692,21 @@ end;
 
 procedure TForm1.btnMainPlayClick(Sender: TObject);
 begin
+      WaitForSingleObject ( MutexAnimation, INFINITE );
+      AnimationScript.Reset;
+      FirstLoadOK:= False;
+      ReleaseMutex(MutexAnimation );
+
   if GCD <= 0 then begin
     if CheckFormationTeamMemory then begin
      LiveMatch := True;
      tcp.SendStr( 'queue' + endofline);
     // gameScreen := ScreenWaitingLiveMatch;
     end
-       else begin
-        ShowFormations;
-        InitializeTheaterFormations;
-       end;
+    else begin
+      ShowFormations;
+      InitializeTheaterFormations;
+     end;
     GCD := GCD_DEFAULT;
   end;
 end;
@@ -1182,6 +1184,7 @@ begin
   ShowLogin;
 
   SE_GridTime.thrdAnimate.Priority := tplowest;
+  SE_GridXP0.thrdAnimate.Priority := tplowest;
 
 end;
 procedure TForm1.FormDestroy(Sender: TObject);
@@ -1647,6 +1650,7 @@ begin
 
   se_Theater1.Visible := True;
   se_Theater1.Active := True;
+  SE_GridTime.Active := True;
 
 end;
 
@@ -1663,6 +1667,7 @@ begin
   se_Theater1.sceneName := 'tactics';
   se_theater1.Active := true;
   se_Theater1.Visible := True;
+  SE_GridXP0.Active := True;
   PanelFormationSE.Visible := True;
 
 end;
@@ -2938,7 +2943,7 @@ begin
     end;
 
   end;
-//  ReleaseMutex(Mutex);
+  ReleaseMutex(MutexAnimation);
 
 
 end;
@@ -7049,7 +7054,6 @@ begin
 
     fGameScreen := ScreenLiveMatch;    // attenzione alla f, non innescare
     SpriteReset;
-
     MyBrain.Ball.SE_Sprite.Visible := True;
 
   end;
@@ -7079,7 +7083,6 @@ begin
         application.ProcessMessages ;
       end;
       ReleaseMutex(MutexAnimation);
-
       gamescreen := ScreenLogin;
     end
     else if viewMatch then begin
@@ -7095,21 +7098,20 @@ begin
       gamescreen := ScreenMain;
     end;
 
-    SE_GridTime.Visible := false;
     GCD := GCD_DEFAULT;
   end;
 end;
 
 procedure TForm1.btnxp0Click(Sender: TObject);
 begin
-
   PanelXPPlayer0.Visible := True;
-
+  SE_GridXP0.Active := True;
 end;
 
 procedure TForm1.btnxpBack0Click(Sender: TObject);
 begin
   PanelXPPlayer0.Visible := false;
+  SE_GridXP0.Active := False;
 
 end;
 
@@ -9550,6 +9552,7 @@ begin
       MM3[LastTcpIncMove].SaveToFile( dir_data + IntToStr(LastTcpIncMove) + '.IS');
 //      goto firstload;
       if not FirstLoadOK  then begin   // avvio partita o ricollegamento
+       // AnimationScript.Reset;
         InitializeTheaterMatch;
         SE_interface.RemoveAllSprites;
         GameScreen:= ScreenLiveMatch; // initializetheatermAtch
@@ -9597,7 +9600,7 @@ begin
         MM3[LastTcpIncMove].SaveToFile( dir_data + IntToStr(LastTcpIncMove) + '.IS');
     firstload:
         if viewMatch or LiveMatch then begin
-          if not FirstLoadOK  then begin   // avvio partita o ricollegamento
+          if not FirstLoadOK  then begin   // avvio partita o ricollegamento. se è la prima volta
             InitializeTheaterMatch;
             GameScreen:= ScreenLiveMatch; // initializetheatermAtch
             CurrentIncMove := LastTcpIncMove;
@@ -9747,7 +9750,12 @@ end;
 
 procedure TForm1.tcpSessionClosed(Sender: TObject; ErrCode: Word);
 begin
+      WaitForSingleObject ( MutexAnimation, INFINITE );
+      AnimationScript.Reset;
       FirstLoadOK:= False;
+      ReleaseMutex(MutexAnimation );
+      LastTcpincMove := 0;
+      CurrentIncMove:=0;
       MyGuidTeam := 0;
       Timer1.Enabled := true;
       lbl_ConnectionStatus.Color := clRed;
@@ -9774,7 +9782,6 @@ begin
 
     end
     else  begin
-      //Timer1.Enabled := False;
       se_Theater1.Active := true;
       MemoC.Lines.add('Session Connected.');
       //GameScreen := ScreenLogin;
@@ -9792,7 +9799,7 @@ begin
       // se c'è lo script lo eseguo
     WaitForSingleObject ( MutexAnimation, INFINITE );
 
-    if ( SE_ball.IsAnySpriteMoving  ) or (SE_players.IsAnySpriteMoving ) or (Animating) then begin
+    if ( SE_ball.IsAnySpriteMoving  ) or (SE_players.IsAnySpriteMoving ) or ( Animating ) then begin
       ReleaseMutex(MutexAnimation);
       Exit;
     end;
@@ -9853,15 +9860,6 @@ begin
         if LocalSeconds < 0 then LocalSeconds := 0;
 
         SE_GridTime.Cells[2,0].ProgressBarValue :=  (localseconds * 100) div 120;
-        //SE_GridTime.CellsEngine.ProcessSprites(2000);
-        //SE_GridTime.RefreshSurface (SE_GridTime);
-//        if ProgressSeconds.PercentDone  < 50 then
-//          ProgressSeconds.Font.Color := clWhite
-//          else ProgressSeconds.Font.Color := GetContrastColor(MyBrain.Score.DominantColor [  MyBrain.TeamTurn ]) ;
-
-
-//        ProgressSeconds.Caption := IntToStr(localseconds);
-
       end;
 end;
 
@@ -9925,13 +9923,51 @@ begin
 
   if fGameScreen = ScreenLogin then begin
     //AudioCrowd.Stop;
+    WaitForSingleObject ( MutexAnimation, INFINITE );
+    AnimationScript.Reset;
+    FirstLoadOK:= False;
+    Animating := false;
+    ReleaseMutex(MutexAnimation );
+    LastTcpIncMove := 0;
+    CurrentIncMove := 0;
+
+    SE_Theater1.Visible := false;
+    SE_GridTime.Active := False;
+    SE_GridMarket.Active := False;
     viewMatch := False;
+    SE_GridXP0.Active := False;
     ShowLogin;
+
+  end
+  else if fGameScreen = ScreenMain then begin
+    //AudioCrowd.Stop;
+    ThreadCurMove.Enabled := false; // parte solo in beginbrain
+    WaitForSingleObject ( MutexAnimation, INFINITE );
+    AnimationScript.Reset;
+    FirstLoadOK:= False;
+    Animating := false;
+    ReleaseMutex(MutexAnimation );
+    LastTcpIncMove := 0;
+    CurrentIncMove := 0;
+
+    btnWatchLiveExit.Visible := false;
+    PanelInfoPlayer0.Visible:= false;
+    PanelInfoPlayer1.Visible:= false;
+    PanelXPPlayer0.Visible := false;
+    PanelScore.Visible := false;
+      lbl_Nick0.Active := False;
+      lbl_Nick1.Active := False;
+
+    ShowMain;
+    //ClientLoadFormation ;
+    btnMainPlay.Enabled := CheckFormationTeamMemory;
 
   end
   else if (fGameScreen = ScreenSelectCountry) or (fGameScreen = ScreenSelectTeam )then begin
     //AudioCrowd.Stop;
     SE_Theater1.Visible := false;
+    SE_GridTime.Active := False;
+    SE_GridXP0.Active := False;
     PanelMain.Visible := false;
     PanelLogin.Visible := false;
 
@@ -9986,9 +10022,10 @@ begin
   else if fGameScreen = ScreenFormation then begin    // diversa da ScreenLiveFormations che prende i dati dal brain
 
     //AudioCrowd.Stop;
-    FirstLoadOK:= False;
     PanelCombatLog.Visible := False;
     SE_Theater1.Visible := false;
+    SE_GridTime.Active := False;
+
     PanelMain.Visible := false;
     PanelLogin.Visible := false;
     PanelCountryTeam.Visible := false;
@@ -10070,26 +10107,11 @@ begin
   end
 
 
-  else if fGameScreen = ScreenMain then begin
-    //AudioCrowd.Stop;
-    ThreadCurMove.Enabled := false; // parte solo in beginbrain
-    FirstLoadOK:= False;
-    btnWatchLiveExit.Visible := false;
-    PanelInfoPlayer0.Visible:= false;
-    PanelInfoPlayer1.Visible:= false;
-    PanelXPPlayer0.Visible := false;
-    PanelScore.Visible := false;
-      lbl_Nick0.Active := False;
-      lbl_Nick1.Active := False;
-
-    ShowMain;
-    //ClientLoadFormation ;
-    btnMainPlay.Enabled := CheckFormationTeamMemory;
-
-  end
   else if fGameScreen = ScreenWaitingLiveMatch then begin // si accede cliccando queue
     //AudioCrowd.Stop;
     SE_Theater1.Visible := True;
+    SE_GridTime.Active := False;
+    SE_GridXP0.Active := False;
     PanelMain.Visible := false;
     PanelLogin.Visible := false;
     PanelListMatches.Visible := false;
@@ -10100,6 +10122,8 @@ begin
   else if (fGameScreen = ScreenLivematch) or (fGameScreen = ScreenWatchLive) then begin
 //    SetTheaterMatchSizeSE;
     SE_Theater1.Visible := True;
+    SE_GridTime.Active := True;
+    SE_GridXP0.Active := False;
     PanelMain.Visible := false;
     PanelLogin.Visible := false;
     PanelListMatches.Visible := false;
@@ -10138,6 +10162,8 @@ begin
   else if fGameScreen = ScreenWaitingWatchLive then begin // si accede cliccando l'icona TV
     //AudioCrowd.Stop;
     SE_Theater1.Visible := True;
+    SE_GridTime.Active := False;
+    SE_GridXP0.Active := False;
     PanelMain.Visible := false;
     PanelLogin.Visible := false;
     PanelListMatches.Visible := false;
@@ -10147,8 +10173,9 @@ begin
   end
   else if fGameScreen = ScreenSelectLiveMatch then begin
     //AudioCrowd.Stop;
+    SE_GridTime.Active := False;
+    SE_GridXP0.Active := False;
     btnWatchLiveExit.Visible := false;
-    FirstLoadOK:= False;
     PanelLogin.Visible := false;
     PanelMain.Visible := false;
     SE_Theater1.Visible := false;
@@ -10158,8 +10185,9 @@ begin
   end
   else if fGameScreen = ScreenMarket then begin
     //AudioCrowd.Stop;
+    SE_GridTime.Active := False;
+    SE_GridXP0.Active := False;
     btnWatchLiveExit.Visible := false;
-    FirstLoadOK:= False;
     PanelLogin.Visible := false;
     PanelMain.Visible := false;
     SE_Theater1.Visible := false;
@@ -10378,17 +10406,17 @@ begin
   SE_GridMarket.ColCount :=13; // descrizione, vuoto, valore, bitmaps o progressbar
   SE_GridMarket.RowCount :=1;
   SE_GridMarket.Columns [0].Width :=1;      // guidplayer
-  SE_GridMarket.Columns [1].Width :=100;     // name
-  SE_GridMarket.Columns [2].Width :=65;     // sell
-  SE_GridMarket.Columns [3].Width :=35;    // s
-  SE_GridMarket.Columns [4].Width :=35;     // d
-  SE_GridMarket.Columns [5].Width :=35;     // p
-  SE_GridMarket.Columns [6].Width :=35;    // bc
-  SE_GridMarket.Columns [7].Width :=35;     // sh
-  SE_GridMarket.Columns [8].Width :=35;     // h
-  SE_GridMarket.Columns [9].Width :=35;  // talent
-  SE_GridMarket.Columns [10].Width :=35;  // age
-  SE_GridMarket.Columns [11].Width :=35;  // matches left
+  SE_GridMarket.Columns [1].Width :=120;     // name
+  SE_GridMarket.Columns [2].Width :=80;     // sell
+  SE_GridMarket.Columns [3].Width :=100;    // s
+  SE_GridMarket.Columns [4].Width :=100;     // d
+  SE_GridMarket.Columns [5].Width :=100;     // p
+  SE_GridMarket.Columns [6].Width :=100;    // bc
+  SE_GridMarket.Columns [7].Width :=100;     // sh
+  SE_GridMarket.Columns [8].Width :=100;     // h
+  SE_GridMarket.Columns [9].Width :=60;  // talent
+  SE_GridMarket.Columns [10].Width :=80;  // age
+  SE_GridMarket.Columns [11].Width :=120;  // matches left
   SE_GridMarket.Columns [12].Width :=60;  // BUY
   SE_GridMarket.Width := SE_GridMarket.TotalCellsWidth;
 

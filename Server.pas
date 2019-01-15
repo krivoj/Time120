@@ -11,10 +11,11 @@ unit Server;
 interface
 
 uses
-  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics, System.Hash , DateUtils, ZLIBEX,
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics, System.Hash , DateUtils,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Strutils,generics.collections, generics.defaults, Data.DB,
   Vcl.ExtCtrls, Vcl.Mask, Vcl.Grids, inifiles, System.Types,
 
+  ZLIBEX,
   Soccerbrainv3,
 
   DSE_SearchFiles,

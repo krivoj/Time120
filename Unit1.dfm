@@ -2121,7 +2121,7 @@ object Form1: TForm1
     object PanelMarket: SE_Panel
       Left = 721
       Top = 135
-      Width = 588
+      Width = 1200
       Height = 292
       BevelOuter = bvNone
       Color = 8081721
