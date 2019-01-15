@@ -7815,12 +7815,14 @@ reason:='';
      goto myexit; // hack
     end;
 
-    if ((CellX = 0) or (CellX = 2)  or  (CellX = 5) or (CellX = 8)) and (aPlayer.Team <> 0) then Begin
+    if (aPlayer.Team  = 0)
+      and ( (CellX = 1) or (CellX = 3)  or (CellX = 4) or (CellX = 6) or (CellX = 7) or (CellX = 9) or (CellX = 10) or (CellX = 11) ) then Begin
      reason := 'TACTIC, Cell mismatch team ';
      goto myexit; // hack
     End;
 
-    if ((CellX = 11) or (CellX = 9)  or  (CellX = 6) or (CellX = 3)) and (aPlayer.Team <> 1) then begin
+    if (aPlayer.Team  = 1)
+      and ( (CellX = 0) or (CellX = 1)  or (CellX = 2) or (CellX = 4) or (CellX = 5) or (CellX = 7) or (CellX = 8) or (CellX = 10) ) then Begin
      reason := 'TACTIC, Cell mismatch team ';
      goto myexit; // hack
     End;

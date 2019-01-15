@@ -6015,10 +6015,6 @@ begin
       while tsCmd[0] <> 'E' do begin
         tsCmd.CommaText := Mybrain.tsScript [i];
         LogMemo ( tsCmd.CommaText );
-//        if tsCmd[0] = 'sc_tactic' then begin
-//          AnimationScript.Tsadd ('cl_tactic,' +  tsCmd[1] + ',' + tsCmd[2] + ',' + tsCmd[3] +  ',' + tsCmd[4]+ ',' + tsCmd[5]  ); // ids , defaultcellx, defaultcelly , newdefx, newdefy
-//          AnimationScript.Tsadd ('cl_wait,' + IntTostr(1000));
-//        end
           AnimCommon ( tsCmd.commatext );
           i := i+1;
       end;
@@ -6033,10 +6029,6 @@ begin
       while tsCmd[0] <> 'E' do begin
         tsCmd.CommaText := Mybrain.tsScript [i];
         LogMemo ( tsCmd.CommaText );
-//        if tsCmd[0] = 'sc_tactic' then begin
-//          AnimationScript.Tsadd ('cl_tactic,' +  tsCmd[1] + ',' + tsCmd[2] + ',' + tsCmd[3] +  ',' + tsCmd[4]+ ',' + tsCmd[5]  ); // ids , defaultcellx, defaultcelly , newdefx, newdefy
-//          AnimationScript.Tsadd ('cl_wait,' + IntTostr(1000));
-//        end
           AnimCommon ( tsCmd.commatext );
           i := i+1;
       end;
@@ -9063,11 +9055,12 @@ begin
           if MyBrain.isReserveSlot ( aPlayer.CellX , aPlayer.CellY ) then Exit;   //
 
           // gk solo nel posto del gk
-          if (isGKcell ( CellX, CellY ) ) and (aPlayer.Talents <> 'goalkeeper') then exit;    // un goalkeeper può essere schierato solo in porta
-          if  ( not isGKcell ( CellX, CellY ) ) and (aPlayer.Talents = 'goalkeeper') then exit;    // un goalkeeper può essere schierato solo in porta
+          if (isGKcell ( CellX, CellY ) ) and (aPlayer.TalentID <> 1) then exit;    // un goalkeeper può essere schierato solo in porta
+          if  ( not isGKcell ( CellX, CellY ) ) and (aPlayer.TalentId = 1) then exit;    // un goalkeeper può essere schierato solo in porta
           SE_DragGuid := nil;
           tcp.SendStr( 'TACTIC,' + aPlayer.ids + ',' + IntToStr(CellX) + ',' + IntToStr(CellY) + EndOfLine );// il server risponde con clientLoadbrain
           HighLightFieldFriendly_hide;
+          GameScreen := ScreenLiveMatch;
           Exit;
   //        aPlayer.DefaultCellS  := point (CellX,CellY);
   //        MoveInDefaultField(aPlayer);
