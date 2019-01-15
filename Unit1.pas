@@ -2,13 +2,12 @@
 {$DEFINE TOOLS}
 
 
-      { TODO  : Stay-free removeSubSprites bug }
       { TODO  : AudioCrowd in sottofondo }
       { TODO  : verificare sostituzioni }
       { TODO  : verificare suoni, sul rigore è mancata l'esultanza}
       { TODO  : override maglie bianca o nera }
       { TODO : risolvere sfarfallio in formation }
-      { TODO : finire traduzioni }
+      { TODO : finire traduzioni DATA/EN}
       { TODO : gestire il fine partita }
       { TODO : verifica bug sui pulsanti tattiche. il player rimane sospeso  }
       { TODO : bug sui setuniform. a volte va in db.realmd.cheatdetected  }
@@ -8399,8 +8398,10 @@ var
   i: integer;
 begin
   WaitForSingleObject ( MutexAnimation, INFINITE ); // il mousemove che genera questa procedura può avvenire durante il clear della lstsoccerplayer
-  for I := se_Players.SpriteCount -1 downto 0 do begin  // rimuovo tutti i face
-    Se_Players.Sprites[i].RemoveAllSubSprites;
+  for I := se_Players.SpriteCount -1 downto 0 do begin  // rimuovo tutti i face e solo i face ( stay e cartellini rimangono)
+    aSubSprite:= Se_Players.Sprites[i].FindSubSprite('face');
+    if aSubSprite <> nil then
+      Se_Players.Sprites[i].SubSprites.Remove(aSubSprite);
   end;
   // aggiungo la faccia come subsprite
   aSubSprite := SE_SubSprite.create( dir_player + IntTostr(aPlayer.face) +'.bmp' , 'face', 0,0, true, true );
