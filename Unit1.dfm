@@ -1231,8 +1231,8 @@ object Form1: TForm1
       end
     end
     object SE_Theater1: SE_Theater
-      Left = 323
-      Top = 153
+      Left = 311
+      Top = 151
       Width = 288
       Height = 217
       MouseScrollRate = 1.000000000000000000
@@ -1449,7 +1449,7 @@ object Form1: TForm1
         Font.Style = []
       end
     end
-    object PanelformationSE: SE_Panel
+    object Panelformation: SE_Panel
       Left = 3
       Top = 0
       Width = 966
@@ -2127,13 +2127,13 @@ object Form1: TForm1
       Color = 8081721
       TabOrder = 16
       Visible = False
-      object se_lblmaxvalue: TLabel
+      object lbl_maxvalue: TLabel
         Left = 255
         Top = 253
         Width = 82
         Height = 13
         AutoSize = False
-        Caption = 'se_lblmaxvalue'
+        Caption = 'lbl_maxvalue'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWhite
         Font.Height = -11

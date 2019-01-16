@@ -47,10 +47,10 @@ begin
   Form1.PanelScore.Top := Form1.SE_Theater1.top - Form1.PanelScore.Height;;
   Form1.PanelSkill.Top := Form1.SE_Theater1.Top + Form1.SE_Theater1.Height ;
 
-  Form1.SE_lblmaxvalue.left := Form1.edtsearchprice.Left;
-  Form1.SE_lblmaxvalue.width := Form1.edtsearchprice.width;
-  Form1.SE_lblmaxvalue.Top := Form1.edtsearchprice.top - Form1.SE_lblmaxvalue.height ;
-  Form1.SE_lblmaxvalue.Caption := Translate('lbl_MaxValue');
+  Form1.lbl_maxvalue.left := Form1.edtsearchprice.Left;
+  Form1.lbl_maxvalue.width := Form1.edtsearchprice.width;
+  Form1.lbl_maxvalue.Top := Form1.edtsearchprice.top - Form1.lbl_maxvalue.height ;
+  Form1.lbl_maxvalue.Caption := Translate('lbl_MaxValue');
 
   Form1.btnxp0.Left := Form1.Portrait0.Left;
   Form1.btnxp0.Top := Form1.Portrait0.top + Form1.Portrait0.Height;
@@ -150,7 +150,7 @@ begin
   RoundCornerOf ( Form1.PanelListMatches );
   RoundCornerOf ( Form1.PanelCorner );
   RoundCornerOf ( Form1.PanelLogin );
-  RoundCornerOf ( Form1.PanelformationSE );
+  RoundCornerOf ( Form1.Panelformation );
   RoundCornerOf ( Form1.PanelSkill );
   RoundCornerOf ( Form1.PanelUniform );
   RoundCornerOf ( Form1.PanelMarket );
@@ -202,7 +202,7 @@ begin
   Form1.PanelLogin.Visible := false;
   Form1.PanelMain.Visible := true;
 
-  Form1.PanelFormationSE.Visible := false;
+  Form1.PanelFormation.Visible := false;
 
   Form1.PanelListMatches.Visible := false;
   Form1.SE_GridAllBrain.Active := False;
@@ -241,9 +241,9 @@ begin
   Form1.PanelMain.Visible:= false;
 
 
-  Form1.PanelFormationSE.Visible := true;
-  Form1.PanelFormationSE.left := Form1.PanelInfoPlayer0.Left;//(Form1.PanelBack.Width div 2 ) - (Form1.PanelFormationSE.Width div 2);
-  Form1.PanelFormationSE.Top :=  Form1.se_Theater1.Top - Form1.PanelFormationSE.Height ;
+  Form1.PanelFormation.Visible := true;
+  Form1.PanelFormation.left := Form1.PanelInfoPlayer0.Left;//(Form1.PanelBack.Width div 2 ) - (Form1.PanelFormationSE.Width div 2);
+  Form1.PanelFormation.Top :=  Form1.se_Theater1.Top - Form1.PanelFormation.Height ;
 
   MyBrainFormation.lstSoccerPlayer.clear;  //<-- rimuove gli sprite
 
@@ -255,7 +255,7 @@ begin
 end;
 procedure ShowLogin;
 begin
-  Form1.PanelformationSE.Visible := False;
+  Form1.Panelformation.Visible := False;
   Form1.SE_Theater1.Visible := false;
   Form1.PanelCountryTeam.Visible := false;
   Form1.PanelMain.Visible:= false;

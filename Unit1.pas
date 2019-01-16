@@ -98,136 +98,159 @@ PSoccerCell = ^TSoccerCell;
 
 type
   TForm1 = class(TForm)
-    Panel1: TPanel;
-    Memo1: TMemo;
-    Memo3: TMemo;
-    Button6: TButton;
-    Button2: TButton;
-    Button7: TButton;
-    Button8: TButton;
-    Button10: TButton;
-    CheckBox1: TCheckBox;
-    tcp: TWSocket;
-    MemoC: TMemo;
-    Timer1: TTimer;
-    CheckBoxAI0: TCheckBox;
-    CheckBoxAI1: TCheckBox;
-    PanelBack: SE_Panel;
-    PanelCombatLog: SE_panel;
-    SE_GridDice: SE_Grid;
-    PanelScore: SE_panel;
-    btnTactics: TcnSpeedButton;
-    PanelSell: SE_panel;
-    edtSell: TEdit;
     PanelMain: SE_panel;
+      btnFormation: TcnSpeedButton;
+      btnMainPlay: TcnSpeedButton;
+      btnWatchLive: TcnSpeedButton;
+      btnMarket: TcnSpeedButton;
+      btnStandings: TcnSpeedButton;
+      btnExit: TcnSpeedButton;
+
+    PanelBack: SE_Panel;
+      SE_Theater1: SE_Theater;
+
+    Panel1: TPanel;
+      Memo1: TMemo;
+      Memo2: TMemo;
+      Memo3: TMemo;
+      MemoC: TMemo;
+      Button6: TButton;
+      Button2: TButton;
+      Button7: TButton;
+      Button8: TButton;
+      Button10: TButton;
+      CheckBox1: TCheckBox;
+      CheckBoxAI0: TCheckBox;
+      CheckBoxAI1: TCheckBox;
+      CheckBox2: TCheckBox;
+      Button1: TButton;
+      Edit3: TEdit;
+      CheckBox3: TCheckBox;
+      Button4: TButton;
+      CnSpinEdit1: TCnSpinEdit;
+      editN1: TEdit;
+      EditN2: TEdit;
+
+    PanelCombatLog: SE_panel;
+      SE_GridDice: SE_Grid;
+
+    PanelScore: SE_panel;
+      btnSubs: TcnSpeedButton;
+      btnTactics: TcnSpeedButton;
+      lbl_Nick0: TCnAAScrollText;
+      lbl_Nick1: TCnAAScrollText;
+      lbl_score: TLabel;
+      lbl_minute: TLabel;
+      btnAudioStadium: TcnSpeedButton;
+      ToolSpin: TCnSpinEdit;
+      SE_GridTime: SE_Grid;
+      btnWatchLiveExit: TcnSpeedButton;
+
+
     PanelCountryTeam: SE_panel;
-    SE_GridCountryTeam: SE_Grid;
+      SE_GridCountryTeam: SE_Grid;
+      btnSelCountryTeam: TcnSpeedButton;
+
     PanelListMatches: SE_panel;
+      btnMatchesRefresh: TcnSpeedButton;
+      btnMatchesListBack: TcnSpeedButton;
+      SE_GridAllBrain: SE_Grid;
+
     PanelCorner: SE_panel;
+      SE_GridFreeKick: SE_Grid;
+
     PanelLogin: SE_panel;
-    lbl_username: TLabel;
-    lbl_Password: TLabel;
-    Edit1: TEdit;
-    Edit2: TEdit;
+      lbl_username: TLabel;
+      lbl_Password: TLabel;
+      Edit1: TEdit;
+      Edit2: TEdit;
+      FolderDialog1: TFolderDialog;
+      btnLogin: TcnSpeedButton;
+      btnReplay: TcnSpeedButton;
+      lbl_ConnectionStatus: TLabel;
+
+    PanelInfoPlayer0: SE_Panel;
+        SE_GridXP0: SE_Grid;
+        SE_Grid0: SE_Grid;
+        lbl_descrTalent0: TLabel;
+        Portrait0: TCnSpeedButton;
+        se_lblSurname0: TLabel;
+        lbl_talent0: TLabel;
+        btnTalentBmp0: TCnSpeedButton;
+      PanelDismiss: SE_panel;
+        btnDismiss0: TcnSpeedButton;
+        btnConfirmDismiss: TcnSpeedButton;
+        lbl_ConfirmDismiss: TLabel;
+      PanelSell: SE_panel;
+        edtSell: TEdit;
+        btnsell0: TcnSpeedButton;
+
+
+
+    PanelXPplayer0: SE_panel;
+      btnxp0: TcnSpeedButton;
+      btnxpBack0: TcnSpeedButton;
+
+    PanelInfoplayer1: SE_panel;
+        lbl_descrtalent1: TLabel;
+        SE_Grid1: SE_Grid;
+        Portrait1: TCnSpeedButton;
+        se_lblSurname1: TLabel;
+        lbl_talent1: TLabel;
+        btnTalentBmp1: TCnSpeedButton;
+
+    Panelformation: SE_Panel;
+      lbl_TeamName: TLabel;
+      BtnFormationBack: TcnSpeedButton;
+      btnUniformBack: TcnSpeedButton;
+      UniformPortrait: TcnSpeedButton;
+      BtnFormationReset: TcnSpeedButton;
+      lbl_MoneyF: TLabel;
+      lbl_RankF: TLabel;
+      lbl_TurnF: TLabel;
+      lbl_PointsF: TLabel;
+      lbl_MIF: TLabel;
+      BtnFormationUniform: TcnSpeedButton;
+
+    PanelSkill: SE_Panel;
+      SE_GridSkill: SE_Grid;
+
+    PanelUniform: SE_panel;
+      ck_Jersey1: TCnSpeedButton;
+      ck_Shorts: TCnSpeedButton;
+      ck_Socks1: TCnSpeedButton;
+      ck_Jersey2: TCnSpeedButton;
+      ck_Socks2: TCnSpeedButton;
+      btn_UniformHome: TCnSpeedButton;
+      btn_UniformAway: TCnSpeedButton;
+      CnColorGrid1: TCnColorGrid;
+
+    PanelMarket: SE_panel;
+      SE_GridMarket: SE_Grid;
+      btnMarketBack: TcnSpeedButton;
+      btnMarketRefresh: TcnSpeedButton;
+      edtsearchprice: TEdit;
+      btnConfirmSell: TcnSpeedButton;
+      lbl_maxvalue: TLabel;
+
     PanelError: SE_panel;
-    btnFormation: TcnSpeedButton;
-    btnMainPlay: TcnSpeedButton;
-    btnWatchLive: TcnSpeedButton;
-    btnMarket: TcnSpeedButton;
-    btnStandings: TcnSpeedButton;
-    btnExit: TcnSpeedButton;
-    SE_Theater1: SE_Theater;
+      lbl_Error: TLabel;
+      BtnErrorOK: TCnSpeedButton;
+
+
     SE_field: SE_Engine;
     SE_players: SE_Engine;
     SE_ball: SE_Engine;
-    PanelInfoPlayer0: SE_Panel;
-    PanelformationSE: SE_panel;
     se_lblPlay: TcnSpeedButton;
-    BtnFormationBack: TcnSpeedButton;
-    PanelInfoplayer1: SE_panel;
-    PanelSkill: SE_Panel;
     SE_numbers: SE_Engine;
     SE_interface: SE_Engine;
-    Button1: TButton;
-    Edit3: TEdit;
+
     mainThread: SE_ThreadTimer;
-    Memo2: TMemo;
-    CheckBox2: TCheckBox;
-    BtnFormationReset: TcnSpeedButton;
-    btnSubs: TcnSpeedButton;
-    SE_GridAllBrain: SE_Grid;
-    btnWatchLiveExit: TcnSpeedButton;
     ThreadCurMove: SE_ThreadTimer;
-    Button3: TButton;
-    CheckBox3: TCheckBox;
-    PanelXPplayer0: SE_panel;
-    btnxp0: TcnSpeedButton;
-    btnxpBack0: TcnSpeedButton;
-    FolderDialog1: TFolderDialog;
-    btnReplay: TcnSpeedButton;
-    btnsell0: TcnSpeedButton;
-    BtnFormationUniform: TcnSpeedButton;
-    PanelUniform: SE_panel;
-    btnUniformBack: TcnSpeedButton;
-    UniformPortrait: TcnSpeedButton;
-    btnConfirmSell: TcnSpeedButton;
-    PanelMarket: SE_panel;
-    SE_GridMarket: SE_Grid;
-    btnMarketBack: TcnSpeedButton;
-    btnMarketRefresh: TcnSpeedButton;
-    edtsearchprice: TEdit;
-    btnLogin: TcnSpeedButton;
-    btnSelCountryTeam: TcnSpeedButton;
-    lbl_MoneyF: TLabel;
-    lbl_RankF: TLabel;
-    lbl_TurnF: TLabel;
-    lbl_PointsF: TLabel;
-    lbl_MIF: TLabel;
-    se_lblSurname0: TLabel;
-    se_lblSurname1: TLabel;
-    lbl_talent0: TLabel;
-    lbl_talent1: TLabel;
-    ck_Jersey1: TCnSpeedButton;
-    ck_Shorts: TCnSpeedButton;
-    ck_Socks1: TCnSpeedButton;
-    ck_Jersey2: TCnSpeedButton;
-    ck_Socks2: TCnSpeedButton;
-    se_lblmaxvalue: TLabel;
-    lbl_Nick0: TCnAAScrollText;
-    lbl_Nick1: TCnAAScrollText;
-    lbl_score: TLabel;
-    lbl_minute: TLabel;
-    btnAudioStadium: TcnSpeedButton;
-    btnDismiss0: TcnSpeedButton;
-    PanelDismiss: SE_panel;
-    btnConfirmDismiss: TcnSpeedButton;
-    lbl_ConfirmDismiss: TLabel;
-    lbl_TeamName: TLabel;
-    Button4: TButton;
-    SE_GridXP0: SE_Grid;
-    SE_Grid0: SE_Grid;
-    SE_Grid1: SE_Grid;
-    lbl_descrTalent0: TLabel;
-    lbl_descrtalent1: TLabel;
-    Portrait0: TCnSpeedButton;
-    Portrait1: TCnSpeedButton;
-    btnMatchesRefresh: TcnSpeedButton;
-    btnMatchesListBack: TcnSpeedButton;
-    SE_GridSkill: SE_Grid;
-    btnTalentBmp0: TCnSpeedButton;
-    btnTalentBmp1: TCnSpeedButton;
-    CnSpinEdit1: TCnSpinEdit;
-    ToolSpin: TCnSpinEdit;
-    editN1: TEdit;
-    EditN2: TEdit;
-    lbl_ConnectionStatus: TLabel;
-    lbl_Error: TLabel;
-    BtnErrorOK: TCnSpeedButton;
-    btn_UniformHome: TCnSpeedButton;
-    btn_UniformAway: TCnSpeedButton;
-    SE_GridTime: SE_Grid;
-    SE_GridFreeKick: SE_Grid;
-    CnColorGrid1: TCnColorGrid;
+    Timer1: TTimer;
+
+    tcp: TWSocket;
+
 // General
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -380,7 +403,7 @@ type
     function inGKCenterPosition ( PixelPosition: Tpoint ): Boolean;
 
     procedure MoveInReserves ( aPlayer: TSoccerPlayer );
-    procedure MoveInDefaultField ( aPlayer: TSoccerPlayer );
+    procedure CancelDrag(aPlayer: TsoccerPlayer; ResetCellX, ResetCellY: integer );
     function isTvCellFormation ( Team, CellX, CellY: integer ): boolean;
     procedure SpriteReset ;
     procedure UpdateSubSprites;
@@ -1667,7 +1690,7 @@ begin
   se_theater1.Active := true;
   se_Theater1.Visible := True;
   SE_GridXP0.Active := True;
-  PanelFormationSE.Visible := True;
+  PanelFormation.Visible := True;
 
 end;
 function TForm1.softlight(aColor:Tcolor): TColor;
@@ -6999,8 +7022,12 @@ procedure TForm1.btnTacticsClick(Sender: TObject);
 begin
 (* Premuto durante la partita  mostra anche la formazione avversaria , premuto solo nel mio turno *)
     // posso cliccare quando è tuto fermo e quando sta a me
+
+  if SE_DragGuid <> nil then
+    Exit;
+
   if MyBrain.w_CornerSetup or MyBrain.w_CornerKick or MyBrain.w_FreeKickSetup1 or MyBrain.w_FreeKickSetup2 or MyBrain.w_FreeKickSetup3 or MyBrain.w_FreeKickSetup4 or
-  (Mybrain.Score.TeamGuid [ Mybrain.TeamTurn ]  <> MyGuidTeam) or Animating then Exit;
+  (Mybrain.Score.TeamGuid [ Mybrain.TeamTurn ]  <> MyGuidTeam) or Animating  then Exit;
 
   if btnTactics.Down  then begin
 
@@ -7033,6 +7060,8 @@ procedure TForm1.btnSubsClick(Sender: TObject);
 begin
 
 (* Premuto durante la partita , premuto solo nel mio turno *)
+  if SE_DragGuid <> nil then
+    Exit;
   if btnSubs.Down then begin
 
     // posso cliccare quando è tuto fermo e quando sta a me
@@ -7224,13 +7253,18 @@ begin
    aPlayer.se_sprite.MoverData.Destination := aSEField.Position;
 
 end;
-procedure TForm1.MoveInDefaultField ( aPlayer: TSoccerPlayer );
+procedure TForm1.CancelDrag ( aPlayer: TsoccerPlayer; ResetCellX, ResetCellY: integer );
 var
   aSEField : SE_Sprite;
 begin
-  aSEField := SE_field.FindSprite(IntToStr (aPlayer.DefaultCellX ) + '.' + IntToStr (aPlayer.DefaultCellY ));
-  aPlayer.SE_Sprite.MoverData.Destination := aSEField.Position ;
-  aPlayer.SE_Sprite.position := aSEField.Position ;
+  if SE_DragGuid <> nil then begin
+    aSEField := SE_field.FindSprite(IntToStr (ResetCellX ) + '.' + IntToStr (ResetCellY ));
+    aPlayer.se_sprite.MoverData.speed:=20;
+    aPlayer.SE_Sprite.MoverData.Destination := aSEField.Position ;
+    SE_DragGuid := nil;
+  end;
+  SE_interface.RemoveAllSprites;
+
 end;
 
 procedure Tform1.HighLightField ( CellX, CellY, LifeSpan : integer);
@@ -7239,16 +7273,6 @@ var
 begin
   aSEField := SE_field.FindSprite(IntToStr (CellX ) + '.' + IntToStr (CellY ));
   aSEField.SubSprites[0].lVisible := true;
-  // aggiungo un subsprite a fieldsprite di un colore verde più chiaro
-{  bmp:= se_bitmap.Create(36,36);      // disegno le righe
-  bmp.Bitmap.Canvas.Brush.Color :=  $48A881;//$3E906E;
-  bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
-
-  aSubSprite := SE_SubSprite.create(bmp,'highlight' + IntToStr(CellX) + '.' + IntToStr(CellY) , 2, 2, true, false );
-  if LifeSpan <> 0 then
-    aSubSprite.LifeSpan := LifeSpan;
-  aSEField.SubSprites.Add(aSubSprite);
-  bmp.Free;     }
 end;
 procedure Tform1.HighLightFieldFriendly ( aPlayer: TSoccerPlayer; cells: char );
 var
@@ -7258,10 +7282,7 @@ var
   aPlayer2: TSoccerPlayer;
 begin
 
-  // aggiungo un subsprite a fieldsprite di un colore verde più chiaro
- // bmp:= se_bitmap.Create(36,36);      // disegno le righe
- // bmp.Bitmap.Canvas.Brush.Color :=  $48A881;//$3E906E;
- // bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
+  // mostro il subsprite di un colore verde più chiaro
 
   if cells= 'b' then begin // solo sostituzioni , illumino solo possibili compagni da sostituire tenendo conto del GK
     for i := 0 to MyBrain.lstSoccerPlayer.Count -1 do begin
@@ -7270,16 +7291,10 @@ begin
         if (aPlayer.Talents = 'goalkeeper') and (aPlayer.Talents = 'goalkeeper') then begin
           aSEField := SE_field.FindSprite(IntToStr ( aPlayer2.CellX ) + '.' + IntToStr (aPlayer2.CellY ));
           aSEField.SubSprites[0].lVisible := true;
-//          aSubSprite := SE_SubSprite.create(bmp,'highlight' + IntToStr(aPlayer2.CellX) + '.' + IntToStr(aPlayer2.CellY), 2, 2, true, false );
-//          aSEField.SubSprites.Add(aSubSprite);
- //         bmp.Free;
- //         Exit;
         end
         else if (aPlayer.Talents <> 'goalkeeper') and (aPlayer.Talents <> 'goalkeeper') then begin
           aSEField := SE_field.FindSprite(IntToStr ( aPlayer2.CellX ) + '.' + IntToStr (aPlayer2.CellY ));
           aSEField.SubSprites[0].lVisible := true;
-//          aSubSprite := SE_SubSprite.create(bmp,'highlight' + IntToStr(aPlayer2.CellX) + '.' + IntToStr(aPlayer2.CellY), 2, 2, true, false );
-//          aSEField.SubSprites.Add(aSubSprite);
         end
 
       end;
@@ -7287,7 +7302,9 @@ begin
   end
   else if cells= 's' then begin // solo sostituzioni a distanza > 4, illumino solo possibili compagni da sostituire tenendo conto del GK
     for i := 0 to MyBrain.lstSoccerPlayer.Count -1 do begin
-      aPlayer2 := MyBrain.lstSoccerPlayer[i];
+      aPlayer2 := MyBrain.lstSoccerPlayer[i]; // può contenere -4 1 , un giocatore sostiuito
+      if isOutSide ( aPlayer2.cellX, aPlayer2.cellY) then continue;
+      
       if aPlayer2.Team = aPlayer.Team  then begin
 
         if AbsDistance(aPlayer2.CellX, aPlayer2.CellY, MyBrain.Ball.CellX ,MyBrain.Ball.celly) >= 4 then begin
@@ -7295,17 +7312,11 @@ begin
           if (aPlayer.TalentID = 1) and (aPlayer2.TalentID = 1) then begin
             aSEField := SE_field.FindSprite(IntToStr ( aPlayer2.CellX ) + '.' + IntToStr (aPlayer2.CellY ));
             aSEField.SubSprites[0].lVisible := true;
-  //          aSubSprite := SE_SubSprite.create(bmp,'highlight' + IntToStr(aPlayer2.CellX) + '.' + IntToStr(aPlayer2.CellY), 2, 2, true, false );
-  //          aSEField.SubSprites.Add(aSubSprite);
-  //         bmp.Free;
-  //          Exit;
           end
           else if (aPlayer.TalentID <> 1 ) and (aPlayer2.TalentId <> 1) then begin
+
             aSEField := SE_field.FindSprite(IntToStr ( aPlayer2.CellX ) + '.' + IntToStr (aPlayer2.CellY ));
             aSEField.SubSprites[0].lVisible := true;
-  //          aSEField.RemoveAllSubSprites;
-  //          aSubSprite := SE_SubSprite.create(bmp,'highlight' + IntToStr(aPlayer2.CellX) + '.' + IntToStr(aPlayer2.CellY), 2, 2, true, false );
-  //          aSEField.SubSprites.Add(aSubSprite);
           end
         end;
       end;
@@ -8124,6 +8135,11 @@ begin
   else if GameScreen = ScreenTactics then begin
 
     if Button = MbRight then begin
+      if SE_DragGuid <> nil then begin
+        aPlayer := MyBrain.GetSoccerPlayer2 (Se_dragGuid.guid); // trova tutti  comunque
+        if aPlayer <> nil then
+          CancelDrag (aPlayer, aPlayer.defaultcellX, aPlayer.defaultCellY);
+      end;
       SE_DragGuid := nil;
       HighLightFieldFriendly_hide;
       GameScreen := ScreenTactics ;
@@ -8137,7 +8153,10 @@ begin
         if lstSprite[i].Engine = se_Players then begin   // sposto solo players , non altri sprites
 
             aPlayer := MyBrain.GetSoccerPlayer2 (lstSprite[i].guid); // trova tutti  comunque
-            if aPlayer.GuidTeam  <> MyGuidTeam then Exit;   // sposto solo i miei
+            if aPlayer.GuidTeam  <> MyGuidTeam then begin // sposto solo i miei
+              CancelDrag(aPlayer, aPlayer.DefaultCellX, aPlayer.DefaultCellY );
+              Exit;
+            end;
 
             if (aPlayer.GuidTeam = MyGuidTeam) and (aPlayer.disqualified = 0) and not (aPlayer.Gameover ) then begin
                 SE_dragGuid := lstSprite[i];
@@ -8159,11 +8178,17 @@ begin
     end;
     SE_interface.RemoveAllSprites;
     // voglio fare una sostituzione
+
     for I := 0 to lstSprite.Count -1 do begin
 
       if lstSprite[i].Engine = se_Players then begin   // sposto solo players , non altri sprites
 
           aPlayer := MyBrain.GetSoccerPlayer2 (lstSprite[i].guid); // trova tutti  comunque
+          if MyBrain.Score.TeamSubs [ aPlayer.team ] >= 3 then begin
+            CancelDrag ( aPlayer, aPlayer.CellX, aPlayer.CellY  );
+            Exit;
+          end;
+
           if aPlayer.GuidTeam  <> MyGuidTeam then Exit;   // sposto solo i miei   e solo quelli della panchina
 
           if (aPlayer.GuidTeam = MyGuidTeam) and (aPlayer.disqualified = 0) and not (aPlayer.Gameover )
@@ -8418,9 +8443,9 @@ var
 begin
   // una volta processati gli sprite settare  Handled:= TRUE o la SE:Theater non manderà più la lista degli sprite.
 
-
   if (not Se_Theater1.Active) then Exit;
   if SE_DragGuid <> nil then begin
+    Handled := True;
     Exit;
   end;
   panelsell.Visible := false;
@@ -8521,7 +8546,6 @@ begin
 
      // end;
     end
-
 
 
       // qui sopra la parte infoplayer. da qui in poi le arrowdirection
@@ -9035,28 +9059,45 @@ begin
       if lstSprite[i].Engine = se_field then begin   // sposto solo players , non altri sprites
 
         //cellX e CellY devono essere in campo, mai fuori
-        if IsOutSide( CellX, CellY) then Exit;
         if SE_DragGuid = nil then Exit;
-
+        aPlayer := MyBrain.GetSoccerPlayer2 (SE_DragGuid.Guid); // mouseup su qualsiasi cella
+        aPlayer2 := MyBrain.GetSoccerPlayerDefault (CellX, CellY); // mouseup su qualsiasi cella
+        if IsOutSide( CellX, CellY) then Begin
+          CancelDrag ( aPlayer, aPlayer.DefaultCellX , aPlayer.DefaultCellY );
+          Exit;
+        end;
 
 
         // il mouseup è solo in campo, mai click fuori dal campo
-        aPlayer := MyBrain.GetSoccerPlayer2 (SE_DragGuid.Guid); // mouseup su qualsiasi cella
-        if MyBrain.Score.TeamSubs [ aPlayer.team ] >= 3 then Exit;
-        aPlayer2 := MyBrain.GetSoccerPlayerDefault (CellX, CellY); // mouseup su qualsiasi cella
+        if aPlayer2 <> nil then begin
+          CancelDrag ( aPlayer, aPlayer.DefaultCellX , aPlayer.DefaultCellY );
+         Exit; // deve essere una cella vuota non ocupata da player
+        end;
 
-        if ((CellX = 0) or (CellX = 2)  or  (CellX = 5) or (CellX = 8)) and (aPlayer.Team <> 0) then
+        if (aPlayer.Team  = 0)
+        and ( (CellX = 1) or (CellX = 3)  or (CellX = 4) or (CellX = 6) or (CellX = 7) or (CellX = 9) or (CellX = 10) or (CellX = 11) ) then Begin
+          CancelDrag ( aPlayer, aPlayer.DefaultCellX , aPlayer.DefaultCellY );
           Exit;
-        if ((CellX = 11) or (CellX = 9)  or  (CellX = 6) or (CellX = 3)) and (aPlayer.Team <> 1) then
-          Exit;
+        end;
 
-        if aPlayer2 = nil then begin
+        if (aPlayer.Team  = 1)
+        and ( (CellX = 0) or (CellX = 1)  or (CellX = 2) or (CellX = 4) or (CellX = 5) or (CellX = 7) or (CellX = 8) or (CellX = 10) ) then Begin
+          CancelDrag ( aPlayer, aPlayer.DefaultCellX , aPlayer.DefaultCellY );
+          Exit;
+        end;
+
           // se_dragguid deve essere uno già in campo
-          if MyBrain.isReserveSlot ( aPlayer.CellX , aPlayer.CellY ) then Exit;   //
+//        if MyBrain.isReserveSlot ( aPlayer.CellX , aPlayer.CellY ) then Exit;   //
 
           // gk solo nel posto del gk
-          if (isGKcell ( CellX, CellY ) ) and (aPlayer.TalentID <> 1) then exit;    // un goalkeeper può essere schierato solo in porta
-          if  ( not isGKcell ( CellX, CellY ) ) and (aPlayer.TalentId = 1) then exit;    // un goalkeeper può essere schierato solo in porta
+          if (isGKcell ( CellX, CellY ) ) and (aPlayer.TalentID <> 1) then  begin
+            CancelDrag ( aPlayer,aPlayer.DefaultCellX , aPlayer.DefaultCellY );
+            exit;    // un goalkeeper può essere schierato solo in porta
+          end;
+          if  ( not isGKcell ( CellX, CellY ) ) and (aPlayer.TalentId = 1) then begin    // un goalkeeper può essere schierato solo in porta
+            CancelDrag (aPlayer, aPlayer.DefaultCellX , aPlayer.DefaultCellY );
+            Exit;
+          end;
           SE_DragGuid := nil;
           tcp.SendStr( 'TACTIC,' + aPlayer.ids + ',' + IntToStr(CellX) + ',' + IntToStr(CellY) + EndOfLine );// il server risponde con clientLoadbrain
           HighLightFieldFriendly_hide;
@@ -9068,7 +9109,6 @@ begin
   //        MoveInDefaultField(aPlayer);
   //        aPlayer2.Cells := MyBrain.NextReserveSlot(aPlayer2);
   //        MoveInReserves(aPlayer2);
-        end;
 
 
       end;
@@ -9088,7 +9128,7 @@ begin
   end
   else if GameScreen = ScreenSubs then begin
     if GCD > 0 then Exit;
-
+    // le subs devono puntare celle in campo e occupate da player friendly
     for I := 0 to lstSprite.Count -1 do begin
 
       if lstSprite[i].Engine = se_field then begin   // sposto solo players , non altri sprites
@@ -9123,6 +9163,7 @@ begin
           SE_DragGuid := nil;
           HighLightFieldFriendly_hide;
           tcp.SendStr( 'SUB,' + aPlayer.ids + ',' + aPlayer2.ids + EndOfLine );// il server risponde con clientLoadbrain
+          fGameScreen := ScreenLiveMatch;
           Exit;
         end
         else begin // aplayer2 ! non esiste, metto via tutto
@@ -10009,7 +10050,7 @@ begin
     PanelMarket.Visible:= False;
     PanelSell.Visible:= false;
     PanelDismiss.Visible:= false;
-    PanelformationSE.Visible:= false;
+    Panelformation.Visible:= false;
     CreateNoiseTv;
 
   end
@@ -10078,11 +10119,19 @@ begin
 
     for I := 0 to MyBrain.lstSoccerPlayer.Count -1  do begin
       aPlayer := MyBrain.lstSoccerPlayer [i];
+        // rendo invisibili i player espulsi o già sostituiti e tutti i player hostile
+
         if aPlayer.gameover then aPlayer.se_sprite.Visible := False;   // espulsi o già sostituiti
         if  MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin  // nel mio turno
+        // rendo invisibili i player Hostile
           if aPlayer.GuidTeam <> MyGuidTeam then
             aPlayer.se_sprite.Visible := False;
+        // rendo invisibili i player friendly IN CAMPO distanti >= 4
+          if AbsDistance(aPlayer.CellX, aPlayer .CellY, MyBrain.Ball.CellX ,MyBrain.Ball.celly) < 4 then
+            aPlayer.se_sprite.Visible := False;
         end;
+
+
 
     end;
 
