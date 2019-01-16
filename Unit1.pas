@@ -2543,7 +2543,7 @@ var
   ArrowDirection : TSpriteArrowDirection;
   Circle : SE_Sprite;
 begin
-    fileName := dir_interface + 'circle' + IntToStr(Player.team) + '.bmp';
+    fileName := dir_interface + 'circle.bmp';
     if Player.team = 0 then begin
       ArrowDirection.offset.X := -10;
       ArrowDirection.offset.Y := +10;
@@ -2556,6 +2556,7 @@ begin
     posX := Player.se_sprite.Position.X + ArrowDirection.offset.X;
     posY := Player.se_sprite.Position.Y + ArrowDirection.offset.Y;
     Circle := SE_interface.CreateSprite(filename,'Circle', 1,1,1000,  posX,posY, true);
+    ColorizeArrowCircle ( Player.team,   Circle.BMP );
     Circle.Scale := 10;
 
 end;
@@ -2568,7 +2569,7 @@ var
   aSeField: SE_Sprite;
 begin
 
-    fileName := dir_interface + 'circle' + IntToStr(team) + '.bmp';
+    fileName := dir_interface + 'circle.bmp';
     if team = 0 then begin
       ArrowDirection.offset.X := -10;
       ArrowDirection.offset.Y := +10;
@@ -2584,6 +2585,7 @@ begin
     posY := aSeField.Position.Y + ArrowDirection.offset.Y;
     Circle := SE_interface.CreateSprite(filename,'Circle', 1,1,1000,  posX,posY, true);
     Circle.Scale := 10;
+    ColorizeArrowCircle ( team,   Circle.BMP );
 
 end;
 procedure TForm1.CreateArrowDirection ( Player1 , Player2: TSoccerPlayer );
@@ -5178,6 +5180,7 @@ begin
           AnimationScript.Tsadd ('cl_ball.move,3,' + tsCmd[6] + ','+tsCmd[7]+ ',' + tsCmd[8] + ','+tsCmd[9]+',0,volley'  );
 
           AnimationScript.Tsadd ('cl_lop.gol,3,' + tsCmd[6] + ','+tsCmd[7]+ ',' + tsCmd[10] + ','+tsCmd[11]+',0,gol'  );
+          AnimationScript.TsAdd  ( 'cl_wait,3000');
         end
         else begin
           AnimCommon ( tsCmd.commatext );
@@ -6799,12 +6802,9 @@ begin
           Mybrain.Ball.se_sprite.MoverData.Destination := Point(  aSEField.Position.X + 20, aSEField.Position.Y);
         end;
       end;
+      CreateSplash( 'Gol!', 2000 );
+      SE_GridDicewriterow ( 0,   'Gol!!!',  '',  '' , '', '' );
 
-    AnimationScript.TsAdd  ( 'cl_splash.gol');
-    AnimationScript.TsAdd  ( 'cl_wait,3000');
-  end
-  else if ts[0]= 'cl_splash.gol' then begin
-    SE_GridDicewriterow ( 0,   'Gol!!!',  '',  '' , '', '' );
   end
   else if ts[0]= 'cl_splash.gameover' then begin
     SE_GridDicewriterow ( 0,  UpperCase( Translate ( 'lbl_GameOver' )),  '',  '' , '', '' );

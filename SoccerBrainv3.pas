@@ -2,7 +2,7 @@
 //{$define SETFAULT}  // sempre fallo
 //{$define SETRED}
 //{$DEFINE  SetCornergol}
-//{$DEFINE  Setposprsgol}
+//{$DEFINE  SetAlwaysGol}
 //{$DEFINE  Setposprscorner}
 unit SoccerBrainv3;
    { TODO :  le db query uppdate senza +1 locale, ma direttammete le deve fare mysql }
@@ -5759,6 +5759,7 @@ begin
     Roll := AdjustFatigue (aPlayer.Stamina , preRoll);
     aRnd:= Roll.value + aPlayer.Passing ;
     aPlayer.resetALL;
+    {$ifDEF SetAlwaysGol} arnd := 10; {$endif}
 
 
     TsScript.add ('SERVER_LOP,' + aPlayer.ids + ',' + IntToStr(aPlayer.CellX) + ',' + IntToStr(aPlayer.CellY) + ',' +tsCmd[1] + ',' + tsCmd[2] ) ;//  skillused  tentativo
@@ -6064,6 +6065,7 @@ begin
                     if BaseShot <=0 then BaseShot := 1;
 
                     aRnd2:= Roll2.value + BaseShot  ;
+    {$ifDEF SetAlwaysGol} arnd2 := 10; {$endif}
                     aFriend.Stamina := aFriend.Stamina - cost_pos;
                     TsScript.add ('sc_ST,' +aFriend.ids +',' + IntToStr(cost_pos) ) ;
                     TsScript.add ( 'sc_DICE,' + IntTostr(aFriend.CellX) + ',' + Inttostr(aFriend.CellY) +','+  IntTostr(aRnd2) +','+
@@ -7052,7 +7054,7 @@ cro_crossbar:
     Ball.Player.xp_Shot  := Ball.Player.xp_Shot + 1;
     aRnd:= Roll.value + BaseShot  ;
 
-    {$ifDEF Setposprsgol} arnd := 10; {$endif}
+    {$ifDEF SetAlwaysGol} arnd := 10; {$endif}
 
     aPlayer.Stamina := aPlayer.Stamina - cost_pos;
     aPlayer.xpTal_freekicks :=  aPlayer.xpTal_freekicks +1;
@@ -7339,7 +7341,7 @@ POSvsGK:
 
     aRnd:= Roll.value + BaseShot  ;
     aPlayer.resetall;
-    {$ifDEF Setposprsgol} arnd := 10; {$endif}
+    {$ifDEF SetAlwaysGol} arnd := 10; {$endif}
 
     TsScript.add ('SERVER_PRS,' + aPlayer.ids + ',' + IntToStr(aPlayer.CellX) + ',' + IntToStr(aPlayer.CellY)+ ',' + IntToStr( aDoor.X) +',' + IntToStr( aDoor.Y));
     aPlayer.Stamina := aPlayer.Stamina - cost_prs;
