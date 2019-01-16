@@ -3,13 +3,11 @@
 
 
       { TODO  : AudioCrowd in sottofondo }
-      { TODO  : verificare sostituzioni }
       { TODO  : verificare suoni, sul rigore è mancata l'esultanza}
       { TODO  : override maglie bianca o nera }
       { TODO : risolvere sfarfallio in formation }
       { TODO : finire traduzioni DATA/EN}
       { TODO : gestire il fine partita }
-      { TODO : verifica bug sui pulsanti tattiche. il player rimane sospeso  }
       { TODO : bug sui setuniform. a volte va in db.realmd.cheatdetected  }
 
 
@@ -369,9 +367,7 @@ type
     fSelectedPlayer : TSoccerPlayer;
     procedure ShowFace ( aPlayer: TSoccerPlayer );
     procedure  SetSelectedPlayer ( aPlayer: TSoccerPlayer);
-    procedure ClientLoadBrainMM ( incMove: Byte; FirstTime: boolean) ;
     function FieldGuid2Cell (guid:string): Tpoint;
-    function ClientLoadScript ( incMove: Byte) : Integer;
     procedure ArrowShowShpIntercept( CellX, CellY : Integer; ToEmptyCell: boolean);
     procedure ArrowShowMoveAutoTackle( CellX, CellY : Integer);
 
@@ -379,8 +375,8 @@ type
     procedure ArrowShowCrossingHeading( CellX, CellY : Integer) ;
     procedure ArrowShowDribbling( anOpponent: TSoccerPlayer; CellX, CellY : Integer);
     procedure hidechances;
-    procedure FirstShowRoll;
 
+    // Score
     procedure i_Tml ( MovesLeft,team: string );  // animazione internal mosse rimaste
     procedure SetTmlPosition ( team: string );
     procedure i_tuc ( team: string );          // animazione internal turn change
@@ -388,29 +384,47 @@ type
     procedure i_red ( ids: string );           // animazione internal red card (espulsione)
     procedure i_Yellow ( ids: string );        // animazione internal yellow card (ammonizione)
     procedure i_Injured ( ids: string );       // animazione internal infortunio
-    procedure AnimCommon ( Cmd:string);
+
+    // interface
+    procedure LoadGridFreeKick ( team : integer; stat: string; clearMark: boolean );
+    procedure CreateSplash (aString: string; msLifespan: integer) ;
+    procedure RemoveChancesAndInfo  ;
+    procedure CornerSetBall;
+    procedure CornerSetPlayer ( aPlayer: TsoccerPlayer);
 
     procedure Logmemo ( ScriptLine : string );
+
+    // highlight field cell
     procedure HighLightField ( CellX, CellY, LifeSpan : integer );
     procedure HighLightFieldFriendly ( aPlayer: TSoccerPlayer; cells: char );
     procedure HighLightFieldFriendly_hide;
-    procedure SelectedPlayerPopupSkill ( CellX, CellY: integer);
 
-    procedure Anim ( Script: string );
+    // Animation
+    procedure ClientLoadBrainMM ( incMove: Byte; FirstTime: boolean) ;  // carica il brain e lo script
+    function ClientLoadScript ( incMove: Byte) : Integer;               // riempe TAnimationScript
+    procedure Anim ( Script: string );                                  // esegue TAnimationScript
+      procedure AnimCommon ( Cmd:string);
+    procedure PrepareAnim;
+    procedure SpriteReset ;
+    procedure UpdateSubSprites;
+    procedure MoveInReserves ( aPlayer: TSoccerPlayer );                // mette uno sprite player nelle riserve
+    procedure CancelDrag(aPlayer: TsoccerPlayer; ResetCellX, ResetCellY: integer ); // anulla il dragdrop dello sprite
+    procedure FirstShowRoll;
+
+    procedure SelectedPlayerPopupSkill ( CellX, CellY: integer);
     procedure RoundBorder (bmp: TBitmap; w,h: Integer);
+
+    // check ball position
     function inGolPosition ( PixelPosition: Tpoint ): Boolean;
     function inCrossBarPosition ( PixelPosition: Tpoint ): Boolean;
     function inGKCenterPosition ( PixelPosition: Tpoint ): Boolean;
 
-    procedure MoveInReserves ( aPlayer: TSoccerPlayer );
-    procedure CancelDrag(aPlayer: TsoccerPlayer; ResetCellX, ResetCellY: integer );
     function isTvCellFormation ( Team, CellX, CellY: integer ): boolean;
-    procedure SpriteReset ;
-    procedure UpdateSubSprites;
     procedure LoadTranslations ;
 
     function Capitalize ( aString : string  ): String;
 
+    // Screen init
     procedure SetTheaterMatchSize;
     procedure InitializeTheaterMatch;
     procedure InitializeTheaterFormations;
@@ -464,12 +478,6 @@ type
     function GetContrastColor( cl: TColor  ): TColor;
 
 
-    procedure LoadGridFreeKick ( team : integer; stat: string; clearMark: boolean );
-    procedure CreateSplash (aString: string; msLifespan: integer) ;
-    procedure RemoveChancesAndInfo  ;
-    procedure CornerSetBall;
-    procedure CornerSetPlayer ( aPlayer: TsoccerPlayer);
-    procedure PrepareAnim;
     property  GameScreen :TGameScreen read fGameScreen write SetGameScreen;
     procedure SetTcpFormation;
 
@@ -7459,13 +7467,13 @@ begin
 
 
 
+    SelectedPlayer.ActiveSkills.Clear ;
     if Not SelectedPlayer.CanSkill then goto PreloadGridSkill;
 //    if SelectedPlayer.GuidTeam <> MyGuidTeam then Exit;
 
    // HideChances;
 
 
-    SelectedPlayer.ActiveSkills.Clear ;
     if SelectedPlayer.isCOF then begin
       if SelectedPlayer.Role <> 'G' then SelectedPlayer.ActiveSkills.Add('Corner.Kick=' + IntTostr(SelectedPlayer.Passing + SelectedPlayer.Tal_Crossing  ));
       goto LoadGridSkill; // break
