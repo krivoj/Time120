@@ -67,8 +67,8 @@ object FormServer: TFormServer
     OnClick = btnStartAllBrainClick
   end
   object Button1: TButton
-    Left = 408
-    Top = 456
+    Left = 424
+    Top = 431
     Width = 121
     Height = 25
     Caption = 'create accounts test100'
@@ -76,8 +76,8 @@ object FormServer: TFormServer
     OnClick = Button1Click
   end
   object Button2: TButton
-    Left = 408
-    Top = 487
+    Left = 424
+    Top = 462
     Width = 121
     Height = 25
     Caption = 'create teams test100'
@@ -85,8 +85,8 @@ object FormServer: TFormServer
     OnClick = Button2Click
   end
   object Button3: TButton
-    Left = 408
-    Top = 518
+    Left = 424
+    Top = 524
     Width = 121
     Height = 25
     Caption = 'Update Uniforms'
@@ -212,6 +212,15 @@ object FormServer: TFormServer
     NumbersOnly = True
     TabOrder = 16
     Text = '12000'
+  end
+  object Button4: TButton
+    Left = 424
+    Top = 493
+    Width = 121
+    Height = 25
+    Caption = 'reset formation test100'
+    TabOrder = 17
+    OnClick = Button4Click
   end
   object Tcpserver: TWSocketThrdServer
     LineLimit = 1024

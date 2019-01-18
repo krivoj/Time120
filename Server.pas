@@ -9,7 +9,7 @@ unit Server;
 {$DEFINE BOTS}     // se uso i bot o solo partite di player reali
 {$DEFINE useMemo}  // se uso il debug a video delle informazioni importanti
 interface
-
+ { TODO : verificare fine stagioen e new season, giovani ecc.. }
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics, System.Hash , DateUtils,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Strutils,generics.collections, generics.defaults, Data.DB,
@@ -64,6 +64,21 @@ type TFinalFormation = record
   Stamina: Integer;
   Role: string;
 end;
+type TBasePlayer = record
+  Surname: string;
+  Attributes : string;
+  Injured_Penalty1: Integer;
+  Injured_Penalty2: Integer;
+  Injured_Penalty3: Integer;
+  Growth1: Integer;
+  Growth2: Integer;
+  Growth3: Integer;
+  Talent1: Integer;
+  Talent2: Integer;
+  Talent3: Integer;
+  Face: Integer;
+  TalentId: Integer;
+end;
   type TAttributeName = ( atSpeed , atDefense, atBallControl, atPassing, atShot, atHeading);
   type TLevelUp = record
     ids : string;
@@ -117,6 +132,7 @@ type
     edit4: TEdit;
     Edit2: TEdit;
     Edit3: TEdit;
+    Button4: TButton;
 
     procedure FormCreate(Sender: TObject);
       procedure CleanDirectory(dir:string);
@@ -153,6 +169,7 @@ type
     procedure Button3Click(Sender: TObject);
     procedure RadioButton1Click(Sender: TObject);
     procedure RadioButton2Click(Sender: TObject);
+    procedure Button4Click(Sender: TObject);
   private
     { Private declarations }
     procedure Display(Msg : String);
@@ -184,7 +201,8 @@ type
     procedure validate_buy ( commatext: string; Cli:TWSocketThrdClient  );
     procedure validate_market ( commatext: string; Cli:TWSocketThrdClient  );
     procedure validate_dismiss ( commatext: string; Cli:TWSocketThrdClient  );
-    procedure reset_formation ( Cli:TWSocketThrdClient );
+    procedure reset_formation ( Cli:TWSocketThrdClient ); overload;
+    procedure reset_formation ( GuidTeam: integer ); overload;
 
     function checkformation ( Cli:TWSocketThrdClient ): Boolean;
     procedure store_formation (  CommaText: string );
@@ -212,6 +230,7 @@ type
     procedure CreateAndLoadMatch (  brain: TSoccerBrain; GuidTeam0, GuidTeam1: integer; Username0, UserName1: string  );
     procedure CreateMatchBOTvsBOT (   GuidTeam0, GuidTeam1: integer; Username0, UserName1: string );
     procedure CreateFormationTeam ( Guidteam: integer ); // la elabora e la stora nel db
+      function CreatePlayer ( WorldTeamGuid: string; TalentChance: integer ) : TBasePlayer;
       function NextReserveSlot ( ReserveSlot: TTheArray ) : Tpoint;// per il create_formation e reset_formation. il brain ha il proprio reserveslòot t,x,y
       procedure CleanReserveSlot ( ReserveSlot: TTheArray );
     procedure CreateFormationsPreset;
@@ -252,7 +271,7 @@ var
   Queue: TObjectList<TWSocketThrdClient>;
   RandGen: TtdBasePRNG;
   FormationsPreset: TList<TFormation>;
-  Mutex: cardinal;
+  Mutex,MutexMarket: cardinal;
   dir_log: string;
   MySqlServerGame,  MySqlServerWorld,  MySqlServerAccount: string; // le 3 tabelle del DB: account, world e Game
                                                                    // world contiene le definizioni come i nomi delle squadre e i cognomi dei player
@@ -459,9 +478,9 @@ begin
 
   end;
 
-    MyQueryAccount.free;
-    ConnAccount.Connected:= False;
-    ConnAccount.Free;
+  MyQueryAccount.free;
+  ConnAccount.Connected:= False;
+  ConnAccount.Free;
 
 
 end;
@@ -746,12 +765,14 @@ begin
 end;
 procedure TBrainManager.FinalizeBrain ( brain: TSoccerBrain);
 var
-  i,T,aGuidTeam,matches_Played,matches_Left, disqualified, injured,TotYellowCard,aRnd,newStamina,MatchesplayedTeam,Points: Integer;
+  i,T,aGuidTeam,matches_Played,matches_Left, disqualified, injured,TotYellowCard,aRnd,newStamina,FreeSlot: Integer;
   TextHistory,TextXP: string;
   aPlayer: TSoccerPlayer;
   tsXP, tsHistory: TStringList;
-  TotMarketValue: array [0..1] of Integer;
+  TotMarketValue,YoungQueue,MatchesplayedTeam,Points: array [0..1] of Integer;
   myYear, myMonth, myDay, myHour, myMin, mySec : string;
+  aBasePlayer: TBasePlayer;
+  MatchesPlayed,MatchesLeft: Integer;
   ConnGame : {$IFDEF MYDAC} TMyConnection{$ELSE}TFDConnection{$ENDIF};
   MyQueryGameTeams,MyQueryGamePlayers, MyQueryUpdate, MyQueryArchive:  {$IFDEF MYDAC}TMyQuery{$ELSE}TFDQuery{$ENDIF};
 begin
@@ -781,6 +802,7 @@ begin
 
   // Singoli players
 
+  WaitforSingleObject ( MutexMarket, INFINITE ); // devo bloccare il mercato
 
     {$IFDEF MYDAC}
     ConnGame := TMyConnection.Create(nil);
@@ -820,14 +842,14 @@ begin
     {$ENDIF}
 
     for I := 0 to MyQueryGamePlayers.RecordCount -1 do begin
-
+      // nota: se un player è stato comprato sul mercato non crea problemi se non al valore di mercato
       aGuidTeam := MyQueryGamePlayers.FieldByName('team').asinteger;
       matches_Played := MyQueryGamePlayers.FieldByName('matches_played').asinteger;
       matches_left := MyQueryGamePlayers.FieldByName('matches_left').asinteger;
       Inc(matches_Played);
       Dec(matches_left);
       if matches_left <= 0 then  // fine carriera
-        aGuidTeam := 0;
+        aGuidTeam := 0; // i player con Guidteam 0 sono da gestire poi sul DB
 
 
       disqualified  :=  MyQueryGamePlayers.FieldByName('disqualified').asinteger;
@@ -943,7 +965,8 @@ begin
         // in uscita alcune xp sono ridimensionate perchè 'i punti sonon stati giocati'
         // in uscita può essere generato un talento
 
-      TotMarketValue[T] := TotMarketValue[T]  +  aPlayer.MarketValue;
+      if aGuidTeam <> 0 then   // sopra potrebbe essere giunto a fine carriera
+       TotMarketValue[T] := TotMarketValue[T]  +  aPlayer.MarketValue; // se è stato comprato piccolo problema
       // l'update riguarda tutti
       TextHistory := IntToStr(aPlayer.history_Speed) + ',' + IntToStr(aPlayer.history_Defense) + ',' + IntToStr(aPlayer.history_BallControl) + ',' +
       IntToStr(aPlayer.history_Passing) + ',' + IntToStr(aPlayer.history_Shot) + ',' + IntToStr(aPlayer.history_Heading);
@@ -968,7 +991,7 @@ begin
 
       MyQueryUpdate.SQL.text := 'UPDATE game.players SET matches_played = ' + IntTostr(matches_played) +
                                                       ', matches_left = ' + IntTostr(matches_Left) +
-                                                      ', team = ' + IntTostr(aGuidTeam) +
+                                                      ', team = ' + IntTostr(aGuidTeam) +             // 0 se a fine carriera ma non è stato calcolato sopra nem valore market
                                                       ', disqualified = ' + IntTostr(disqualified) +
                                                       ', injured = ' + IntTostr(injured) +
                                                       ', Speed = ' + IntTostr(aPlayer.DefaultSpeed ) +
@@ -994,40 +1017,43 @@ begin
   {$IFDEF MYDAC}
   MyQueryGameTeams := TMyQuery.Create(nil);
   MyQueryGameTeams.Connection := ConnGame;  // game
-  MyQueryGameTeams.SQL.Text:= 'SELECT matchesplayed, points from game.teams WHERE guid = ' + IntToStr( brain.Score.TeamGuid [0]);
+  MyQueryGameTeams.SQL.Text:= 'SELECT worldteam, matchesplayed, points, youngqueue from game.teams WHERE guid = ' + IntToStr( brain.Score.TeamGuid [0]);
   MyQueryGameTeams.Execute;
   {$ELSE}
   MyQueryGameTeams := TFDQuery.Create(nil);
   MyQueryGameTeams.Connection := ConnGame;  // game
-  MyQueryGameTeams.Open ( 'SELECT matchesplayed, points from game.teams WHERE guid = ' + IntToStr( brain.Score.TeamGuid [0]));
+  MyQueryGameTeams.Open ( 'SELECT worldteam, matchesplayed, points, youngqueue from game.teams WHERE guid = ' + IntToStr( brain.Score.TeamGuid [0]));
   {$ENDIF}
 
-  MatchesplayedTeam := MyQueryGameTeams.FieldByName('matchesplayed').AsInteger + 1;
-  Points := MyQueryGameTeams.FieldByName('points').AsInteger + brain.Score.Points[0];
+  MatchesplayedTeam[0] := MyQueryGameTeams.FieldByName('matchesplayed').AsInteger + 1;
+  Points[0]  := MyQueryGameTeams.FieldByName('points').AsInteger + brain.Score.Points[0];
+  YoungQueue[0] :=  MyQueryGameTeams.FieldByName('youngqueue').AsInteger;
+  if MatchesplayedTeam[0] = 39 then
+    MatchesplayedTeam[0] := 38;
+  // in Questo momento potrebbe essere fine season con MatchesplayedTeam = 38
 
   MyQueryGameTeams.SQL.text := 'UPDATE game.teams SET nextha = 1, mi = ' + IntToStr(brain.Score.TeamMI [0]) + ', MarketValue = ' +
-  IntToStr( TotMarketValue[0]) + ',matchesplayed=' + IntToStr(MatchesplayedTeam) + ' WHERE Guid = ' + IntToStr( brain.Score.TeamGuid [0]);
+  IntToStr( TotMarketValue[0]) + ',matchesplayed=' + IntToStr(MatchesplayedTeam[0]) + ',points=' + IntToStr(Points[0]) + ' WHERE Guid = ' + IntToStr( brain.Score.TeamGuid [0]);
   MyQueryGameTeams.Execute;
 
 
   {$IFDEF MYDAC}
-  MyQueryGameTeams.SQL.text := 'SELECT matchesplayed,points from game.teams WHERE guid = ' + IntToStr( brain.Score.TeamGuid [1]);
+  MyQueryGameTeams.SQL.text := 'SELECT matchesplayed,points,youngqueue from game.teams WHERE guid = ' + IntToStr( brain.Score.TeamGuid [1]);
   MyQueryGameTeams.Execute;
   {$ELSE}
-  MyQueryGameTeams.Open ( 'SELECT matchesplayed,points from game.teams WHERE guid = ' + IntToStr( brain.Score.TeamGuid [1]));
+  MyQueryGameTeams.Open ( 'SELECT matchesplayed,points ,youngqueuefrom game.teams WHERE guid = ' + IntToStr( brain.Score.TeamGuid [1]));
   {$ENDIF}
 
-  MatchesplayedTeam := MyQueryGameTeams.FieldByName('matchesplayed').AsInteger + 1;
-  Points := MyQueryGameTeams.FieldByName('points').AsInteger + brain.Score.Points[1];
+  MatchesplayedTeam[1] := MyQueryGameTeams.FieldByName('matchesplayed').AsInteger + 1;
+  Points[1] := MyQueryGameTeams.FieldByName('points').AsInteger + brain.Score.Points[1];
+  YoungQueue[1] :=  MyQueryGameTeams.FieldByName('youngqueue').AsInteger;
+  if MatchesplayedTeam[1] = 39 then
+    MatchesplayedTeam[1] := 38;
 
   MyQueryGameTeams.SQL.text := 'UPDATE game.teams SET nextha = 0, mi = ' + IntToStr(brain.Score.TeamMI [1]) + ', MarketValue = ' +
-  IntToStr( TotMarketValue[1]) + ',matchesplayed=' + IntToStr(MatchesplayedTeam) + ',points=' + IntToStr(Points) + ' WHERE Guid = ' + IntToStr( brain.Score.TeamGuid [1]);
+  IntToStr( TotMarketValue[1]) + ',matchesplayed=' + IntToStr(MatchesplayedTeam[1]) + ',points=' + IntToStr(Points[1]) + ' WHERE Guid = ' + IntToStr( brain.Score.TeamGuid [1]);
   MyQueryGameTeams.Execute;
 
-
-  MyQueryGameTeams.Free;
-  MyQueryUpdate.Free;
-  MyQueryGamePlayers.Free;
 
   // Aggiorno archive con tutti i dati e matchinfo
   DecodeBrainIds ( brain.brainIds, myYear, myMonth, myDay, myHour, myMin, mySec );
@@ -1044,13 +1070,112 @@ begin
                              ',matchinfo = "' + brain.MatchInfo.CommaText + '"';
   MyQueryArchive.Execute;
   MyQueryArchive.Free;
+
+  // Aggiorno classifica cannonieri ?
+
+   { TODO : ogni 38 partite +2 arrivi tra 18 e 21 + gestione denaro }
+  // devo controllare se ci sono player sul mercato onMarket=1 e impedire che vangano venduti in quel momentobloccando col mutex il mercato
+  // rimagonono N posti liberi. genero 2 giovani. Se posso li metto in squadra, altrimenti userò il campo 'youngqueue' numerico
+  For T:= 0 to 1 do begin
+    if MatchesplayedTeam[T] = 38 then begin  // new season --> gestione giovani
+//    GetRewards money reward deve aggiornare anche money e anche season , in futuro rank
+      // azzero il campionato. nuova season
+      MyQueryGameTeams.SQL.text := 'UPDATE game.teams SET mi = 0, matchesplayed = 0, points=0 WHERE Guid = ' + IntToStr( brain.Score.TeamGuid [T]);
+      MyQueryGameTeams.Execute;
+
+      // devo rifare la query per via dei player oltre i 33 anni
+      {$IFDEF MYDAC}
+      MyQueryGamePlayers.SQL.Text := 'SELECT guid from game.players WHERE team =' + IntToStr(brain.Score.TeamGuid [T] );
+      MyQueryGamePlayers.Execute ;
+      {$ELSE}
+      MyQueryGamePlayers.Open ( 'SELECT guid from game.players WHERE team =' + IntToStr(brain.Score.TeamGuid [T] ));
+      {$ENDIF}
+      FreeSlot := 18 - MyQueryGamePlayers.RecordCount;
+        // qui devo generare 1 giovine +1 giovine :)
+
+      case FreeSlot of
+        0:begin
+          YoungQueue[T] :=  YoungQueue[T] + 2;
+          MyQueryGameTeams.SQL.text := 'UPDATE game.teams SET youngqueue = ' + IntToStr(YoungQueue[T]) + ' WHERE Guid = ' + IntToStr( brain.Score.TeamGuid [T]);
+          MyQueryGameTeams.Execute;
+
+        end;
+        1:begin
+          YoungQueue[T] :=  YoungQueue[T] + 1;
+          MyQueryGameTeams.SQL.text := 'UPDATE game.teams SET youngqueue = ' + IntToStr(YoungQueue[T]) + ' WHERE Guid = ' + IntToStr( brain.Score.TeamGuid [T]);
+          MyQueryGameTeams.Execute;
+
+          // c'è 1 posto libero lo metto in squadra
+          aBasePlayer := FormServer.CreatePlayer ( MyQueryGameTeams.FieldByName('worldteam').AsString , 50{chance di generare un talento} );
+          MatchesPlayed := 38 * 18  ; // 18 anni
+          MatchesLeft := (38*15) - MatchesPlayed;
+          MyQueryGamePlayers.SQL.text := 'INSERT into game.players (Team,Name,Matches_Played,Matches_Left,'+
+                                        'injured_penalty1,injured_penalty2,injured_penalty3,'+
+                                        'growth1,growth2,growth3,talent1,talent2,talent3,'+
+                                        'talent, speed,defense,passing,ballcontrol,heading,shot,injured,totyellowcard,disqualified,face)'+
+                                        ' VALUES ('+
+                                        IntToStr(brain.Score.TeamGuid [T]) +',"'+ aBasePlayer.Surname +'",'+ IntToStr(MatchesPlayed)+','+ IntToStr(MatchesLeft)+','+
+                                        IntToStr(aBasePlayer.Injured_Penalty1)+','+IntToStr(aBasePlayer.Injured_Penalty2)+','+IntToStr(aBasePlayer.Injured_Penalty3)+','+
+                                        IntToStr(aBasePlayer.Growth1)+','+IntToStr(aBasePlayer.Growth2)+','+IntToStr(aBasePlayer.Growth3)+','+
+                                        IntToStr(aBasePlayer.talent1)+','+IntToStr(aBasePlayer.talent2)+','+IntToStr(aBasePlayer.talent3)+','+
+                                        IntToStr(aBasePlayer.TalentId) + ',' +  aBasePlayer.Attributes +','+
+                                        '0,0,0,' + IntToStr(aBasePlayer.Face) //injured,totyellowcard,disqualified
+                                        +')';
+
+          MyQueryGamePlayers.Execute;
+
+        end;
+        else begin // 2 o più
+
+          // copiata e incollata da sopra 2 volte, per editing futuro ( es. centro giovani genera 3 giovani oppure con più points da distribuire )
+          aBasePlayer := FormServer.CreatePlayer ( MyQueryGameTeams.FieldByName('worldteam').AsString , 50{chance di generare un talento} );
+          MatchesPlayed := 38 * 18  ; // 18 anni
+          MatchesLeft := (38*15) - MatchesPlayed;
+          MyQueryGamePlayers.SQL.text := 'INSERT into game.players (Team,Name,Matches_Played,Matches_Left,'+
+                                        'injured_penalty1,injured_penalty2,injured_penalty3,'+
+                                        'growth1,growth2,growth3,talent1,talent2,talent3,'+
+                                        'talent, speed,defense,passing,ballcontrol,heading,shot,injured,totyellowcard,disqualified,face)'+
+                                        ' VALUES ('+
+                                        IntToStr(brain.Score.TeamGuid [T]) +',"'+ aBasePlayer.Surname +'",'+ IntToStr(MatchesPlayed)+','+ IntToStr(MatchesLeft)+','+
+                                        IntToStr(aBasePlayer.Injured_Penalty1)+','+IntToStr(aBasePlayer.Injured_Penalty2)+','+IntToStr(aBasePlayer.Injured_Penalty3)+','+
+                                        IntToStr(aBasePlayer.Growth1)+','+IntToStr(aBasePlayer.Growth2)+','+IntToStr(aBasePlayer.Growth3)+','+
+                                        IntToStr(aBasePlayer.talent1)+','+IntToStr(aBasePlayer.talent2)+','+IntToStr(aBasePlayer.talent3)+','+
+                                        IntToStr(aBasePlayer.TalentId) + ',' +  aBasePlayer.Attributes +','+
+                                        '0,0,0,' + IntToStr(aBasePlayer.Face) //injured,totyellowcard,disqualified
+                                        +')';
+
+          MyQueryGamePlayers.Execute;
+          aBasePlayer := FormServer.CreatePlayer ( MyQueryGameTeams.FieldByName('worldteam').AsString , 50{chance di generare un talento} );
+          MatchesPlayed := 38 * 18  ; // 18 anni
+          MatchesLeft := (38*15) - MatchesPlayed;
+          MyQueryGamePlayers.SQL.text := 'INSERT into game.players (Team,Name,Matches_Played,Matches_Left,'+
+                                        'injured_penalty1,injured_penalty2,injured_penalty3,'+
+                                        'growth1,growth2,growth3,talent1,talent2,talent3,'+
+                                        'talent, speed,defense,passing,ballcontrol,heading,shot,injured,totyellowcard,disqualified,face)'+
+                                        ' VALUES ('+
+                                        IntToStr(brain.Score.TeamGuid [T]) +',"'+ aBasePlayer.Surname +'",'+ IntToStr(MatchesPlayed)+','+ IntToStr(MatchesLeft)+','+
+                                        IntToStr(aBasePlayer.Injured_Penalty1)+','+IntToStr(aBasePlayer.Injured_Penalty2)+','+IntToStr(aBasePlayer.Injured_Penalty3)+','+
+                                        IntToStr(aBasePlayer.Growth1)+','+IntToStr(aBasePlayer.Growth2)+','+IntToStr(aBasePlayer.Growth3)+','+
+                                        IntToStr(aBasePlayer.talent1)+','+IntToStr(aBasePlayer.talent2)+','+IntToStr(aBasePlayer.talent3)+','+
+                                        IntToStr(aBasePlayer.TalentId) + ',' +  aBasePlayer.Attributes +','+
+                                        '0,0,0,' + IntToStr(aBasePlayer.Face) //injured,totyellowcard,disqualified
+                                        +')';
+
+          MyQueryGamePlayers.Execute;
+
+        end;
+      end;
+
+    end;
+  end;
+
+  ReleaseMutex ( MutexMarket); // sblocco il mercato
+
+  MyQueryGameTeams.Free;
+  MyQueryUpdate.Free;
+  MyQueryGamePlayers.Free;
   ConnGame.Connected := false;
   ConnGame.Free;
-
-    // Aggiorno classifica cannonieri
-  //
-   { TODO -con the road : finalize ogni 38 partite +2 arrivi tra 18 e 21+ gestione denaro e nuovi arrivi giovani. max 3 sul mercato.  }
-
 
 end;
 procedure TBrainManager.calc_xp (aPlayer: TSoccerPlayer);
@@ -1540,6 +1665,7 @@ var
 begin
 
   Mutex:=CreateMutex(nil,false,'list');
+  MutexMarket:=CreateMutex(nil,false,'market');
   RandGen := TtdCombinedPRNG.Create(0, 0);
 
   FormationsPreset := TList<TFormation>.Create;
@@ -1667,6 +1793,7 @@ begin
   end;
   TsWorldCountries.Free;
   CloseHandle(Mutex);
+  CloseHandle(MutexMarket);
 
 end;
 
@@ -4071,17 +4198,14 @@ end;
 function TFormServer.CreateGameTeam ( cli: TWSocketThrdClient;  WorldTeamGuid: string ): Integer;
 //  cli.cliid=account: integer;
 var
-  i,MatchesPlayed,MatchesLeft,stat,Speed2,GuidTalent,face: Integer;
+  i,MatchesPlayed,MatchesLeft,GuidTalent: Integer;
   aPlayer: TSoccerPlayer;
   mp_template: array [0..13] of Integer;
-  ts,AT: TStringList;
-
-  injured_penalty, Growth, Talent: array [1..3] of Integer;
-  Injured_Penalty1,Injured_Penalty2,Injured_Penalty3,Growth1, Growth2, Growth3, Talent1,Talent2,Talent3: Integer;
+  aBasePlayer: TBasePlayer;
   GuidGameTeam,MarketValue: integer;
   UniformA,UniformH,TeamName: string;
   ConnWorld,ConnGame :{$IFDEF MYDAC} TMyConnection{$ELSE}TFDConnection {$ENDIF};
-  MyQuerySU,MyQueryGamePlayers,MyQueryGameTeams,MyQueryWT:{$IFDEF MYDAC} TMyQuery{$ELSE} TFDQuery{$ENDIF};
+  MyQueryGamePlayers,MyQueryGameTeams,MyQueryWT:{$IFDEF MYDAC} TMyQuery{$ELSE} TFDQuery{$ENDIF};
   label retry;
 begin
   {$IFDEF MYDAC}
@@ -4230,16 +4354,6 @@ begin
             WHERE
               world.teams.guid = 467)
   order by rand() limit 14 }
-  {$IFDEF MYDAC}
-  MyQuerySU := TMyQuery.Create(nil);
-  MyQuerySU.Connection := ConnWorld;   // world
-  MyQuerySU.SQL.Text :=' SELECT Name FROM  world.surnames WHERE country = (SELECT country FROM world.teams WHERE world.teams.guid =' + WorldTeamGuid + ') order by rand() limit 14';
-  MyQuerySU.Execute;
-  {$ELSE}
-  MyQuerySU := TFDQuery.Create(nil);
-  MyQuerySU.Connection := ConnWorld;   // world
-  MyQuerySU.Open (' SELECT Name FROM  world.surnames WHERE country = (SELECT country FROM world.teams WHERE world.teams.guid =' + WorldTeamGuid + ') order by rand() limit 14');
-  {$ENDIF}
 
   {$IFDEF MYDAC}
   MyQueryGamePlayers := TMyQuery.Create(nil);
@@ -4248,10 +4362,10 @@ begin
   {$ENDIF}
   MyQueryGamePlayers.Connection := ConnGame;   // game
 
-  for I := 0 to MyQuerySU.RecordCount -1 do begin
+  for I := 0 to 13 do begin // 14 player all'inizio
     //constructor TSoccerPlayer.create ( const aTeam, aGuidTeam, aMatchesPlayed : integer; const aIds, aName, aSurname, aTalents, AT: string );
 
-    // ids adesso non importa. MatchesPlayed è random secondo un template
+    // guid adesso non importa. MatchesPlayed è random secondo un template
     // 1 31 anni
     // 1 30  anni
     // 1 29
@@ -4265,117 +4379,18 @@ begin
     // 1 21
 
     MatchesPlayed := 38 * mp_template[i];     // 13  ; // 31 anni
+    MatchesLeft := (38*15) - MatchesPlayed;
 
-    // AT devo distribuire Tot Punti secondo un totale punti di 3 per ogni giocatore più 1 base. al massimo si trova un 1-1-1-4-1-1  2-1-3-1-1-1  2-2-2-1-3-1
-    Ts := TStringList.Create ;
-
-    Speed2 := rndGenerate ( 100  ); // 50% giocatori speed 2, se i 3 random vanno li' diventa 5, quindi massimo 4
-    if Speed2 <= 50 then begin
-      Ts.commatext := '2,1,1,1,1,1'
-    end
-    else  Ts.commatext := '1,1,1,1,1,1';
-
-      stat := rndGenerate ( 6  );
-      ts [ stat -1] := IntToStr( StrToInt(ts [ stat -1]) + 1) ; // quale stat  1
-
-      stat := rndGenerate ( 6  );
-      ts [ stat -1] := IntToStr( StrToInt(ts [ stat -1]) + 1) ; // quale stat 2
-
-      if  StrToInt( ts [ 0 ]) < 4 then //speed è 4, fortunato!
-        stat := rndGenerate ( 6  )
-        else
-        stat := RndGenerateRange( 2,6 ); // altrimenti normale
-
-        ts [ stat -1] := IntToStr( StrToInt(ts [ stat -1]) + 1) ; // quale stat 3
-
-
-    // injured_penalty
-   // case MatchesPlayed of
-  //    0..38*6:begin    // 18..24 anni
-        injured_penalty[1]:=1;
-        injured_penalty[2]:=3;
-        injured_penalty[3]:=6;
-        Injured_Penalty1 := injured_penalty [rndGenerate (3)];
-  //    end;
- //     38*7..38*12:begin    // 25..30
-        injured_penalty[1]:=2;
-        injured_penalty[2]:=4;
-        injured_penalty[3]:=8;
-        Injured_Penalty2 := injured_penalty [rndGenerate (3)];
-
-   //   end;
-   //   38*13..38*15:begin    // 31..33
-        injured_penalty[1]:=4;
-        injured_penalty[2]:=8;
-        injured_penalty[3]:=12;
-        Injured_Penalty3 := injured_penalty [rndGenerate (3)];
-
-    //  end;
-  //  end;
-    // growth
-   // case MatchesPlayed of
-   //   0..38*6:begin    // 18..24 anni
-        Growth[1]:=5;
-        Growth[2]:=15;
-        Growth[3]:=30;
-        Growth1 := Growth [rndGenerate (3)];
-    //  end;
-   //   38*7..38*12:begin    // 25..30
-        Growth[1]:=5;
-        Growth[2]:=10;
-        Growth[3]:=20;
-        Growth2 := Growth [rndGenerate (3)];
-
-    //  end;
-   //   38*13..38*15:begin    // 31..33
-        Growth[1]:=1;
-        Growth[2]:=5;
-        Growth[3]:=10;
-        Growth3 := Growth [rndGenerate (3)];
-
-    //  end;
-  //  end;
-
-        Talent[1]:=4;
-        Talent[2]:=8;
-        Talent[3]:=12;
-        Talent1 := Talent [rndGenerate (3)];
-    //  end;
-   //   38*7..38*12:begin    // 25..30
-        Talent[1]:=2;
-        Talent[2]:=4;
-        Talent[3]:=8;
-        Talent2 := Talent [rndGenerate (3)];
-
-    //  end;
-   //   38*13..38*15:begin    // 31..33
-        Talent[1]:=1;
-        Talent[2]:=1;
-        Talent[3]:=1;
-        Talent3 := Talent [rndGenerate (3)];
-
-      MatchesLeft := (38*15) - MatchesPlayed;
-
+    // devo distribuire Tot Punti secondo un totale punti di 3 per ogni giocatore più 1 base. al massimo si trova un 1-1-1-4-1-1  2-1-3-1-1-1  2-2-2-1-3-1
+    aBasePlayer := CreatePlayer ( WorldTeamGuid,  0{chance di generare un talento} ); // i talenti all'inizio del gioc non sono random
 
      // il growth cerca la stat più usata nelle azioni personali !!!!!!!!!!!!!!!!!!!!
     // Distribuzione Talenti  11 TALENTI
     // Atalent 2 player con 2 talenti + 1 Minimo talento GoalKeeper
-{    ts.Clear;
-      tsTalents.add ('challenge'); // lottatore
-      ts.add ('toughness'); // durezza
-      ts.add ('power');      // potenza
-      ts.add  ('crossing');
-      ts.add  ('longpass');  // solo distanza
-      ts.add  ('experience');  // pressing gratis
-      ts.add  ('dribbling');
-      ts.add  ('offensive');
-      ts.add  ('defensive');
-      ts.add  ('bulldog');
-      ts.add  ('goalkeeper');   }
 
     // il primo player ha il talento GoalKeeper. i seguenti 2 hanno 2 talkenti casuali
     GuidTalent:=0;
-    if i =0 then begin
+    if i =0 then begin    // ho dato prima chance 0 in createplayer per i talenti quindi non c'è talento la momento
    //   ATALENT := 'goalkeeper';
       GuidTalent := 1;
     end
@@ -4386,32 +4401,25 @@ begin
    // aPlayer:= TSoccerPlayer.create( -1, StrToInt(WorldTeamGuid), MatchesPlayed, '','',MyQuerySU.FieldByName('name').AsString, Atalent,AT );
 //constructor TSoccerPlayer.create ( const aTeam, aGuidTeam, aMatchesPlayed : integer; const aIds, aName, aSurname, aTalents, AT: string );
 
-    //face casuale
-    face := rndGenerate ( 1 );
     // li salvo nel DB e ottengono un guid ids. La successiva lettura contenie ids (game.players.guid)
     MyQueryGamePlayers.SQL.text := 'INSERT into game.players (Team,Name,Matches_Played,Matches_Left,'+
-                                                  'injured_penalty1,injured_penalty2,injured_penalty3,'+
-                                                  'growth1,growth2,growth3,talent1,talent2,talent3,'+
-                                                  'talent, speed,defense,passing,ballcontrol,heading,shot,injured,totyellowcard,disqualified,face)'+
-                                                  ' VALUES ('+
-                                                  IntToStr(GuidGameTeam) +',"'+ MyQuerySU.FieldByName('name').AsString+'",'+ IntToStr(MatchesPlayed)+','+ IntToStr(MatchesLeft)+','+
-                                                  IntToStr(Injured_Penalty1)+','+IntToStr(Injured_Penalty2)+','+IntToStr(Injured_Penalty3)+','+
-                                                  IntToStr(Growth1)+','+IntToStr(Growth2)+','+IntToStr(Growth3)+','+
-                                                  IntToStr(talent1)+','+IntToStr(talent2)+','+IntToStr(talent3)+','+
-                                                  IntToStr(GuidTalent) + ',' + ts[0]+','+ts[1]+','+ts[2]+','+
-                                                  ts[3]+','+ts[4]+','+ts[5] +','+
-                                                  '0,0,0,' + IntToStr(face) //injured,totyellowcard,disqualified
-                                                  +')';
+                                  'injured_penalty1,injured_penalty2,injured_penalty3,'+
+                                  'growth1,growth2,growth3,talent1,talent2,talent3,'+
+                                  'talent, speed,defense,passing,ballcontrol,heading,shot,injured,totyellowcard,disqualified,face)'+
+                                  ' VALUES ('+
+                                  IntToStr(GuidGameTeam) +',"'+ aBasePlayer.Surname +'",'+ IntToStr(MatchesPlayed)+','+ IntToStr(MatchesLeft)+','+
+                                  IntToStr(aBasePlayer.Injured_Penalty1)+','+IntToStr(aBasePlayer.Injured_Penalty2)+','+IntToStr(aBasePlayer.Injured_Penalty3)+','+
+                                  IntToStr(aBasePlayer.Growth1)+','+IntToStr(aBasePlayer.Growth2)+','+IntToStr(aBasePlayer.Growth3)+','+
+                                  IntToStr(aBasePlayer.talent1)+','+IntToStr(aBasePlayer.talent2)+','+IntToStr(aBasePlayer.talent3)+','+
+                                  IntToStr(GuidTalent) + ',' + aBasePlayer.Attributes +','+
+                                  '0,0,0,' + IntToStr(aBasePlayer.Face) //injured,totyellowcard,disqualified
+                                  +')';
 
     MyQueryGamePlayers.Execute;
-    MyQuerySU.Next;
-    ts.Free;
-  //  aPlayer.Free;
   end;
 
 
   MyQueryGamePlayers.Free;
-  MyQuerySU.Free;
 
   MarketValue := GetMarketValueTeam ( GuidGameTeam );
   MyQueryGameTeams.SQL.clear;
@@ -4424,6 +4432,133 @@ begin
   ConnGame.Connected := false;
   ConnGame.Free;
 
+
+  Reset_formation  ( GuidGameTeam );
+
+
+
+end;
+Function TFormServer.CreatePlayer ( WorldTeamGuid: string; TalentChance: integer ) : TBasePlayer;
+var
+  injured_penalty, Growth, Talent: array [1..3] of Integer;
+  ts,AT: TStringList;
+  Speed2, stat : Integer;
+  ConnWorld :{$IFDEF MYDAC} TMyConnection{$ELSE}TFDConnection {$ENDIF};
+  MyQuerySU:{$IFDEF MYDAC} TMyQuery{$ELSE} TFDQuery{$ENDIF};
+ begin
+  {$IFDEF MYDAC}
+  ConnWorld := TMyConnection.Create(nil);
+  ConnWorld.Server := MySqlServerWorld;
+  ConnWorld.Username:='root';
+  ConnWorld.Password:='root';
+  ConnWorld.Database:='World';
+  ConnWorld.Connected := True;
+  {$ELSE}
+  ConnWorld :=TFDConnection.Create(nil);
+  ConnWorld.Params.DriverID := 'MySQL';
+  ConnWorld.Params.Add('Server=' + MySqlServerWorld);
+  ConnWorld.Params.Database := 'world';
+  ConnWorld.Params.UserName := 'root';
+  ConnWorld.Params.Password := 'root';
+  ConnWorld.LoginPrompt := False;
+  ConnWorld.Connected := True;
+  {$ENDIF}
+  {$IFDEF MYDAC}
+  MyQuerySU := TMyQuery.Create(nil);
+  MyQuerySU.Connection := ConnWorld;   // world
+  MyQuerySU.SQL.Text :=' SELECT Name FROM  world.surnames WHERE country = (SELECT country FROM world.teams WHERE world.teams.guid =' + WorldTeamGuid + ') order by rand() limit 1';
+  MyQuerySU.Execute;
+  {$ELSE}
+  MyQuerySU := TFDQuery.Create(nil);
+  MyQuerySU.Connection := ConnWorld;   // world
+  MyQuerySU.Open (' SELECT Name FROM  world.surnames WHERE country = (SELECT country FROM world.teams WHERE world.teams.guid =' + WorldTeamGuid + ') order by rand() limit 1');
+  {$ENDIF}
+
+  Result.Surname :=  MyQuerySU.FieldByName('name').AsString;
+
+  MyQuerySU.Free;
+  ConnWorld.Connected := false;
+  ConnWorld.Free;
+
+
+  Ts := TStringList.Create ;
+
+  Speed2 := rndGenerate ( 100  ); // 50% giocatori speed 2, se i 3 random vanno li' diventa 5, quindi massimo 4
+  if Speed2 <= 50 then begin
+    Ts.commatext := '2,1,1,1,1,1'
+  end
+  else  Ts.commatext := '1,1,1,1,1,1';
+
+  stat := rndGenerate ( 6  );
+  ts [ stat -1] := IntToStr( StrToInt(ts [ stat -1]) + 1) ; // quale stat  1
+
+  stat := rndGenerate ( 6  );
+  ts [ stat -1] := IntToStr( StrToInt(ts [ stat -1]) + 1) ; // quale stat 2
+
+  if  StrToInt( ts [ 0 ]) < 4 then //speed è 4, fortunato!
+    stat := rndGenerate ( 6  )
+    else
+    stat := RndGenerateRange( 2,6 ); // altrimenti tutti tranne speed
+
+  ts [ stat -1] := IntToStr( StrToInt(ts [ stat -1]) + 1) ; // quale stat 3
+
+  Result.Attributes := ts.CommaText;
+  ts.Free;
+//    0..38*6:begin    // 18..24 anni
+    injured_penalty[1]:=1;
+    injured_penalty[2]:=3;
+    injured_penalty[3]:=6;
+    Result.Injured_Penalty1 := injured_penalty [rndGenerate (3)];
+//     38*7..38*12:begin    // 25..30
+    injured_penalty[1]:=2;
+    injured_penalty[2]:=4;
+    injured_penalty[3]:=8;
+    Result.Injured_Penalty2 := injured_penalty [rndGenerate (3)];
+
+//   38*13..38*15:begin    // 31..33
+    injured_penalty[1]:=4;
+    injured_penalty[2]:=8;
+    injured_penalty[3]:=12;
+    Result.Injured_Penalty3 := injured_penalty [rndGenerate (3)];
+
+// growth
+// case MatchesPlayed of
+//   0..38*6:begin    // 18..24 anni
+    Growth[1]:=5;
+    Growth[2]:=15;
+    Growth[3]:=30;
+    Result.Growth1 := Growth [rndGenerate (3)];
+//   38*7..38*12:begin    // 25..30
+    Growth[1]:=5;
+    Growth[2]:=10;
+    Growth[3]:=20;
+    Result.Growth2 := Growth [rndGenerate (3)];
+//   38*13..38*15:begin    // 31..33
+    Growth[1]:=1;
+    Growth[2]:=5;
+    Growth[3]:=10;
+    Result.Growth3 := Growth [rndGenerate (3)];
+
+    Talent[1]:=4;
+    Talent[2]:=8;
+    Talent[3]:=12;
+    Result.Talent1 := Talent [rndGenerate (3)];
+//   38*7..38*12:begin    // 25..30
+    Talent[1]:=2;
+    Talent[2]:=4;
+    Talent[3]:=8;
+    Result.Talent2 := Talent [rndGenerate (3)];
+//   38*13..38*15:begin    // 31..33
+    Talent[1]:=1;
+    Talent[2]:=1;
+    Talent[3]:=1;
+    Result.Talent3 := Talent [rndGenerate (3)];
+
+    //face casuale
+    Result.face := rndGenerate ( FaceCount );
+
+    if RndGenerate(100) <= TalentChance then              // se talentChance > 0
+      Result.TalentId := rndgenerate(tsTalents.count-1);    // forse creo un talento
 
 
 end;
@@ -5499,6 +5634,8 @@ var
   ConnGame : {$IFDEF MYDAC}TMyConnection{$ELSE}TFDConnection{$ENDIF};
   MyQueryGamePlayers,MyQuerymarket,MyQueryGameTeams:{$IFDEF MYDAC} TMyQuery{$ELSE}TFDQuery{$ENDIF};
 begin
+  WaitforSingleObject ( MutexMarket, INFINITE ); // devo bloccare il finalizeGame
+
   ts:= TStringList.Create ;
   ts.CommaText := CommaText;
   // check e spostamento denaro
@@ -5547,6 +5684,7 @@ begin
     ConnGame.Connected := False;
     ConnGame.Free;
     ts.Free;
+    ReleaseMutex ( MutexMarket );
     Exit;
 
   end;
@@ -5572,6 +5710,7 @@ begin
     ConnGame.Connected := False;
     ConnGame.Free;
     ts.Free;
+    ReleaseMutex ( MutexMarket );
     Exit;
 
   end;
@@ -5588,6 +5727,7 @@ begin
     ConnGame.Connected := False;
     ConnGame.Free;
     ts.Free;
+    ReleaseMutex ( MutexMarket );
     Exit;
 
   end;
@@ -5611,6 +5751,7 @@ begin
     ConnGame.Connected := False;
     ConnGame.Free;
     ts.Free;
+    ReleaseMutex ( MutexMarket );
     Exit;
 
   end;
@@ -5667,6 +5808,7 @@ begin
   ConnGame.Free;
 
   ts.Free;
+  ReleaseMutex ( MutexMarket );
 
 
 end;
@@ -6140,6 +6282,70 @@ begin
   MyQueryGamePlayers := TFDQuery.Create(nil);
   MyQueryGamePlayers.Connection := ConnGame;   // game
   MyQueryGamePlayers.Open ( 'SELECT guid,formation_x,formation_y from game.players WHERE team =' + IntToStr(Cli.GuidTeam));
+  {$ENDIF}
+
+  {$IFDEF MYDAC}
+  MyQueryUpdate := TMyQuery.Create(nil);
+  {$ELSE}
+  MyQueryUpdate := TFDQuery.Create(nil);
+  {$ENDIF}
+  MyQueryUpdate.Connection := ConnGame;   // game
+
+  for I := 0 to MyQueryGamePlayers.RecordCount -1 do begin
+    aReserveSlot := NextReserveSlot ( ReserveSlot );
+
+    ReserveSlot[aReserveSlot.X, aReserveSlot.Y]:= MyQueryGamePlayers.FieldByName('guid').AsString;
+    MyQueryUpdate.SQL.text := 'UPDATE game.players set formation_x =' + IntToStr(aReserveSlot.X) + ', formation_y =' +
+                                                  IntToStr(aReserveSlot.Y) +' WHERE guid =' + MyQueryGamePlayers.FieldByName('guid').AsString;
+    MyQueryUpdate.Execute ;
+    MyQueryGamePlayers.Next;
+  end;
+
+  MyQueryGamePlayers.Free;
+  MyQueryUpdate.Free;
+  ConnGame.Connected := false;
+  ConnGame.free;
+
+
+end;
+procedure TFormServer.Reset_Formation ( GuidTeam: Integer );
+var
+  i: Integer;
+  aReserveSlot: TPoint;
+  MyQueryGamePlayers, MyQueryUpdate : {$IFDEF MYDAC}TMyQuery{$ELSE}TFDQuery{$ENDIF};
+  ReserveSlot : TTheArray;
+  ConnGame :{$IFDEF MYDAC} TMyConnection{$ELSE}TFDConnection{$ENDIF};
+begin
+  CleanReserveSlot ( ReserveSlot );
+  // Singoli players
+  {$IFDEF MYDAC}
+  ConnGame := TMyConnection.Create(nil);
+  ConnGame.Server := MySqlServerGame;
+  ConnGame.Username:='root';
+  Conngame.Password:='root';
+  ConnGame.Database:='game';
+  ConnGame.Connected := True;
+  {$ELSE}
+  ConnGame :=TFDConnection.Create(nil);
+  ConnGame.Params.DriverID := 'MySQL';
+  ConnGame.Params.Add('Server=' + MySqlServerGame);
+  ConnGame.Params.Database := 'game';
+  ConnGame.Params.UserName := 'root';
+  ConnGame.Params.Password := 'root';
+  ConnGame.LoginPrompt := False;
+  ConnGame.Connected := True;
+  {$ENDIF}
+
+
+  {$IFDEF MYDAC}
+  MyQueryGamePlayers := TMyQuery.Create(nil);
+  MyQueryGamePlayers.Connection := ConnGame;   // game
+  MyQueryGamePlayers.SQL.text := 'SELECT guid,formation_x,formation_y from game.players WHERE team =' + IntToStr(GuidTeam);
+  MyQueryGamePlayers.Execute ;
+  {$ELSE}
+  MyQueryGamePlayers := TFDQuery.Create(nil);
+  MyQueryGamePlayers.Connection := ConnGame;   // game
+  MyQueryGamePlayers.Open ( 'SELECT guid,formation_x,formation_y from game.players WHERE team =' + IntToStr(GuidTeam));
   {$ENDIF}
 
   {$IFDEF MYDAC}
@@ -7118,6 +7324,15 @@ begin
 
 end;
 
+
+procedure TFormServer.Button4Click(Sender: TObject);
+var
+  i: Integer;
+begin
+  for I := 1 to 100 do begin
+    reset_formation ( i  );
+  end;
+end;
 
 procedure TFormServer.CreateRandomBotMatch;
 var

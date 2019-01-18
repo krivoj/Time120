@@ -8,7 +8,6 @@
       { TODO : risolvere sfarfallio in formation }
       { TODO : finire traduzioni DATA/EN}
       { TODO : gestire il fine partita }
-      { TODO : bug sui setuniform. a volte va in db.realmd.cheatdetected  }
 
 
       // procedure importanti:
