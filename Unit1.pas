@@ -16,6 +16,7 @@
       //    procedure ClientLoadBrainMM  ( incMove: Byte ) Carica il brain arrivato dal server
       //    procedure Anim --> esegue realmente l'animazione
 
+      { TODO : in futuro talento: se non ha hostile nearby e diventa portatore palla, shp or lop auto (no x forward)}
 interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Types, System.Classes, Vcl.Graphics,
@@ -346,6 +347,7 @@ type
 
 // Combat Log
     procedure SE_GridDiceWriteRow  ( team: integer; attr, Surname, ids, vs,num1: string);
+    procedure ClearInterface;
 
 
 // Uniform
@@ -3643,7 +3645,7 @@ begin
   LocalSeconds  :=  Ord( buf3[incMove][ cur ]);
   MyBrain.fmilliseconds :=  (PWORD(@buf3[incMove][ cur ])^ ) * 1000;
   cur := cur + 2 ;
-
+  { TODO : se è finished è da gestire }
   MyBrain.TeamTurn :=  Ord( buf3[incMove][ cur ]);
   cur := cur + 1 ;
   MyBrain.FTeamMovesLeft :=  Ord( buf3[incMove][ cur ]);
@@ -8568,15 +8570,9 @@ begin
 
       if GameScreen = ScreenLiveMatch then begin
 
-        SE_GridDice.ClearData;
-        SE_GridDice.RowCount := 1;
-        SE_GridDice.CellsEngine.ProcessSprites(2000);
-        SE_GridDice.refreshSurface (SE_GridDice);
-        SE_interface.removeallSprites; // rimuovo le frecce,  non rimuovo gli highlight
-        SE_interface.ProcessSprites(2000);
-        HighLightFieldFriendly_hide;
 
         if WaitForXY_Shortpass then begin       // shp su friend o cella vuota
+          ClearInterface;
           ToEmptyCell := true;
           if (absDistance (MyBrain.Ball.Player.CellX , MyBrain.Ball.Player.CellY, Cellx, Celly  ) > (ShortPassRange +  MyBrain.Ball.Player.Tal_LongPass))
           or (absDistance (MyBrain.Ball.Player.CellX , MyBrain.Ball.Player.CellY, Cellx, Celly  ) = 0)
@@ -8592,6 +8588,7 @@ begin
         end
         else if WaitForXY_Move then begin       // di 2 o più mostro intercept autocontrasto
 
+          ClearInterface;
           if  SelectedPlayer.HasBall then begin
             MoveValue := SelectedPlayer.Speed -1;
             if MoveValue <=0 then MoveValue:=1;
@@ -8621,6 +8618,7 @@ begin
           end;
         end
         else if WaitForXY_LoftedPass then begin  // mostro i colpi di testa difensivi o chi arriva sulla palla
+          ClearInterface;
           ToEmptyCell := true;
           if ( MyBrain.Ball.Player.Role <> 'G' ) and
           ( (absDistance (MyBrain.Ball.Player.CellX , MyBrain.Ball.Player.CellY, Cellx, Celly  ) >( LoftedPassRangeMax +  MyBrain.Ball.Player.Tal_LongPass))
@@ -8651,6 +8649,7 @@ begin
           end;
         end
         else if WaitForXY_Crossing then begin   // mostro i colpi di testa difensivi o chi arriva sulla palla
+          ClearInterface;
           if (absDistance ( MyBrain.ball.Player.CellX ,  MyBrain.ball.Player.CellY, CellX, CellY  ) > (CrossingRangeMax + MyBrain.ball.Player.tal_longpass ) )
             or (absDistance ( MyBrain.ball.Player.CellX ,  MyBrain.ball.Player.CellY, CellX, CellY  ) < CrossingRangeMin)  then begin
              continue;
@@ -8669,6 +8668,7 @@ begin
 
         end
         else if WaitForXY_Dribbling then begin  // mostro freccia su opponent da dribblare
+          ClearInterface;
           anOpponent := MyBrain.GetSoccerPlayer(CellX,CellY);
           if anOpponent = nil then continue;
             if (anOpponent.Team = SelectedPlayer.Team)  or (anOpponent.Ids = SelectedPlayer.ids) or
@@ -8682,13 +8682,16 @@ begin
   //          CalculateChance  (SelectedPlayer.BallControl + SelectedPlayer.tal_Dribbling -2, anOpponent.Defense , chanceA,chanceB,chanceColorA,chanceColorB);
         end
         else if WaitForXY_PowerShot then begin // mostro opponent, intercept, e portiere
-          SE_interface.removeallSprites;
+          ClearInterface;
+//          SE_interface.removeallSprites;
         end
         else if WaitForXY_PrecisionShot then begin // mostro opponent, intercept, e portiere
-          SE_interface.removeallSprites;
+          ClearInterface;
+//          SE_interface.removeallSprites;
         end
         else if WaitFor_Corner then begin   // mostro opponent, e frecce contrarie
-          SE_interface.removeallSprites;
+          ClearInterface;
+//          SE_interface.removeallSprites;
         end;
       end;
     end;
@@ -8767,7 +8770,16 @@ begin
 
 
 end;
-
+procedure TForm1.ClearInterface;
+begin
+  SE_GridDice.ClearData;
+  SE_GridDice.RowCount := 1;
+  SE_GridDice.CellsEngine.ProcessSprites(2000);
+  SE_GridDice.refreshSurface (SE_GridDice);
+  SE_interface.removeallSprites; // rimuovo le frecce
+  SE_interface.ProcessSprites(2000);
+  HighLightFieldFriendly_hide;  // rimuovo gli highlight
+end;
 procedure TForm1.ArrowShowMoveAutoTackle ( CellX, CellY : Integer);
 var
   i,au,MoveValue: Integer;
@@ -9601,6 +9613,7 @@ begin
         CurrentIncMove := LastTcpIncMove;
         ClientLoadBrainMM (CurrentIncMove, true) ;   // (incmove)
         FirstLoadOK := True;
+
         if ViewReplay then ToolSpin.Visible := True;
         for I := 0 to 255 do begin
          IncMove [i] := false;
@@ -9611,6 +9624,7 @@ begin
 
 
         SpriteReset;
+        { TODO :       if mybrain.finished spahsscreen--> 2 Panel TextScroll con info e x 30 secondi no play}
         ThreadCurMove.Enabled := true;
       end;
 
