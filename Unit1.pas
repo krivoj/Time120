@@ -4534,28 +4534,79 @@ end;
 procedure TForm1.ShowMatchInfo;
 var
   y: Integer;
+  tmp: TStringList;
+  bmp: SE_Bitmap;
 begin
   SE_GridMatchInfo.ClearData;   // importante anche pr memoryleak
   SE_GridMatchInfo.DefaultColWidth := 16;
-  SE_GridMatchInfo.DefaultRowHeight := 16;
+  SE_GridMatchInfo.DefaultRowHeight := 12;
   SE_GridMatchInfo.ColCount := 3; // minute, bitmap, descrizione
   SE_GridMatchInfo.RowCount := MyBrain.MatchInfo.Count; // il numero di eventi scritto
   SE_GridMatchInfo.Columns[0].Width := 30;
   SE_GridMatchInfo.Columns[1].Width := 16;
   SE_GridMatchInfo.Columns[2].Width := 200;
-  SE_GridMatchInfo.Height := imin ( SE_GridMatchInfo.TotalCellsHeight , 738 );
   SE_GridMatchInfo.Width :=  SE_GridMatchInfo.TotalCellsWidth;
 
   for y := 0 to SE_GridMatchInfo.RowCount -1 do begin
-    SE_GridMatchInfo.Rows[y].Height := 16;
+    SE_GridMatchInfo.Rows[y].Height := 12;
     SE_GridMatchInfo.Cells[2,y].FontName := 'Verdana';
     SE_GridMatchInfo.Cells[2,y].FontSize := 8;
+    SE_GridMatchInfo.cells [0,y].FontColor := clWhite;
     SE_GridMatchInfo.cells [2,y].FontColor := clWhite;
   end;
-  { TODO : parsing della matchinfo }
+  SE_GridMatchInfo.Height := imin ( SE_GridMatchInfo.TotalCellsHeight , 738 );
+
+  { parsing della matchinfo }
+  tmp := TStringList.Create;
+  tmp.Delimiter := '.';
+  tmp.StrictDelimiter := True;
   for y:= 0 to MyBrain.MatchInfo.Count -1 do begin         // es. MyBrain.MatchInfo[y] 19.golprs.454  45.sub.126.138
-    SE_GridMatchInfo.Cells[2,y].Text :=  MyBrain.MatchInfo[y];
+    tmp.DelimitedText := MyBrain.MatchInfo[y];
+    SE_GridMatchInfo.Cells[0,y].Text :=  tmp[0] + '''';
+    if tmp[1] = 'sub' then begin
+      bmp:= SE_Bitmap.Create ( dir_interface + 'infoinout.bmp');
+      SE_GridMatchInfo.AddSE_Bitmap (1,y,1,bmp,true );
+      bmp.Free;
+      SE_GridMatchInfo.Cells[2,y].Text := MyBrain.GetSoccerPlayer2( tmp[2] ).SurName + '--->'+ MyBrain.GetSoccerPlayer2( tmp[3] ).SurName;
+    end
+    else if ( pos ('gol', tmp[1], 1 ) <> 0) and  (  pos ('4', tmp[1], 1 )  = 0)  then begin // gol normali, prs,pos,prs3pos3,gol.volley,gol.crossing
+      bmp:= SE_Bitmap.Create ( dir_interface + 'infogolball.bmp');
+      SE_GridMatchInfo.AddSE_Bitmap (1,y,1,bmp,true );
+      bmp.Free;
+      SE_GridMatchInfo.Cells[2,y].Text := MyBrain.GetSoccerPlayer2( tmp[2] ).SurName ;
+    end
+    else if ( pos ('gol', tmp[1], 1 ) <> 0) and  (  pos ('4', tmp[1], 1 ) <> 0)  then begin // gol su rigore
+      bmp:= SE_Bitmap.Create ( dir_interface + 'infopenaltygol.bmp');
+      SE_GridMatchInfo.AddSE_Bitmap (1,y,1,bmp,false );
+      bmp.Free;
+      SE_GridMatchInfo.Cells[2,y].Text := MyBrain.GetSoccerPlayer2( tmp[2] ).SurName ;
+    end
+    else if ( pos ('4fail', tmp[1], 1 ) <> 0) then begin // rigore fallito
+      bmp:= SE_Bitmap.Create ( dir_interface + 'infopenaltyfail.bmp');
+      SE_GridMatchInfo.AddSE_Bitmap (1,y,1,bmp,false );
+      bmp.Free;
+      SE_GridMatchInfo.Cells[2,y].Text := MyBrain.GetSoccerPlayer2( tmp[2] ).SurName ;
+    end
+    else if ( pos ('yellowcard', tmp[1], 1 ) <> 0) then begin
+      bmp:= SE_Bitmap.Create ( dir_interface + 'infoyellow.bmp');
+      SE_GridMatchInfo.AddSE_Bitmap (1,y,1,bmp,true );
+      bmp.Free;
+      SE_GridMatchInfo.Cells[2,y].Text := MyBrain.GetSoccerPlayer2( tmp[2] ).SurName ;
+    end
+    else if ( pos ('redcard', tmp[1], 1 ) <> 0) then begin
+      bmp:= SE_Bitmap.Create ( dir_interface + 'infored.bmp');
+      SE_GridMatchInfo.AddSE_Bitmap (1,y,1,bmp,true );
+      bmp.Free;
+      SE_GridMatchInfo.Cells[2,y].Text := MyBrain.GetSoccerPlayer2( tmp[2] ).SurName ;
+    end;
+
+//    SE_GridMatchInfo.Cells[2,y].Text :=  MyBrain.MatchInfo[y];
+
+
   end;
+
+  tmp.Free;
+
   SE_GridMatchInfo.CellsEngine.ProcessSprites(2000);
   SE_GridMatchInfo.refreshSurface ( SE_GridMatchInfo );
 
