@@ -7211,6 +7211,9 @@ POSvsGK:
 //            goto palo;
     {$ifDEF Setposprscorner} aRnd2:=12; {$endif}
             if aRnd2 > aRnd then begin // power.Shot ---> il portiere para e c'è il rimbalzo
+               if Kind = '.golpos4.' then
+                 MatchInfo.Add( IntToStr(fminute) + '.pos4fail.' + aPlayer.ids);
+
                aCell := GetGKBounceCell (aGK,  aGK.cellX, aGK.CellY,  RndGenerate (2), true );
                Ball.Cells := aCell;
               // la palla, che ora è in possesso del portiere , rimbalza e finisce in posizione random che calcolo adesso
@@ -7495,6 +7498,8 @@ PRSvsGK:
               IntTostr ( aGK.defense ) +',Defense,'+ aGK.ids+','+IntTostr(Roll2.value)+','+Roll2.fatigue+',0');
     {$ifDEF Setposprscorner} aRnd2 :=12; {$endif}
             if aRnd2 > aRnd then begin // power.Shot ---> il portiere para
+               if Kind = '.golprs4.' then
+                 MatchInfo.Add( IntToStr(fminute) + '.prs4fail.' + aPlayer.ids);
               // la palla,  ora è in possesso del portiere
 
                Ball.Cells := aGK.Cells;
@@ -8772,7 +8777,7 @@ end;
 procedure TSoccerBrain.SaveData ( CurMove: Integer ) ;
 var
   ISMARK : array [0..1] of ansichar;
-  i,ii,pcount,s,aa,totPlayer, TotReserve,PlayerGuid,LentsScript: integer;
+  i,ii,pcount,s,aa,totPlayer, TotReserve,PlayerGuid,LentsScript,lenMatchInfo: integer;
   ini: TInifile;
   tmp: string;
   tmpShort: Shortstring;
@@ -8821,6 +8826,7 @@ begin
   MMbraindata.Write( @Score.Gol [0], SizeOf(Byte) );
   MMbraindata.Write( @Score.Gol [1], SizeOf(Byte) );
   MMbraindata.Write( @fminute, sizeof(byte) );
+  MMbraindata.Write( @finished, sizeof(byte) ); // flag partita finita
 
   seconds := (fmilliseconds div 1000);
   MMbraindata.Write( @seconds, sizeof(SmallInt) ); // può andare in negativo oltre 127 o -127 no ShortInt . è millimilliseconds div 1000
@@ -8859,6 +8865,12 @@ begin
   MMbraindata.Write( @w_FreeKickSetup4, sizeof(byte) );
   MMbraindata.Write( @w_Fka4, sizeof(byte) );
   MMbraindata.Write( @w_FreeKick4, sizeof(byte) );
+
+  // MatchInfo TstringList
+  str:= AnsiString  ( MatchInfo.CommaText );
+  lenMatchInfo := Length (str);
+  MMbraindata.Write( @lenMatchInfo, sizeof(word) );
+  MMbraindata.Write( @str[1] , Length(str) );
 
 
   totPlayer :=  lstSoccerPlayer.Count ;
@@ -8991,7 +9003,7 @@ begin
   MMbraindata.Position := MMbraindata.size;
   MMbraindata.Write( @ISMARK[0], 2 );
 
-  if (LogUser [0] > 0) or (LogUser[1] > 1) then begin
+  if (LogUser [0] > 0) or (LogUser[1] > 0) then begin
     if not DirectoryExists( dir_log + brainIds )  then
       MkDir( dir_log + brainIds );
 
@@ -9072,7 +9084,7 @@ begin
 
         TsScript.add ( 'sc_DICE,' + IntTostr(Ball.Player.CellX) + ',' + Inttostr(Ball.Player.CellY) +','+  IntTostr(aRnd2) +','+
         IntTostr (  Ball.Player.ballControl ) +',Ball.Control,'+  Ball.Player.ids+','+IntTostr(Roll2.value) + ',' +Roll2.fatigue+','+IntTostr(Ball.Player.Tal_Power));
-// forza il fallo
+// DEBUG forza il fallo
 //        aRnd:=1;
 //        aRnd2 := 10;
        // Tackle ok normale ---> player prende la palla oppure tacle ok10 ma non cella dst libera

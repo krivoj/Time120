@@ -1104,7 +1104,7 @@ begin
           YoungQueue[T] :=  YoungQueue[T] + 1;
           MyQueryGameTeams.SQL.text := 'UPDATE game.teams SET youngqueue = ' + IntToStr(YoungQueue[T]) + ' WHERE Guid = ' + IntToStr( brain.Score.TeamGuid [T]);
           MyQueryGameTeams.Execute;
-
+          { TODO : forzare creazione GK se manca GK. fare checkGK }
           // c'è 1 posto libero lo metto in squadra
           aBasePlayer := FormServer.CreatePlayer ( MyQueryGameTeams.FieldByName('worldteam').AsString , 50{chance di generare un talento} );
           MatchesPlayed := 38 * 18  ; // 18 anni
@@ -1963,19 +1963,25 @@ begin
 
             end
             else begin // reconnect
-              if aBrain.Score.TeamGuid [0] = Cli.GuidTeam then begin
-                aBrain.Score.CliId[0]:= Cli.CliId ;
-                aBrain.Score.AI [0] := False;                            // annulla la AI
-              end
-              else  if aBrain.Score.TeamGuid [1] = Cli.GuidTeam then  begin
-                aBrain.Score.CliId[1]:= Cli.CliId ;
-                aBrain.Score.AI [1] := False;  // annulla la AI
-              end;
-              cli.Brain := TObject(aBrain);
+             // if GetTickCount - aBrain.FinishedTime < 25000 then  begin // a 30 secondi lo cancello
+              if ( not aBrain.Finished ) or (  (aBrain.Finished ) and ((GetTickCount - aBrain.FinishedTime) < 25000 )) then begin
 
-              Cli.SendStr( 'GUID,' + IntToStr(Cli.GuidTeam ) + ',' + Cli.teamName  + ',' + intToStr(Cli.nextHA) +',' + intToStr(Cli.mi) + ',' +
-              'BEGINBRAIN' +  chr ( abrain.incMove )   +  brainManager.GetBrainStream ( abrain ) + EndofLine);
-          //    Cli.SendStr ( 'BEGINBRAIN' +  chr ( abrain.incMove )   +  brainManager.GetBrainStream ( abrain ) + EndofLine);
+                if aBrain.Score.TeamGuid [0] = Cli.GuidTeam then begin
+                  aBrain.Score.CliId[0]:= Cli.CliId ;
+                  aBrain.Score.AI [0] := False;                            // annulla la AI
+                end
+                else  if aBrain.Score.TeamGuid [1] = Cli.GuidTeam then  begin
+                  aBrain.Score.CliId[1]:= Cli.CliId ;
+                  aBrain.Score.AI [1] := False;  // annulla la AI
+                end;
+                cli.Brain := TObject(aBrain);
+
+                Cli.SendStr( 'GUID,' + IntToStr(Cli.GuidTeam ) + ',' + Cli.teamName  + ',' + intToStr(Cli.nextHA) +',' + intToStr(Cli.mi) + ',' +
+                'BEGINBRAIN' +  chr ( abrain.incMove )   +  brainManager.GetBrainStream ( abrain ) + EndofLine);
+              end
+              else begin  // spedisco la formazione
+                Cli.SendStr( 'guid,' + IntToStr(Cli.GuidTeam ) + ',' + Cli.teamName  + ',' + intToStr(Cli.nextHA) +',' + intToStr(Cli.mi) + EndofLine);
+              end;
             end;
           end;
         end;
@@ -2121,12 +2127,7 @@ begin
 
       end
       else if ts[0] ='queue' then begin
-          // mi rimuovo da ogni lstSpectator come nel Disconnect
-      //QUI valutare se ci sono problemi nel disconnect
-      //  for I := 0 to Tcpserver.ClientCount -1 do begin
-      //    TSoccerBrain(Tcpserver.Client [i].Brain).RemoveSpectator (Cli.CliId); // rimuovo me stesso da ogni brain
-      //  end;
-          if checkformation (cli) and not InQueue(Cli.CliId ) then begin
+          if checkformation (cli) and not InQueue(Cli.CliId ) and not inLivematchCliId(Cli.CliId) and not inSpectator(Cli.CliId) then begin
             //Cli.MarketValueTeam := GetMarketValueTeam ( Cli.GuidTeam );
 
   {$IFDEF  MYDAC}
@@ -2168,7 +2169,11 @@ begin
             Queue.Add (Cli);
             Cli.SendStr('avg' + EndOfline);
           end
-          else Cli.SendStr( 'errorformation' + EndOfline);
+          else begin
+            cli.sreason := ' checkformation InQueue,InliveMatch,inSpectator: ';
+            goto cheat;
+
+          end;
 
   // in coda
       end

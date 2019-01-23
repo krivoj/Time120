@@ -2,6 +2,8 @@
 {$DEFINE TOOLS}
 
 
+      { TODO  : click score per info marcatori e subs }
+      { TODO  : gestire match finished  }
       { TODO  : AudioCrowd in sottofondo }
       { TODO  : verificare suoni, sul rigore è mancata l'esultanza}
       { TODO  : override maglie bianca o nera }
@@ -248,6 +250,8 @@ type
     Timer1: TTimer;
 
     tcp: TWSocket;
+    PanelMatchInfo: SE_Panel;
+    SE_GridMatchInfo: SE_Grid;
 
 // General
     procedure FormCreate(Sender: TObject);
@@ -348,6 +352,9 @@ type
 // Combat Log
     procedure SE_GridDiceWriteRow  ( team: integer; attr, Surname, ids, vs,num1: string);
     procedure ClearInterface;
+    procedure lbl_scoreMouseEnter(Sender: TObject);
+    procedure lbl_scoreMouseLeave(Sender: TObject);
+    procedure ShowMatchInfo;
 
 
 // Uniform
@@ -361,7 +368,6 @@ type
     procedure SE_GridFreeKickGridCellMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; CellX, CellY: Integer; Sprite: SE_Sprite);
     procedure CnColorGrid1SelectCell(Sender: TObject; ACol, ARow: Integer; var CanSelect: Boolean);
     procedure btnSelCountryTeamClick(Sender: TObject);
-
 
   private
     { Private declarations }
@@ -3532,6 +3538,7 @@ procedure Tform1.ClientLoadBrainMM  ( incMove: Byte; FirstTime: boolean );
 var
   SS : TStringStream;
   lenuser0,lenuser1,lenteamname0,lenteamname1,lenuniform0,lenuniform1,lenSurname: byte;
+  lenMatchInfo: word;
   dataStr,tmpStr: string;
   Cur: Integer;
   TotPlayer,TotReserve: byte;
@@ -3642,10 +3649,12 @@ begin
 
   MyBrain.Minute :=  Ord( buf3[incMove][ cur ]);
   cur := cur + 1 ;
+  MyBrain.Finished := Boolean ( Ord( buf3[incMove][ cur ]));
+  cur := cur + 1 ;
+
   LocalSeconds  :=  Ord( buf3[incMove][ cur ]);
   MyBrain.fmilliseconds :=  (PWORD(@buf3[incMove][ cur ])^ ) * 1000;
   cur := cur + 2 ;
-  { TODO : se è finished è da gestire }
   MyBrain.TeamTurn :=  Ord( buf3[incMove][ cur ]);
   cur := cur + 1 ;
   MyBrain.FTeamMovesLeft :=  Ord( buf3[incMove][ cur ]);
@@ -3749,6 +3758,14 @@ begin
   cur := cur + 1 ;
   MyBrain.w_FreeKick4:=  Boolean( Ord( buf3[incMove][ cur ]));
   cur := cur + 1 ;
+
+  lenMatchInfo:=  PWORD(@buf3[incMove][Cur] )^; // punta ai 2 byte word che indicano la lunghezza della stringa
+  // se non c'è MatchInfo la stringa è lunga 0
+  if lenMatchInfo > 0 then
+    MyBrain.MatchInfo.CommaText :=  midStr ( DataStr , Cur +1+2, lenMatchInfo ); //+1 ragiona in base 1  +2 per len della stringa
+
+  cur := Cur + lenMatchInfo + 2;
+
 
   lbl_Nick0.Text.Lines.Clear;
   lbl_Nick0.Text.Lines.Add ( '<Title1>' +  UpperCase( MyBrain.Score.Team [0]));
@@ -4506,6 +4523,52 @@ begin
     SE_GridDicewriterow ( aplayer.Team, Translate('lbl_YellowCard'),  aplayer.surname,  aplayer.ids , 'FAULT','');
 
 end;
+procedure TForm1.lbl_scoreMouseEnter(Sender: TObject);
+begin
+  ShowMatchInfo;
+end;
+procedure TForm1.lbl_scoreMouseLeave(Sender: TObject);
+begin
+  PanelMatchInfo.visible := False;
+end;
+procedure TForm1.ShowMatchInfo;
+var
+  y: Integer;
+begin
+  SE_GridMatchInfo.ClearData;   // importante anche pr memoryleak
+  SE_GridMatchInfo.DefaultColWidth := 16;
+  SE_GridMatchInfo.DefaultRowHeight := 16;
+  SE_GridMatchInfo.ColCount := 3; // minute, bitmap, descrizione
+  SE_GridMatchInfo.RowCount := MyBrain.MatchInfo.Count; // il numero di eventi scritto
+  SE_GridMatchInfo.Columns[0].Width := 30;
+  SE_GridMatchInfo.Columns[1].Width := 16;
+  SE_GridMatchInfo.Columns[2].Width := 200;
+  SE_GridMatchInfo.Height := imin ( SE_GridMatchInfo.TotalCellsHeight , 738 );
+  SE_GridMatchInfo.Width :=  SE_GridMatchInfo.TotalCellsWidth;
+
+  for y := 0 to SE_GridMatchInfo.RowCount -1 do begin
+    SE_GridMatchInfo.Rows[y].Height := 16;
+    SE_GridMatchInfo.Cells[2,y].FontName := 'Verdana';
+    SE_GridMatchInfo.Cells[2,y].FontSize := 8;
+    SE_GridMatchInfo.cells [2,y].FontColor := clWhite;
+  end;
+  { TODO : parsing della matchinfo }
+  for y:= 0 to MyBrain.MatchInfo.Count -1 do begin         // es. MyBrain.MatchInfo[y] 19.golprs.454  45.sub.126.138
+    SE_GridMatchInfo.Cells[2,y].Text :=  MyBrain.MatchInfo[y];
+  end;
+  SE_GridMatchInfo.CellsEngine.ProcessSprites(2000);
+  SE_GridMatchInfo.refreshSurface ( SE_GridMatchInfo );
+
+  PanelMatchInfo.Left := PanelScore.Left + (PanelScore.Width div 2) - (PanelMatchInfo.Width div 2);
+  PanelMatchInfo.Top := PanelScore.Top + PanelScore.Height;
+  RoundCornerOf ( Form1.PanelMatchInfo );
+  PanelMatchInfo.Visible := True;
+  PanelMatchInfo.BringToFront;
+  SE_GridMatchInfo.CellsEngine.ProcessSprites(2000);
+  SE_GridMatchInfo.refreshSurface ( SE_GridMatchInfo );
+
+end;
+
 procedure Tform1.i_injured ( ids: string );
 var
   aPlayer: TSoccerPlayer;
@@ -9624,8 +9687,8 @@ begin
 
 
         SpriteReset;
-        { TODO :       if mybrain.finished spahsscreen--> 2 Panel TextScroll con info e x 30 secondi no play}
-        ThreadCurMove.Enabled := true;
+        { TODO :       if mybrain.finished spahsscreen--> 3 Panel TextScroll con info e x 30 secondi no play se c'è il suo guidteam}
+        ThreadCurMove.Enabled := true; // eventuale splahscreen compare tramite tsscript e obbliga al pulsante exit. 30 seconplay se c'è il suo guidteam
       end;
 
       MM.Free;

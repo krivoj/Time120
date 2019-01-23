@@ -547,6 +547,7 @@ object Form1: TForm1
         Top = 3
         Width = 27
         Height = 20
+        Cursor = crHandPoint
         Alignment = taCenter
         AutoSize = False
         Caption = '2-1'
@@ -559,6 +560,8 @@ object Form1: TForm1
         ParentColor = False
         ParentFont = False
         Transparent = False
+        OnMouseEnter = lbl_scoreMouseEnter
+        OnMouseLeave = lbl_scoreMouseLeave
       end
       object lbl_minute: TLabel
         Left = 3
@@ -2279,6 +2282,50 @@ object Form1: TForm1
         Margin = 4
         ParentFont = False
         OnClick = btnConfirmDismissClick
+      end
+    end
+    object PanelMatchInfo: SE_Panel
+      Left = 1034
+      Top = 429
+      Width = 330
+      Height = 139
+      Color = 8081721
+      TabOrder = 18
+      Visible = False
+      object SE_GridMatchInfo: SE_Grid
+        Left = 3
+        Top = 3
+        Width = 313
+        Height = 110
+        MouseScrollRate = 1.000000000000000000
+        MouseWheelInvert = False
+        MouseWheelValue = 10
+        MouseWheelZoom = False
+        MousePan = False
+        MouseScroll = False
+        BackColor = 8081721
+        AnimationInterval = 20
+        GridInfoCell = False
+        GridVisible = False
+        GridColor = clSilver
+        GridCellWidth = 40
+        GridCellHeight = 30
+        GridCellsX = 10
+        GridCellsY = 4
+        GridHexSmallWidth = 10
+        CollisionDelay = 0
+        ShowPerformance = False
+        VirtualWidth = 212
+        Virtualheight = 212
+        Passive = True
+        TabOrder = 0
+        CellBorder = CellBorderNone
+        CellBorderColor = clGray
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Verdana'
+        Font.Style = []
       end
     end
   end

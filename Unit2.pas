@@ -155,6 +155,7 @@ begin
   RoundCornerOf ( Form1.PanelUniform );
   RoundCornerOf ( Form1.PanelMarket );
   RoundCornerOf ( Form1.PanelDismiss );
+  RoundCornerOf ( Form1.PanelMatchInfo );
 
 
 end;
