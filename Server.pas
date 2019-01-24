@@ -221,11 +221,13 @@ type
     function RndGenerate0( Upper: integer ): integer;
     function RndGenerateRange( Lower, Upper: integer ): integer;
 
-
+    function RemoveFromQueue(Cliid: integer ): Boolean;
     function inQueue(Cliid: integer ): Boolean;
-    function inSpectator(Cliid: integer ): Boolean;
+    function inSpectator(Cliid: integer ): boolean;
     function inLiveMatchCliid(Cliid: integer ): Boolean;
     function inLivematchGuidTeam(GuidTeam: integer ): TSoccerBrain;
+    function inSpectatorGetBrain(Cliid: integer ): TSoccerBrain;
+    function RemoveFromSpectator(Cliid: integer ): boolean;
 
     procedure CreateAndLoadMatch (  brain: TSoccerBrain; GuidTeam0, GuidTeam1: integer; Username0, UserName1: string  );
     procedure CreateMatchBOTvsBOT (   GuidTeam0, GuidTeam1: integer; Username0, UserName1: string );
@@ -1041,7 +1043,7 @@ begin
   MyQueryGameTeams.SQL.text := 'SELECT matchesplayed,points,youngqueue from game.teams WHERE guid = ' + IntToStr( brain.Score.TeamGuid [1]);
   MyQueryGameTeams.Execute;
   {$ELSE}
-  MyQueryGameTeams.Open ( 'SELECT matchesplayed,points ,youngqueuefrom game.teams WHERE guid = ' + IntToStr( brain.Score.TeamGuid [1]));
+  MyQueryGameTeams.Open ( 'SELECT matchesplayed,points ,youngqueue from game.teams WHERE guid = ' + IntToStr( brain.Score.TeamGuid [1]));
   {$ENDIF}
 
   MatchesplayedTeam[1] := MyQueryGameTeams.FieldByName('matchesplayed').AsInteger + 1;
@@ -1955,12 +1957,9 @@ begin
             Cli.nextHA := anAuth.nextha;
             Cli.mi := anAuth.mi;
             aBrain :=  inLiveMatchGuidTeam ( Cli.GuidTeam );
-//            Cli.SendStr( 'guid,' + IntToStr(Cli.GuidTeam ) + ',' + Cli.teamName  + ',' + intToStr(Cli.nextHA) +',' + intToStr(Cli.mi) + EndofLine);
+
             if aBrain = nil then begin
-//              PrepareGameTeam ( Cli.GuidTeam ); // Cliid(account), squadra. una cliid(account) può vedere anche un'altra squadra
               Cli.SendStr( 'guid,' + IntToStr(Cli.GuidTeam ) + ',' + Cli.teamName  + ',' + intToStr(Cli.nextHA) +',' + intToStr(Cli.mi) + EndofLine);
-
-
             end
             else begin // reconnect
              // if GetTickCount - aBrain.FinishedTime < 25000 then  begin // a 30 secondi lo cancello
@@ -1983,11 +1982,11 @@ begin
                 Cli.SendStr( 'guid,' + IntToStr(Cli.GuidTeam ) + ',' + Cli.teamName  + ',' + intToStr(Cli.nextHA) +',' + intToStr(Cli.mi) + EndofLine);
               end;
             end;
+
           end;
         end;
       end
 
-      (* da quin in poi Cli.pwdTicket è già settata *)
       else if ts[0] ='selectedteam' then begin
             validate_clientcreateteam (ts.CommaText , cli) ;
             if cli.sReason <> ''  then goto cheat;
@@ -1998,7 +1997,6 @@ begin
           reset_formation (cli);
           Cli.SendStr ( 'BEGINTEAM' + GetTeamStream ( Cli.GuidTeam ) + EndofLine);
       end
-     (* FINE UNA VOLTA ALL'INIZIO DEL GAME *)
 
       else if ts[0]= 'getformation' then  begin
           if inQueue (Cli.Cliid) or inLiveMatchCliid(Cli.Cliid) or inSpectator(Cli.Cliid)  then begin
@@ -2125,6 +2123,12 @@ begin
           if cli.sReason <> '' then  goto cheat;
           Cli.SendStr ( 'BEGINTEAM'  + GetTeamStream ( Cli.GuidTeam ) + EndofLine);  // aggiorna completamente il client
 
+      end
+      else if ts[0] ='cancelqueue' then begin
+        RemoveFromQueue( Cli.cliId );
+      end
+      else if ts[0] ='cancelqueueSpectator' then begin
+        RemoveFromSpectator( Cli.cliId );
       end
       else if ts[0] ='queue' then begin
           if checkformation (cli) and not InQueue(Cli.CliId ) and not inLivematchCliId(Cli.CliId) and not inSpectator(Cli.CliId) then begin
@@ -6837,6 +6841,23 @@ begin
   Result := Trunc(RandGen.AsLimitedDouble (Lower, Upper + 1));
 end;
 
+function TFormServer.RemoveFromQueue(Cliid: integer ): Boolean;
+var
+  i: Integer;
+begin
+  Result := False;
+  WaitForSingleObject(Mutex,INFINITE);
+  for I := Queue.Count - 1 downto 0 do begin
+    if Queue[i].CliId = CliId then begin
+      result := True;
+      Queue.Delete(i);
+      ReleaseMutex(Mutex);
+      Exit;
+    end;
+
+  end;
+  ReleaseMutex(Mutex);
+end;
 
 function TFormServer.inQueue(Cliid: integer ): Boolean;
 var
@@ -6886,7 +6907,7 @@ begin
   end;
   ReleaseMutex(Mutex);
 end;
-function TFormServer.inSpectator(Cliid: integer ): Boolean;
+function TFormServer.inSpectator(Cliid: integer ): boolean;
 var
   i,y: Integer;
 begin
@@ -6895,7 +6916,7 @@ begin
   for I := BrainManager.lstBrain.Count - 1  downto 0 do begin
     for Y := 0 to BrainManager.lstBrain [i].lstSpectator.Count - 1 do begin
       if  BrainManager.lstBrain [i].lstSpectator[y]  = CliId then begin
-        result := True;
+        result := true;
         ReleaseMutex(Mutex);
         Exit;
       end;
@@ -6904,6 +6925,41 @@ begin
   ReleaseMutex(Mutex);
 end;
 
+function TFormServer.inSpectatorGetBrain(Cliid: integer ): TSoccerBrain;
+var
+  i,y: Integer;
+begin
+  Result := nil;
+  WaitForSingleObject(Mutex,INFINITE);
+  for I := BrainManager.lstBrain.Count - 1  downto 0 do begin
+    for Y := 0 to BrainManager.lstBrain [i].lstSpectator.Count - 1 do begin
+      if  BrainManager.lstBrain [i].lstSpectator[y]  = CliId then begin
+        result := BrainManager.lstBrain [i];
+        ReleaseMutex(Mutex);
+        Exit;
+      end;
+    end;
+  end;
+  ReleaseMutex(Mutex);
+end;
+function TFormServer.RemoveFromSpectator(Cliid: integer ): boolean;
+var
+  i,y: Integer;
+begin
+  Result := false;
+  WaitForSingleObject(Mutex,INFINITE);
+  for I := BrainManager.lstBrain.Count - 1  downto 0 do begin
+    for Y := BrainManager.lstBrain [i].lstSpectator.Count - 1 downto 0 do begin
+      if BrainManager.lstBrain [i].lstSpectator[y]  = CliId then begin
+        BrainManager.lstBrain [i].lstSpectator.Delete (y);
+        result := True;
+        ReleaseMutex(Mutex);
+        Exit;
+      end;
+    end;
+  end;
+  ReleaseMutex(Mutex);
+end;
 
 
 procedure TFormServer.MatchThreadTimer(Sender: TObject);

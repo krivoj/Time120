@@ -161,6 +161,7 @@ lbl_Away=Trasferta
 
 lbl_Sell=Vendi
 lbl_Buy=Compra
+lbl_Cancel=Annulla
 lbl_CancelSell=Annulla Vendi
 lbl_ErrorMarketMax=Puoi avere solo 3 giocatori in vendita allo stesso tempo.
 lbl_Market=Mercato

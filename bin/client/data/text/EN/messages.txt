@@ -161,6 +161,7 @@ lbl_Away=Away
 
 lbl_Sell=Sell
 lbl_Buy=Buy
+lbl_Cancel=Cancel
 lbl_CancelSell=Cancel Sell
 lbl_ErrorMarketMax=Max 3 Player on Market
 lbl_Market=Market

@@ -11,9 +11,8 @@ unit SoccerBrainv3;
    { TODO  : testare offside e lastman }
 
    { TODO valutare aggiiunta talento agression e talento buff reparto }
-   { TODO creare più formazioni  }
+   { TODO creare più formazioni , forse bug nella fatigue }
    { TODO verificare tackle not underpressure}
-   { TODO : verificare bug pressing }
 
       { TODO  : valutare utilità marketvalue team sul db }
       { TODO  : cmd_login = 0 cmd_plm=101. tutti i validate semplificati. da valutare. ordinrali per performance }

@@ -2,7 +2,6 @@
 {$DEFINE TOOLS}
 
 
-      { TODO  : click score per info marcatori e subs }
       { TODO  : gestire match finished  }
       { TODO  : AudioCrowd in sottofondo }
       { TODO  : verificare suoni, sul rigore è mancata l'esultanza}
@@ -2350,9 +2349,27 @@ begin
   bmp.Height := bmp.Bitmap.Canvas.Textheight( AString);
   bmp.bitmap.Canvas.TextOut(0,0,AString);
 
-  aSprite := SE_interface.CreateSprite( bmp.bitmap, 'waitingsignal',1,1,1000, (SE_Theater1.VirtualWidth div 2), SE_Theater1.Virtualheight  - 30 , true   );
-  aSprite.Priority := 10;
-  bmp.Free;
+  if (GameScreen  = ScreenWaitingLiveMatch)  or (GameScreen = ScreenWaitingWatchLive) then begin  // in caso di waitingformation non c'è  cancel
+    aSprite := SE_interface.CreateSprite( bmp.bitmap, 'waitingsignal',1,1,1000, (SE_Theater1.VirtualWidth div 2), SE_Theater1.Virtualheight  - 30 , true   );
+    aSprite.Priority := 10;
+    bmp.Free;
+    AString :=  Translate( 'lbl_Cancel');
+    bmp:=SE_Bitmap.Create(88,22);
+    bmp.Bitmap.Canvas.Brush.Color :=  clGray;
+    bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
+    bmp.bitmap.Canvas.font.Name := 'calibri';
+    bmp.bitmap.Canvas.font.Size  := 12;
+    bmp.bitmap.Canvas.font.Style := [fsBold];
+    bmp.bitmap.Canvas.font.Color := $0041BEFF;
+    bmp.Width := bmp.Bitmap.Canvas.TextWidth(  AString );
+    bmp.Height := bmp.Bitmap.Canvas.Textheight( AString);
+    bmp.bitmap.Canvas.TextOut(0,0,AString);
+
+    aSprite := SE_interface.CreateSprite( bmp.bitmap, 'cancel',1,1,1000, SE_Theater1.VirtualWidth  - bmp.Width - 6 , SE_Theater1.Virtualheight  - 30 , false   );
+    aSprite.Priority := 10;
+    bmp.Free;
+  end;
+  SE_interface.ClickSprites := True;
 end;
 procedure TForm1.Createfield;
 var
@@ -4600,7 +4617,7 @@ begin
       SE_GridMatchInfo.Cells[2,y].Text := MyBrain.GetSoccerPlayer2( tmp[2] ).SurName ;
     end;
 
-//    SE_GridMatchInfo.Cells[2,y].Text :=  MyBrain.MatchInfo[y];
+    //SE_GridMatchInfo.Cells[2,y].Text :=  MyBrain.MatchInfo[y];
 
 
   end;
@@ -6930,9 +6947,10 @@ begin
 
   end
   else if ts[0]= 'cl_splash.gameover' then begin
-    SE_GridDicewriterow ( 0,  UpperCase( Translate ( 'lbl_GameOver' )),  '',  '' , '', '' );
-    playsound ( pchar (dir_sound +  'gameover.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
-    se_Theater1.thrdAnimate.OnTimer (se_Theater1.thrdAnimate);
+    ShowMatchInfo;
+//    SE_GridDicewriterow ( 0,  UpperCase( Translate ( 'lbl_GameOver' )),  '',  '' , '', '' );
+//    playsound ( pchar (dir_sound +  'gameover.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
+//    se_Theater1.thrdAnimate.OnTimer (se_Theater1.thrdAnimate);
     Sleep(2000);
     AnimationScript.Reset ;
     LiveMatch := False;
@@ -8252,6 +8270,23 @@ begin
       end;
     end;
 
+
+  end
+
+  else if (GameScreen  = ScreenWaitingLiveMatch)  or (GameScreen = ScreenWaitingWatchLive) then begin
+    for I := 0 to lstSprite.Count -1 do begin
+      if lstSprite[i].Guid = 'cancel' then begin
+        if GCD <= 0 then begin
+          if (GameScreen  = ScreenWaitingLiveMatch) then
+            tcp.SendStr( 'cancelqueue' + EndofLine)
+            else if (GameScreen  = ScreenWaitingWatchLive) then
+            tcp.SendStr( 'cancelqueuespectator' + EndofLine);
+          GCD := GCD_DEFAULT;
+        end;
+        GameScreen := ScreenMain;
+        Exit;
+      end;
+    end;
 
   end
 
@@ -9685,7 +9720,7 @@ begin
     end;
 
     // COMPRESSED PACKED
-    { -cINFO  : string(buf) mi tronca la stringa zippata }
+    { string(buf) mi tronca la stringa zippata }
  //   SetLength( dataStr ,  Len - 19 );
     tmpStr := String(Buf);
     if MidStr( tmpStr,1,4 )= 'GUID' then begin  // guid,guidteam,teamname,nextha,mi
@@ -9738,8 +9773,12 @@ begin
 
 
         SpriteReset;
-        { TODO :       if mybrain.finished spahsscreen--> 3 Panel TextScroll con info e x 30 secondi no play se c'è il suo guidteam}
-        ThreadCurMove.Enabled := true; // eventuale splahscreen compare tramite tsscript e obbliga al pulsante exit. 30 seconplay se c'è il suo guidteam
+        // se è la prima volta, ricevo una partita terminata
+        if (mybrain.finished) then begin //and   (Mybrain.Score.TeamGuid [0]  = MyGuidTeam ) or (Mybrain.Score.TeamGuid [1]  = MyGuidTeam ) then begin
+          ShowMatchInfo;
+        end
+        else
+          ThreadCurMove.Enabled := true; // eventuale splahscreen compare tramite tsscript e obbliga al pulsante exit. 30 seconplay se c'è il suo guidteam
       end;
 
       MM.Free;
@@ -10111,6 +10150,7 @@ begin
   end
   else if fGameScreen = ScreenMain then begin
     //AudioCrowd.Stop;
+    SE_interface.ClickSprites := false;
     ThreadCurMove.Enabled := false; // parte solo in beginbrain
     WaitForSingleObject ( MutexAnimation, INFINITE );
     AnimationScript.Reset;
