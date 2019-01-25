@@ -238,7 +238,7 @@ type
     procedure CreateFormationsPreset;
 
     procedure CreateRandomBotMatch;
-
+    procedure CreateRewards;
 
   public
 
@@ -277,6 +277,7 @@ var
   dir_log: string;
   MySqlServerGame,  MySqlServerWorld,  MySqlServerAccount: string; // le 3 tabelle del DB: account, world e Game
                                                                    // world contiene le definizioni come i nomi delle squadre e i cognomi dei player
+  Rewards : array [1..4, 1..20] of Integer;
 
 implementation
 
@@ -771,7 +772,7 @@ var
   TextHistory,TextXP: string;
   aPlayer: TSoccerPlayer;
   tsXP, tsHistory: TStringList;
-  TotMarketValue,YoungQueue,MatchesplayedTeam,Points,Season,SeasonRound: array [0..1] of Integer;
+  TotMarketValue,YoungQueue,MatchesplayedTeam,Points,Season,SeasonRound,Money,Rank: array [0..1] of Integer;
   myYear, myMonth, myDay, myHour, myMin, mySec : string;
   aBasePlayer: TBasePlayer;
   MatchesPlayed,MatchesLeft: Integer;
@@ -1019,16 +1020,18 @@ begin
   {$IFDEF MYDAC}
   MyQueryGameTeams := TMyQuery.Create(nil);
   MyQueryGameTeams.Connection := ConnGame;  // game
-  MyQueryGameTeams.SQL.Text:= 'SELECT worldteam, season,matchesplayed, points, youngqueue from game.teams WHERE guid = ' + IntToStr( brain.Score.TeamGuid [0]);
+  MyQueryGameTeams.SQL.Text:= 'SELECT worldteam, season,matchesplayed,money, rank,points, youngqueue from game.teams WHERE guid = ' + IntToStr( brain.Score.TeamGuid [0]);
   MyQueryGameTeams.Execute;
   {$ELSE}
   MyQueryGameTeams := TFDQuery.Create(nil);
   MyQueryGameTeams.Connection := ConnGame;  // game
-  MyQueryGameTeams.Open ( 'SELECT worldteam, season,matchesplayed, points, youngqueue from game.teams WHERE guid = ' + IntToStr( brain.Score.TeamGuid [0]));
+  MyQueryGameTeams.Open ( 'SELECT worldteam, season,matchesplayed,money, rank,points, youngqueue from game.teams WHERE guid = ' + IntToStr( brain.Score.TeamGuid [0]));
   {$ENDIF}
 
   MatchesplayedTeam[0] := MyQueryGameTeams.FieldByName('matchesplayed').AsInteger + 1;  // praticamente seasonRound
+  Money[0] := MyQueryGameTeams.FieldByName('money').AsInteger;
   SeasonRound[0] := MatchesplayedTeam[0] ;
+  Rank[0]  := MyQueryGameTeams.FieldByName('rank').AsInteger;
   Points[0]  := MyQueryGameTeams.FieldByName('points').AsInteger + brain.Score.Points[0];
   Season[0]  := MyQueryGameTeams.FieldByName('season').AsInteger;
   YoungQueue[0] :=  MyQueryGameTeams.FieldByName('youngqueue').AsInteger;
@@ -1042,14 +1045,16 @@ begin
 
 
   {$IFDEF MYDAC}
-  MyQueryGameTeams.SQL.text := 'SELECT season,matchesplayed,points,youngqueue from game.teams WHERE guid = ' + IntToStr( brain.Score.TeamGuid [1]);
+  MyQueryGameTeams.SQL.text := 'SELECT season,matchesplayed,money,rank,points,youngqueue from game.teams WHERE guid = ' + IntToStr( brain.Score.TeamGuid [1]);
   MyQueryGameTeams.Execute;
   {$ELSE}
-  MyQueryGameTeams.Open ( 'SELECT season,matchesplayed,points ,youngqueue from game.teams WHERE guid = ' + IntToStr( brain.Score.TeamGuid [1]));
+  MyQueryGameTeams.Open ( 'SELECT season,matchesplayed,money,rank,points ,youngqueue from game.teams WHERE guid = ' + IntToStr( brain.Score.TeamGuid [1]));
   {$ENDIF}
 
   MatchesplayedTeam[1] := MyQueryGameTeams.FieldByName('matchesplayed').AsInteger + 1;
   SeasonRound[1] := MatchesplayedTeam[1] ;
+  Money[1] := MyQueryGameTeams.FieldByName('money').AsInteger;
+  Rank[1]  := MyQueryGameTeams.FieldByName('rank').AsInteger;
   Points[1] := MyQueryGameTeams.FieldByName('points').AsInteger + brain.Score.Points[1];
   Season[1]  := MyQueryGameTeams.FieldByName('season').AsInteger;
   YoungQueue[1] :=  MyQueryGameTeams.FieldByName('youngqueue').AsInteger;
@@ -1089,7 +1094,10 @@ begin
 //    GetRewards money reward deve aggiornare anche money e anche season , in futuro rank
       // azzero il campionato. nuova season
       Season[T] := Season[T] + 1;
-      MyQueryGameTeams.SQL.text := 'UPDATE game.teams SET mi = 0, matchesplayed = 0, points=0, season=' + IntToStr(Season[T])+ ' WHERE Guid = ' + IntToStr( brain.Score.TeamGuid [T]);
+      Money[T] := Money[T] + ( Trunc(Points[T] div Rank[T]) );
+      MyQueryGameTeams.SQL.text := 'UPDATE game.teams SET mi = 0, matchesplayed = 0, points=0, season=' + IntToStr(Season[T])+
+                                   ',money=' + IntToStr(Money[T]) +
+                                   ' WHERE Guid = ' + IntToStr( brain.Score.TeamGuid [T]);
       MyQueryGameTeams.Execute;
 
       // devo rifare la query per via dei player oltre i 33 anni
@@ -1755,6 +1763,7 @@ begin
 
   SE_GridLiveMatches.thrdAnimate.Priority := tpLowest;
 
+//  CreateRewards;
 end;
 
 procedure TFormServer.CleanDirectory(dir:string);
@@ -7468,6 +7477,34 @@ retry2:
   ConnGame.Connected:= False;
   ConnGame.Free;
 
+end;
+procedure TFormServer.CreateRewards; // uguale a quella del client
+begin
+//  Rewards[1,114]:= 15000; Rewards[1,97]:= 97000; Rewards[1,90]:= 9000;  Rewards[1,4]:= 7600;  Rewards[1,5]:= 7200;
+//  Rewards[1,16]:= 4000; Rewards[1,17]:= 3800; Rewards[1,18]:= 3600;  Rewards[1,19]:= 3400;  Rewards[1,20]:= 2000;
+//  Rewards[1,16]:= 4000; Rewards[1,17]:= 3800; Rewards[1,18]:= 3600;  Rewards[1,1]:= 100;  Rewards[1,0]:= 0;
+
+//  Rewards[1,16]:= 1600 div 4; Rewards[1,17]:= 3800; Rewards[1,18]:= 3600;  Rewards[1,1]:= 100;  Rewards[1,0]:= 0;
+
+  Rewards[1,1]:= 15000; Rewards[1,2]:= 10000; Rewards[1,3]:= 8000;  Rewards[1,4]:= 7600;  Rewards[1,5]:= 7200;
+  Rewards[1,6]:= 6800; Rewards[1,7]:= 6700; Rewards[1,8]:= 6600;  Rewards[1,9]:= 6500;  Rewards[1,10]:= 6400;
+  Rewards[1,11]:= 5000; Rewards[1,12]:= 4800; Rewards[1,13]:= 4700;  Rewards[1,14]:= 4600;  Rewards[1,15]:= 4500;
+  Rewards[1,16]:= 4000; Rewards[1,17]:= 3800; Rewards[1,18]:= 3600;  Rewards[1,19]:= 3400;  Rewards[1,20]:= 3200;
+
+  Rewards[2,1]:= 6400; Rewards[2,2]:= 5800; Rewards[2,3]:= 5500;  Rewards[2,4]:= 5000;  Rewards[2,5]:= 4800;
+  Rewards[2,6]:= 4200; Rewards[2,7]:= 4000; Rewards[2,8]:= 3800;  Rewards[2,9]:= 3600;  Rewards[2,10]:= 3200;
+  Rewards[2,11]:= 3000; Rewards[2,12]:= 2800; Rewards[2,13]:= 2600;  Rewards[2,14]:= 2400;  Rewards[2,15]:= 2200;
+  Rewards[2,16]:= 2000; Rewards[2,17]:= 1900; Rewards[2,18]:= 1800;  Rewards[2,19]:= 1700;  Rewards[2,20]:= 1600;
+
+  Rewards[3,1]:= 3200; Rewards[3,2]:= 2800; Rewards[3,3]:= 2600;  Rewards[3,4]:= 2400;  Rewards[3,5]:= 2200;
+  Rewards[3,6]:= 2000; Rewards[3,7]:= 1900; Rewards[3,8]:= 1800;  Rewards[3,9]:= 1700;  Rewards[3,10]:= 1600;
+  Rewards[3,11]:= 1200; Rewards[3,12]:= 1100; Rewards[3,13]:= 1000;  Rewards[3,14]:= 750;  Rewards[3,15]:= 700;
+  Rewards[3,16]:= 600; Rewards[3,17]:= 575; Rewards[3,18]:= 550;  Rewards[3,19]:= 525;  Rewards[3,20]:= 500;
+
+  Rewards[4,1]:= 1600; Rewards[4,2]:= 1200; Rewards[4,3]:= 1000;  Rewards[4,4]:= 750;  Rewards[4,5]:= 700;
+  Rewards[4,6]:= 600; Rewards[4,7]:= 575; Rewards[4,8]:= 550;  Rewards[4,9]:= 525;  Rewards[4,10]:= 500;
+  Rewards[4,11]:= 350; Rewards[4,12]:= 325; Rewards[4,13]:= 300;  Rewards[4,14]:= 275;  Rewards[4,15]:= 250;
+  Rewards[4,16]:= 200; Rewards[4,17]:= 175; Rewards[4,18]:= 150;  Rewards[4,19]:= 125;  Rewards[4,20]:= 100;
 end;
 
 end.

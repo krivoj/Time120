@@ -8,6 +8,7 @@
       { TODO  : override maglie bianca o nera }
       { TODO : risolvere sfarfallio in formation }
       { TODO : finire traduzioni DATA/EN}
+      { TODO : shp bug a seguire aimovetoball in diagonale}
 
 
       // procedure importanti:
