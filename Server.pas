@@ -771,7 +771,7 @@ var
   TextHistory,TextXP: string;
   aPlayer: TSoccerPlayer;
   tsXP, tsHistory: TStringList;
-  TotMarketValue,YoungQueue,MatchesplayedTeam,Points: array [0..1] of Integer;
+  TotMarketValue,YoungQueue,MatchesplayedTeam,Points,Season,SeasonRound: array [0..1] of Integer;
   myYear, myMonth, myDay, myHour, myMin, mySec : string;
   aBasePlayer: TBasePlayer;
   MatchesPlayed,MatchesLeft: Integer;
@@ -1019,16 +1019,18 @@ begin
   {$IFDEF MYDAC}
   MyQueryGameTeams := TMyQuery.Create(nil);
   MyQueryGameTeams.Connection := ConnGame;  // game
-  MyQueryGameTeams.SQL.Text:= 'SELECT worldteam, matchesplayed, points, youngqueue from game.teams WHERE guid = ' + IntToStr( brain.Score.TeamGuid [0]);
+  MyQueryGameTeams.SQL.Text:= 'SELECT worldteam, season,matchesplayed, points, youngqueue from game.teams WHERE guid = ' + IntToStr( brain.Score.TeamGuid [0]);
   MyQueryGameTeams.Execute;
   {$ELSE}
   MyQueryGameTeams := TFDQuery.Create(nil);
   MyQueryGameTeams.Connection := ConnGame;  // game
-  MyQueryGameTeams.Open ( 'SELECT worldteam, matchesplayed, points, youngqueue from game.teams WHERE guid = ' + IntToStr( brain.Score.TeamGuid [0]));
+  MyQueryGameTeams.Open ( 'SELECT worldteam, season,matchesplayed, points, youngqueue from game.teams WHERE guid = ' + IntToStr( brain.Score.TeamGuid [0]));
   {$ENDIF}
 
-  MatchesplayedTeam[0] := MyQueryGameTeams.FieldByName('matchesplayed').AsInteger + 1;
+  MatchesplayedTeam[0] := MyQueryGameTeams.FieldByName('matchesplayed').AsInteger + 1;  // praticamente seasonRound
+  SeasonRound[0] := MatchesplayedTeam[0] ;
   Points[0]  := MyQueryGameTeams.FieldByName('points').AsInteger + brain.Score.Points[0];
+  Season[0]  := MyQueryGameTeams.FieldByName('season').AsInteger;
   YoungQueue[0] :=  MyQueryGameTeams.FieldByName('youngqueue').AsInteger;
   if MatchesplayedTeam[0] = 39 then
     MatchesplayedTeam[0] := 38;
@@ -1040,14 +1042,16 @@ begin
 
 
   {$IFDEF MYDAC}
-  MyQueryGameTeams.SQL.text := 'SELECT matchesplayed,points,youngqueue from game.teams WHERE guid = ' + IntToStr( brain.Score.TeamGuid [1]);
+  MyQueryGameTeams.SQL.text := 'SELECT season,matchesplayed,points,youngqueue from game.teams WHERE guid = ' + IntToStr( brain.Score.TeamGuid [1]);
   MyQueryGameTeams.Execute;
   {$ELSE}
-  MyQueryGameTeams.Open ( 'SELECT matchesplayed,points ,youngqueue from game.teams WHERE guid = ' + IntToStr( brain.Score.TeamGuid [1]));
+  MyQueryGameTeams.Open ( 'SELECT season,matchesplayed,points ,youngqueue from game.teams WHERE guid = ' + IntToStr( brain.Score.TeamGuid [1]));
   {$ENDIF}
 
   MatchesplayedTeam[1] := MyQueryGameTeams.FieldByName('matchesplayed').AsInteger + 1;
+  SeasonRound[1] := MatchesplayedTeam[1] ;
   Points[1] := MyQueryGameTeams.FieldByName('points').AsInteger + brain.Score.Points[1];
+  Season[1]  := MyQueryGameTeams.FieldByName('season').AsInteger;
   YoungQueue[1] :=  MyQueryGameTeams.FieldByName('youngqueue').AsInteger;
   if MatchesplayedTeam[1] = 39 then
     MatchesplayedTeam[1] := 38;
@@ -1055,7 +1059,6 @@ begin
   MyQueryGameTeams.SQL.text := 'UPDATE game.teams SET nextha = 0, mi = ' + IntToStr(brain.Score.TeamMI [1]) + ', MarketValue = ' +
   IntToStr( TotMarketValue[1]) + ',matchesplayed=' + IntToStr(MatchesplayedTeam[1]) + ',points=' + IntToStr(Points[1]) + ' WHERE Guid = ' + IntToStr( brain.Score.TeamGuid [1]);
   MyQueryGameTeams.Execute;
-
 
   // Aggiorno archive con tutti i dati e matchinfo
   DecodeBrainIds ( brain.brainIds, myYear, myMonth, myDay, myHour, myMin, mySec );
@@ -1065,7 +1068,10 @@ begin
   MyQueryArchive := TFDQuery.Create(nil);
   {$ENDIF}
   MyQueryArchive.Connection := ConnGame;   // game
-  MyQueryArchive.SQL.text := 'INSERT INTO game.archive SET year = ' + myYear + ', month = ' + myMonth + ',day = ' + myDay +
+//  brain.Score.
+  MyQueryArchive.SQL.text := 'INSERT INTO game.archive SET season0 = ' + IntToStr(Season[0]) + ',seasonround0 = ' + IntToStr(MatchesplayedTeam[0]) + // -1 perchè appena sopra l'ho aggiunto
+                             ',season1 = '+  IntToStr(Season[1]) + ',seasonround1 = ' + IntToStr(MatchesplayedTeam[1]) + // -1 perchè appena sopra l'ho aggiunto
+                             ',year = ' + myYear + ', month = ' + myMonth + ',day = ' + myDay +
                              ',hour = ' + MyHour + ',minute = ' + MyMin + ',second = ' + MySec +
                              ',guidteam0 = ' + IntToStr(brain.Score.TeamGuid [0]) + ',guidteam1 = ' + IntToStr(brain.Score.TeamGuid [1]) +
                              ',gol0 = ' + IntToStr(brain.Score.gol [0]) + ',gol1 = ' + IntToStr(brain.Score.gol [1]) +
@@ -1074,15 +1080,16 @@ begin
   MyQueryArchive.Free;
 
   // Aggiorno classifica cannonieri ?
-
-   { TODO : ogni 38 partite +2 arrivi tra 18 e 21 + gestione denaro }
+   { TODO : rewards + gestione denaro }
+   { ogni 38 partite +2 arrivi tra 18 e 21  }
   // devo controllare se ci sono player sul mercato onMarket=1 e impedire che vangano venduti in quel momentobloccando col mutex il mercato
   // rimagonono N posti liberi. genero 2 giovani. Se posso li metto in squadra, altrimenti userò il campo 'youngqueue' numerico
   For T:= 0 to 1 do begin
     if MatchesplayedTeam[T] = 38 then begin  // new season --> gestione giovani
 //    GetRewards money reward deve aggiornare anche money e anche season , in futuro rank
       // azzero il campionato. nuova season
-      MyQueryGameTeams.SQL.text := 'UPDATE game.teams SET mi = 0, matchesplayed = 0, points=0 WHERE Guid = ' + IntToStr( brain.Score.TeamGuid [T]);
+      Season[T] := Season[T] + 1;
+      MyQueryGameTeams.SQL.text := 'UPDATE game.teams SET mi = 0, matchesplayed = 0, points=0, season=' + IntToStr(Season[T])+ ' WHERE Guid = ' + IntToStr( brain.Score.TeamGuid [T]);
       MyQueryGameTeams.Execute;
 
       // devo rifare la query per via dei player oltre i 33 anni
@@ -3916,8 +3923,9 @@ var
 begin
     // creo e svuoto la dir_data.brainIds  e la relativa ftp
     // qui creo effettivamente il match anche tra bot
-//    GuidTeam0:=9;
-//    GuidTeam1:=33;
+//    GuidTeam0:=65;
+//    Username0:='TEST63';
+    //    GuidTeam1:=33;
     BrainIDS := getBrainIds ( IntToStr(GuidTeam0 ) , IntToStr(GuidTeam1 )) ;
     // creo un brain che lavori in una data cartella
     aBrain := TSoccerBrain.create ( Brainids);
@@ -3951,7 +3959,6 @@ var
   Dummy: word;
   Sp: TSoccerPlayer;
   aName, aSurname,  aTalents,Attributes,aIds: string;
-  Injured: Integer;
   ConnGame :{$IFDEF  MYDAC} TMyConnection{$ELSE}TFDConnection{$ENDIF};
   MyQueryGameTeams,MyQueryGamePlayers,MyQueryWT :{$IFDEF MYDAC} TMyQuery{$ELSE}TFDQuery{$ENDIF};
 begin
@@ -4026,12 +4033,12 @@ begin
   {$IFDEF  MYDAC}
     MyQueryGameTeams := TMyQuery.Create(nil);
     MyQueryGameTeams.Connection := ConnGame;   // game
-    MyQueryGameTeams.SQL.text := 'SELECT guid,worldteam,uniforma,uniformh,mi from game.teams WHERE guid = ' + IntToStr(GuidTeam[i]);
+    MyQueryGameTeams.SQL.text := 'SELECT guid,worldteam,uniforma,uniformh,mi,season,matchesplayed from game.teams WHERE guid = ' + IntToStr(GuidTeam[i]);
     MyQueryGameTeams.Execute;
   {$ELSE}
     MyQueryGameTeams := TFDQuery.Create(nil);
     MyQueryGameTeams.Connection := ConnGame;   // game
-    MyQueryGameTeams.Open ('SELECT guid,worldteam,uniforma,uniformh,mi from game.teams WHERE guid = ' + IntToStr(GuidTeam[i]));
+    MyQueryGameTeams.Open ('SELECT guid,worldteam,uniforma,uniformh,mi,season,matchesplayed from game.teams WHERE guid = ' + IntToStr(GuidTeam[i]));
   {$ENDIF}
 
   {$IFDEF  MYDAC}
@@ -4051,6 +4058,8 @@ begin
     brain.Score.TeamGuid [i] := MyQueryGameTeams.fieldbyname ('guid').AsInteger  ;
     brain.Score.Country [i] := MyQueryWT.fieldbyname ('country').AsInteger  ;
     brain.Score.TeamMI [i] := MyQueryGameTeams.fieldbyname ('mi').AsInteger;
+    brain.Score.Season [i] := MyQueryGameTeams.fieldbyname ('season').AsInteger;
+    brain.Score.SeasonRound [i] := MyQueryGameTeams.fieldbyname ('matchesplayed').AsInteger + 1;
 
     if i = 0 then
       brain.Score.Uniform [i] :=  MyQueryGameTeams.fieldbyname ('uniformh').asstring
@@ -4148,7 +4157,7 @@ begin
 
 
       Sp.Injured:= MyQueryGamePlayers.FieldByName('injured').AsInteger;
-      if Injured > 0 then begin
+      if Sp.Injured > 0 then begin
         Sp.Speed :=1;
         Sp.Defense :=1;
         Sp.Passing :=1;
@@ -4450,7 +4459,7 @@ end;
 Function TFormServer.CreatePlayer ( WorldTeamGuid: string; TalentChance: integer ) : TBasePlayer;
 var
   injured_penalty, Growth, Talent: array [1..3] of Integer;
-  ts,AT: TStringList;
+  ts: TStringList;
   Speed2, stat : Integer;
   ConnWorld :{$IFDEF MYDAC} TMyConnection{$ELSE}TFDConnection {$ENDIF};
   MyQuerySU:{$IFDEF MYDAC} TMyQuery{$ELSE} TFDQuery{$ENDIF};
@@ -5150,7 +5159,6 @@ begin
   end;
   if TSoccerBrain(Cli.brain).Score.CliId [TSoccerBrain(Cli.brain).TeamTurn] <> Cli.CliId then begin
     cli.sReason:= 'Turn/CliId mismatch';
-    ts.Free;
     Exit;
   end;
 
@@ -5997,7 +6005,6 @@ end;
 procedure TFormServer.MarketCancelSell ( Cli: TWSocketThrdClient; CommaText: string );
 var
   MyQueryGamePlayers,MyQuerymarket:{$IFDEF MYDAC} TMyQuery{$ELSE}TFDQuery{$ENDIF};
-  mValue : Integer;
   ts: TStringList;
   ConnGame :{$IFDEF MYDAC} TMyConnection{$ELSE}TFDConnection{$ENDIF};
 begin
@@ -6068,8 +6075,6 @@ end;
 procedure TFormServer.DismissPlayer ( Cli: TWSocketThrdClient; CommaText: string );
 var
   MyQueryGamePlayers,MyQuerymarket: {$IFDEF MYDAC}TMyQuery{$ELSE}TFDQuery{$ENDIF};
-  aPlayer: TSoccerPlayer;
-  mValue : Integer;
   ts: TStringList;
   ConnGame :{$IFDEF MYDAC} TMyConnection{$ELSE}TFDConnection{$ENDIF};
 begin
@@ -7310,7 +7315,7 @@ end;
 procedure TFormServer.Button3Click(Sender: TObject);
 var
   i: Integer;
-  MyQueryWT ,MyQueryGamePlayers,MyQueryGameTeams:{$IFDEF MYDAC} TMyQuery{$ELSE}TFDQuery{$ENDIF};
+  MyQueryWT ,MyQueryGameTeams:{$IFDEF MYDAC} TMyQuery{$ELSE}TFDQuery{$ENDIF};
   ConnWorld, ConnGame : {$IFDEF MYDAC}TMyConnection{$ELSE}TFDConnection{$ENDIF};
 begin
 // Prende i colori del team reale db.world e lo trasmette a tutti i team eisstenti in db.game

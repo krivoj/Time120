@@ -129,7 +129,9 @@ type Tscore = record
   TeamGuid: array[0..1] of integer;
   TeamSubs: array[0..1] of SmallInt;
   TeamMI: array[0..1] of integer;
-  Points: array[0..1] of byte;
+  Season: array[0..1] of integer;
+  SeasonRound: array[0..1] of byte;
+  Points: array[0..1] of byte;       // non sono i points del db. queste partono a 0 e serve al finalizeBrain
   Uniform: array[0..1] of string [12];
   DominantColor: array[0..1] of Integer;
   FontColor: array[0..1] of Integer;
@@ -8824,6 +8826,12 @@ begin
   MMbraindata.Write( @Score.uniform [1], Length(Score.uniform [1]) +1); // 1,9,0,1,9
   MMbraindata.Write( @Score.Gol [0], SizeOf(Byte) );
   MMbraindata.Write( @Score.Gol [1], SizeOf(Byte) );
+  // season e seasonRound
+  MMbraindata.Write( @Score.Season[0] , sizeof(Integer) );
+  MMbraindata.Write( @Score.Season[1] , sizeof(Integer) );
+  MMbraindata.Write( @Score.SeasonRound[0] , sizeof(byte) );  // è già stato settato +1 nel createandloadmatch
+  MMbraindata.Write( @Score.SeasonRound[1] , sizeof(byte) );
+
   MMbraindata.Write( @fminute, sizeof(byte) );
   MMbraindata.Write( @finished, sizeof(byte) ); // flag partita finita
 

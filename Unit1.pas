@@ -2,13 +2,12 @@
 {$DEFINE TOOLS}
 
 
-      { TODO  : gestire match finished  }
+      { TODO  : gestire archivio e classifiche }
       { TODO  : AudioCrowd in sottofondo }
       { TODO  : verificare suoni, sul rigore è mancata l'esultanza}
       { TODO  : override maglie bianca o nera }
       { TODO : risolvere sfarfallio in formation }
       { TODO : finire traduzioni DATA/EN}
-      { TODO : gestire il fine partita }
 
 
       // procedure importanti:
@@ -3662,6 +3661,16 @@ begin
   MyBrain.Score.Gol [0] :=  Ord( buf3[incMove][ cur ]);
   cur := cur + 1 ;
   MyBrain.Score.Gol [1] :=  Ord( buf3[incMove][ cur ]);
+  cur := cur + 1 ;
+
+  // season e seasonRound
+  MyBrain.Score.Season [0] :=  PDWORD(@buf3[incMove][ cur ])^;
+  cur := cur + 4 ;
+  MyBrain.Score.SeasonRound [0] :=  Ord( buf3[incMove][ cur ]);
+  cur := cur + 1 ;
+  MyBrain.Score.Season [1] :=  PDWORD(@buf3[incMove][ cur ])^;
+  cur := cur + 4 ;
+  MyBrain.Score.SeasonRound [1] :=  Ord( buf3[incMove][ cur ]);
   cur := cur + 1 ;
 
   MyBrain.Minute :=  Ord( buf3[incMove][ cur ]);
