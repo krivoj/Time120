@@ -673,17 +673,17 @@ begin
      // RemoveBrain( brain.brainIds );   { se lo faccio bug, c'era PASS o altri comandi in essere. il brain esegue ancora tsscript, lo faccio dopo 30 secondi }
   end                                 // lo marco per il delete successivo
   else begin
-
+      { TODO : bug solo con incmove = 128, 127 nei file }
       // prima i client che giocano
       try
         for I := 0 to FormServer.Tcpserver.ClientCount -1 do begin
           if FormServer.TcpServer.Client [i].CliId = brain.Score.CliId [0] then begin
-              NewData := 'BEGINBRAIN' + Chr( StrToInt(data)  ) + GetBrainStream ( brain );
+              NewData := 'BEGINBRAIN' + AnsiChar( StrToInt(data)  ) + GetBrainStream ( brain );
               FormServer.TcpServer.Client [i].SendStr ( NewData + EndofLine);
               FormServer.Memo1.Lines.Add( '> BEGINBRAIN ' +IntToStr(brain.incMove)  );
           end
           else if FormServer.TcpServer.Client [i].CliId = brain.Score.CliId [1] then begin
-              NewData := 'BEGINBRAIN' + Chr( StrToInt(data)  ) + GetBrainStream ( brain );
+              NewData := 'BEGINBRAIN' + AnsiChar( StrToInt(data)  ) + GetBrainStream ( brain );
               FormServer.TcpServer.Client [i].SendStr ( NewData + EndofLine);
               FormServer.Memo1.Lines.Add( '> BEGINBRAIN ' +IntToStr(brain.incMove)  );
           end;
@@ -696,7 +696,7 @@ begin
             for ii := 0 to FormServer.Tcpserver.ClientCount -1 do begin
 
               if FormServer.TcpServer.Client [ii].CliId = SpectatorCliId then begin
-              NewData := 'BEGINBRAIN' + Chr( StrToInt(data)  ) + GetBrainStream ( brain );
+              NewData := 'BEGINBRAIN' + AnsiChar( StrToInt(data)  ) + GetBrainStream ( brain );
                 FormServer.TcpServer.Client [ii].SendStr ( NewData + EndofLine);
               end;
 
@@ -1894,6 +1894,7 @@ end;
 
 procedure TFormServer.TcpserverDataAvailable(Sender: TObject; ErrCode: Word);
 var
+    astring: string;
     Cli: TWSocketThrdClient;
     RcvdLine,NewData,history,xp: string;
     aBrain: TSoccerBrain;
@@ -2000,9 +2001,9 @@ begin
                   aBrain.Score.AI [1] := False;  // annulla la AI
                 end;
                 cli.Brain := TObject(aBrain);
-
+              //  astring:= brainManager.GetBrainStream ( abrain );
                 Cli.SendStr( 'GUID,' + IntToStr(Cli.GuidTeam ) + ',' + Cli.teamName  + ',' + intToStr(Cli.nextHA) +',' + intToStr(Cli.mi) + ',' +
-                'BEGINBRAIN' +  chr ( abrain.incMove )   +  brainManager.GetBrainStream ( abrain ) + EndofLine);
+                'BEGINBRAIN' +  AnsiChar ( abrain.incMove )   +  brainManager.GetBrainStream ( abrain ) + EndofLine);
               end
               else begin  // spedisco la formazione
                 Cli.SendStr( 'guid,' + IntToStr(Cli.GuidTeam ) + ',' + Cli.teamName  + ',' + intToStr(Cli.nextHA) +',' + intToStr(Cli.mi) + EndofLine);
@@ -8056,6 +8057,7 @@ begin
     sf.Free;
     MyBrain.Score.AI[0]:=True;
     MyBrain.Score.AI[1]:=True;
+    MyBrain.SaveData (MyBrain.incMove);//<-- riempe mmbraindata che zippata in mmbraindatazip viene inviata al client
     BrainManager.AddBrain(MyBrain );
 
 end;
