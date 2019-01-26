@@ -47,7 +47,9 @@ uses
 
 
 const GCD_DEFAULT = 200;        // global cooldown, minimo 200 ms tra un input verso il server e l'altro ( anti-cheating )
-const ScaleSprites = 40;        // riduzione generica di tutto gli sprite player
+const ScaleSprites = 56;        // riduzione generica di tutto gli sprite player
+const FieldCellW = 56;
+const FieldCellH = 56;
 const BallZ0Y = 16;             // la palla sta più in basso, vicino ai piedi dello sprite player
 const Ball0X = 3;               // la palla sta più avanti rispetto allo sprite player
 const sprite1cell = 900;        // ms tempo che impiega un player a spostarsi di una cella
@@ -173,7 +175,7 @@ type
         SE_Grid0: SE_Grid;
         lbl_descrTalent0: TLabel;
         Portrait0: TCnSpeedButton;
-        se_lblSurname0: TLabel;
+    lbl_Surname0: TLabel;
         lbl_talent0: TLabel;
         btnTalentBmp0: TCnSpeedButton;
       PanelDismiss: SE_panel;
@@ -189,14 +191,6 @@ type
     PanelXPplayer0: SE_panel;
       btnxp0: TcnSpeedButton;
       btnxpBack0: TcnSpeedButton;
-
-    PanelInfoplayer1: SE_panel;
-        lbl_descrtalent1: TLabel;
-        SE_Grid1: SE_Grid;
-        Portrait1: TCnSpeedButton;
-        se_lblSurname1: TLabel;
-        lbl_talent1: TLabel;
-        btnTalentBmp1: TCnSpeedButton;
 
     Panelformation: SE_Panel;
       lbl_TeamName: TLabel;
@@ -818,6 +812,7 @@ begin
       MM3[0].LoadFromFile( FolderDialog1.Directory   + '\' + sf.ListFiles[0]);
       CopyMemory( @Buf3[0], MM3[0].Memory, MM3[0].size  );
       ClientLoadBrainMM ( 0, true ); // sempre true durante replay
+      SE_players.ProcessSprites(2000); //<-- forza l'inserimento in lstsprites da lstnewsprite o dopo il remove non li troverà
       CurrentIncMove :=  0;
       ClientLoadScript( 0 );
       if Mybrain.tsScript.Count = 0 then begin
@@ -938,6 +933,7 @@ var
   i: integer;
 begin
   {$ifdef tools}
+
   memoC.Lines.Clear ;
   for I := 0 to MyBrain.lstSoccerPlayer.Count -1 do begin
     memoC.Lines.Add((MyBrain.lstSoccerPlayer [i].Ids + '.' +
@@ -945,6 +941,11 @@ begin
                   //   inttostr(MyBrain.lstSoccerPlayer [i].BallControl)) );
                      Inttostr(MyBrain.lstSoccerPlayer [i].cellx) + '.' +
                      inttostr(MyBrain.lstSoccerPlayer [i].celly)) );
+  end;
+  MemoC.Lines.Add( 'nSprites se_players :' + IntToStr(SE_players.SpriteCount) );
+  for I := 0 to SE_players.SpriteCount -1 do begin
+    MemoC.Lines.Add( SE_players.Sprites[i].Guid );
+
   end;
   {$endif tools}
 
@@ -1053,8 +1054,6 @@ begin
   {$ifdef tools}
   btnReplay.Visible := True;
   //ToolSpin.Visible := True;
-  Panel1.Left := 0;
-  Panel1.Top := 0;
 
   Panel1.Visible := True;
   Panel1.BringToFront;
@@ -1270,12 +1269,15 @@ procedure TForm1.SetTheaterMatchSize ;
 begin
   form1.Width := 1366;
   Form1.Height := 738;
-  se_theater1.VirtualWidth := 40*16; // 12 + 4 per le riserve a sinistra e destra
-  se_theater1.Virtualheight := 40*7;
+  Panel1.Left := Form1.Width - Panel1.width;
+  Panel1.Top := 0;
+
+  se_theater1.VirtualWidth := FieldCellW*16; // 12 + 4 per le riserve a sinistra e destra
+  se_theater1.Virtualheight := FieldCellH*7;
   se_theater1.Width := se_theater1.VirtualWidth ;
   se_theater1.Height  := se_theater1.Virtualheight ;//960 ;
-  se_theater1.Left := (form1.Width div 2) - (SE_Theater1.Width div 2);
-  se_theater1.Top := (form1.Height div 2) - (SE_Theater1.Height div 2);
+  se_theater1.Left := 320;//(form1.Width div 2) - (SE_Theater1.Width div 2);
+  se_theater1.Top :=  56;//(form1.Height div 2) - (SE_Theater1.Height div 2);
   PanelSkill.Left := (form1.Width div 2) - (PanelSkill.Width div 2 ) ;
   PanelSkill.Top := SE_Theater1.Top + SE_Theater1.Height ;
 
@@ -2337,8 +2339,8 @@ begin
   SE_field.RemoveAllSprites;
   SE_players.RemoveAllSprites;
   SE_interface.RemoveAllSprites;
-  SE_interface.CreateSprite( dir_interface + 'noiseTV.bmp' , 'noiseTV' ,4,1, 10, (SE_Theater1.VirtualWidth div 2), (SE_Theater1.Virtualheight div 2) ,false );
-
+  aSprite:=SE_interface.CreateSprite( dir_interface + 'noiseTV.bmp' , 'noiseTV' ,4,1, 10, (SE_Theater1.VirtualWidth div 2), (SE_Theater1.Virtualheight div 2) ,false );
+  aSprite.Scale := 140;
   AString :=  Translate( 'lbl_waitingwatchlive');
   bmp:=SE_Bitmap.Create(300,200);
   bmp.bitmap.Canvas.font.Name := 'calibri';
@@ -2350,7 +2352,7 @@ begin
   bmp.bitmap.Canvas.TextOut(0,0,AString);
 
   if (GameScreen  = ScreenWaitingLiveMatch)  or (GameScreen = ScreenWaitingWatchLive) then begin  // in caso di waitingformation non c'è  cancel
-    aSprite := SE_interface.CreateSprite( bmp.bitmap, 'waitingsignal',1,1,1000, (SE_Theater1.VirtualWidth div 2), SE_Theater1.Virtualheight  - 30 , true   );
+    aSprite := SE_interface.CreateSprite( bmp.bitmap, 'waitingsignal',1,1,1000, (SE_Theater1.VirtualWidth div 2), SE_Theater1.Virtualheight  - 50 , true   );
     aSprite.Priority := 10;
     bmp.Free;
     AString :=  Translate( 'lbl_Cancel');
@@ -2365,7 +2367,7 @@ begin
     bmp.Height := bmp.Bitmap.Canvas.Textheight( AString);
     bmp.bitmap.Canvas.TextOut(0,0,AString);
 
-    aSprite := SE_interface.CreateSprite( bmp.bitmap, 'cancel',1,1,1000, SE_Theater1.VirtualWidth  - bmp.Width - 6 , SE_Theater1.Virtualheight  - 30 , false   );
+    aSprite := SE_interface.CreateSprite( bmp.bitmap, 'cancel',1,1,1000, (SE_Theater1.VirtualWidth div 2), SE_Theater1.Virtualheight  - 30 , false   );
     aSprite.Priority := 10;
     bmp.Free;
   end;
@@ -2382,14 +2384,14 @@ begin
   for x := -2 to 13 do begin
     for y := 0 to 6 do begin
       if IsOutSide(X,Y) then begin
-        bmp:= se_bitmap.Create(40,40);
+        bmp:= se_bitmap.Create(FieldCellW,FieldCellH);
         bmp.Bitmap.Canvas.Brush.Color :=  $7B5139;
         bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
         aSEField:= SE_field.CreateSprite( bmp.Bitmap, IntToStr(x)+'.'+IntToStr(y) ,1,1,1000, ((x+2)*bmp.Width)+(bmp.Width div 2) ,((y)*bmp.Height)+(bmp.height div 2),false );
         bmp.Free;
       end
       else begin
-        bmp:= se_bitmap.Create(40,40);      // disegno le righe
+        bmp:= se_bitmap.Create(FieldCellW,FieldCellH);      // disegno le righe
         bmp.Bitmap.Canvas.Brush.Color :=  $328362;
         bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
         RoundBorder (bmp.Bitmap , bmp.Width , bmp.Height);
@@ -2473,7 +2475,7 @@ begin
       end;
 
       // aggiungo il subsprite
-      bmp:= se_bitmap.Create(36,36);      // disegno le righe
+      bmp:= se_bitmap.Create(FieldCellW-4,FieldCellH-4);      // disegno le righe
       bmp.Bitmap.Canvas.Brush.Color :=  $48A881;//$3E906E;
       bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
       aSubSprite := SE_SubSprite.create(bmp,'highlight' + IntToStr(x) + '.' + IntToStr(y), 2, 2, true, false );
@@ -3584,6 +3586,8 @@ begin
   if FirstTime then begin
     se_players.RemoveAllSprites ;
     SE_players.ProcessSprites(2000);
+   caption := IntToStr(SE_players.SpriteCount);
+   // application.ProcessMessages;
     MyBrain.lstSoccerPlayer.Clear ;
     MyBrain.lstSoccerReserve.Clear;
   end;
@@ -3645,7 +3649,6 @@ begin
   Portrait0.Glyph.LoadFromFile(dir_tmp + 'color0.bmp');
   UniformBitmap[1] := SE_Bitmap.Create (dir_player + 'bw.bmp');
   PreLoadUniform (1, UniformBitmap[1] );  // usa tsuniforms e  UniformBitmapBW
-  Portrait1.Glyph.LoadFromFile(dir_tmp + 'color1.bmp');
   UniformBitmapGK := SE_Bitmap.Create (dir_player + 'bw.bmp');
   PreLoadUniformGK (1, UniformBitmapGK );
   { TODO : override maglie if checkbox ... black or white }
@@ -3982,7 +3985,6 @@ begin
         aPlayer.Se_Sprite := se_players.CreateSprite( UniformBitmap[aTeam].bitmap ,aPlayer.Ids,1,1,100,0,0,true)
       else
         aPlayer.Se_Sprite := se_Players.CreateSprite(UniformBitmapGK.Bitmap , aPlayer.Ids,1,1,1000,0,0,true);
-
       aPlayer.Se_Sprite.Scale:= ScaleSprites;
       aPlayer.Se_Sprite.ModPriority := i+2;
       aPlayer.Se_Sprite.MoverData.Speed := 3;
@@ -8594,16 +8596,13 @@ begin
   aPlayer.se_sprite.AddSubSprite(aSubSprite);
   ReleaseMutex(MutexAnimation);
 
-  //aSprite.ChangeBitmap( dir_player + 'face.bmp',1,1,1000 );
+  //aSprite.ChangeBitmap( IntTostr(aPlayer.face) +'.bmp',1,1,1000 );
 
 end;
 
 procedure TForm1.SE_Theater1SpriteMouseMove(Sender: TObject; lstSprite: TObjectList<DSE_theater.SE_Sprite>; Shift: TShiftState; Var Handled: boolean);
 var
   aPlayer,aFriend,anOpponent: TSoccerPlayer;
-  SE_GridAttributes : SE_grid;
-  btnBmp,portrait  : TCnSpeedButton;
-  lbls,lblt,lbldescrT: TLabel;
   I,MoveValue, CellX, CellY : Integer;
   aPoint: TPoint;
   anInteractivePlayer: TInteractivePlayer;
@@ -8643,7 +8642,7 @@ begin
 
        // aPlayer:= MyBrainFormation.GetSoccerPlayer2( lstSprite[i].guid );
        // if aPLayer <> nil then begin
-          SE_GridXP0.SceneName:= aPlayer.Ids;;
+          SE_GridXP0.SceneName:= aPlayer.Ids;
           SetupGridXP ( SE_GridXP0, aPlayer  );
        // end;
 
@@ -8660,56 +8659,36 @@ begin
 
       // sia in caso di screenformation o in caso di partita live
 
-        case aPlayer.Team of
-          0: begin
-            SE_GridAttributes := SE_Grid0;
-            lbls := se_lblSurname0;
-            lblt:= lbl_Talent0;
-            lbldescrT:= lbl_descrtalent0;
-            btnBmp :=btnTalentBmp0;
-            portrait := Portrait0;
-
-          end;
-          1: begin
-            SE_GridAttributes := SE_Grid1;
-            lbls := se_lblSurname1;
-            lblt:= lbl_Talent1;
-            lbldescrT:= lbl_descrtalent1;
-            btnBmp :=btnTalentBmp1;
-            portrait := Portrait1;
-          end;
-        end;
-
 
         ShowFace ( aPlayer );
-        portrait.Glyph.LoadFromFile(dir_player + IntTostr(aPlayer.face) + '.bmp');
+        portrait0.Glyph.LoadFromFile(dir_player + IntTostr(aPlayer.face) + '.bmp');
 
         if not (ssShift in Shift) then begin
 
-          SE_GridAttributes.SceneName:= aPlayer.Ids;;
-          SetupGridAttributes (SE_GridAttributes, aPlayer, 'a'  );  // attributi
+          SE_Grid0.SceneName:= aPlayer.Ids;;
+          SetupGridAttributes (SE_Grid0, aPlayer, 'a'  );  // attributi
         end
         else begin //  ssShift in Shift
           // come sopra ma mostro la history
 
-          SetupGridAttributes (SE_GridAttributes, aPlayer, 'h'  ); // history
+          SetupGridAttributes (SE_Grid0, aPlayer, 'h'  ); // history
 
         end;
 
           if CheckBox1.Checked then
-            lblS.Caption := aPlayer.Ids + ' ' + aPlayer.SurName + ' (' + aPlayer.Role +')'
-              else lbls.Caption := aPlayer.SurName + ' (' + aPlayer.Role +')' ;
+            lbl_Surname0.Caption := aPlayer.Ids + ' ' + aPlayer.SurName + ' (' + aPlayer.Role +')'
+              else lbl_Surname0.Caption := aPlayer.SurName + ' (' + aPlayer.Role +')' ;
 
 
 
-           lblt.Caption :=  Capitalize  ( Translate( 'Talent_' + capitalize ( aPlayer.Talents) ));
-           lbldescrT.Caption := Translate('descr_talent_' + aPlayer.Talents);
+           lbl_talent0.Caption :=  Capitalize  ( Translate( 'Talent_' + capitalize ( aPlayer.Talents) ));
+           lbl_descrTalent0.Caption := Translate('descr_talent_' + aPlayer.Talents);
               //          lblR.Caption := '';
            if aPlayer.Talents <> '' then begin
-               btnBmp.Glyph.LoadFromFile( dir_talent + aPlayer.Talents + '.bmp' );
-               btnBmp.Visible := True;
+               btnTalentBmp0.Glyph.LoadFromFile( dir_talent + aPlayer.Talents + '.bmp' );
+               btnTalentBmp0.Visible := True;
            end
-           else btnBmp.Visible := False;
+           else btnTalentBmp0.Visible := False;
 
 
      // end;
@@ -9657,13 +9636,6 @@ begin
   Form1.lbl_descrtalent0.Width := Form1.SE_grid0.Width ;
   Form1.lbl_descrtalent0.Height := 74;
 
-  Form1.lbl_Talent1.Left := Form1.PanelinfoPlayer1.Width div 2 - Form1.lbl_Talent1.Width div 2 ;
-  Form1.lbl_Talent1.Top := Form1.SE_grid1.Top + Form1.SE_grid1.Height + 6;
-  Form1.lbl_descrtalent1.Left := Form1.SE_grid1.Left ;
-  Form1.lbl_descrtalent1.Top := Form1.lbl_Talent1.Top + Form1.lbl_Talent1.Height + 8;
-  Form1.lbl_descrtalent1.Width := Form1.SE_grid1.Width ;
-  Form1.lbl_descrtalent1.Height := 74;
-
 
 
 end;
@@ -10173,7 +10145,6 @@ begin
 
     btnWatchLiveExit.Visible := false;
     PanelInfoPlayer0.Visible:= false;
-    PanelInfoPlayer1.Visible:= false;
     PanelXPPlayer0.Visible := false;
     PanelScore.Visible := false;
       lbl_Nick0.Active := False;
@@ -10260,7 +10231,6 @@ begin
 
     btnWatchLiveExit.Visible := false;
     PanelInfoPlayer0.Visible:= True;
-    PanelInfoPlayer1.Visible:= false;
     PanelXPPlayer0.Visible := false;
     InitializeTheaterFormations;
     ShowFormations;
@@ -10358,7 +10328,6 @@ begin
     PanelListMatches.Visible := false;
     btnWatchLiveExit.Visible := false;
     PanelInfoPlayer0.Visible:= True;
-    PanelInfoPlayer1.Visible:= True;
     PanelXPPlayer0.Visible := false;
     PanelScore.Visible := true;
 

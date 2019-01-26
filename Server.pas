@@ -10,7 +10,7 @@ unit Server;
 {$DEFINE useMemo}  // se uso il debug a video delle informazioni importanti
 interface
  { TODO : verificare fine stagioen e new season, giovani ecc.. }
- { TODO : verificare bug incmove forse dopo tactics o stay/free }
+
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics, System.Hash , DateUtils,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Strutils,generics.collections, generics.defaults, Data.DB,

@@ -67,23 +67,14 @@ begin
   Form1.SE_grid0.Left := Form1.Portrait0.Left + Form1.Portrait0.Width + 4;
   Form1.SE_grid0.Top := Form1.Portrait0.Top;
 
-  Form1.SE_grid1.Left := Form1.Portrait1.Left + Form1.Portrait1.Width;
-  Form1.SE_grid1.Top := Form1.Portrait1.Top;
 
   Form1.btnTalentBmp0.Left :=  (Form1.Portrait0.Width div 2) - Form1.Portrait0.Left - 16;
   Form1.btnTalentBmp0.top := 200;
 
-  Form1.btnTalentBmp1.Left :=  (Form1.Portrait1.Width div 2) - Form1.Portrait1.Left - 16;
-  Form1.btnTalentBmp1.top := 200;
 
-  Form1.PanelInfoPlayer0.Left := Form1.SE_Theater1.Left - Form1.PanelInfoPlayer0.Width -6   ;
+  Form1.PanelInfoPlayer0.Left := Form1.SE_Theater1.Left - Form1.PanelInfoPlayer0.Width - 2   ;
   Form1.PanelInfoPlayer0.top := Form1.SE_Theater1.top;
-  Form1.PanelInfoPlayer0.Height := Form1.SE_Theater1.Height ;
-
-  Form1.PanelInfoPlayer1.Left := Form1.SE_Theater1.Left + Form1.SE_Theater1.Width +6   ;
-  Form1.PanelInfoPlayer1.top := Form1.SE_Theater1.top;
-  Form1.PanelInfoPlayer1.Height := Form1.SE_Theater1.Height ;
-
+ // Form1.PanelInfoPlayer0.Height := Form1.SE_Theater1.Height ;
 
 
   // sovrapposto
@@ -91,8 +82,9 @@ begin
   Form1.SE_gridXP0.Top := 4;
 
   Form1.PanelXPPlayer0.Left := Form1.PanelInfoPlayer0.Left;
-  Form1.PanelXPPlayer0.Height := Form1.SE_gridXP0.Height + 6;
+  Form1.PanelXPPlayer0.Height := 340;
   Form1.PanelXPPlayer0.top := Form1.PanelInfoPlayer0.top + Form1.PanelInfoPlayer0.Height;
+  Form1.SE_GridXP0.Height := 338;
 
   Form1.PanelSell.Top := Form1.PanelInfoPlayer0.Top + Form1.PanelInfoPlayer0.height;
   Form1.Panelsell.Left:= Form1.PanelInfoPlayer0.left ;
@@ -100,17 +92,13 @@ begin
   Form1.PanelDismiss.Top := Form1.PanelInfoPlayer0.Top + Form1.PanelInfoPlayer0.height;
   Form1.PanelDismiss.Left:= Form1.PanelInfoPlayer0.left ;
 
-
   Form1.PanelCombatLog.Left :=  (Form1.PanelBack.Width div 2 ) - (Form1.PanelCombatLog.Width div 2 );   ;
   Form1.PanelCombatLog.Top := Form1.se_theater1.top + Form1.se_theater1.height + 3;
 
 
-  Form1.SE_lblSurname0.Caption := '';
-  Form1.SE_lblSurname1.Caption := '';
+  Form1.lbl_Surname0.Caption := '';
   Form1.lbl_Talent0.Caption := '';
-  Form1.lbl_Talent1.Caption := '';
   Form1.lbl_descrtalent0.Caption :='';
-  Form1.lbl_descrtalent1.Caption :='';
 
 
   Form1.btn_uniformHome.Top := 3;
@@ -140,7 +128,6 @@ begin
 
 
   RoundCornerOf ( Form1.PanelInfoPlayer0 );
-  RoundCornerOf ( Form1.PanelInfoPlayer1 );
   RoundCornerOf ( Form1.PanelXPplayer0 );
   RoundCornerOf ( Form1.PanelCombatLog );
   RoundCornerOf ( Form1.PanelScore );
@@ -168,7 +155,6 @@ begin
   Form1.PanelScore.Visible := false;
   Form1.PanelCombatLog.Visible := false;
   Form1.PanelInfoPlayer0.Visible := false;
-  Form1.PanelInfoPlayer1.Visible := false;
   Form1.PanelXPPlayer0.Visible := false;
   Form1.PanelCorner.Visible := False;
 //  ShowPanelBack;
@@ -213,7 +199,6 @@ begin
   Form1.PanelScore.Visible := false;
   Form1.PanelCombatLog.Visible := false;
   Form1.PanelInfoPlayer0.Visible := false;
-  Form1.PanelInfoPlayer1.Visible := false;
   Form1.PanelXPPlayer0.Visible := false;
 
 
@@ -264,7 +249,6 @@ begin
   Form1.PanelScore.Visible := false;
   Form1.PanelCombatLog.Visible := false;
   Form1.PanelInfoPlayer0.Visible := false;
-  Form1.PanelInfoPlayer1.Visible := false;
   Form1.PanelXPPlayer0.Visible := false;
   Form1.PanelCorner.Visible := False;
   Form1.PanelListMatches.Visible := false;

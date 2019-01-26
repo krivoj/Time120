@@ -21,33 +21,33 @@ object Form1: TForm1
   PixelsPerInch = 96
   TextHeight = 13
   object Panel1: TPanel
-    Left = 6
-    Top = 826
-    Width = 1366
-    Height = 182
+    Left = 1407
+    Top = 15
+    Width = 258
+    Height = 746
     BevelOuter = bvNone
     TabOrder = 0
     object Memo1: TMemo
-      Left = 11
-      Top = 6
+      Left = 0
+      Top = 0
       Width = 252
-      Height = 163
+      Height = 129
       Lines.Strings = (
         '')
       TabOrder = 0
     end
     object Memo3: TMemo
-      Left = 527
-      Top = 7
+      Left = 0
+      Top = 394
       Width = 252
-      Height = 162
+      Height = 119
       Lines.Strings = (
         '')
       TabOrder = 1
     end
     object Button6: TButton
-      Left = 1055
-      Top = 14
+      Left = 0
+      Top = 515
       Width = 75
       Height = 25
       Caption = 'set ball'
@@ -55,8 +55,8 @@ object Form1: TForm1
       OnClick = Button6Click
     end
     object Button2: TButton
-      Left = 1167
-      Top = 144
+      Left = 0
+      Top = 631
       Width = 75
       Height = 25
       Caption = 'lstsoccer'
@@ -64,8 +64,8 @@ object Form1: TForm1
       OnClick = Button2Click
     end
     object Button7: TButton
-      Left = 1167
-      Top = 123
+      Left = 81
+      Top = 577
       Width = 75
       Height = 25
       Caption = 'Show ShotCells'
@@ -73,8 +73,8 @@ object Form1: TForm1
       OnClick = Button7Click
     end
     object Button8: TButton
-      Left = 1055
-      Top = 75
+      Left = 0
+      Top = 577
       Width = 75
       Height = 25
       Caption = 'Rnd fatigue'
@@ -82,8 +82,8 @@ object Form1: TForm1
       OnClick = Button8Click
     end
     object Button10: TButton
-      Left = 1055
-      Top = 106
+      Left = 0
+      Top = 608
       Width = 75
       Height = 25
       Caption = 'Test Corner'
@@ -91,41 +91,41 @@ object Form1: TForm1
       OnClick = Button10Click
     end
     object CheckBox1: TCheckBox
-      Left = 1201
-      Top = 84
+      Left = 81
+      Top = 515
       Width = 113
       Height = 17
       Caption = 'Show Ids/Surname'
       TabOrder = 7
     end
     object MemoC: TMemo
-      Left = 785
-      Top = 7
+      Left = 0
+      Top = 269
       Width = 252
-      Height = 162
+      Height = 122
       Lines.Strings = (
         '')
       TabOrder = 9
     end
     object CheckBoxAI0: TCheckBox
-      Left = 1058
-      Top = 131
+      Left = 0
+      Top = 658
       Width = 87
       Height = 17
       TabOrder = 8
       OnClick = CheckBoxAI0Click
     end
     object CheckBoxAI1: TCheckBox
-      Left = 1058
-      Top = 154
+      Left = 0
+      Top = 676
       Width = 87
       Height = 17
       TabOrder = 10
       OnClick = CheckBoxAI1Click
     end
     object Button1: TButton
-      Left = 1055
-      Top = 45
+      Left = 0
+      Top = 546
       Width = 75
       Height = 25
       Caption = 'set player'
@@ -133,24 +133,24 @@ object Form1: TForm1
       OnClick = Button1Click
     end
     object Edit3: TEdit
-      Left = 1136
-      Top = 48
+      Left = 81
+      Top = 534
       Width = 49
       Height = 21
       TabOrder = 12
     end
     object Memo2: TMemo
-      Left = 269
-      Top = 7
+      Left = 0
+      Top = 132
       Width = 252
-      Height = 163
+      Height = 134
       Lines.Strings = (
         '')
       TabOrder = 13
     end
     object CheckBox2: TCheckBox
-      Left = 1240
-      Top = 154
+      Left = 147
+      Top = 653
       Width = 113
       Height = 17
       Caption = 'Pause'
@@ -158,8 +158,8 @@ object Form1: TForm1
       OnClick = CheckBox2Click
     end
     object Button3: TButton
-      Left = 1302
-      Top = 127
+      Left = 213
+      Top = 606
       Width = 38
       Height = 25
       Caption = 'load'
@@ -167,8 +167,8 @@ object Form1: TForm1
       OnClick = Button3Click
     end
     object CheckBox3: TCheckBox
-      Left = 1258
-      Top = 104
+      Left = 81
+      Top = 630
       Width = 94
       Height = 17
       Caption = 'ThreadCurMove'
@@ -176,8 +176,8 @@ object Form1: TForm1
       OnClick = CheckBox3Click
     end
     object Button4: TButton
-      Left = 1318
-      Top = 151
+      Left = 216
+      Top = 515
       Width = 38
       Height = 25
       Caption = 'think'
@@ -185,8 +185,8 @@ object Form1: TForm1
       OnClick = Button4Click
     end
     object CnSpinEdit1: TCnSpinEdit
-      Left = 1244
-      Top = 126
+      Left = 155
+      Top = 608
       Width = 52
       Height = 22
       MaxValue = 255
@@ -195,8 +195,8 @@ object Form1: TForm1
       Value = 0
     end
     object editN1: TEdit
-      Left = 1191
-      Top = 48
+      Left = 136
+      Top = 534
       Width = 25
       Height = 21
       NumbersOnly = True
@@ -204,8 +204,8 @@ object Form1: TForm1
       Text = '0'
     end
     object EditN2: TEdit
-      Left = 1222
-      Top = 48
+      Left = 167
+      Top = 534
       Width = 25
       Height = 21
       NumbersOnly = True
@@ -1275,12 +1275,12 @@ object Form1: TForm1
       Color = 8081721
       TabOrder = 10
       Visible = False
-      object se_lblSurname0: TLabel
+      object lbl_Surname0: TLabel
         Left = 3
         Top = 8
-        Width = 117
+        Width = 100
         Height = 16
-        Caption = 'se_lblSurname0'
+        Caption = 'lbl_Surname0'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clYellow
         Font.Height = -13
@@ -1641,129 +1641,6 @@ object Form1: TForm1
         OnClick = BtnFormationUniformClick
       end
     end
-    object PanelInfoplayer1: SE_Panel
-      Left = 329
-      Top = 457
-      Width = 317
-      Height = 294
-      BevelOuter = bvNone
-      Color = 8081721
-      TabOrder = 12
-      Visible = False
-      object se_lblSurname1: TLabel
-        Left = 3
-        Top = 8
-        Width = 117
-        Height = 16
-        Caption = 'se_lblSurname1'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clYellow
-        Font.Height = -13
-        Font.Name = 'Verdana'
-        Font.Style = [fsBold]
-        ParentFont = False
-        Transparent = True
-      end
-      object lbl_talent1: TLabel
-        Left = 46
-        Top = 231
-        Width = 59
-        Height = 13
-        Caption = 'lbl_talent1'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clYellow
-        Font.Height = -11
-        Font.Name = 'Verdana'
-        Font.Style = []
-        ParentFont = False
-        Transparent = True
-      end
-      object lbl_descrtalent1: TLabel
-        Left = 28
-        Top = 252
-        Width = 75
-        Height = 13
-        AutoSize = False
-        Caption = 'lbl_descrTalent1'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWhite
-        Font.Height = -11
-        Font.Name = 'Verdana'
-        Font.Style = []
-        ParentFont = False
-        Transparent = True
-        WordWrap = True
-      end
-      object Portrait1: TCnSpeedButton
-        Left = 8
-        Top = 38
-        Width = 74
-        Height = 74
-        ShadowColor = 8081721
-        Color = 8081721
-        DownColor = 8081721
-        DownBold = False
-        FlatBorder = True
-        HotTrackBold = False
-        HotTrackColor = 8081721
-        LightColor = 8081721
-        ModernBtnStyle = bsFlat
-        Margin = 4
-        Spacing = 0
-      end
-      object btnTalentBmp1: TCnSpeedButton
-        Left = 24
-        Top = 145
-        Width = 32
-        Height = 32
-        ShadowColor = 8081721
-        Color = 8081721
-        DownColor = 8081721
-        DownBold = False
-        FlatBorder = True
-        HotTrackBold = False
-        HotTrackColor = 8081721
-        LightColor = 8081721
-        ModernBtnStyle = bsFlat
-        Margin = 4
-        Spacing = 0
-      end
-      object SE_Grid1: SE_Grid
-        Left = 88
-        Top = 30
-        Width = 212
-        Height = 195
-        MouseScrollRate = 1.000000000000000000
-        MouseWheelInvert = False
-        MouseWheelValue = 10
-        MouseWheelZoom = False
-        MousePan = False
-        MouseScroll = False
-        BackColor = 8081721
-        AnimationInterval = 20
-        GridInfoCell = False
-        GridVisible = False
-        GridColor = clSilver
-        GridCellWidth = 40
-        GridCellHeight = 30
-        GridCellsX = 10
-        GridCellsY = 4
-        GridHexSmallWidth = 10
-        CollisionDelay = 0
-        ShowPerformance = False
-        VirtualWidth = 212
-        Virtualheight = 212
-        Passive = True
-        TabOrder = 0
-        CellBorder = CellBorderNone
-        CellBorderColor = clGray
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'Verdana'
-        Font.Style = []
-      end
-    end
     object PanelSkill: SE_Panel
       Left = 768
       Top = 380
@@ -1772,7 +1649,7 @@ object Form1: TForm1
       BevelOuter = bvNone
       Color = 16744576
       ParentBackground = False
-      TabOrder = 13
+      TabOrder = 12
       Visible = False
       object SE_GridSkill: SE_Grid
         Left = 28
@@ -1820,7 +1697,7 @@ object Form1: TForm1
       Height = 290
       BevelOuter = bvNone
       Color = 8081721
-      TabOrder = 14
+      TabOrder = 13
       Visible = False
       object btnxpBack0: TCnSpeedButton
         Left = 267
@@ -1886,7 +1763,7 @@ object Form1: TForm1
       Height = 223
       BevelOuter = bvNone
       Color = 8081721
-      TabOrder = 15
+      TabOrder = 14
       Visible = False
       object btnUniformBack: TCnSpeedButton
         Left = 265
@@ -2128,7 +2005,7 @@ object Form1: TForm1
       Height = 292
       BevelOuter = bvNone
       Color = 8081721
-      TabOrder = 16
+      TabOrder = 15
       Visible = False
       object lbl_maxvalue: TLabel
         Left = 255
@@ -2245,7 +2122,7 @@ object Form1: TForm1
       Width = 116
       Height = 58
       Color = 8081721
-      TabOrder = 17
+      TabOrder = 16
       Visible = False
       object lbl_ConfirmDismiss: TLabel
         Left = 3
@@ -2290,7 +2167,7 @@ object Form1: TForm1
       Width = 330
       Height = 139
       Color = 8081721
-      TabOrder = 18
+      TabOrder = 17
       Visible = False
       object SE_GridMatchInfo: SE_Grid
         Left = 3
@@ -2416,7 +2293,7 @@ object Form1: TForm1
     DialogX = 0
     DialogY = 0
     Version = '1.1.3.0'
-    Left = 1424
-    Top = 600
+    Left = 1696
+    Top = 592
   end
 end
