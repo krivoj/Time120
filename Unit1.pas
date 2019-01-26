@@ -8,7 +8,7 @@
       { TODO  : override maglie bianca o nera }
       { TODO : risolvere sfarfallio in formation }
       { TODO : finire traduzioni DATA/EN}
-      { TODO : shp bug a seguire aimovetoball in diagonale}
+      { TODO  : bug incmove 63 }
 
 
       // procedure importanti:
@@ -3667,10 +3667,10 @@ begin
   // season e seasonRound
   MyBrain.Score.Season [0] :=  PDWORD(@buf3[incMove][ cur ])^;
   cur := cur + 4 ;
-  MyBrain.Score.SeasonRound [0] :=  Ord( buf3[incMove][ cur ]);
-  cur := cur + 1 ;
   MyBrain.Score.Season [1] :=  PDWORD(@buf3[incMove][ cur ])^;
   cur := cur + 4 ;
+  MyBrain.Score.SeasonRound [0] :=  Ord( buf3[incMove][ cur ]);
+  cur := cur + 1 ;
   MyBrain.Score.SeasonRound [1] :=  Ord( buf3[incMove][ cur ]);
   cur := cur + 1 ;
 
@@ -10151,6 +10151,7 @@ begin
     CurrentIncMove := 0;
 
     SE_Theater1.Visible := false;
+    SE_GridMatchInfo.Visible := False;
     SE_GridTime.Active := False;
     SE_GridMarket.Active := False;
     viewMatch := False;

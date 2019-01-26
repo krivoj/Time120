@@ -40,8 +40,8 @@ object FormServer: TFormServer
     TabOrder = 0
   end
   object btnKillAllBrain: TButton
-    Left = 273
-    Top = 431
+    Left = 225
+    Top = 318
     Width = 129
     Height = 25
     Caption = 'Kill all matches'
@@ -49,8 +49,8 @@ object FormServer: TFormServer
     OnClick = btnKillAllBrainClick
   end
   object btnStopAllBrain: TButton
-    Left = 273
-    Top = 400
+    Left = 225
+    Top = 287
     Width = 129
     Height = 25
     Caption = 'Stop all matches'
@@ -58,8 +58,8 @@ object FormServer: TFormServer
     OnClick = btnStopAllBrainClick
   end
   object btnStartAllBrain: TButton
-    Left = 273
-    Top = 369
+    Left = 225
+    Top = 256
     Width = 129
     Height = 25
     Caption = 'Start all matches'
@@ -222,6 +222,47 @@ object FormServer: TFormServer
     TabOrder = 17
     OnClick = Button4Click
   end
+  object Panel1: TPanel
+    Left = 217
+    Top = 431
+    Width = 185
+    Height = 98
+    TabOrder = 18
+    object Button5: TButton
+      Left = 8
+      Top = 59
+      Width = 121
+      Height = 25
+      Caption = 'register account'
+      TabOrder = 0
+      OnClick = Button5Click
+    end
+    object Edit5: TEdit
+      Left = 16
+      Top = 8
+      Width = 113
+      Height = 21
+      TabOrder = 1
+      Text = 'username'
+    end
+    object Edit6: TEdit
+      Left = 16
+      Top = 32
+      Width = 113
+      Height = 21
+      TabOrder = 2
+      Text = 'password'
+    end
+  end
+  object Button6: TButton
+    Left = 424
+    Top = 375
+    Width = 121
+    Height = 25
+    Caption = 'load from replay(lastmove)'
+    TabOrder = 19
+    OnClick = Button6Click
+  end
   object Tcpserver: TWSocketThrdServer
     LineLimit = 1024
     LineEnd = #13#10
@@ -244,8 +285,8 @@ object FormServer: TFormServer
     MultiListenSockets = <>
     ClientsPerThread = 1
     OnThreadException = TcpserverThreadException
-    Left = 208
-    Top = 456
+    Left = 88
+    Top = 384
     Banner = ''
   end
   object QueueThread: SE_ThreadTimer
@@ -258,15 +299,24 @@ object FormServer: TFormServer
   object MatchThread: SE_ThreadTimer
     Interval = 200
     OnTimer = MatchThreadTimer
-    Left = 264
-    Top = 472
+    Left = 112
+    Top = 496
   end
   object threadBot: SE_ThreadTimer
     Enabled = True
     Interval = 10000
     KeepAlive = True
     OnTimer = threadBotTimer
-    Left = 136
-    Top = 448
+    Left = 104
+    Top = 432
+  end
+  object FolderDialog1: TFolderDialog
+    Caption = 'Select Folder Replay'
+    Title = 'Select Folder Replay'
+    DialogX = 0
+    DialogY = 0
+    Version = '1.1.3.0'
+    Left = 466
+    Top = 337
   end
 end

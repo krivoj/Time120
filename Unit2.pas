@@ -199,6 +199,7 @@ begin
 
 
   Form1.SE_Theater1.Visible := false;
+  Form1.SE_GridMatchInfo.Visible := False;
 
   Form1.PanelLogin.Visible := false;
   Form1.PanelMain.Visible := true;
@@ -226,10 +227,10 @@ begin
   Form1.PanelSkill.Visible := False;
   Form1.PanelCorner.Left := (form1.Width div 2) - (Form1.PanelCorner.Width div 2 ) ;
   Form1.PanelCorner.Top := Form1.SE_Theater1.Top +  Form1.SE_Theater1.Height ;
-  Form1.SE_GridFreeKick.CellsEngine.ProcessSprites(20);
-  Form1.SE_GridFreeKick.refreshSurface (Form1.SE_GridFreeKick);
   Form1.PanelCorner.Visible := True;
   Form1.PanelCorner.BringToFront ;
+  Form1.SE_GridFreeKick.CellsEngine.ProcessSprites(20);
+  Form1.SE_GridFreeKick.refreshSurface (Form1.SE_GridFreeKick);
 
 end;
 procedure ShowFormations;

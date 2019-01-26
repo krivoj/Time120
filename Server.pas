@@ -10,6 +10,7 @@ unit Server;
 {$DEFINE useMemo}  // se uso il debug a video delle informazioni importanti
 interface
  { TODO : verificare fine stagioen e new season, giovani ecc.. }
+ { TODO : verificare bug incmove forse dopo tactics o stay/free }
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics, System.Hash , DateUtils,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Strutils,generics.collections, generics.defaults, Data.DB,
@@ -23,6 +24,7 @@ uses
   DSE_ThreadTimer,
   DSE_theater,
   DSE_GRID,
+  DSE_Misc,
 
   {$IFDEF  MYDAC}
   MyAccess, DBAccess,
@@ -33,7 +35,7 @@ uses
   {$ENDIF}
 
 
-  OverbyteIcsWndControl, OverbyteIcsWSocket, OverbyteIcsWSocketS, OverbyteIcsWSocketTS;
+  OverbyteIcsWndControl, OverbyteIcsWSocket, OverbyteIcsWSocketS, OverbyteIcsWSocketTS, FolderDialog;
 
 
 type
@@ -133,6 +135,12 @@ type
     Edit2: TEdit;
     Edit3: TEdit;
     Button4: TButton;
+    Panel1: TPanel;
+    Button5: TButton;
+    Edit5: TEdit;
+    Edit6: TEdit;
+    Button6: TButton;
+    FolderDialog1: TFolderDialog;
 
     procedure FormCreate(Sender: TObject);
       procedure CleanDirectory(dir:string);
@@ -170,6 +178,8 @@ type
     procedure RadioButton1Click(Sender: TObject);
     procedure RadioButton2Click(Sender: TObject);
     procedure Button4Click(Sender: TObject);
+    procedure Button5Click(Sender: TObject);
+    procedure Button6Click(Sender: TObject);
   private
     { Private declarations }
     procedure Display(Msg : String);
@@ -7409,6 +7419,58 @@ begin
   end;
 end;
 
+procedure TFormServer.Button5Click(Sender: TObject);
+var
+  MyQueryAccount: {$IFDEF  MYDAC}TMyQuery{$ELSE}TFDQuery {$ENDIF};
+  sha_pass_hash: string;
+  UserName,password : string;
+  ConnAccount : {$IFDEF  MYDAC}TMyConnection{$ELSE}TFDConnection {$ENDIF};
+  label createteam;
+begin
+  {$IFDEF  MYDAC}
+  ConnAccount := TMyConnection.Create(nil);
+  ConnAccount.Server := MySqlServerAccount;
+  ConnAccount.Username:='root';
+  ConnAccount.Password:='root';
+  ConnAccount.Database:='realmd';
+  ConnAccount.Connected := True;
+  {$ELSE}
+  ConnAccount :=TFDConnection.Create(nil);
+  ConnAccount.Params.DriverID := 'MySQL';
+  ConnAccount.Params.Add('Server=' + MySqlServerAccount);
+  ConnAccount.Params.Database := 'realmd';
+  ConnAccount.Params.UserName := 'root';
+  ConnAccount.Params.Password := 'root';
+  ConnAccount.LoginPrompt := False;
+  ConnAccount.Connected := True;
+  {$ENDIF}
+
+  {$IFDEF  MYDAC}
+  MyQueryAccount := TMyQuery.Create(nil);
+  {$ELSE}
+  MyQueryAccount := TFDQuery.Create(nil);
+  {$ENDIF}
+  MyQueryAccount.Connection := ConnAccount;   // realmd
+
+  // genero test1, test2, test3 ecc....
+
+    username :=  Uppercase(Edit5.Text);
+    password := Uppercase(Edit6.Text);
+    sha_pass_hash := GetStrHashSHA1 ( username + ':' + Password );
+    MyQueryAccount.SQL.Text := 'insert into realmd.account (username, sha_pass_hash, email)  values (' +
+                                 '"' + username + '","' +  sha_pass_hash  + '","' +  UserName +'.GMAIL.COM")';
+
+    MyQueryAccount.Execute;
+
+
+  MyQueryAccount.free;
+  ConnAccount.Connected:= False;
+  ConnAccount.Free;
+
+
+
+end;
+
 procedure TFormServer.CreateRandomBotMatch;
 var
   aRnd : Integer;
@@ -7506,5 +7568,497 @@ begin
   Rewards[4,11]:= 350; Rewards[4,12]:= 325; Rewards[4,13]:= 300;  Rewards[4,14]:= 275;  Rewards[4,15]:= 250;
   Rewards[4,16]:= 200; Rewards[4,17]:= 175; Rewards[4,18]:= 150;  Rewards[4,19]:= 125;  Rewards[4,20]:= 100;
 end;
+
+procedure TFormServer.Button6Click(Sender: TObject);
+var
+  SS : TStringStream;
+  lenuser0,lenuser1,lenteamname0,lenteamname1,lenuniform0,lenuniform1,lenSurname: byte;
+  lenMatchInfo: word;
+  dataStr,tmpStr: string;
+  Cur: Integer;
+  TotPlayer,TotReserve: byte;
+  aSEField, aSprite: se_Sprite;
+  i,ii , aAge,aCellX,aCellY,aTeam,aGuidTeam,nMatchesPlayed,nMatchesLeft,pcount,rndY,aStamina: integer;
+  DefaultCellX,DefaultCellY: ShortInt;
+  aTalentID: Byte;
+  aPlayer: TSoccerPlayer;
+  FC: TFormationCell;
+  aPoint : TPoint;
+  aName, aSurname,  aTalents,Attributes,aIds: string;
+  PenaltyCell: TPoint;
+  Injured: Integer;
+  CornerMap: TCornerMap;
+  ACellBarrier,TvReserveCell: TPoint;
+  DefaultSpeed, DefaultDefense , DefaultPassing, DefaultBallControl, DefaultShot, DefaultHeading: Byte;
+  Speed, Defense , Passing, BallControl, Shot, Heading: ShortInt;
+  sf :  SE_SearchFiles;
+  MyBrain: TSoccerBrain;
+  Buf3 : array [0..8191] of AnsiChar;
+  MM : TMemoryStream;
+
+begin
+  FolderDialog1.Directory := dir_log;
+
+  if not FolderDialog1.Execute then begin
+    Exit;
+  end;
+  sf :=  SE_SearchFiles.Create(nil);
+  sf.MaskInclude.add ('*.is');
+  sf.FromPath := FolderDialog1.Directory;
+  sf.SubDirectories := False;
+  sf.Execute ;
+
+  while Sf.SearchState <> ssIdle do begin
+    Application.ProcessMessages ;
+  end;
+
+  sf.ListFiles.Sort;
+
+  if sf.ListFiles.Count < 0 then begin
+    sf.Free;
+    Exit;
+  end;
+
+  MM:= TMemoryStream.Create;
+  if not FileExists( FolderDialog1.Directory  + '\' + sf.ListFiles[sf.ListFiles.Count-1] ) then begin
+    MM.Free;
+    sf.Free;
+    Exit;
+  end;
+
+  MyBrain := TSoccerBrain.create (  JustFileNameL (FolderDialog1.Directory) );
+  MM.LoadFromFile( FolderDialog1.Directory   + '\' + sf.ListFiles[sf.ListFiles.Count-1]);
+  CopyMemory( @Buf3[0], MM.Memory, MM.size );
+
+  SS := TStringStream.Create;
+  SS.Size := MM.Size;
+  MM.Position := 0;
+  ss.CopyFrom( MM, MM.size );
+  //    dataStr := RemoveEndOfLine(string(buf));
+  dataStr := SS.DataString;
+  SS.Free;
+
+  if RightStr(dataStr,2) <> 'IS' then Exit;
+
+
+  // a 0 c'è la word che indica dove comincia tsScript
+  cur := 2;
+  lenuser0:=  Ord( buf3 [ cur ]);                 // ragiona in base 0
+  MyBrain.Score.Username [0] := MidStr( dataStr, cur +2  , lenUser0 );// ragiona in base 1
+  cur  := cur + lenuser0 + 1;
+  lenuser1:=  Ord( buf3[Cur]);                 // ragiona in base 0
+  MyBrain.Score.Username [1] := MidStr( dataStr, Cur + 2, lenUser1 );// ragiona in base 1   uso solo SS
+  cur := Cur + lenUser1 + 1;
+
+  lenteamname0 :=  Ord( buf3[ cur ]);
+  MyBrain.Score.Team [0]  := MidStr( dataStr, cur + 2  , lenteamname0 );// ragiona in base 1
+  cur  := cur + lenteamname0 + 1;
+  lenteamname1:=  Ord( buf3[Cur]);                 // ragiona in base 0
+  MyBrain.Score.Team [1] := MidStr( dataStr, Cur + 2, lenteamname1 );// ragiona in base 1   uso solo SS
+  cur := Cur + lenteamname1 + 1;
+
+  MyBrain.Score.TeamGuid [0] :=  PDWORD(@buf3[ cur ])^;
+  cur := cur + 4 ;
+  MyBrain.Score.TeamGuid [1] :=  PDWORD(@buf3[ cur ])^;
+
+  cur := cur + 4 ;
+  MyBrain.Score.TeamMI [0] :=  PDWORD(@buf3[ cur ])^;
+  cur := cur + 4 ;
+  MyBrain.Score.TeamMI [1] :=  PDWORD(@buf3[ cur ])^;
+  cur := cur + 4 ;
+
+  MyBrain.Score.Country [0] :=  PWORD(@buf3[ cur ])^;
+  cur := cur + 2 ;
+  MyBrain.Score.Country [1] :=  PWORD(@buf3[ cur ])^;
+  cur := cur + 2 ;
+
+  lenUniform0 :=  Ord( buf3[ cur ]);
+  MyBrain.Score.Uniform [0]  := MidStr( dataStr, cur + 2  , lenUniform0 );// ragiona in base 1
+  cur  := cur + lenUniform0 + 1;
+  lenUniform1:=  Ord( buf3[Cur]);                 // ragiona in base 0
+  MyBrain.Score.Uniform [1] := MidStr( dataStr, Cur + 2, lenUniform1 );// ragiona in base 1   uso solo SS
+  cur := Cur + lenUniform1 + 1;
+
+  MyBrain.Score.Gol [0] :=  Ord( buf3[ cur ]);
+  cur := cur + 1 ;
+  MyBrain.Score.Gol [1] :=  Ord( buf3[ cur ]);
+  cur := cur + 1 ;
+
+  // season e seasonRound
+  MyBrain.Score.Season [0] :=  PDWORD(@buf3[ cur ])^;
+  cur := cur + 4 ;
+  MyBrain.Score.Season [1] :=  PDWORD(@buf3[ cur ])^;
+  cur := cur + 4 ;
+  MyBrain.Score.SeasonRound [0] :=  Ord( buf3[ cur ]);
+  cur := cur + 1 ;
+  MyBrain.Score.SeasonRound [1] :=  Ord( buf3[ cur ]);
+  cur := cur + 1 ;
+
+  MyBrain.Minute :=  Ord( buf3[ cur ]);
+  cur := cur + 1 ;
+  MyBrain.Finished := Boolean ( Ord( buf3[ cur ]));
+  cur := cur + 1 ;
+
+  MyBrain.fmilliseconds :=  (PWORD(@buf3[ cur ])^ ) * 1000;
+  cur := cur + 2 ;
+  MyBrain.TeamTurn :=  Ord( buf3[ cur ]);
+  cur := cur + 1 ;
+  MyBrain.FTeamMovesLeft :=  Ord( buf3[ cur ]);
+  cur := cur + 1 ;
+  MyBrain.GameStarted :=  Boolean(  Ord( buf3[ cur ]));
+  cur := cur + 1 ;
+  MyBrain.FlagEndGame :=  Boolean(  Ord( buf3[ cur ]));
+  cur := cur + 1 ;
+  MyBrain.Shpbuff :=  Boolean(  Ord( buf3[ cur ]));
+  cur := cur + 1 ;
+  MyBrain.ShpFree :=    Ord( buf3[ cur ]);
+  cur := cur + 1 ;
+  MyBrain.incMove :=    Ord( buf3[ cur ]);   // supplementari, rigori, può sforare 255 ?
+  cur := cur + 1 ;
+
+  // aggiungo la palla
+
+  MyBrain.Ball := Tball.create(MyBrain);
+  MyBrain.Ball.CellX :=  Ord( buf3[ cur ]);
+  cur := cur + 1 ;
+  MyBrain.Ball.CellY :=  Ord( buf3[ cur ]);
+  cur := cur + 1 ;
+
+
+  MyBrain.TeamCorner :=  Ord( buf3[ cur ]);
+  cur := cur + 1 ;
+  MyBrain.w_CornerSetup :=  Boolean( Ord( buf3[ cur ]));
+  cur := cur + 1 ;
+  MyBrain.w_Coa:=  Boolean( Ord( buf3[ cur ]));
+  cur := cur + 1 ;
+  MyBrain.w_Cod:=  Boolean( Ord( buf3[ cur ]));
+  cur := cur + 1 ;
+  MyBrain.w_CornerKick:=  Boolean( Ord( buf3[ cur ]));
+  cur := cur + 1 ;
+
+  MyBrain.TeamfreeKick :=  Ord( buf3[ cur ]);
+  cur := cur + 1 ;
+  MyBrain.w_FreeKickSetup1 :=  Boolean( Ord( buf3[ cur ]));
+  cur := cur + 1 ;
+  MyBrain.w_Fka1:=  Boolean( Ord( buf3[ cur ]));
+  cur := cur + 1 ;
+  MyBrain.w_FreeKick1:=  Boolean( Ord( buf3[ cur ]));
+  cur := cur + 1 ;
+
+  MyBrain.w_FreeKickSetup2 :=  Boolean( Ord( buf3[ cur ]));
+  cur := cur + 1 ;
+  MyBrain.w_Fka2:=  Boolean( Ord( buf3[ cur ]));
+  cur := cur + 1 ;
+  MyBrain.w_Fkd2:=  Boolean( Ord( buf3[ cur ]));
+  cur := cur + 1 ;
+  MyBrain.w_FreeKick2:=  Boolean( Ord( buf3[ cur ]));
+  cur := cur + 1 ;
+
+  MyBrain.w_FreeKickSetup3 :=  Boolean( Ord( buf3[ cur ]));
+  cur := cur + 1 ;
+  MyBrain.w_Fka3:=  Boolean( Ord( buf3[ cur ]));
+  cur := cur + 1 ;
+  MyBrain.w_Fkd3:=  Boolean( Ord( buf3[ cur ]));
+  cur := cur + 1 ;
+  MyBrain.w_FreeKick3:=  Boolean( Ord( buf3[ cur ]));
+  cur := cur + 1 ;
+
+  MyBrain.w_FreeKickSetup4 :=  Boolean( Ord( buf3[ cur ]));
+  cur := cur + 1 ;
+  MyBrain.w_Fka4:=  Boolean( Ord( buf3[ cur ]));
+  cur := cur + 1 ;
+  MyBrain.w_FreeKick4:=  Boolean( Ord( buf3[ cur ]));
+  cur := cur + 1 ;
+
+  lenMatchInfo:=  PWORD(@buf3[Cur] )^; // punta ai 2 byte word che indicano la lunghezza della stringa
+  // non carico tsscript
+//  if lenMatchInfo > 0 then
+//    MyBrain.MatchInfo.CommaText :=  midStr ( DataStr , Cur +1+2, lenMatchInfo ); //+1 ragiona in base 1  +2 per len della stringa
+
+  cur := Cur + lenMatchInfo + 2;
+
+
+  totPlayer :=  Ord( buf3[ cur ]);
+  Cur := Cur + 1;
+  // cursore posizionato sul primo player
+  for I := 0 to totPlayer -1 do begin
+
+//    PlayerGuid := StrToInt(spManager.lstSoccerPlayer[i].Ids); // dipende dalla gestione players, se divido per nazioni?
+    aIds := IntToStr( PDWORD(@buf3[ cur ])^);
+    Cur := Cur + 4;
+    aGuidTeam := PDWORD(@buf3[ cur ])^;
+    Cur := Cur + 4;
+    lenSurname :=  Ord( buf3[ cur ]);
+    aSurname := MidStr( dataStr, cur + 2  , lenSurname );// ragiona in base 1  e l'elemento 0 è la len della stringa quindi + 2
+    cur  := cur + lenSurname + 1;
+    aTeam := Ord( buf3[ cur ]);
+    Cur := Cur + 1 ;
+    aAge :=  Ord( buf3[ cur ]);
+    Cur := Cur + 1 ;
+
+    nMatchesplayed := PWORD(@buf3[ cur ])^;
+    Cur := Cur + 2 ;
+    nMatchesLeft := PWORD(@buf3[ cur ])^;
+    Cur := Cur + 2 ;
+    aTalentID := Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+
+    if aTalentID > 0 then
+      aTalents := tsTalents [ aTalentID -1]
+      else aTalents := '';
+
+    aStamina := Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+
+    DefaultSpeed := Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+    DefaultDefense := Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+    DefaultPassing := Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+    DefaultBallControl := Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+    DefaultShot := Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+    DefaultHeading := Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+    Attributes:= IntTostr( DefaultSpeed) + ',' + IntTostr( DefaultDefense) + ',' + IntTostr( DefaultPassing) + ',' + IntTostr( DefaultBallControl) + ',' +
+                 IntTostr( DefaultShot) + ',' + IntTostr( DefaultHeading) ;
+
+      aPlayer:= TSoccerPlayer.Create( aTeam,
+                                 MyBrain.Score.TeamGuid [aTeam] ,
+                                 nMatchesPlayed,
+                                 aIds,
+                                 aName,
+                                 aSurname,
+                                 aTalents,
+                                 Attributes  );     // attributes e defaultAttrributes sono uguali
+      MyBrain.AddSoccerPlayer(aPlayer);       // lo aggiune per la prima ed unica volta
+
+    aPlayer.Stamina := aStamina;
+    aPlayer.TalentId:= aTalentID;
+
+    aPlayer.Speed := Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+    aPlayer.Defense := Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+    aPlayer.Passing := Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+    aPlayer.BallControl := Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+    aPlayer.Shot := Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+    aPlayer.Heading := Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+
+    Injured:= Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+    aPlayer.Injured := Injured;
+    if Injured > 0 then begin
+      aPlayer.Speed :=1;
+      aPlayer.Defense :=1;
+      aPlayer.Passing :=1;
+      aPlayer.BallControl :=1;
+      aPlayer.Shot :=1;
+      aPlayer.Heading :=1;
+    end;
+
+
+    aPlayer.YellowCard :=  Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+    aPlayer.redcard :=  Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+    aPlayer.disqualified :=  Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+    aPlayer.gameover :=  Boolean( Ord( buf3[ cur ]));
+    Cur := Cur + 1;
+
+    aPlayer.AIFormationCellX := Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+    aPlayer.AIFormationCellY  := Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+
+    DefaultCellX := Ord( buf3[ cur ]);;
+    Cur := Cur + 1;
+    DefaultCellY := Ord( buf3[ cur ]);;
+    Cur := Cur + 1;
+    aPlayer.DefaultCellS :=  Point( DefaultCellX, DefaultCellY); // innesca e setta il role
+
+    aPlayer.CellX := Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+    aPlayer.CellY := Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+
+      (* variabili di gioco *)
+    aPlayer.Stay  := Boolean( Ord( buf3[ cur ]));
+    Cur := Cur + 1;
+    aPlayer.CanMove  := Boolean( Ord( buf3[ cur ]));
+    Cur := Cur + 1;
+    aPlayer.CanSkill := Boolean( Ord( buf3[ cur ]));
+    Cur := Cur + 1;
+    aPlayer.CanDribbling := Boolean( Ord( buf3[ cur ]));
+    Cur := Cur + 1;
+    aPlayer.PressingDone  := Boolean( Ord( buf3[ cur ]));
+    Cur := Cur + 1;
+    aPlayer.BonusTackleTurn  := Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+    aPlayer.BonusLopBallControlTurn  := Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+    aPlayer.BonusProtectionTurn  := Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+    aPlayer.UnderPressureTurn := Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+    aPlayer.BonusSHPturn := Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+    aPlayer.BonusSHPAREAturn := Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+    aPlayer.BonuSPLMturn := Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+    aPlayer.isCOF := Boolean( Ord( buf3[ cur ]));
+    Cur := Cur + 1;
+    aPlayer.isFK1 := Boolean( Ord( buf3[ cur ]));
+    Cur := Cur + 1;
+    aPlayer.isFK2 := Boolean( Ord( buf3[ cur ]));
+    Cur := Cur + 1;
+    aPlayer.isFK3 := Boolean( Ord( buf3[ cur ]));
+    Cur := Cur + 1;
+    aPlayer.isFK4 := Boolean( Ord( buf3[ cur ]));
+    Cur := Cur + 1;
+    aPlayer.isFKD3 := Boolean( Ord( buf3[ cur ]));
+    Cur := Cur + 1;
+    aPlayer.face := PDWORD(@buf3[ cur ])^;
+    Cur := Cur + 4;
+
+
+
+  end;
+
+  totReserve :=  Ord( buf3[ cur ]);
+  Cur := Cur + 1;
+  // cursore posizionato sul primo Reserve
+  for I := 0 to totReserve -1 do begin
+
+//    PlayerGuid := StrToInt(aPlayerManager.lstSoccerPlayer[i].Ids); // dipende dalla gestione players, se divido per nazioni?
+    aIds := IntToStr( PDWORD(@buf3[ cur ])^);
+    Cur := Cur + 4;
+    aGuidTeam := PDWORD(@buf3[ cur ])^;
+    Cur := Cur + 4;
+    lenSurname :=  Ord( buf3[ cur ]);
+    aSurname := MidStr( dataStr, cur + 2  , lenSurname );// ragiona in base 1  e l'elemento 0 è la len della stringa quindi + 2
+    cur  := cur + lenSurname + 1;
+    aTeam := Ord( buf3[ cur ]);
+    Cur := Cur + 1 ;
+    aAge :=  Ord( buf3[ cur ]);
+    Cur := Cur + 1 ;
+
+    nMatchesPlayed := PWORD(@buf3[ cur ])^;
+    Cur := Cur + 2 ;
+    nMatchesLeft := PWORD(@buf3[ cur ])^;
+    Cur := Cur + 2 ;
+    aTalentID := Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+
+    if aTalentID > 0 then
+      aTalents := tsTalents [ aTalentID -1]
+      else aTalents := '';
+
+    aStamina := Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+
+    DefaultSpeed := Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+    DefaultDefense := Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+    DefaultPassing := Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+    DefaultBallControl := Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+    DefaultShot := Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+    DefaultHeading := Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+    Attributes:= IntTostr( DefaultSpeed) + ',' + IntTostr( DefaultDefense) + ',' + IntTostr( DefaultPassing) + ',' + IntTostr( DefaultBallControl) + ',' +
+                 IntTostr( DefaultShot) + ',' + IntTostr( DefaultHeading) ;
+
+      aPlayer:= TSoccerPlayer.Create( aTeam,
+                                 MyBrain.Score.TeamGuid [aTeam] ,
+                                 nMatchesPlayed,
+                                 aIds,
+                                 aName,
+                                 aSurname,
+                                 aTalents,
+                                 Attributes  );     // attributes e defaultAttrributes sono uguali
+      MyBrain.AddSoccerReserve(aPlayer);
+
+    aPlayer.Stamina := aStamina;
+    aPlayer.TalentId:= aTalentID;
+
+    aPlayer.Speed := Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+    aPlayer.Defense := Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+    aPlayer.Passing := Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+    aPlayer.BallControl := Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+    aPlayer.Shot := Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+    aPlayer.Heading := Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+
+    Injured:= Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+    aPlayer.Injured := Injured;
+    if Injured > 0 then begin
+      aPlayer.Speed :=1;
+      aPlayer.Defense :=1;
+      aPlayer.Passing :=1;
+      aPlayer.BallControl :=1;
+      aPlayer.Shot :=1;
+      aPlayer.Heading :=1;
+    end;
+
+
+    aPlayer.YellowCard :=  Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+    aPlayer.redcard :=  Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+    aPlayer.disqualified :=  Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+    aPlayer.gameover :=  Boolean( Ord( buf3[ cur ]));
+    Cur := Cur + 1;
+
+    aPlayer.AIFormationCellX := Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+    aPlayer.AIFormationCellY  := Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+
+    DefaultCellX := Ord( buf3[ cur ]);;
+    Cur := Cur + 1;
+    DefaultCellY := Ord( buf3[ cur ]);;
+    Cur := Cur + 1;
+    aPlayer.DefaultCellS :=  Point( DefaultCellX, DefaultCellY); // innesca e setta il role
+
+    aPlayer.CellX := Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+    aPlayer.CellY := Ord( buf3[ cur ]);
+    Cur := Cur + 1;
+
+    aPlayer.face := PDWORD(@buf3[ cur ])^;
+    Cur := Cur + 4;
+
+
+
+
+  end;
+
+    MM.Free;
+    sf.Free;
+    MyBrain.Score.AI[0]:=True;
+    MyBrain.Score.AI[1]:=True;
+    BrainManager.AddBrain(MyBrain );
+
+end;
+
 
 end.

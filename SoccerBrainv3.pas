@@ -13491,7 +13491,7 @@ begin
        aPlayer.Passing  := aPlayer.DefaultPassing + 2 ;
        aPlayer.Shot   := aPlayer.Defaultshot + 2 + aPlayer.tal_bomb ;
       end;
-      ExceptPlayers.Add(aPlayer);
+      //ExceptPlayers.Add(aPlayer); //<--- chi riceve un shp e lo raggiunge con movetoball non può rimanere senza canskill
     //  aPlayer.grouped := true;
       aPlayer.CellS :=  ball.cells;
 
