@@ -6,9 +6,10 @@
       { TODO  : AudioCrowd in sottofondo }
       { TODO  : verificare suoni, sul rigore è mancata l'esultanza}
       { TODO  : override maglie bianca o nera }
+      { TODO : bug doppia animazione sui freekick }
       { TODO : risolvere sfarfallio in formation }
       { TODO : finire traduzioni DATA/EN}
-      { TODO  : bug incmove 63 }
+      { TODO : bug grafico probabile dopo espulsione non ttova sprite }
 
 
       // procedure importanti:
@@ -361,6 +362,7 @@ type
     procedure SE_GridFreeKickGridCellMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; CellX, CellY: Integer; Sprite: SE_Sprite);
     procedure CnColorGrid1SelectCell(Sender: TObject; ACol, ARow: Integer; var CanSelect: Boolean);
     procedure btnSelCountryTeamClick(Sender: TObject);
+    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 
   private
     { Private declarations }
@@ -1264,6 +1266,13 @@ begin
   //  If MyBrainFormation <> nil then MyBrainFormation.free;
 //  if Mybrain <> nil then MyBrain.free;
 end;
+
+procedure TForm1.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+ if Key = VK_F1 then
+  Panel1.Visible := not Panel1.Visible;
+end;
+
 
 procedure TForm1.SetTheaterMatchSize ;
 begin
@@ -3722,7 +3731,7 @@ begin
     Mybrain.Ball.SE_Sprite := se_Ball.CreateSprite(dir_ball + 'ball1.bmp','ball',1,1,5,
                                               aSEField.Position.X   , aSEField.Position.Y , true);
    // Mybrain.Ball.SE_Sprite.Scale := 100;    Mybrain.Ball.SE_Sprite.Position :=aSEField.Position;
-    Mybrain.Ball.Se_sprite.Scale := 30;
+    Mybrain.Ball.Se_sprite.Scale := 40;
     Mybrain.Ball.SE_Sprite.MoverData.Speed:= 3;
     Mybrain.Ball.SE_Sprite.PositionY := Mybrain.Ball.SE_Sprite.Position.Y + BallZ0Y;
     Mybrain.Ball.SE_Sprite.MoverData.Destination := Mybrain.Ball.Se_sprite.Position;
@@ -7230,7 +7239,6 @@ end;
 
 procedure TForm1.btnSubsClick(Sender: TObject);
 begin
-
 (* Premuto durante la partita , premuto solo nel mio turno *)
   if SE_DragGuid <> nil then
     Exit;

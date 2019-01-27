@@ -655,17 +655,13 @@ begin
 
   {$IFDEF  MYDAC}
     MyQueryCheat := TMyQuery.Create(nil);
-    MyQueryCheat.Connection := ConnAccount;
-    MyQueryCheat.SQL.Text :=' INSERT into cheat_detected (reason,minute,brainids) values ("' + data + '","' +
-                               IntToStr(brain.Minute )+'","' + brain.brainIds +'")'  ;
-    MyQueryCheat.Execute;
   {$ELSE}
     MyQueryCheat := TFDQuery.Create(nil);
-    MyQueryCheat.Connection := ConnAccount;
-    MyQueryCheat.Open (' INSERT into cheat_detected (reason,minute,brainids) values ("' + data + '","' +
-                               IntToStr(brain.Minute )+'","' + brain.brainIds +'")')  ;
   {$ENDIF}
-
+    MyQueryCheat.Connection := ConnAccount;
+    MyQueryCheat.SQL.Text :='INSERT into cheat_detected (reason,minute,brainids) values ("' + data + '","' +
+                               IntToStr(brain.Minute )+'","' + brain.brainIds +'")'  ;
+    MyQueryCheat.Execute;
     MyQueryCheat.Free;
     ConnAccount.Connected:= False;
     ConnAccount.Free;
@@ -675,7 +671,6 @@ begin
      // RemoveBrain( brain.brainIds );   { se lo faccio bug, c'era PASS o altri comandi in essere. il brain esegue ancora tsscript, lo faccio dopo 30 secondi }
   end                                 // lo marco per il delete successivo
   else begin
-      { TODO : bug solo con incmove = 128, 127 nei file }
       // prima i client che giocano
       try
         for I := 0 to FormServer.Tcpserver.ClientCount -1 do begin
@@ -2437,7 +2432,7 @@ begin
           cli.sReason  := cli.sReason + ': ' + ts.commatext;
           cli.sreason := LeftStr( cli.sreason , 255);
           Memo1.Lines.Add(cli.sReason + ':' + ts.commatext );
-          MyQueryCheat.SQL.Text := ' INSERT into cheat_detected (reason) values ("' + cli.sReason + '")';
+          MyQueryCheat.SQL.Text := 'INSERT into cheat_detected (reason) values ("' + cli.sReason + '")';
           MyQueryCheat.Execute ;
           MyQueryCheat.Free;
           ConnAccount.Connected := false;
@@ -2482,7 +2477,7 @@ begin
         MyQueryCheat := TFDQuery.Create(nil);
   {$ENDIF}
         MyQueryCheat.Connection :=  ConnAccount ;
-        MyQueryCheat.SQL.Text := ' INSERT into cheat_detected (reason) values ("' + E.ToString + ' TFormServer.TcpserverDataAvailable ' + '")';
+        MyQueryCheat.SQL.Text := 'INSERT into cheat_detected (reason) values ("' + E.ToString + ' TFormServer.TcpserverDataAvailable ' + '")';
         MyQueryCheat.Execute ;
         MyQueryCheat.Free;
         ConnAccount.Connected := false;

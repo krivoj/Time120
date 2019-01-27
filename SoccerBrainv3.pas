@@ -9187,10 +9187,10 @@ begin
 
 
           if aRnd <= fault then begin   // se è fallo
-            TsScript.add ('sc_tackle.fault,' + aPlayer.ids{sfidante} +',' + Ball.Player.ids {cella}
-                                        + ',' + IntTostr(aPlayer.CellX)+',' + IntTostr(aPlayer.CellY)
-                                        + ',' + IntTostr(Ball.Player.CellX)+',' + IntTostr(Ball.Player.CellY)
-                                        + ',' + IntTostr(Ball.Player.CellX)+',' + IntTostr(Ball.Player.CellY)   ) ;
+//            TsScript.add ('sc_tackle.fault,' + aPlayer.ids{sfidante} +',' + Ball.Player.ids {cella}
+//                                        + ',' + IntTostr(aPlayer.CellX)+',' + IntTostr(aPlayer.CellY)
+//                                        + ',' + IntTostr(Ball.Player.CellX)+',' + IntTostr(Ball.Player.CellY)
+//                                        + ',' + IntTostr(Ball.Player.CellX)+',' + IntTostr(Ball.Player.CellY)   ) ;
             aRnd := RndGenerate(100);
             if aRnd <= Card then begin // cartellino
               aRnd := RndGenerate(100);
