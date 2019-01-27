@@ -9,7 +9,7 @@
       { TODO : bug doppia animazione sui freekick }
       { TODO : risolvere sfarfallio in formation }
       { TODO : finire traduzioni DATA/EN}
-      { TODO : bug grafico probabile dopo espulsione non ttova sprite }
+      { TODO : bug grafico probabile dopo espulsione non trova sprite }
 
 
       // procedure importanti:
@@ -48,9 +48,10 @@ uses
 
 
 const GCD_DEFAULT = 200;        // global cooldown, minimo 200 ms tra un input verso il server e l'altro ( anti-cheating )
-const ScaleSprites = 56;        // riduzione generica di tutto gli sprite player
-const FieldCellW = 56;
-const FieldCellH = 56;
+const ScaleSprites = 64;        // riduzione generica di tutto gli sprite player
+const ScaleSpritesFace = 32;        // riduzione face
+const FieldCellW = 64;
+const FieldCellH = 64;
 const BallZ0Y = 16;             // la palla sta più in basso, vicino ai piedi dello sprite player
 const Ball0X = 3;               // la palla sta più avanti rispetto allo sprite player
 const sprite1cell = 900;        // ms tempo che impiega un player a spostarsi di una cella
@@ -246,6 +247,7 @@ type
     tcp: TWSocket;
     PanelMatchInfo: SE_Panel;
     SE_GridMatchInfo: SE_Grid;
+    Label1: TLabel;
 
 // General
     procedure FormCreate(Sender: TObject);
@@ -1270,10 +1272,16 @@ end;
 procedure TForm1.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
  if Key = VK_F1 then
-  Panel1.Visible := not Panel1.Visible;
+  Panel1.Visible := not Panel1.Visible
+
+  else if Key = VK_F2 then begin
+    if Panel1.Left = 0 then
+      Panel1.Left := Form1.Width - Panel1.width
+      else Panel1.Left:=0;
+
+   end;
+
 end;
-
-
 procedure TForm1.SetTheaterMatchSize ;
 begin
   form1.Width := 1366;
@@ -4789,7 +4797,7 @@ begin
         else if tsCmd[0]= 'sc_player.move.toball' then begin
           AnimationScript.Tsadd (  'cl_player.move.toball,'  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5] );
           AnimationScript.Tsadd ('cl_wait,' + IntTostr(( sprite1cell)));
-          AnimationScript.Tsadd ('cl_sound,soundtackle');
+         // AnimationScript.Tsadd ('cl_sound,soundtackle');
         end
         else if tsCmd[0]= 'sc_ai.moveall' then begin
           AnimationScript.Tsadd ('cl_ball.stop' );
@@ -6584,13 +6592,15 @@ begin
     aSEField := SE_field.FindSprite( Ts[5] + '.' + Ts[6] );
 
     sebmp:= Se_bitmap.Create (80,14);
-    sebmp.Bitmap.Canvas.Brush.color := $007B5139;
+    sebmp.FillRect(0,0,sebmp.Width,sebmp.Height,$007B5139);
+//    sebmp.Bitmap.Canvas.Brush.color := $007B5139;
     sebmp.Bitmap.Canvas.Font.Name := 'Calibri';
     sebmp.Bitmap.Canvas.Font.Size := 8;
     sebmp.Bitmap.Canvas.Font.Style := [fsbold];
     sebmp.Bitmap.Canvas.Font.Color := clYellow;
     ASize:=sebmp.Bitmap.Canvas.TextExtent(ts[1]);
     sebmp.Resize( aSize.Width, aSize.Height, $007B5139  );
+      sebmp.Bitmap.Canvas.Brush.Style := bsClear;
       sebmp.Bitmap.Canvas.TextOut( 1,0, ts[1]);
 //    SE_GridDicewriterow ( ts[1], aplayer.surname,  aPlayer.ids , 'VS');
 
@@ -6598,7 +6608,7 @@ begin
     if PosY < 20 then posY := 30;
 
 
-    SeSprite := se_numbers.CreateSprite( sebmp.bitmap, 'numbers', 1, 1, 100, aSEField.Position.X  ,  posY, true );
+    SeSprite := se_numbers.CreateSprite( sebmp.bitmap, 'numbers', 1, 1, 100, aSEField.Position.X  ,  posY, false );
     SeSprite.LifeSpan := ShowRollLifeSpan * 2;
     sebmp.Free;
 
@@ -8618,8 +8628,10 @@ begin
       Se_Players.Sprites[i].SubSprites.Remove(aSubSprite);
   end;
   // aggiungo la faccia come subsprite
-  aSubSprite := SE_SubSprite.create( dir_player + IntTostr(aPlayer.face) +'.bmp' , 'face', 0,0, true, true );
-  aSubSprite.lBmp.Stretch (trunc (( aSubSprite.lBmp.Width * ScaleSprites ) / 100), trunc (( aSubSprite.lBmp.Height * ScaleSprites ) / 100)  );
+  aSubSprite := SE_SubSprite.create( dir_player + IntTostr(aPlayer.face) +'.bmp' , 'face', 0  ,0, true, true );
+  aSubSprite.lBmp.Stretch (trunc (( aSubSprite.lBmp.Width * ScaleSpritesFace ) / 100), trunc (( aSubSprite.lBmp.Height * ScaleSpritesFace ) / 100)  );
+  aSubSprite.lX := (aPlayer.se_sprite.BMPCurrentFrame.Width div 2) - (aSubSprite.lBmp.Width div 2);  // center
+  aSubSprite.ly := 0;  // center
   aPlayer.se_sprite.AddSubSprite(aSubSprite);
   ReleaseMutex(MutexAnimation);
 

@@ -28,6 +28,19 @@ object Form1: TForm1
     Height = 746
     BevelOuter = bvNone
     TabOrder = 0
+    object Label1: TLabel
+      Left = 187
+      Top = 676
+      Width = 61
+      Height = 29
+      Caption = 'F1-F2'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clBlack
+      Font.Height = -24
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+    end
     object Memo1: TMemo
       Left = 0
       Top = 0
