@@ -10,7 +10,7 @@ unit Server;
 {$DEFINE useMemo}  // se uso il debug a video delle informazioni importanti
 interface
  { TODO : verificare fine stagioen e new season, giovani ecc.. }
- { TODO : verificare bug formazione 10 }
+ { TODO : verificare bug shotcell. il centrale ha rollato 2 volte }
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics, System.Hash , DateUtils,

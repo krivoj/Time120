@@ -1996,18 +1996,23 @@ begin
 
 
              // maglia 1
-            if ShapeBitmap.Bitmap.Canvas.Pixels[x,y] = clBlack then
+            if ShapeBitmap.Bitmap.Canvas.Pixels[x,y] = clBlack then begin
               ShapeBitmap.Bitmap.Canvas.Pixels [x,y] := StringToColor (  CnColorgrid1.CustomColors [  StrToInt(TsUniforms[Team][0])]);
+              if ShapeBitmap.Bitmap.Canvas.Pixels [x,y] = clWhite then  // fix maglia bianca non trasparente
+                ShapeBitmap.Bitmap.Canvas.Pixels [x,y] := clwhite -1
 
+            end;
 
         end
 
         else begin
 
              // maglia 2
-            if ShapeBitmap.Bitmap.Canvas.Pixels[x,y] = clBlack then
+            if ShapeBitmap.Bitmap.Canvas.Pixels[x,y] = clBlack then begin
               ShapeBitmap.Bitmap.Canvas.Pixels [x,y] := StringToColor (  CnColorgrid1.CustomColors [  StrToInt(TsUniforms[Team][1])]);
-
+              if ShapeBitmap.Bitmap.Canvas.Pixels [x,y] = clWhite then   // fix maglia bianca non trasparente
+                ShapeBitmap.Bitmap.Canvas.Pixels [x,y] := clwhite -1
+            end;
         end;
 
 
