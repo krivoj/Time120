@@ -3342,9 +3342,6 @@ begin
       end;
 
 
-      aPlayer.SE_Sprite.Labels.Clear ;
-      aPlayer.SE_Sprite.SubSprites.Clear;
-
       if MyBrain.w_FreeKick3  then begin
         if aPlayer.isFKD3 then begin
           ACellBarrier  := MyBrain.GetBarrierCell ( MyBrain.TeamFreeKick, MyBrain.Ball.CellX, MyBrain.Ball.cellY)  ; // la cella barriera !!!!
@@ -3586,8 +3583,6 @@ begin
   if FirstTime then begin
     se_players.RemoveAllSprites ;
     SE_players.ProcessSprites(2000);
-   caption := IntToStr(SE_players.SpriteCount);
-   // application.ProcessMessages;
     MyBrain.lstSoccerPlayer.Clear ;
     MyBrain.lstSoccerReserve.Clear;
   end;
@@ -3646,7 +3641,7 @@ begin
   TsUniforms[1].CommaText := MyBrain.Score.Uniform [1] ;
   UniformBitmap[0] := SE_Bitmap.Create (dir_player + 'bw.bmp');
   PreLoadUniform (0, UniformBitmap[0] );  // usa tsuniforms e  UniformBitmapBW
-  Portrait0.Glyph.LoadFromFile(dir_tmp + 'color0.bmp');
+//  Portrait0.Glyph.LoadFromFile(dir_tmp + 'color0.bmp');
   UniformBitmap[1] := SE_Bitmap.Create (dir_player + 'bw.bmp');
   PreLoadUniform (1, UniformBitmap[1] );  // usa tsuniforms e  UniformBitmapBW
   UniformBitmapGK := SE_Bitmap.Create (dir_player + 'bw.bmp');
@@ -6355,9 +6350,19 @@ procedure TForm1.UpdateSubSprites;
 var
   p: Integer;
   SeSprite: SE_SubSprite;
+  aPlayer: TSoccerPlayer;
 begin
 
     for P:= 0 to MyBrain.lstSoccerPlayer.Count -1 do begin
+
+        aPlayer:= MyBrain.lstSoccerPlayer [P];
+        aPlayer.SE_Sprite.Labels.Clear ;
+        aPlayer.SE_Sprite.DeleteSubSprite('star' );
+        aPlayer.SE_Sprite.DeleteSubSprite('disqualified' );
+        aPlayer.SE_Sprite.DeleteSubSprite('injured' );
+        aPlayer.SE_Sprite.DeleteSubSprite('yellow' );
+        aPlayer.SE_Sprite.DeleteSubSprite('inout' );
+        aPlayer.SE_Sprite.DeleteSubSprite('stay' );    // lascio FACE
 
          if (MyBrain.lstSoccerPlayer[p].BonusSHPturn > 0) or (MyBrain.lstSoccerPlayer[p].BonusPLMTurn > 0)
          or (MyBrain.lstSoccerPlayer[p].BonusTackleTurn > 0) or (MyBrain.lstSoccerPlayer[p].BonusLopBallControlTurn > 0)
@@ -6398,6 +6403,15 @@ begin
           end;
     end;
     for P:= 0 to MyBrain.lstSoccerReserve.Count -1 do begin
+
+        aPlayer:= MyBrain.lstSoccerPlayer [P];
+        aPlayer.SE_Sprite.Labels.Clear ;
+        aPlayer.SE_Sprite.DeleteSubSprite('star' );
+        aPlayer.SE_Sprite.DeleteSubSprite('disqualified' );
+        aPlayer.SE_Sprite.DeleteSubSprite('injured' );
+        aPlayer.SE_Sprite.DeleteSubSprite('yellow' );
+        aPlayer.SE_Sprite.DeleteSubSprite('inout' );
+        aPlayer.SE_Sprite.DeleteSubSprite('stay' );    // lascio FACE
 
        if (MyBrain.lstSoccerReserve[p].RedCard > 0) or (MyBrain.lstSoccerReserve[p].Yellowcard = 2)
        or (MyBrain.lstSoccerReserve[p].disqualified > 0)

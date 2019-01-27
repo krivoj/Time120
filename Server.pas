@@ -10,6 +10,7 @@ unit Server;
 {$DEFINE useMemo}  // se uso il debug a video delle informazioni importanti
 interface
  { TODO : verificare fine stagioen e new season, giovani ecc.. }
+ { TODO : verificare bug formazione 10 }
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics, System.Hash , DateUtils,
@@ -268,6 +269,7 @@ type
       function can6 (aPlayer: TSoccerPlayer; at : TAttributeName): boolean;
 
       function isReserveSlot (CellX, CellY: integer): boolean;
+      function isReserveSlotFormation (CellX, CellY: integer): boolean;
   end;
 
 const EndofLine = 'ENDSOCCER';
@@ -2973,6 +2975,12 @@ begin
   if (CellX <= 0) or ( CellX  >= 11) then
     result := True;
 end;
+function TFormServer.isReserveSlotFormation (CellX, CellY: integer): boolean;
+begin
+  Result:= false;
+  if (CellX < 0) then    // da -4 a -1
+    result := True;
+end;
 
 function TFormServer.can6 (aPlayer: TSoccerPlayer; at : TAttributeName): boolean;
 var
@@ -4153,7 +4161,7 @@ begin
       Sp.Age:= Trunc(  MyQueryGamePlayers.FieldByName('Matches_Played').AsInteger  div Soccerbrainv3.SEASON_MATCHES) + 18 ;
       Sp.TalentId := MyQueryGamePlayers.FieldByName('Talent').AsInteger;
 
-      if isReserveSlot( aPoint.X,aPoint.Y  ) then begin
+      if isReserveSlotFormation( aPoint.X,aPoint.Y  ) then begin
           TvReserveCell:= brain.ReserveSlotTV [0,aPoint.X,aPoint.Y  ]; // sempre 0 qui, il client lo metterà a 1 (aplayer.team)
           Sp.DefaultCells :=  Point(TvReserveCell.X ,TvReserveCell.Y );
           Sp.CellS := TvReserveCell;
