@@ -6789,7 +6789,7 @@ HVSH:
 
               // o angolo o respinta o gol
               TsScript.add ( 'sc_DICE,' + IntTostr(aGK.CellX) + ',' + Inttostr(aGK.CellY) +','+  IntTostr(aRnd4) +','+
-              IntToStr(aGK.Defense)+',Defense,'+ aGK.ids+','+IntTostr(Roll4.value ) + Roll4.fatigue +',' + IntTostr(BonusDefenseHeading) );
+              IntToStr(aGK.Defense)+',Defense,'+ aGK.ids+','+IntTostr(Roll4.value ) + ',' + Roll4.fatigue +',' + IntTostr(BonusDefenseHeading) );
 
               if aRnd4 > aRnd3 then begin // heading ---> il portiere para e c'è il rimbalzo
                 // la palla, che ora è in possesso del portiere , rimbalza e finisce in posizione random che calcolo adesso

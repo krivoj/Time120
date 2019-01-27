@@ -9,7 +9,8 @@
       { TODO : bug doppia animazione sui freekick }
       { TODO : risolvere sfarfallio in formation }
       { TODO : finire traduzioni DATA/EN}
-      { TODO : bug grafico probabile dopo espulsione non trova sprite }
+      { TODO : bug grafico probabile dopo espulsione non trova sprite perchè passato di lista. occorre accettare nil }
+      { TODO : bug grafico dopo gol }
 
 
       // procedure importanti:
@@ -18,7 +19,7 @@
       //    procedure ClientLoadBrainMM  ( incMove: Byte ) Carica il brain arrivato dal server
       //    procedure Anim --> esegue realmente l'animazione
 
-      { TODO : in futuro talento: se non ha hostile nearby e diventa portatore palla, shp or lop auto (no x forward)}
+      { TODO : in futuro talento: se non ha hostile nearby e diventa portatore palla, guadagna mossa)}
 interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Types, System.Classes, Vcl.Graphics,
@@ -251,6 +252,7 @@ type
     PanelMatchInfo: SE_Panel;
     SE_GridMatchInfo: SE_Grid;
     Label1: TLabel;
+    Button5: TButton;
 
 // General
     procedure FormCreate(Sender: TObject);
@@ -368,6 +370,7 @@ type
     procedure CnColorGrid1SelectCell(Sender: TObject; ACol, ARow: Integer; var CanSelect: Boolean);
     procedure btnSelCountryTeamClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure Button5Click(Sender: TObject);
 
   private
     { Private declarations }
@@ -375,9 +378,9 @@ type
     procedure ShowFace ( aPlayer: TSoccerPlayer );
     procedure  SetSelectedPlayer ( aPlayer: TSoccerPlayer);
     function FieldGuid2Cell (guid:string): Tpoint;
+
     procedure ArrowShowShpIntercept( CellX, CellY : Integer; ToEmptyCell: boolean);
     procedure ArrowShowMoveAutoTackle( CellX, CellY : Integer);
-
     procedure ArrowShowLopheading(CellX, CellY : Integer; ToEmptyCell: boolean);
     procedure ArrowShowCrossingHeading( CellX, CellY : Integer) ;
     procedure ArrowShowDribbling( anOpponent: TSoccerPlayer; CellX, CellY : Integer);
@@ -468,7 +471,7 @@ type
     procedure CreateArrowDirection ( Player1 : TSoccerPlayer;  CellX, CellY: integer ); overload;
     procedure CreateCircle(  Player : TSoccerPlayer  ); overload;
     procedure CreateCircle(  Team,  CellX, CellY: integer  );overload;
-
+    procedure CreateBaseAttribute ( CellX, CellY, Value: Integer );
 // Mouse movement sulla SE_GridSkill
     procedure PrsMouseEnter ( Sender : TObject);
     procedure PosMouseEnter ( Sender : TObject);
@@ -978,6 +981,19 @@ end;
 procedure TForm1.Button4Click(Sender: TObject);
 begin
   MyBrain.AI_Think(MyBrain.TeamTurn);
+end;
+
+procedure TForm1.Button5Click(Sender: TObject);
+begin
+  {$ifdef tools}
+  if SelectedPlayer = nil  then Exit;
+
+  if GCD <= 0 then begin
+    tcp.SendStr(  'testfault,' + SelectedPlayer.ids + EndofLine  );
+    GCD := GCD_DEFAULT;
+  end;
+  {$endif tools}
+
 end;
 
 procedure TForm1.Button6Click(Sender: TObject);
@@ -2887,10 +2903,10 @@ begin
           if Mybrain.GetSoccerPlayer(aPoint.X ,aPoint.Y ).Team <> SelectedPlayer.Team then begin
             if SelectedPlayer.CellX = anOpponent.cellX then Modifier := soccerbrainv3.modifier_defenseShot else Modifier :=0;
             CreateArrowDirection( anOpponent, SelectedPlayer );
-            SE_GridDiceWriteRow  ( anOpponent.Team, UpperCase(Translate('attribute_Defense')),  anOpponent.SurName, anOpponent.Ids, 'VS',IntToStr(anOpponent.Defense));
+            CreateBaseAttribute (  aPoint.x, aPoint.y, anOpponent.Defense) ;
+//            SE_GridDiceWriteRow  ( anOpponent.Team, UpperCase(Translate('attribute_Defense')),  anOpponent.SurName, anOpponent.Ids, 'VS',IntToStr(anOpponent.Defense));
 
 ////            CalculateChance  (BaseShot, anOpponent.Defense + Modifier, chanceA,chanceB,chanceColorA,chanceColorB);
-
 ////            CreateTextChanceValue (anOpponent.ids,anOpponent.Defense + Modifier,dir_attributes + 'Defense',0,0,0,0);
           end;
         end;
@@ -2901,12 +2917,41 @@ begin
     aGK := Mybrain.GetOpponentGK ( SelectedPlayer.Team );
     CreateCircle( aGK );
     SE_GridDiceWriteRow  ( aGK.Team,  UpperCase(Translate('attribute_Defense')),  aGK.SurName, aGK.Ids, 'VS',IntToStr(aGK.Defense ) );
-/////    CalculateChance  (BaseShot, aGK.Defense + Modifier, chanceA,chanceB,chanceColorA,chanceColorB);
-/////    CreateTextChanceValue (SelectedPlayer.ids,BaseShot,dir_skill + 'Precision.Shot',0,0,0,0);
-/////    CreateTextChanceValue (aGK.ids,aGK.Defense + Modifier,dir_attributes + 'Defense',0,0,0,0);
   end;
 
 end;
+procedure TForm1.CreateBaseAttribute ( CellX, CellY, value: integer );
+var
+  aSeField,aSprite: SE_Sprite;
+  sebmp: SE_Bitmap;
+
+begin
+
+    // la skill usata e i punteggi
+    aSEField := SE_field.FindSprite( IntToStr(CellX) + '.' + IntToStr(CellY) );
+
+    sebmp:= Se_bitmap.Create (32,32);
+    sebmp.Bitmap.Canvas.Brush.color := clGray;
+
+    sebmp.Bitmap.Canvas.Ellipse(6,6,26,26);
+    sebmp.Bitmap.Canvas.Font.Name := 'Calibri';
+    sebmp.Bitmap.Canvas.Font.Size := 10;
+    sebmp.Bitmap.Canvas.Font.Style := [fsbold];
+    sebmp.Bitmap.Canvas.Font.Color := clYellow;
+    if length(  IntToStr(Value)) = 1 then
+      sebmp.Bitmap.Canvas.TextOut( 12,8, IntToStr(Value))
+      else sebmp.Bitmap.Canvas.TextOut( 7,8, IntToStr(Value));
+
+    // o è una skill o è un attributo nel panelcombat
+//    if Translate ( 'skill_' + ts[3]) <> '' then
+//      SE_GridDicewriterow ( aplayer.Team,  UpperCase( Translate ( 'skill_' + ts[3])),  aplayer.surname,  aPlayer.ids , ts[2], '' )
+//      else SE_GridDicewriterow ( aplayer.Team,  UpperCase( Translate ( 'attribute_' + ts[3])),  aplayer.surname,  aPlayer.ids , ts[2], '' );
+
+    aSprite := se_interface.CreateSprite( sebmp.bitmap, 'numbers', 1, 1, 100, aSEField.Position.X  , aSEField.Position.Y , true );
+    sebmp.Free;
+
+end;
+
 procedure TForm1.Btn_UniformAwayClick(Sender: TObject);
 var
   ha : Byte;
@@ -3098,7 +3143,8 @@ begin
           if Mybrain.GetSoccerPlayer(aPoint.X ,aPoint.Y ).Team <> SelectedPlayer.Team then begin
             if SelectedPlayer.CellX = anOpponent.cellX then Modifier := soccerbrainv3.modifier_defenseShot else Modifier :=0;
             CreateArrowDirection( anOpponent, SelectedPlayer );
-            SE_GridDiceWriteRow  ( anOpponent.Team,  UpperCase(Translate('attribute_Defense')),  anOpponent.SurName, anOpponent.Ids, 'VS',IntToStr(anOpponent.Defense ));
+            CreateBaseAttribute (  aPoint.x, aPoint.y, anOpponent.defense );
+//            SE_GridDiceWriteRow  ( anOpponent.Team,  UpperCase(Translate('attribute_Defense')),  anOpponent.SurName, anOpponent.Ids, 'VS',IntToStr(anOpponent.Defense ));
 
           end;
         end;
@@ -4806,7 +4852,7 @@ begin
           AnimationScript.Tsadd (  'cl_ball.move.toball,' + IntTostr(DEFAULT_SPEED_BALL) + ','  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]+ ','+tsCmd[6]   );
         end
         else if tsCmd[0]='sc_bounce' then begin
-          AnimationScript.Tsadd (  'cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ','  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]);
+          AnimationScript.Tsadd (  'cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ','  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]+',0');
         end
         else if tsCmd[0]= 'sc_player.move.toball' then begin
           AnimationScript.Tsadd (  'cl_player.move.toball,'  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5] );
@@ -4896,7 +4942,7 @@ begin
           AnimationScript.Tsadd (  'cl_player.move.toball,'  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5] );
         end
         else if tsCmd[0]='sc_bounce' then begin  // rimbalzo nel caso venga intercettato
-          AnimationScript.Tsadd (  'cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ','  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]);
+          AnimationScript.Tsadd (  'cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ','  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]+',0');
         end
         else if tsCmd[0]= 'sc_player.move.intercept' then begin
           AnimationScript.Tsadd ('cl_player.move.intercept,'  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5] );
@@ -5111,7 +5157,7 @@ begin
           AnimationScript.Tsadd (  'cl_ball.move.toball,' + IntTostr(DEFAULT_SPEED_BALL) + ','  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]+ ','+tsCmd[6]   );
         end
         else if tsCmd[0]='sc_bounce' then begin
-          AnimationScript.Tsadd (  'cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ','  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]);
+          AnimationScript.Tsadd (  'cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ','  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]+',0');
         end
         else if tsCmd[0]= 'sc_player.move.toball' then begin
           // il player è già posizionato
@@ -5806,9 +5852,9 @@ begin
                                               + IntTostr(Ball.cellX)+',' + IntTostr(Ball.cellY) + ',' +IntTostr(RndGenerate(2)) ); }
 
           AnimationScript.Tsadd ('cl_sound,soundishot');
-          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEEDMAX_BALL) + ',' + tsCmd[4] + ','+tsCmd[5]+ ',' + tsCmd[6] + ','+tsCmd[7]+',0,heading'  );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEEDMAX_BALL) + ',' + tsCmd[4] + ','+tsCmd[5]+ ',' + tsCmd[6] + ',' + tsCmd[7]+',0,heading'  );
 
-          AnimationScript.Tsadd ('cl_cross.gol,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[6] + ','+tsCmd[7]+ ',' + tsCmd[10] + ','+tsCmd[11]+',0,gol'  );
+          AnimationScript.Tsadd ('cl_cross.gol,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[6] + ','+tsCmd[7]+ ',' + tsCmd[10] + ','+ tsCmd[11]+',0,gol'  );
     //1 Speed
     //2 aList[i].CellX     // cella di partenza
     //3 aList[i].CellY
@@ -8175,6 +8221,7 @@ begin
     SE_GridFreeKick.Width := SE_GridFreeKick.VirtualWidth;
 
     // colori header
+    SE_GridFreeKick.Rows[0].Height := 16;
     SE_GridFreeKick.Cells [0,0].FontColor := clWhite;
     SE_GridFreeKick.Cells [1,0].FontColor := clWhite;
     SE_GridFreeKick.Cells [2,0].FontColor := clWhite;
@@ -8999,7 +9046,8 @@ begin
       for au := 0 to lstInteractivePlayers.Count -1 do begin
         lstInteractivePlayers[au].Attribute := atDefense;
         CreateArrowDirection( lstInteractivePlayers[au].Player  , lstInteractivePlayers[au].Cell.X ,lstInteractivePlayers[au].Cell.Y );
-        SE_GridDiceWriteRow  ( lstInteractivePlayers[au].Player.Team, UpperCase(Translate('attribute_Defense')),  lstInteractivePlayers[au].Player.SurName, lstInteractivePlayers[au].Player.Ids, 'VS',IntToStr(lstInteractivePlayers[au].Player.Defense));
+        CreateBaseAttribute (  lstInteractivePlayers[au].Player.CellX, lstInteractivePlayers[au].Player.CellY, lstInteractivePlayers[au].Player.Defense );
+//        SE_GridDiceWriteRow  ( lstInteractivePlayers[au].Player.Team, UpperCase(Translate('attribute_Defense')),  lstInteractivePlayers[au].Player.SurName, lstInteractivePlayers[au].Player.Ids, 'VS',IntToStr(lstInteractivePlayers[au].Player.Defense));
       end;
 
       break; //goto MyExit;
@@ -9040,7 +9088,8 @@ begin
             aInteractivePlayer.Attribute := atDefense;
             lstInteractivePlayers.add (aInteractivePlayer);
             CreateArrowDirection( anOpponent, aPath[i].X,aPath[i].Y );
-            SE_GridDiceWriteRow  ( anOpponent.Team, UpperCase(Translate('attribute_Defense')),  anOpponent.SurName, anOpponent.Ids, 'VS',IntToStr(anOpponent.Defense) );
+            CreateBaseAttribute (  aPath[i].X,aPath[i].Y, anOpponent.Defense );
+    //        SE_GridDiceWriteRow  ( anOpponent.Team, UpperCase(Translate('attribute_Defense')),  anOpponent.SurName, anOpponent.Ids, 'VS',IntToStr(anOpponent.Defense) );
           end;
       end
 
@@ -9054,9 +9103,12 @@ begin
             aFriend := MyBrain.GetSoccerPlayer ( CellX , CellY);
             if aFriend = nil then
    { toemptycells lo devo riportare adesso }
-             SE_GridDiceWriteRow  ( anIntercept.Team, UpperCase(Translate('attribute_Defense')),  anIntercept.SurName, anIntercept.Ids, 'VS',IntToStr(anIntercept.Defense))
-            else SE_GridDiceWriteRow  ( anIntercept.Team, UpperCase(Translate('attribute_Defense')),  anIntercept.SurName, anIntercept.Ids, 'VS',
-                                      IntToStr(anIntercept.Defense -1));
+//             SE_GridDiceWriteRow  ( anIntercept.Team, UpperCase(Translate('attribute_Defense')),  anIntercept.SurName, anIntercept.Ids, 'VS',IntToStr(anIntercept.Defense))
+            CreateBaseAttribute (  anIntercept.CellX, anIntercept.Celly, anIntercept.Defense )
+//            else SE_GridDiceWriteRow  ( anIntercept.Team, UpperCase(Translate('attribute_Defense')),  anIntercept.SurName, anIntercept.Ids, 'VS',
+//                                      IntToStr(anIntercept.Defense -1));
+            else  CreateBaseAttribute (  anIntercept.CellX, anIntercept.Celly, anIntercept.Defense );
+
           end
         end;
 
@@ -9071,7 +9123,8 @@ begin
     for Y := 0 to LstMoving.count -1 do begin
       LstMoving[Y].Attribute := atSpeed;
       CreateArrowDirection( LstMoving[Y].Player, CellX,CellY );
-      SE_GridDiceWriteRow  ( LstMoving[Y].Player.Team, UpperCase(Translate('attribute_Speed')),  LstMoving[Y].Player.SurName, LstMoving[Y].Player.Ids, 'VS',IntToStr(LstMoving[Y].Player.Speed ));
+      CreateBaseAttribute (  CellX,CellY,  LstMoving[Y].Player.Speed );
+//      SE_GridDiceWriteRow  ( LstMoving[Y].Player.Team, UpperCase(Translate('attribute_Speed')),  LstMoving[Y].Player.SurName, LstMoving[Y].Player.Ids, 'VS',IntToStr(LstMoving[Y].Player.Speed ));
     end;
 
     LstMoving.Free;
@@ -9102,7 +9155,8 @@ begin
             // CalculateChance  ( SelectedPlayer.Passing , aHeading.Heading  , chanceA,chanceB,chanceColorA,chanceColorB);
             lstInteractivePlayers[Y].Attribute := atHeading;
             CreateArrowDirection( aHeading, CellX,CellY );
-            SE_GridDiceWriteRow  ( aHeading.Team, UpperCase(Translate('attribute_Heading')),  aHeading.SurName, aHeading.Ids, 'VS',IntToStr(aHeading.Passing));
+            CreateBaseAttribute (  aHeading.CellX, aHeading.CellY, aHeading.Heading );
+      //      SE_GridDiceWriteRow  ( aHeading.Team, UpperCase(Translate('attribute_Heading')),  aHeading.SurName, aHeading.Ids, 'VS',IntToStr(aHeading.Passing));
 
       end;
 
@@ -9118,7 +9172,8 @@ begin
     for Y := 0 to LstMoving.count -1 do begin
       LstMoving[Y].Attribute := atSpeed;
       CreateArrowDirection( LstMoving[Y].Player, CellX,CellY );
-      SE_GridDiceWriteRow  ( LstMoving[Y].Player.Team, UpperCase(Translate('attribute_Speed')),  LstMoving[Y].Player.SurName, LstMoving[Y].Player.Ids, 'VS',IntToStr(LstMoving[Y].Player.Speed));
+      CreateBaseAttribute (  LstMoving[Y].Player.CellX, LstMoving[Y].Player.CellY, LstMoving[Y].Player.Speed );
+//      SE_GridDiceWriteRow  ( LstMoving[Y].Player.Team, UpperCase(Translate('attribute_Speed')),  LstMoving[Y].Player.SurName, LstMoving[Y].Player.Ids, 'VS',IntToStr(LstMoving[Y].Player.Speed));
     end;
 
     LstMoving.Free;
@@ -9149,9 +9204,9 @@ begin
      //     BaseHeading :=  LstHeading[Y].Player.Heading + BonusDefenseHeading;
      //     if Baseheading <= 0 then Baseheading :=1;
       CreateArrowDirection( lstInteractivePlayers[Y].Player, CellX,CellY );
-      SE_GridDiceWriteRow  ( aHeading.Team, UpperCase(Translate('attribute_Heading')),  aHeading.SurName, aHeading.Ids, 'VS',
-                         IntToStr(aHeading.heading + BonusDefenseHeading ));
-     //     CreateTextChanceValue ( LstHeading[Y].Player.ids, BaseHeading  ,dir_attributes +  'Heading',0,0,0,0);
+      CreateBaseAttribute (  lstInteractivePlayers[Y].Player.CellX,lstInteractivePlayers[Y].Player.CellY, lstInteractivePlayers[Y].Player.heading );
+//      SE_GridDiceWriteRow  ( aHeading.Team, UpperCase(Translate('attribute_Heading')),  aHeading.SurName, aHeading.Ids, 'VS',
+//                         IntToStr(aHeading.heading + BonusDefenseHeading ));
 
     end;
 
@@ -9169,10 +9224,12 @@ begin
   anInteractivePlayer.Cell.Y := cellY;
   anInteractivePlayer.Attribute := atDefense;
   CreateArrowDirection(  MyBrain.ball.Player, CellX,CellY );
-  SE_GridDiceWriteRow  ( SelectedPlayer.Team, UpperCase(Translate('attribute_Ball.Control')),  SelectedPlayer.SurName, SelectedPlayer.Ids, 'VS',
-                      IntToStr(SelectedPlayer.BallControl + SelectedPlayer.Tal_Dribbling ) );
-  SE_GridDiceWriteRow  ( anOpponent.Team, UpperCase(Translate('attribute_Defense')),  anOpponent.SurName, anOpponent.Ids, 'VS',
-                      IntToStr(anOpponent.Defense ));
+  CreateBaseAttribute (  CellX,CellY, anOpponent.Defense  );
+
+//  SE_GridDiceWriteRow  ( SelectedPlayer.Team, UpperCase(Translate('attribute_Ball.Control')),  SelectedPlayer.SurName, SelectedPlayer.Ids, 'VS',
+//                      IntToStr(SelectedPlayer.BallControl + SelectedPlayer.Tal_Dribbling ) );
+//  SE_GridDiceWriteRow  ( anOpponent.Team, UpperCase(Translate('attribute_Defense')),  anOpponent.SurName, anOpponent.Ids, 'VS',
+//                      IntToStr(anOpponent.Defense ));
 
 end;
 function Tform1.FieldGuid2Cell (guid:string): Tpoint;

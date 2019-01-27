@@ -226,6 +226,15 @@ object Form1: TForm1
       TabOrder = 20
       Text = '0'
     end
+    object Button5: TButton
+      Left = 81
+      Top = 608
+      Width = 75
+      Height = 25
+      Caption = 'Test Fault'
+      TabOrder = 21
+      OnClick = Button5Click
+    end
   end
   object PanelBack: SE_Panel
     Left = 8

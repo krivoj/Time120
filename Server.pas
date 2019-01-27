@@ -10,7 +10,7 @@ unit Server;
 {$DEFINE useMemo}  // se uso il debug a video delle informazioni importanti
 interface
  { TODO : verificare fine stagioen e new season, giovani ecc.. }
- { TODO : verificare bug shotcell. il centrale ha rollato 2 volte }
+ { TODO : creare testfault come testcorner }
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics, System.Hash , DateUtils,
@@ -8061,7 +8061,11 @@ begin
     MyBrain.Score.AI[0]:=True;
     MyBrain.Score.AI[1]:=True;
     MyBrain.SaveData (MyBrain.incMove);//<-- riempe mmbraindata che zippata in mmbraindatazip viene inviata al client
+    MyBrain.LogUser[0] := 1;
+    MyBrain.LogUser[1] := 1;
     BrainManager.AddBrain(MyBrain );
+
+
 
 end;
 
