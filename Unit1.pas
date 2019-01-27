@@ -49,9 +49,12 @@ uses
 
 const GCD_DEFAULT = 200;        // global cooldown, minimo 200 ms tra un input verso il server e l'altro ( anti-cheating )
 const ScaleSprites = 64;        // riduzione generica di tutto gli sprite player
-const ScaleSpritesFace = 32;        // riduzione face
+const ScaleSpritesFace = 42;        // riduzione face
 const FieldCellW = 64;
 const FieldCellH = 64;
+const DEFAULT_SPEED_BALL = 4;
+const DEFAULT_SPEED_PLAYER = 4;
+const DEFAULT_SPEEDMAX_BALL = 7;
 const BallZ0Y = 16;             // la palla sta più in basso, vicino ai piedi dello sprite player
 const Ball0X = 3;               // la palla sta più avanti rispetto allo sprite player
 const sprite1cell = 900;        // ms tempo che impiega un player a spostarsi di una cella
@@ -2362,7 +2365,7 @@ begin
   SE_players.RemoveAllSprites;
   SE_interface.RemoveAllSprites;
   aSprite:=SE_interface.CreateSprite( dir_interface + 'noiseTV.bmp' , 'noiseTV' ,4,1, 10, (SE_Theater1.VirtualWidth div 2), (SE_Theater1.Virtualheight div 2) ,false );
-  aSprite.Scale := 140;
+  aSprite.Scale := 160;
   AString :=  Translate( 'lbl_waitingwatchlive');
   bmp:=SE_Bitmap.Create(300,200);
   bmp.bitmap.Canvas.font.Name := 'calibri';
@@ -2486,10 +2489,12 @@ begin
         end
         else if (x = 0) and ( y= 3) then begin
             aSEField:= SE_field.CreateSprite( dir_stadium + 'door.bmp', IntToStr(x)+'.'+IntToStr(y) ,1,1,1000, ((x+2)*bmp.Width)+(bmp.Width div 2) ,((y)*bmp.Height)+(bmp.height div 2),true  );
+            aSEField.Scale := ScaleSprites;
         end
         else if (x = 11) and ( y= 3) then begin
             aSEField := SE_field.CreateSprite( dir_stadium + 'door.bmp', IntToStr(x)+'.'+IntToStr(y) ,1,1,1000, ((x+2)*bmp.Width)+(bmp.Width div 2) ,((y)*bmp.Height)+(bmp.height div 2),true  );
             aSEfield.Flipped:= True;
+            aSEField.Scale := ScaleSprites;
         end
         else
           aSEField := SE_field.CreateSprite( bmp.Bitmap, IntToStr(x)+'.'+IntToStr(y) ,1,1,1000, ((x+2)*bmp.Width)+(bmp.Width div 2) ,((y)*bmp.Height)+(bmp.height div 2),true  );
@@ -3740,7 +3745,7 @@ begin
                                               aSEField.Position.X   , aSEField.Position.Y , true);
    // Mybrain.Ball.SE_Sprite.Scale := 100;    Mybrain.Ball.SE_Sprite.Position :=aSEField.Position;
     Mybrain.Ball.Se_sprite.Scale := 40;
-    Mybrain.Ball.SE_Sprite.MoverData.Speed:= 3;
+    Mybrain.Ball.SE_Sprite.MoverData.Speed:= DEFAULT_SPEED_BALL;
     Mybrain.Ball.SE_Sprite.PositionY := Mybrain.Ball.SE_Sprite.Position.Y + BallZ0Y;
     Mybrain.Ball.SE_Sprite.MoverData.Destination := Mybrain.Ball.Se_sprite.Position;
     Mybrain.Ball.SE_Sprite.FrameXmax := 0 ; // palla ferma
@@ -4004,7 +4009,7 @@ begin
         aPlayer.Se_Sprite := se_Players.CreateSprite(UniformBitmapGK.Bitmap , aPlayer.Ids,1,1,1000,0,0,true);
       aPlayer.Se_Sprite.Scale:= ScaleSprites;
       aPlayer.Se_Sprite.ModPriority := i+2;
-      aPlayer.Se_Sprite.MoverData.Speed := 3;
+      aPlayer.Se_Sprite.MoverData.Speed := DEFAULT_SPEED_PLAYER;
 
     end;
 
@@ -4186,7 +4191,7 @@ begin
         aPlayer.SE_sprite := se_Players.CreateSprite(UniformBitmapGK.Bitmap , aPlayer.Ids,1,1,1000,0,0,true);
       aPlayer.SE_sprite.Scale:= ScaleSprites;
       aPlayer.SE_sprite.ModPriority := i+2;
-      aPlayer.SE_sprite.MoverData.Speed := 3;
+      aPlayer.SE_sprite.MoverData.Speed := DEFAULT_SPEED_PLAYER;
     end;
 
       //        aPlayer.aPlayerrite.SoundFolder := dir_sound;
@@ -4238,6 +4243,7 @@ begin
     end
     else begin
       PanelCorner.Visible := False;
+      PanelCombatLog.Visible:= True;
     end;
   end
   else if MyBrain.w_FreeKick1  then begin
@@ -4246,6 +4252,7 @@ begin
 //    end
 //    else PanelCorner.Visible := False;
     PanelCorner.Visible := False;
+    PanelCombatLog.Visible:= True;
     if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
       SelectedPlayerPopupSkill( MyBrain.Ball.CellX, MyBrain.Ball.cellY );
     end;
@@ -4259,6 +4266,7 @@ begin
     end
     else begin
       PanelCorner.Visible := False;
+      PanelCombatLog.Visible:= True;
     end;
   end
   else if MyBrain.w_Fkd2 then begin
@@ -4271,6 +4279,7 @@ begin
     end
     else begin
       PanelCorner.Visible := False;
+      PanelCombatLog.Visible:= True;
     end;
   end
   else if MyBrain.w_FreeKick2  then begin
@@ -4289,6 +4298,7 @@ begin
     end
     else begin
       PanelCorner.Visible := False;
+      PanelCombatLog.Visible:= True;
     end;
   end
   else if MyBrain.w_Fkd3 then begin
@@ -4300,6 +4310,7 @@ begin
     end
     else begin
       PanelCorner.Visible := False;
+      PanelCombatLog.Visible:= True;
     end;
 
   end
@@ -4320,6 +4331,7 @@ begin
     end
     else begin
       PanelCorner.Visible := False;
+      PanelCombatLog.Visible:= True;
     end;
   end
   else if MyBrain.w_FreeKick4  then begin
@@ -4339,6 +4351,7 @@ begin
     end
     else begin
       PanelCorner.Visible := False;
+      PanelCombatLog.Visible:= True;
     end;
   end
   else if MyBrain.w_Cod then begin
@@ -4351,6 +4364,7 @@ begin
     end
     else begin
       PanelCorner.Visible := False;
+      PanelCombatLog.Visible:= True;
     end;
 
   end
@@ -4786,13 +4800,13 @@ begin
 
 
         if tsCmd[0]='sc_ball' then begin
-          AnimationScript.Tsadd (  'cl_ball.move,3,' +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]+ ','+tsCmd[6]   );
+          AnimationScript.Tsadd (  'cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ',' +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]+ ','+tsCmd[6]   );
         end
         else if tsCmd[0]='sc_ball.move.toball' then begin
-          AnimationScript.Tsadd (  'cl_ball.move.toball,3,' +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]+ ','+tsCmd[6]   );
+          AnimationScript.Tsadd (  'cl_ball.move.toball,' + IntTostr(DEFAULT_SPEED_BALL) + ','  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]+ ','+tsCmd[6]   );
         end
         else if tsCmd[0]='sc_bounce' then begin
-          AnimationScript.Tsadd (  'cl_ball.bounce,3,' +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]);
+          AnimationScript.Tsadd (  'cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ','  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]);
         end
         else if tsCmd[0]= 'sc_player.move.toball' then begin
           AnimationScript.Tsadd (  'cl_player.move.toball,'  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5] );
@@ -4870,19 +4884,19 @@ begin
 
         if tsCmd[0]='sc_ball' then begin
           AnimationScript.Tsadd ('cl_sound,soundishot');
-          AnimationScript.Tsadd ('cl_ball.move,3,' +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5] + ','+tsCmd[6]  );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ',' +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5] + ','+tsCmd[6]  );
 
         end
         else if tsCmd[0]='sc_ball.move.toball' then begin
           AnimationScript.Tsadd ('cl_wait,' + IntTostr(( sprite1cell)));
           AnimationScript.Tsadd ('cl_sound,soundishot');
-          AnimationScript.Tsadd (  'cl_ball.move.toball,3,' +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]+ ','+tsCmd[6]   );
+          AnimationScript.Tsadd (  'cl_ball.move.toball,' + IntTostr(DEFAULT_SPEED_BALL) + ','  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]+ ','+tsCmd[6]   );
         end
         else if tsCmd[0]= 'sc_player.move.toball' then begin
           AnimationScript.Tsadd (  'cl_player.move.toball,'  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5] );
         end
         else if tsCmd[0]='sc_bounce' then begin  // rimbalzo nel caso venga intercettato
-          AnimationScript.Tsadd (  'cl_ball.bounce,3,' +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]);
+          AnimationScript.Tsadd (  'cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ','  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]);
         end
         else if tsCmd[0]= 'sc_player.move.intercept' then begin
           AnimationScript.Tsadd ('cl_player.move.intercept,'  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5] );
@@ -4978,7 +4992,7 @@ begin
           AnimationScript.Tsadd ('cl_sound,soundtackle');
 
           AnimationScript.Tsadd ('cl_player.move,'      +  aTackle.ids + ','  + tsCmd[5] + ','+tsCmd[6] +','+tsCmd[7] + ','+tsCmd[8]  );
-          AnimationScript.Tsadd ('cl_ball.move,3,' + tsCmd[5] + ','+tsCmd[6] + ',' + tsCmd[7] + ','+tsCmd[8] +',' + tsCmd[1]+ ',0'  );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ',' + tsCmd[5] + ','+tsCmd[6] + ',' + tsCmd[7] + ','+tsCmd[8] +',' + tsCmd[1]+ ',0'  );
 //          AnimationScript.Tsadd ('cl_wait,' + IntTostr(( 1200)));
 
 
@@ -4997,10 +5011,10 @@ begin
          // aTackle := Mybrain.GetSoccerPlayer(tsCmd[2]);
 
           AnimationScript.Tsadd ('cl_player.move,'      +  BallPlayer.ids + ',' + tsCmd[3] + ','+tsCmd[4]  +',' + tsCmd[5] + ','+tsCmd[6] );
-          AnimationScript.Tsadd ('cl_ball.move,3,' + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[1]+ ',0' );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ',' + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[1]+ ',0' );
           AnimationScript.Tsadd ('cl_wait,' + IntTostr(( sprite1cell)));
           AnimationScript.Tsadd ('cl_sound,soundtackle');
-          AnimationScript.Tsadd ('cl_ball.move,3,' + tsCmd[5] + ','+tsCmd[6] + ',' + tsCmd[3] + ','+tsCmd[4] + ',' + tsCmd[1]+ ',0' );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ',' + tsCmd[5] + ','+tsCmd[6] + ',' + tsCmd[3] + ','+tsCmd[4] + ',' + tsCmd[1]+ ',0' );
           AnimationScript.Tsadd ('cl_player.move,'      +  BallPlayer.ids + ','  + tsCmd[5] + ','+tsCmd[6] +','+tsCmd[3] + ','+tsCmd[4]  );
 //          AnimationScript.Tsadd ('cl_wait,' + IntTostr(( 1200)));
         end
@@ -5018,11 +5032,11 @@ begin
           aTackle := Mybrain.GetSoccerPlayer(tsCmd[2]);
 
           AnimationScript.Tsadd ('cl_player.move.toball,'      +  BallPlayer.ids + ',' + tsCmd[3] + ','+tsCmd[4]  +',' + tsCmd[5] + ','+tsCmd[6] );
-          AnimationScript.Tsadd ('cl_ball.move.toball,3,' + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[1]+ ',0' );
+          AnimationScript.Tsadd ('cl_ball.move.toball,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[1]+ ',0' );
           AnimationScript.Tsadd ('cl_player.move,'      +  aTackle.ids + ','  + tsCmd[5] + ','+tsCmd[6] +',' + tsCmd[3] + ','+tsCmd[4]  );
           AnimationScript.Tsadd ('cl_wait,' + IntTostr(( sprite1cell)));
           AnimationScript.Tsadd ('cl_sound,soundtackle');
-          AnimationScript.Tsadd ('cl_ball.move.toball,3,' + tsCmd[5] + ','+tsCmd[6] + ',' + tsCmd[7] + ','+tsCmd[8] + ',' + tsCmd[1]+ ',0' );
+          AnimationScript.Tsadd ('cl_ball.move.toball,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[5] + ','+tsCmd[6] + ',' + tsCmd[7] + ','+tsCmd[8] + ',' + tsCmd[1]+ ',0' );
           AnimationScript.Tsadd ('cl_player.move,'      +  BallPlayer.ids + ','  + tsCmd[5] + ','+tsCmd[6] +','+tsCmd[7] + ','+tsCmd[8]  );
 //          AnimationScript.Tsadd ('cl_wait,' + IntTostr(( 1200)));
         end
@@ -5040,11 +5054,11 @@ begin
           aTackle := Mybrain.GetSoccerPlayer(tsCmd[2]);
 
           AnimationScript.Tsadd ('cl_player.move.toball,'      +  BallPlayer.ids + ',' + tsCmd[3] + ','+tsCmd[4]  +',' + tsCmd[5] + ','+tsCmd[6] );
-          AnimationScript.Tsadd ('cl_ball.move.toball,3,' + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[1]+ ',0' );
+          AnimationScript.Tsadd ('cl_ball.move.toball,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[1]+ ',0' );
           AnimationScript.Tsadd ('cl_player.move,'      +  aTackle.ids + ','  + tsCmd[5] + ','+tsCmd[6] +',' + tsCmd[3] + ','+tsCmd[4]  );
           AnimationScript.Tsadd ('cl_wait,' + IntTostr(( sprite1cell)));
           AnimationScript.Tsadd ('cl_sound,soundtackle');
-          AnimationScript.Tsadd ('cl_ball.move.toball,3,' + tsCmd[5] + ','+tsCmd[6] + ',' + tsCmd[7] + ','+tsCmd[8] + ',' + tsCmd[1]+ ',0' );
+          AnimationScript.Tsadd ('cl_ball.move.toball,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[5] + ','+tsCmd[6] + ',' + tsCmd[7] + ','+tsCmd[8] + ',' + tsCmd[1]+ ',0' );
           AnimationScript.Tsadd ('cl_player.move.toball,'      +  BallPlayer.ids + ','  + tsCmd[5] + ','+tsCmd[6] +','+tsCmd[7] + ','+tsCmd[8]  );
 //          AnimationScript.Tsadd ('cl_wait,' + IntTostr(( 1200)));
         end
@@ -5090,14 +5104,14 @@ begin
           AnimationScript.Tsadd ('cl_freekick4.fka4,' + tsCmd[1]+','+tsCmd[2] +','+tsCmd[3] );
         end
         else if tsCmd[0]='sc_ball' then begin
-          AnimationScript.Tsadd ('cl_ball.move,3,' +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5] + ','+tsCmd[6]   );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ',' +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5] + ','+tsCmd[6]   );
          // AnimationScript.Tsadd ('cl_wait,' + IntTostr(( 1200)));
         end
         else if tsCmd[0]='sc_ball.move.toball' then begin
-          AnimationScript.Tsadd (  'cl_ball.move.toball,3,' +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]+ ','+tsCmd[6]   );
+          AnimationScript.Tsadd (  'cl_ball.move.toball,' + IntTostr(DEFAULT_SPEED_BALL) + ','  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]+ ','+tsCmd[6]   );
         end
         else if tsCmd[0]='sc_bounce' then begin
-          AnimationScript.Tsadd (  'cl_ball.bounce,3,' +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]);
+          AnimationScript.Tsadd (  'cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ','  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]);
         end
         else if tsCmd[0]= 'sc_player.move.toball' then begin
           // il player è già posizionato
@@ -5143,11 +5157,11 @@ begin
 
         if tsCmd[0]='sc_ball' then begin
           AnimationScript.Tsadd ('cl_sound,soundishot');
-          AnimationScript.Tsadd ('cl_ball.move,3,' +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5] + ','+tsCmd[6]  );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ',' +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5] + ','+tsCmd[6]  );
         end
         else if tsCmd[0]='sc_ball.move.toball' then begin
           AnimationScript.Tsadd ('cl_sound,soundishot');
-          AnimationScript.Tsadd (  'cl_ball.move.toball,3,' +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]+ ','+tsCmd[6]   );
+          AnimationScript.Tsadd (  'cl_ball.move.toball,' + IntTostr(DEFAULT_SPEED_BALL) + ','  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]+ ','+tsCmd[6]   );
         end
         else if tsCmd[0]= 'sc_player.move.toball' then begin
           // il player è già posizionato
@@ -5172,8 +5186,8 @@ begin
           AnimationScript.Tsadd ('cl_player.move,'      +  tsCmd[3] + ',' + tsCmd[8] + ','+tsCmd[9]  +',' + tsCmd[6] + ','+tsCmd[7] );
           AnimationScript.Tsadd ('cl_player.move,'      +  tsCmd[2] + ',' + tsCmd[6]+ ','+tsCmd[7] +',' + tsCmd[8] + ','+tsCmd[9] );
           AnimationScript.Tsadd ('cl_wait.moving.players'); // Attende che tutti i movimenti dei player siano terminati prima di procedere
-          AnimationScript.Tsadd ('cl_ball.move,3,' + tsCmd[4] + ','+tsCmd[5]+ ',' + tsCmd[6] + ','+tsCmd[7]+ ',' + tsCmd[1]+ ',heading' );
-          AnimationScript.Tsadd ('cl_ball.bounce,3,' + tsCmd[6] + ','+tsCmd[7]+ ',' + tsCmd[10] + ','+tsCmd[11]+ ',' + tsCmd[1]+ ',0' );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEEDMAX_BALL) + ',' + tsCmd[4] + ','+tsCmd[5]+ ',' + tsCmd[6] + ','+tsCmd[7]+ ',' + tsCmd[1]+ ',heading' );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[6] + ','+tsCmd[7]+ ',' + tsCmd[10] + ','+tsCmd[11]+ ',' + tsCmd[1]+ ',0' );
 
         end
         else if tsCmd[0] = 'sc_lop.ballcontrol.bounce' then begin
@@ -5187,8 +5201,8 @@ begin
           // 8 celly Ball.cellx
 
           AnimationScript.Tsadd ('cl_sound,soundishot');
-          AnimationScript.Tsadd ('cl_ball.move,3,' + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[1]+ ',0' );
-          AnimationScript.Tsadd ('cl_ball.bounce,3,' + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[7] + ','+tsCmd[8]+ ',' + tsCmd[1]+ ',0' );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEEDMAX_BALL) + ',' + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[1]+ ',0' );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[7] + ','+tsCmd[8]+ ',' + tsCmd[1]+ ',0' );
         end
         else if tsCmd[0] = 'sc_lop.ballcontrol.bounce.toball' then begin
           // 1 ids aPlayer
@@ -5201,8 +5215,8 @@ begin
           // 8 celly Ball.cellx
 
           AnimationScript.Tsadd ('cl_sound,soundishot');
-          AnimationScript.Tsadd ('cl_ball.move,3,' + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[1]+ ',0' );
-          AnimationScript.Tsadd ('cl_ball.bounce,3,' + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[7] + ','+tsCmd[8]+ ',' + tsCmd[1]+ ',0' );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEEDMAX_BALL) + ',' + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[1]+ ',0' );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[7] + ','+tsCmd[8]+ ',' + tsCmd[1]+ ',0' );
           AnimationScript.Tsadd ('cl_player.move,'  +  tsCmd[2] + ','+tsCmd[5]+ ','+tsCmd[6] + ','+tsCmd[7]+','+tsCmd[8] );
           AnimationScript.Tsadd ('cl_wait.moving.players'); // Attende che tutti i movimenti dei player siano terminati prima di procedere
 
@@ -5215,7 +5229,7 @@ begin
           // 5 cellx aFriend
           // 6 celly aFriend
 
-          AnimationScript.Tsadd ('cl_ball.move,3,' + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[1]+ ',0' );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEEDMAX_BALL) + ',' + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[1]+ ',0' );
 
         end
         else if tsCmd[0] = 'sc_lop.no' then begin
@@ -5225,7 +5239,7 @@ begin
           // 4 cellx  Ball.cellx
           // 5 celly Ball.cellx
           AnimationScript.Tsadd ('cl_sound,soundishot');
-          AnimationScript.Tsadd ('cl_ball.move,3,' + tsCmd[2] + ','+tsCmd[3]+ ',' + tsCmd[4] + ','+tsCmd[5]+ ',' + tsCmd[1]+ ',0' );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEEDMAX_BALL) + ',' + tsCmd[2] + ','+tsCmd[3]+ ',' + tsCmd[4] + ','+tsCmd[5]+ ',' + tsCmd[1]+ ',0' );
         end
         else if tsCmd[0] = 'sc_lop.ok10' then begin
           // 1 ids aPlayer
@@ -5235,7 +5249,7 @@ begin
           // 5 cellx  Ball.cellx
           // 6 celly Ball.cellx
           AnimationScript.Tsadd ('cl_sound,soundishot');
-          AnimationScript.Tsadd ('cl_ball.move,3,' + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[1]+ ',0' );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEEDMAX_BALL) + ',' + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[1]+ ',0' );
 
         end
         else if tsCmd[0] = 'sc_lop.back.bounce' then begin  // esiste sul volley
@@ -5256,8 +5270,8 @@ begin
           AnimationScript.Tsadd ('cl_wait.moving.players'); // Attende che tutti i movimenti dei player siano terminati prima di procedere
 
           AnimationScript.Tsadd ('cl_sound,soundishot');
-          AnimationScript.Tsadd ('cl_ball.move,3,' + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[1]+ ',0' );
-          AnimationScript.Tsadd ('cl_ball.bounce,3,' + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[7] + ','+tsCmd[8]+',0,0'  );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEEDMAX_BALL) + ',' + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[1]+ ',0' );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[7] + ','+tsCmd[8]+',0,0'  );
         end
         else if tsCmd[0] = 'sc_lop.back.swap.bounce' then begin   // esiste sul volley
           // 1 ids aPlayer
@@ -5276,8 +5290,8 @@ begin
           AnimationScript.Tsadd ('cl_player.move,'      +  tsCmd[1] + ',' + tsCmd[3] + ','+tsCmd[4]  +',' + tsCmd[5] + ','+tsCmd[6] );
           AnimationScript.Tsadd ('cl_wait.moving.players'); // Attende che tutti i movimenti dei player siano terminati prima di procedere
           AnimationScript.Tsadd ('cl_sound,soundishot');
-          AnimationScript.Tsadd ('cl_ball.move,3,' + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[1]+ ',0' );
-          AnimationScript.Tsadd ('cl_ball.bounce,3,' + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[7] + ','+tsCmd[8]+',0,0'  );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEEDMAX_BALL) + ',' + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[1]+ ',0' );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[7] + ','+tsCmd[8]+',0,0'  );
         end
 
         else if tsCmd[0] = 'sc_lop.bounce' then begin
@@ -5290,8 +5304,8 @@ begin
           // 7 cellx Ball
           // 8 celly Ball
 
-          AnimationScript.Tsadd ('cl_ball.move,3,' + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+',0,0'  );
-          AnimationScript.Tsadd ('cl_ball.bounce,3,' + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[7] + ','+tsCmd[8]+',0,0'  );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEEDMAX_BALL) + ',' + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+',0,0'  );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[7] + ','+tsCmd[8]+',0,0'  );
         end
         else if (tsCmd[0] = 'sc_pos.bounce.gk')  or (tsCmd[0] = 'sc_lop.bounce.gk') then begin  // anche tiro al volo
           // 1 ids aPlayer
@@ -5304,8 +5318,8 @@ begin
           // 8 celly Ball
 
           AnimationScript.Tsadd ('cl_sound,soundishot');
-          AnimationScript.Tsadd ('cl_ball.move,3,' + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+',0,'+tsCmd[9]  );
-          AnimationScript.Tsadd ('cl_ball.bounce.gk,3,' + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[7] + ','+tsCmd[8]+',0,0'  );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEEDMAX_BALL) + ',' + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+',0,'+tsCmd[9]  );
+          AnimationScript.Tsadd ('cl_ball.bounce.gk,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[7] + ','+tsCmd[8]+',0,0'  );
           //QUI tsCmd [7] e tsCmd [8] indicano la cella di uscita - MyBrain.,ball è già sulla cella del corner
 
         end
@@ -5323,8 +5337,8 @@ begin
 
 
           AnimationScript.Tsadd ('cl_sound,soundishot');
-          AnimationScript.Tsadd ('cl_ball.move,5,' + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[1]+',bar'  );
-          AnimationScript.Tsadd ('cl_ball.bounce.crossbar,3,' + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[7] + ','+tsCmd[8]+',0,0'  );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEEDMAX_BALL)  + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[1]+',bar'  );
+          AnimationScript.Tsadd ('cl_ball.bounce.crossbar,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[7] + ','+tsCmd[8]+',0,0'  );
         end
         else if tsCmd[0] = 'sc_lop.gol'   then begin
           // 1 ids aPlayer
@@ -5346,9 +5360,9 @@ begin
                                               + IntTostr(Ball.cellX)+',' + IntTostr(Ball.cellY) + ',' +IntTostr(RndGenerate(2)) ); }
 
           AnimationScript.Tsadd ('cl_sound,soundishot');
-          AnimationScript.Tsadd ('cl_ball.move,3,' + tsCmd[6] + ','+tsCmd[7]+ ',' + tsCmd[8] + ','+tsCmd[9]+',0,volley'  );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEEDMAX_BALL) + ',' + tsCmd[6] + ','+tsCmd[7]+ ',' + tsCmd[8] + ','+tsCmd[9]+',0,volley'  );
 
-          AnimationScript.Tsadd ('cl_lop.gol,3,' + tsCmd[6] + ','+tsCmd[7]+ ',' + tsCmd[10] + ','+tsCmd[11]+',0,gol'  );
+          AnimationScript.Tsadd ('cl_lop.gol,' + IntTostr(DEFAULT_SPEEDMAX_BALL) + ','  + tsCmd[6] + ','+tsCmd[7]+ ',' + tsCmd[10] + ','+tsCmd[11]+',0,gol'  );
           AnimationScript.TsAdd  ( 'cl_wait,3000');
         end
         else begin
@@ -5422,7 +5436,7 @@ begin
 
           AnimationScript.Tsadd ('cl_player.move,'      +  tsCmd[2] + ',' + tsCmd[3] + ','+tsCmd[4]  +',' + tsCmd[5] + ','+tsCmd[6] );
           AnimationScript.Tsadd ('cl_wait.moving.players'); // Attende che tutti i movimenti dei player siano terminati prima di procedere
-          AnimationScript.Tsadd ('cl_ball.bounce,3,' + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[7] + ','+tsCmd[8]+',0,0'  );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[7] + ','+tsCmd[8]+',0,0'  );
         end
         else if tsCmd[0] = 'sc_pos.back.swap.bounce' then begin
           // 1 ids aPlayer
@@ -5440,7 +5454,7 @@ begin
 
           AnimationScript.Tsadd ('cl_player.move,'      +  tsCmd[1] + ',' + tsCmd[3] + ','+tsCmd[4]  +',' + tsCmd[5] + ','+tsCmd[6] );
           AnimationScript.Tsadd ('cl_wait.moving.players'); // Attende che tutti i movimenti dei player siano terminati prima di procedere
-          AnimationScript.Tsadd ('cl_ball.bounce,3,' + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[7] + ','+tsCmd[8]+',0,0'  );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[7] + ','+tsCmd[8]+',0,0'  );
         end
 
         else if tsCmd[0] = 'sc_pos.bounce' then begin
@@ -5454,8 +5468,8 @@ begin
           // 8 celly Ball
 
           AnimationScript.Tsadd ('cl_sound,soundishot');
-          AnimationScript.Tsadd ('cl_ball.move,3,' + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+',0,0'  );
-          AnimationScript.Tsadd ('cl_ball.bounce,3,' + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[7] + ','+tsCmd[8]+',0,0'  );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEEDMAX_BALL) + ',' + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+',0,0'  );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[7] + ','+tsCmd[8]+',0,0'  );
         end
         else if tsCmd[0] = 'sc_pos.bounce.gk' then begin
           // 1 ids aPlayer
@@ -5468,8 +5482,8 @@ begin
           // 8 celly Ball
           // 9 1 or 2 = left right random animation (data for real match)
           AnimationScript.Tsadd ('cl_sound,soundishot');
-          AnimationScript.Tsadd ('cl_ball.move,3,' + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[1]+',bar'  );
-          AnimationScript.Tsadd ('cl_ball.bounce.gk,3,' + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[7] + ','+tsCmd[8]+',0,0'  );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEEDMAX_BALL) + ',' + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[1]+',bar'  );
+          AnimationScript.Tsadd ('cl_ball.bounce.gk,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[7] + ','+tsCmd[8]+',0,0'  );
         end
 
         //crossbar e gol uguali pos e prs
@@ -5485,8 +5499,8 @@ begin
           // 9 1 or 2 = left right random animation (data for real match)
 
           AnimationScript.Tsadd ('cl_sound,soundishot');
-          AnimationScript.Tsadd ('cl_ball.move,3,' + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[1]+',bar'  );
-          AnimationScript.Tsadd ('cl_ball.bounce.crossbar,3,' + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[7] + ','+tsCmd[8]+',0,0'  );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEEDMAX_BALL) + ',' + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[1]+',bar'  );
+          AnimationScript.Tsadd ('cl_ball.bounce.crossbar,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[7] + ','+tsCmd[8]+',0,0'  );
         end
         else if (tsCmd[0] = 'sc_pos.gol') or  (tsCmd[0] = 'sc_prs.gol')  then begin
           // 1 ids aPlayer
@@ -5499,7 +5513,7 @@ begin
           // 8 celly Ball
           // 9 1 or 2 = left right random animation (data for real match)
 
-          AnimationScript.Tsadd ('cl_' + rightStr(tsCmd[0],7) +',3,' + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+',0,'+tsCmd[9]  );
+          AnimationScript.Tsadd ('cl_' + rightStr(tsCmd[0],7) +',' + IntToStr(DEFAULT_SPEEDMAX_BALL) + ',' + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+',0,'+tsCmd[9]  );
         end
 
 //***********************************************************************************************************
@@ -5527,7 +5541,7 @@ begin
           AnimationScript.Tsadd ('cl_player.move,'  +  tsCmd[2] + ',' + tsCmd[3] + ','+tsCmd[4]  +',' + tsCmd[7] + ','+tsCmd[8] );
           AnimationScript.Tsadd ('cl_wait.moving.players'); // Attende che tutti i movimenti dei player siano terminati prima di procedere
 
-          AnimationScript.Tsadd ('cl_ball.bounce,3,' + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[7] + ','+tsCmd[8]+',0,0'  );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[7] + ','+tsCmd[8]+',0,0'  );
         end
         else if tsCmd[0] = 'sc_prs.stealball' then begin
           // 1 ids aPlayer
@@ -5540,7 +5554,7 @@ begin
           // 8 celly Ball
 
           AnimationScript.Tsadd ('cl_sound,soundishot');
-          AnimationScript.Tsadd ('cl_ball.move,3,' + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[7] + ','+tsCmd[8]+',0,0'  );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ',' + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[7] + ','+tsCmd[8]+',0,0'  );
         end
         else if tsCmd[0] = 'sc_prs.gk' then begin
           // 1 ids aPlayer
@@ -5553,7 +5567,7 @@ begin
           // 8 celly Ball
           // 9 1 or 2 = left right random animation (data for real match)
           AnimationScript.Tsadd ('cl_sound,soundishot');
-          AnimationScript.Tsadd ('cl_ball.move,3,' + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[7] + ','+tsCmd[8]+',0,0'  );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEEDMAX_BALL) + ',' + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[7] + ','+tsCmd[8]+',0,0'  );
         end
 
 
@@ -5562,15 +5576,15 @@ begin
 
 //          aPlayer:= Mybrain.GetSoccerPlayer(tsCmd[1]);
 
-          AnimationScript.Tsadd (  'cl_ball.bounce.heading,3,' +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]);
+          AnimationScript.Tsadd (  'cl_ball.bounce.heading,' + IntTostr(DEFAULT_SPEED_BALL) + ','  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]);
         end
         else if tsCmd[0]='sc_bounce.gk' then begin
 //          aGK := Mybrain.GetSoccerPlayer  ( StrToInt(tsCmd[1]),StrToInt(tsCmd[2]));
-          AnimationScript.Tsadd (  'cl_ball.bounce.gk,3,' +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]);
+          AnimationScript.Tsadd (  'cl_ball.bounce.gk,' + IntTostr(DEFAULT_SPEED_BALL) + ','  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]);
         end
         else if tsCmd[0]='sc_bounce.crossbar' then begin
 //          aGK := Mybrain.GetSoccerPlayer  ( StrToInt(tsCmd[1]),StrToInt(tsCmd[2]));
-          AnimationScript.Tsadd (  'cl_ball.bounce.gk,3,' +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]);
+          AnimationScript.Tsadd (  'cl_ball.bounce.gk,' + IntTostr(DEFAULT_SPEED_BALL) + ','  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]);
         end
         else if tsCmd[0]= 'sc_player.move.toball' then begin
           // il player è già posizionato
@@ -5612,10 +5626,10 @@ begin
           AnimationScript.Tsadd ('cl_wait.moving.players'); // Attende che tutti i movimenti dei player siano terminati prima di procedere
 
           AnimationScript.Tsadd ('cl_sound,soundishot');
-          AnimationScript.Tsadd ('cl_ball.move,3,' + tsCmd[4] + ','+tsCmd[5]+ ',' + tsCmd[10] + ','+tsCmd[11]+',0,heading'  );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEEDMAX_BALL) + ',' + tsCmd[4] + ','+tsCmd[5]+ ',' + tsCmd[10] + ','+tsCmd[11]+',0,heading'  );
 
 
-          AnimationScript.Tsadd ('cl_ball.bounce,3,' + tsCmd[10] + ','+tsCmd[11]+ ',' + tsCmd[12] + ','+tsCmd[13]+',0,0'  );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[10] + ','+tsCmd[11]+ ',' + tsCmd[12] + ','+tsCmd[13]+',0,0'  );
 
         end
         else if (tsCmd[0] = 'sc_corner.headingdef.bounce') or  (tsCmd[0] = 'sc_cro2.headingdef.bounce')   then begin
@@ -5639,8 +5653,8 @@ begin
 
 
           AnimationScript.Tsadd ('cl_sound,soundishot');
-          AnimationScript.Tsadd ('cl_ball.move,3,' + tsCmd[4] + ','+tsCmd[5]+ ',' + tsCmd[8] + ','+tsCmd[9]+',0,heading'  );
-          AnimationScript.Tsadd ('cl_ball.bounce,3,' + tsCmd[8] + ','+tsCmd[9]+ ',' + tsCmd[10] + ','+tsCmd[11]+',0,0'  );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEEDMAX_BALL) + ',' + tsCmd[4] + ','+tsCmd[5]+ ',' + tsCmd[8] + ','+tsCmd[9]+',0,heading'  );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[8] + ','+tsCmd[9]+ ',' + tsCmd[10] + ','+tsCmd[11]+',0,0'  );
 
         end
         else if (tsCmd[0] = 'sc_corner.headingatt.swap') or  (tsCmd[0] ='sc_cro2.headingatt.swap') then begin
@@ -5684,10 +5698,10 @@ begin
                                               + IntTostr(aGK.cellx)+',' + IntTostr(aGK.celly)  +','
                                               + IntTostr(Ball.cellX)+',' + IntTostr(Ball.cellY) + ',' +IntTostr(RndGenerate(2)) ); }
           AnimationScript.Tsadd ('cl_sound,soundishot');
-          AnimationScript.Tsadd ('cl_ball.move,3,' + tsCmd[4] + ','+tsCmd[5]+ ',' + tsCmd[8] + ','+tsCmd[9]+',0,heading'  );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEEDMAX_BALL) + ',' + tsCmd[4] + ','+tsCmd[5]+ ',' + tsCmd[8] + ','+tsCmd[9]+',0,heading'  );
           AnimationScript.Tsadd ('cl_sound,soundishot');
-          AnimationScript.Tsadd ('cl_ball.move,3,' + tsCmd[8]+ ','+tsCmd[9]+ ',' + tsCmd[10] + ','+tsCmd[11]+',0,0'  );
-          AnimationScript.Tsadd ('cl_ball.bounce.gk,3,' + tsCmd[10] + ','+tsCmd[11]+ ',' + tsCmd[12] + ','+tsCmd[13]+',0,0'  );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ',' + tsCmd[8]+ ','+tsCmd[9]+ ',' + tsCmd[10] + ','+tsCmd[11]+',0,0'  );
+          AnimationScript.Tsadd ('cl_ball.bounce.gk,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[10] + ','+tsCmd[11]+ ',' + tsCmd[12] + ','+tsCmd[13]+',0,0'  );
 
         end
         else if (tsCmd[0] = 'sc_corner.bounce.crossbar') or (tsCmd[0] = 'sc_cro2.bounce.crossbar') then begin
@@ -5714,10 +5728,10 @@ begin
                                               + IntTostr(Ball.cellX)+',' + IntTostr(Ball.cellY) + ',' +IntTostr(RndGenerate(2)) );   }
 
           AnimationScript.Tsadd ('cl_sound,soundishot');
-          AnimationScript.Tsadd ('cl_ball.move,3,' + tsCmd[4] + ','+tsCmd[5]+ ',' + tsCmd[8] + ','+tsCmd[9]+',0,heading'  );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEEDMAX_BALL) + ',' + tsCmd[4] + ','+tsCmd[5]+ ',' + tsCmd[8] + ','+tsCmd[9]+',0,heading'  );
           AnimationScript.Tsadd ('cl_sound,soundishot');
-          AnimationScript.Tsadd ('cl_ball.move,3,' + tsCmd[8]+ ','+tsCmd[9]+ ',' + tsCmd[10] + ','+tsCmd[11]+',0,bar'  );
-          AnimationScript.Tsadd ('cl_ball.bounce.crossbar,3,' + tsCmd[10] + ','+tsCmd[11]+ ',' + tsCmd[12] + ','+tsCmd[13]+',0,0'  );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ',' + tsCmd[8]+ ','+tsCmd[9]+ ',' + tsCmd[10] + ','+tsCmd[11]+',0,bar'  );
+          AnimationScript.Tsadd ('cl_ball.bounce.crossbar,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[10] + ','+tsCmd[11]+ ',' + tsCmd[12] + ','+tsCmd[13]+',0,0'  );
 
         end
         else if (tsCmd[0] = 'sc_corner.gol') or (tsCmd[0] = 'sc_cro2.gol') then begin
@@ -5744,12 +5758,12 @@ begin
                                               + IntTostr(Ball.cellX)+',' + IntTostr(Ball.cellY) + ',' +IntTostr(RndGenerate(2)) ); }
 
           AnimationScript.Tsadd ('cl_sound,soundishot');
-          AnimationScript.Tsadd ('cl_ball.move,3,' + tsCmd[4] + ','+tsCmd[5]+ ',' + tsCmd[8] + ','+tsCmd[9]+',0,heading'  );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEEDMAX_BALL) + ',' + tsCmd[4] + ','+tsCmd[5]+ ',' + tsCmd[8] + ','+tsCmd[9]+',0,heading'  );
 
           if (tsCmd[0] = 'sc_corner.gol') then
-            AnimationScript.Tsadd ('cl_corner.gol,3,' + tsCmd[8] + ','+tsCmd[9]+ ',' + tsCmd[10] + ','+tsCmd[11]+',0,gol'  )
+            AnimationScript.Tsadd ('cl_corner.gol,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[8] + ','+tsCmd[9]+ ',' + tsCmd[10] + ','+tsCmd[11]+',0,gol'  )
           else if (tsCmd[0] = 'sc_cro2.gol') then
-            AnimationScript.Tsadd ('cl_cro2.gol,3,' + tsCmd[8] + ','+tsCmd[9]+ ',' + tsCmd[10] + ','+tsCmd[11]+',0,gol'  );
+            AnimationScript.Tsadd ('cl_cro2.gol,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[8] + ','+tsCmd[9]+ ',' + tsCmd[10] + ','+tsCmd[11]+',0,gol'  );
 
 
 
@@ -5792,9 +5806,9 @@ begin
                                               + IntTostr(Ball.cellX)+',' + IntTostr(Ball.cellY) + ',' +IntTostr(RndGenerate(2)) ); }
 
           AnimationScript.Tsadd ('cl_sound,soundishot');
-          AnimationScript.Tsadd ('cl_ball.move,3,' + tsCmd[4] + ','+tsCmd[5]+ ',' + tsCmd[6] + ','+tsCmd[7]+',0,heading'  );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEEDMAX_BALL) + ',' + tsCmd[4] + ','+tsCmd[5]+ ',' + tsCmd[6] + ','+tsCmd[7]+',0,heading'  );
 
-          AnimationScript.Tsadd ('cl_cross.gol,3,' + tsCmd[6] + ','+tsCmd[7]+ ',' + tsCmd[10] + ','+tsCmd[11]+',0,gol'  );
+          AnimationScript.Tsadd ('cl_cross.gol,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[6] + ','+tsCmd[7]+ ',' + tsCmd[10] + ','+tsCmd[11]+',0,gol'  );
     //1 Speed
     //2 aList[i].CellX     // cella di partenza
     //3 aList[i].CellY
@@ -5824,10 +5838,10 @@ begin
                                               + IntTostr(Ball.cellX)+',' + IntTostr(Ball.cellY)  );   }
 
           AnimationScript.Tsadd ('cl_sound,soundishot');
-          AnimationScript.Tsadd ('cl_ball.move,3,' + tsCmd[4] + ','+tsCmd[5]+ ',' + tsCmd[6] + ','+tsCmd[7]+',0,heading'  );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEEDMAX_BALL) + ',' + tsCmd[4] + ','+tsCmd[5]+ ',' + tsCmd[6] + ','+tsCmd[7]+',0,heading'  );
           AnimationScript.Tsadd ('cl_sound,soundishot');
-          AnimationScript.Tsadd ('cl_ball.move,3,' + tsCmd[6]+ ','+tsCmd[7]+ ',' + tsCmd[8] + ','+tsCmd[9]+',0,bar'  );
-          AnimationScript.Tsadd ('cl_ball.bounce.crossbar,3,' + tsCmd[8] + ','+tsCmd[9]+ ',' + tsCmd[10] + ','+tsCmd[11]+',0,0'  );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ',' + tsCmd[6]+ ','+tsCmd[7]+ ',' + tsCmd[8] + ','+tsCmd[9]+',0,bar'  );
+          AnimationScript.Tsadd ('cl_ball.bounce.crossbar,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[8] + ','+tsCmd[9]+ ',' + tsCmd[10] + ','+tsCmd[11]+',0,0'  );
 
         end
         else if tsCmd[0] = 'sc_cross.bounce.gk'  then begin
@@ -5850,10 +5864,10 @@ begin
 
 
           AnimationScript.Tsadd ('cl_sound,soundishot');
-          AnimationScript.Tsadd ('cl_ball.move,3,' + tsCmd[4] + ','+tsCmd[5]+ ',' + tsCmd[6] + ','+tsCmd[7]+',0,heading'  );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEEDMAX_BALL) + ',' + tsCmd[4] + ','+tsCmd[5]+ ',' + tsCmd[6] + ','+tsCmd[7]+',0,heading'  );
           AnimationScript.Tsadd ('cl_sound,soundishot');
-          AnimationScript.Tsadd ('cl_ball.move,3,' + tsCmd[6]+ ','+tsCmd[7]+ ',' + tsCmd[8] + ','+tsCmd[9]+',0,bar'  );
-          AnimationScript.Tsadd ('cl_ball.bounce.gk,3,' + tsCmd[8] + ','+tsCmd[9]+ ',' + tsCmd[10] + ','+tsCmd[11]+',0,0'  );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ',' + tsCmd[6]+ ','+tsCmd[7]+ ',' + tsCmd[8] + ','+tsCmd[9]+',0,bar'  );
+          AnimationScript.Tsadd ('cl_ball.bounce.gk,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[8] + ','+tsCmd[9]+ ',' + tsCmd[10] + ','+tsCmd[11]+',0,0'  );
 
         end
         else if tsCmd[0] = 'sc_cross.headingdef.swap.bounce'  then begin
@@ -5881,10 +5895,10 @@ begin
           AnimationScript.Tsadd ('cl_wait.moving.players'); // Attende che tutti i movimenti dei player siano terminati prima di procedere
 
           AnimationScript.Tsadd ('cl_sound,soundishot');
-          AnimationScript.Tsadd ('cl_ball.move,3,' + tsCmd[4] + ','+tsCmd[5]+ ',' + tsCmd[8] + ','+tsCmd[9]+',0,heading'  );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEEDMAX_BALL) + ',' + tsCmd[4] + ','+tsCmd[5]+ ',' + tsCmd[8] + ','+tsCmd[9]+',0,heading'  );
 
 
-          AnimationScript.Tsadd ('cl_ball.bounce,3,' + tsCmd[8] + ','+tsCmd[9]+ ',' + tsCmd[10] + ','+tsCmd[11]+',0,0'  );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[8] + ','+tsCmd[9]+ ',' + tsCmd[10] + ','+tsCmd[11]+',0,0'  );
 
         end
         else if tsCmd[0] = 'sc_cross.headingdef.bounce'  then begin
@@ -5904,8 +5918,8 @@ begin
 
 
           AnimationScript.Tsadd ('cl_sound,soundishot');
-          AnimationScript.Tsadd ('cl_ball.move,3,' + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+',0,heading'  );
-          AnimationScript.Tsadd ('cl_ball.bounce,3,' + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[7] + ','+tsCmd[8]+',0,0'  );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEEDMAX_BALL) + ',' + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+',0,heading'  );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[7] + ','+tsCmd[8]+',0,0'  );
 
         end
 
@@ -5915,11 +5929,11 @@ begin
 
         else if tsCmd[0]='sc_ball' then begin
           AnimationScript.Tsadd ('cl_sound,soundishot');
-          AnimationScript.Tsadd (  'cl_ball.move,3,' +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]+ ','+tsCmd[6]   );
+          AnimationScript.Tsadd (  'cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ',' +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]+ ','+tsCmd[6]   );
         end
         else if tsCmd[0]='sc_ball.move.toball' then begin
           AnimationScript.Tsadd ('cl_sound,soundishot');
-          AnimationScript.Tsadd (  'cl_ball.move.toball,3,' +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]+ ','+tsCmd[6]   );
+          AnimationScript.Tsadd (  'cl_ball.move.toball,' + IntTostr(DEFAULT_SPEED_BALL) + ','  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]+ ','+tsCmd[6]   );
         end
         else if tsCmd[0]= 'sc_gol.cross' then begin
           AnimationScript.Tsadd ('cl_gol.cross,' + tsCmd[1] + ','+ tsCmd[2]+','+tsCmd[3] + ','+ tsCmd[4]+','+tsCmd[5]);
@@ -7762,7 +7776,7 @@ LoadGridSkill:
   SE_GridSkill.Rows [0].Height := 16;
   SE_GridSkill.ColCount := 2;
   SE_GridSkill.RowCount := SelectedPlayer.ActiveSkills.count;
-  SE_GridSkill.Columns[0].Width := 120;  // nome skill tradotta
+  SE_GridSkill.Columns[0].Width := 140;  // nome skill tradotta
   SE_GridSkill.Columns[1].Width := 16;
 
   SE_gridSkill.VirtualWidth := SE_GridSkill.TotalCellsWidth;
@@ -7794,7 +7808,7 @@ LoadGridSkill:
     end;
   end;
 
-  SE_GridSkill.Width := 120+16;
+  SE_GridSkill.Width := 140+16;
   SE_GridSkill.Height := SE_GridSkill.Virtualheight;
   PanelSkill.Width := SE_gridskill.Width + 9;
   PanelSkill.Height := SE_gridskill.Height + 9;
