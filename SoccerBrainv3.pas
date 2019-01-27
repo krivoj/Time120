@@ -4828,13 +4828,6 @@ begin
     aPoint.Y := 5;
     aShotCell.subCell.Add(@aPoint);
 
-//    aPoint.X := 1;
-//    aPoint.Y := 2;
-//    aShotCell.subCell.Add(@aPoint);
-
-    aPoint.X := 1;
-    aPoint.Y := 3;
-    aShotCell.subCell.Add(@aPoint);
 
     aPoint.X := 1;
     aPoint.Y := 3;
@@ -4857,13 +4850,6 @@ begin
     aPoint.Y := 4;
     aShotCell.subCell.Add(@aPoint);
 
-//    aPoint.X := 2;
-//    aPoint.Y := 6;
-//   aShotCell.subCell.Add(@aPoint);
-
-//    aPoint.X := 1;
-//    aPoint.Y := 2;
-//    aShotCell.subCell.Add(@aPoint);
 
     aPoint.X := 1;
     aPoint.Y := 3;
