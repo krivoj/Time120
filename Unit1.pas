@@ -1314,7 +1314,7 @@ begin
   se_theater1.Height  := se_theater1.Virtualheight ;//960 ;
   se_theater1.Left := 320;//(form1.Width div 2) - (SE_Theater1.Width div 2);
   se_theater1.Top :=  56;//(form1.Height div 2) - (SE_Theater1.Height div 2);
-  PanelSkill.Left := (form1.Width div 2) - (PanelSkill.Width div 2 ) ;
+  PanelSkill.Left := SE_Theater1.Left + (SE_Theater1.Width div 2) - (PanelSkill.Width div 2);
   PanelSkill.Top := SE_Theater1.Top + SE_Theater1.Height ;
 
 end;
@@ -1398,7 +1398,6 @@ begin
   LstSkill[10]:= 'Corner.Kick'; }
   if se_players.IsAnySpriteMoving or se_ball.IsAnySpriteMoving   then  exit;
   panelSkill.Visible := False;
-  PanelCombatLog.Left :=  (PanelBack.Width div 2 ) - (PanelCombatLog.Width div 2 );   ;
 
   if se_gridskill.Cells [0,CellY].Ids = 'Move' then begin
           WaitForXY_Move := true;
@@ -1588,14 +1587,7 @@ begin
   if se_gridskill.Cells[0,CellY].Ids = 'Precision.Shot' then
     PrsMouseEnter ( nil )
   else if se_gridskill.Cells[0,CellY].Ids = 'Power.Shot' then
-    PosMouseEnter ( nil )
-  else begin
-    SE_GridDice.ClearData ;
-    SE_GridDice.RowCount := 1;
-    SE_GridDice.CellsEngine.ProcessSprites(2000);
-    SE_GridDice.refreshSurface (SE_GridDice);
-
-  end;
+    PosMouseEnter ( nil );
 
 
 
@@ -2836,29 +2828,22 @@ var
 begin
   hidechances;
 
-  PanelCombatLog.Left := PanelSkill.Left + PanelSkill.Width;
-  SE_GridDice.ClearData ;
-  SE_GridDice.RowCount := 1;
-  SE_GridDice.CellsEngine.ProcessSprites(2000);
-  SE_GridDice.refreshSurface (SE_GridDice);
 
   if SelectedPlayer = nil then Exit;
   Modifier := 0;
   aDoor := Mybrain.GetOpponentDoor ( SelectedPlayer );
   if absDistance (SelectedPlayer.CellX , SelectedPlayer.CellY, adoor.X, adoor.Y  ) > PowerShotRange then exit;
 
-    //////    CalculateChance  (BaseShot, aGK.Defense , chanceA,chanceB,chanceColorA,chanceColorB);
-//////    CreateTextChanceValue (SelectedPlayer.ids,BaseShot, dir_skill + 'Precision.Shot',0,0,0,0);
-//////    CreateTextChanceValue (aGK.ids,aGK.Defense ,dir_attributes + 'Defense',0,0,0,0);
 
   if MyBrain.w_FreeKick3 then begin
     aGK := Mybrain.GetOpponentGK ( SelectedPlayer.Team );
     BaseShot :=  SelectedPlayer.DefaultShot + Mybrain.MalusPrecisionShot[SelectedPlayer.CellX] +1 + SelectedPlayer.Tal_freekicks;  // . il +1 è importante al shot. è una freekick3
     if BaseShot <= 0 then BaseShot := 1;
-    SE_GridDiceWriteRow  ( SelectedPlayer.Team, UpperCase(Translate('attribute_Shot')),  SelectedPlayer.SurName, SelectedPlayer.Ids, 'VS',IntToStr(BaseShot ));
+    CreateBaseAttribute (  selectedPlayer.CellX, SelectedPlayer.CellY, BaseShot) ;
   // mostro le 4 chance in barriera
     BarrierCell := MyBrain.GetBarrierCell( MyBrain.TeamFreeKick , MyBrain.Ball.CellX, MyBrain.Ball.CellY  ) ;
     CreateCircle( aGK.Team, BarrierCell.X, BarrierCell.Y );
+//    CreateBaseAttribute (  BarrierCell.X, BarrierCell.Y , aGK.Defense) ;
 {    b := 0;
     for I :=  0 to Mybrain.lstSoccerPlayer.Count -1 do begin
       anOpponent := Mybrain.lstSoccerPlayer[i];
@@ -2870,26 +2855,25 @@ begin
 
   // mostro la chance el portiere e la mia
     CreateCircle( aGK );
-    SE_GridDiceWriteRow  ( aGK.Team, UpperCase(Translate('attribute_Defense')),  aGK.SurName, aGK.Ids, 'VS',IntToStr(aGK.Defense ));
+    CreateBaseAttribute (  aGK.CellX,aGK.CellY, aGK.Defense) ;
+
 
   end
   else if MyBrain.w_FreeKick4 then begin
     BaseShot :=  SelectedPlayer.DefaultShot + modifier_penalty +1;  // . il +1 è importante  per il PRS. è una freekick4
-    SE_GridDiceWriteRow  ( SelectedPlayer.Team, UpperCase(Translate('attribute_Shot')),  SelectedPlayer.SurName, SelectedPlayer.Ids, 'VS',IntToStr(BaseShot ));
+    CreateBaseAttribute (  selectedPlayer.CellX, SelectedPlayer.CellY, BaseShot) ;
+
     // il pos non ha quel +1 ma ha la respinta
     if BaseShot <= 0 then BaseShot := 1;
   // mostro la chance el portiere e la mia
     aGK := Mybrain.GetOpponentGK ( SelectedPlayer.Team );
     CreateCircle( aGK );
-    SE_GridDiceWriteRow  ( aGK.Team, UpperCase(Translate('attribute_Defense')),  aGK.SurName, aGK.Ids, 'VS',IntToStr(aGK.Defense ));
-/////    CalculateChance  (BaseShot, aGK.Defense , chanceA,chanceB,chanceColorA,chanceColorB);
-/////    CreateTextChanceValue (SelectedPlayer.ids,BaseShot, dir_skill + 'Precision.Shot',0,0,0,0);
-/////    CreateTextChanceValue (aGK.ids,aGK.Defense,dir_attributes + 'Defense',0,0,0,0);
+    CreateBaseAttribute (  aGK.CellX,aGK.CellY, aGK.Defense) ;
   end
   else begin
     BaseShot :=  SelectedPlayer.Shot + Mybrain.MalusPrecisionShot[SelectedPlayer.CellX];
     if BaseShot <= 0 then BaseShot := 1;
-    SE_GridDiceWriteRow  ( SelectedPlayer.Team, UpperCase(Translate('attribute_Shot')),  SelectedPlayer.SurName, SelectedPlayer.Ids, 'VS',IntToStr(BaseShot ));
+    CreateBaseAttribute (  selectedPlayer.CellX, SelectedPlayer.CellY, BaseShot) ;
 
     for Ii := 0 to MyBrain.ShotCells.Count -1 do begin
 
@@ -2904,10 +2888,6 @@ begin
             if SelectedPlayer.CellX = anOpponent.cellX then Modifier := soccerbrainv3.modifier_defenseShot else Modifier :=0;
             CreateArrowDirection( anOpponent, SelectedPlayer );
             CreateBaseAttribute (  aPoint.x, aPoint.y, anOpponent.Defense) ;
-//            SE_GridDiceWriteRow  ( anOpponent.Team, UpperCase(Translate('attribute_Defense')),  anOpponent.SurName, anOpponent.Ids, 'VS',IntToStr(anOpponent.Defense));
-
-////            CalculateChance  (BaseShot, anOpponent.Defense + Modifier, chanceA,chanceB,chanceColorA,chanceColorB);
-////            CreateTextChanceValue (anOpponent.ids,anOpponent.Defense + Modifier,dir_attributes + 'Defense',0,0,0,0);
           end;
         end;
       end;
@@ -2916,7 +2896,7 @@ begin
     // mostro la chance el portiere
     aGK := Mybrain.GetOpponentGK ( SelectedPlayer.Team );
     CreateCircle( aGK );
-    SE_GridDiceWriteRow  ( aGK.Team,  UpperCase(Translate('attribute_Defense')),  aGK.SurName, aGK.Ids, 'VS',IntToStr(aGK.Defense ) );
+    CreateBaseAttribute (  aGK.CellX,aGK.CellY, aGK.Defense) ;
   end;
 
 end;
@@ -3095,11 +3075,6 @@ var
 
 begin
   hidechances;
-  PanelCombatLog.Left := PanelSkill.Left + PanelSkill.Width;
-  SE_GridDice.ClearData ;
-  SE_GridDice.RowCount := 1;
-  SE_GridDice.CellsEngine.ProcessSprites(2000);
-  SE_GridDice.refreshSurface (SE_GridDice);
   if SelectedPlayer = nil then Exit;
   Modifier := 0;
   aDoor := Mybrain.GetOpponentDoor ( SelectedPlayer );
@@ -3109,27 +3084,27 @@ begin
     aGK := Mybrain.GetOpponentGK ( SelectedPlayer.Team );
     BaseShot :=  SelectedPlayer.DefaultShot + Mybrain.MalusPrecisionShot[SelectedPlayer.CellX] +1 + SelectedPlayer.Tal_freekicks;  // . il +1 è importante al shot. è una freekick3
     if BaseShot <= 0 then BaseShot := 1;
-    SE_GridDiceWriteRow  ( SelectedPlayer.Team, UpperCase(Translate('attribute_Shot')),  SelectedPlayer.SurName, SelectedPlayer.Ids, 'VS',IntToStr(BaseShot));
+    CreateBaseAttribute (  SelectedPlayer.CellX,SelectedPlayer.CellY, BaseShot) ;
   // mostro le 4 chance in barriera
     BarrierCell := MyBrain.GetBarrierCell( MyBrain.TeamFreeKick , MyBrain.Ball.CellX, MyBrain.Ball.CellY  ) ;
     CreateCircle( aGK.Team, BarrierCell.X, BarrierCell.Y );
 
     CreateCircle( aGK );
-    SE_GridDiceWriteRow  ( aGK.Team,  UpperCase(Translate('attribute_Defense')),  aGK.SurName, aGK.Ids, 'VS',IntToStr(aGK.Defense ) );
+    CreateBaseAttribute (  aGK.CellX,aGK.CellY, aGK.Defense) ;
   end
   else if MyBrain.w_FreeKick4 then begin
     BaseShot :=  SelectedPlayer.DefaultShot + modifier_penalty ;  // . il +2 è importante al shot. è una freekick4
     if BaseShot <= 0 then BaseShot := 1;
-    SE_GridDiceWriteRow  ( SelectedPlayer.Team, UpperCase(Translate('attribute_Shot')),  SelectedPlayer.SurName, SelectedPlayer.Ids, 'VS',IntToStr(BaseShot));
+    CreateBaseAttribute (  SelectedPlayer.CellX,SelectedPlayer.CellY, BaseShot) ;
 
     aGK := Mybrain.GetOpponentGK ( SelectedPlayer.Team );
     CreateCircle( aGK );
-    SE_GridDiceWriteRow  ( aGK.Team,  UpperCase(Translate('attribute_Defense')),  aGK.SurName, aGK.Ids, 'VS',IntToStr(aGK.Defense ));
+    CreateBaseAttribute (  aGK.CellX,aGK.CellY, aGK.Defense) ;
   end
   else begin
     BaseShot :=  SelectedPlayer.Shot + Mybrain.MalusPowerShot[SelectedPlayer.CellX]  ;
     if BaseShot <= 0 then BaseShot := 1;
-    SE_GridDiceWriteRow  ( SelectedPlayer.Team, UpperCase(Translate('attribute_Shot')),  SelectedPlayer.SurName, SelectedPlayer.Ids, 'VS',IntToStr(BaseShot));
+    CreateBaseAttribute (  SelectedPlayer.CellX,SelectedPlayer.CellY, BaseShot) ;
 
     for Ii := 0 to MyBrain.ShotCells.Count -1 do begin
 
@@ -3144,7 +3119,6 @@ begin
             if SelectedPlayer.CellX = anOpponent.cellX then Modifier := soccerbrainv3.modifier_defenseShot else Modifier :=0;
             CreateArrowDirection( anOpponent, SelectedPlayer );
             CreateBaseAttribute (  aPoint.x, aPoint.y, anOpponent.defense );
-//            SE_GridDiceWriteRow  ( anOpponent.Team,  UpperCase(Translate('attribute_Defense')),  anOpponent.SurName, anOpponent.Ids, 'VS',IntToStr(anOpponent.Defense ));
 
           end;
         end;
@@ -3153,7 +3127,7 @@ begin
 
     aGK := Mybrain.GetOpponentGK ( SelectedPlayer.Team );
     CreateCircle( aGK );
-    SE_GridDiceWriteRow  ( aGK.Team,  UpperCase(Translate('attribute_Defense')),  aGK.SurName, aGK.Ids, 'VS',IntToStr(aGK.Defense ) );
+    CreateBaseAttribute (  aGK.CellX,aGK.CellY, aGK.Defense) ;
   end;
 
 end;
@@ -4436,7 +4410,7 @@ begin
     btntactics.Visible := true;
    end;
 
-   PanelCombatLog.Left :=  (PanelBack.Width div 2 ) - (PanelCombatLog.Width div 2 );   ;
+   PanelCombatLog.Left := SE_Theater1.Left; //PanelSkill.Left + PanelSkill.Width;
 
 
     if (Mybrain.Score.TeamGuid [0]  = MyGuidTeam ) or (Mybrain.Score.TeamGuid [1]  = MyGuidTeam ) then
@@ -7860,7 +7834,7 @@ LoadGridSkill:
   PanelSkill.Height := SE_gridskill.Height + 9;
   SE_GridSkill.Left := 3;
   SE_GridSkill.top := 3;
-  PanelSkill.Left := ( Form1.Width div 2 ) - (PanelSkill.Width div 2);
+  PanelSkill.Left := SE_Theater1.Left + (SE_Theater1.Width div 2) - (PanelSkill.Width div 2);
 
   RoundCornerOf  ( PanelSkill );
   PanelSkill.Visible := True;
@@ -8820,7 +8794,7 @@ begin
             if (aFriend.Ids = MyBrain.Ball.Player.ids) or (aFriend.Team <> MyBrain.Ball.Player.Team ) then continue;
             ToEmptyCell := false;
           end;
-          SE_GridDiceWriteRow( SelectedPlayer.Team, UpperCase(Translate('attribute_Passing')) , SelectedPlayer.SurName , SelectedPlayer.Ids ,'VS',IntToStr(SelectedPlayer.Passing) );
+          CreateBaseAttribute (  CellX, CellY, SelectedPlayer.Passing );
           ArrowShowShpIntercept ( CellX, CellY, ToEmptyCell) ;
           HighLightField( CellX, CellY, 0);
         end
@@ -8849,7 +8823,7 @@ begin
             // ultimo del path, non cellx celly
             HighLightField (SelectedPlayer.MovePath[SelectedPlayer.MovePath.count-1].X , SelectedPlayer.MovePath[SelectedPlayer.MovePath.count-1].Y, 0 );
             if  SelectedPlayer.HasBall then begin
-              SE_GridDiceWriteRow( SelectedPlayer.Team, UpperCase(Translate('attribute_BallControl')) , SelectedPlayer.SurName , SelectedPlayer.Ids ,'VS',IntToStr(SelectedPlayer.BallControl)  );
+              //CreateBaseAttribute (  CellX, CellY, SelectedPlayer.BallControl );
               ArrowShowMoveAutoTackle  ( SelectedPlayer.MovePath[SelectedPlayer.MovePath.count-1].X , SelectedPlayer.MovePath[SelectedPlayer.MovePath.count-1].Y) ;
               HighLightField (SelectedPlayer.MovePath[SelectedPlayer.MovePath.count-1].X , SelectedPlayer.MovePath[SelectedPlayer.MovePath.count-1].Y, 0 );
             end;
@@ -8877,7 +8851,7 @@ begin
             ToEmptyCell := false;
           end;
 
-          SE_GridDiceWriteRow( SelectedPlayer.Team, UpperCase(Translate('attribute_Passing')) , SelectedPlayer.SurName , SelectedPlayer.Ids ,'VS',IntToStr(SelectedPlayer.Passing) );
+          CreateBaseAttribute (  CellX, CellY, SelectedPlayer.Passing );
           ArrowShowLopHeading( CellX, CellY, ToEmptyCell) ;
           HighLightField( CellX, CellY, 0);
           if aFriend <> nil then begin
@@ -8896,9 +8870,9 @@ begin
           if aFriend <> nil then begin
             if (aFriend.Ids = MyBrain.Ball.Player.ids) or (aFriend.Team <> MyBrain.Ball.Player.Team ) then continue;
             if aFriend.InCrossingArea then begin
-              SE_GridDiceWriteRow( SelectedPlayer.Team, UpperCase(Translate('attribute_Passing')) , SelectedPlayer.SurName , SelectedPlayer.Ids ,'VS',IntToStr(SelectedPlayer.Passing) );
+              CreateBaseAttribute (  CellX, CellY, SelectedPlayer.Passing );
               ArrowShowCrossingHeading( CellX, CellY) ;
-              SE_GridDiceWriteRow( aFriend.Team, UpperCase(Translate('attribute_Heading')) , aFriend.SurName , aFriend.Ids ,'VS',IntToStr(aFriend.heading) );
+              CreateBaseAttribute (  CellX, CellY, aFriend.heading );
               HighLightField( CellX, CellY, 0);
             end;
           end
@@ -8940,6 +8914,7 @@ end;
 procedure TForm1.SE_GridDiceWriteRow  ( team: integer; attr, Surname, ids, vs,num1: string);
 var
   Row: Integer;
+  I,c,r: Integer;
 begin
   Row := SE_GridDice.RowCount -1;
 // es.  SE_GridDiceWriteRow  ( SelectedPlayer.Team, IntToStr(SelectedPlayer.Defense ) + ' ' + UpperCase(Translate('attribute_Defense')),
@@ -8986,7 +8961,7 @@ begin
       SE_GridDice.Cells [7, Row ].FontColor := GetContrastColor( MyBrain.Score.DominantColor[1]);
     end
     else begin
-      SE_GridDice.Cells [5, Row ].BackColor :=clGray;
+      SE_GridDice.Cells [5, Row ].BackColor := clGray;
       SE_GridDice.Cells [6, Row ].BackColor := clGray;
       SE_GridDice.Cells [7, Row ].BackColor := clGray;
       SE_GridDice.Cells [5, Row ].FontColor := clyellow;
@@ -9003,17 +8978,24 @@ begin
 
   end;
 
+  for c := 0 to SE_GridDice.ColCount -1 do begin
+    for r := 0 to SE_GridDice.RowCount -1 do begin
+      SE_GridDice.Rows[r].Height := 16;
+      SE_GridDice.Cells [c,r].Fontsize := 7;
+      SE_GridDice.Cells [c,r].Fontname := 'Verdana';
+      SE_GridDice.cells [7,r].CellAlignmentH := hRight;
+      SE_GridDice.cells [6,r].CellAlignmentH := hLeft;
+      SE_GridDice.cells [1,r].CellAlignmentH := hLeft;
+      SE_GridDice.cells [2,r].CellAlignmentH := hLeft;
+    end;
+  end;
+
   SE_GridDice.CellsEngine.ProcessSprites(20);
   SE_GridDice.RefreshSurface (SE_GridDice);
-
 
 end;
 procedure TForm1.ClearInterface;
 begin
-  SE_GridDice.ClearData;
-  SE_GridDice.RowCount := 1;
-  SE_GridDice.CellsEngine.ProcessSprites(2000);
-  SE_GridDice.refreshSurface (SE_GridDice);
   SE_interface.removeallSprites; // rimuovo le frecce
   SE_interface.ProcessSprites(2000);
   HighLightFieldFriendly_hide;  // rimuovo gli highlight
@@ -9089,7 +9071,6 @@ begin
             lstInteractivePlayers.add (aInteractivePlayer);
             CreateArrowDirection( anOpponent, aPath[i].X,aPath[i].Y );
             CreateBaseAttribute (  aPath[i].X,aPath[i].Y, anOpponent.Defense );
-    //        SE_GridDiceWriteRow  ( anOpponent.Team, UpperCase(Translate('attribute_Defense')),  anOpponent.SurName, anOpponent.Ids, 'VS',IntToStr(anOpponent.Defense) );
           end;
       end
 
@@ -9103,10 +9084,7 @@ begin
             aFriend := MyBrain.GetSoccerPlayer ( CellX , CellY);
             if aFriend = nil then
    { toemptycells lo devo riportare adesso }
-//             SE_GridDiceWriteRow  ( anIntercept.Team, UpperCase(Translate('attribute_Defense')),  anIntercept.SurName, anIntercept.Ids, 'VS',IntToStr(anIntercept.Defense))
             CreateBaseAttribute (  anIntercept.CellX, anIntercept.Celly, anIntercept.Defense )
-//            else SE_GridDiceWriteRow  ( anIntercept.Team, UpperCase(Translate('attribute_Defense')),  anIntercept.SurName, anIntercept.Ids, 'VS',
-//                                      IntToStr(anIntercept.Defense -1));
             else  CreateBaseAttribute (  anIntercept.CellX, anIntercept.Celly, anIntercept.Defense );
 
           end
@@ -9124,7 +9102,6 @@ begin
       LstMoving[Y].Attribute := atSpeed;
       CreateArrowDirection( LstMoving[Y].Player, CellX,CellY );
       CreateBaseAttribute (  CellX,CellY,  LstMoving[Y].Player.Speed );
-//      SE_GridDiceWriteRow  ( LstMoving[Y].Player.Team, UpperCase(Translate('attribute_Speed')),  LstMoving[Y].Player.SurName, LstMoving[Y].Player.Ids, 'VS',IntToStr(LstMoving[Y].Player.Speed ));
     end;
 
     LstMoving.Free;
@@ -9156,7 +9133,6 @@ begin
             lstInteractivePlayers[Y].Attribute := atHeading;
             CreateArrowDirection( aHeading, CellX,CellY );
             CreateBaseAttribute (  aHeading.CellX, aHeading.CellY, aHeading.Heading );
-      //      SE_GridDiceWriteRow  ( aHeading.Team, UpperCase(Translate('attribute_Heading')),  aHeading.SurName, aHeading.Ids, 'VS',IntToStr(aHeading.Passing));
 
       end;
 
@@ -9173,7 +9149,6 @@ begin
       LstMoving[Y].Attribute := atSpeed;
       CreateArrowDirection( LstMoving[Y].Player, CellX,CellY );
       CreateBaseAttribute (  LstMoving[Y].Player.CellX, LstMoving[Y].Player.CellY, LstMoving[Y].Player.Speed );
-//      SE_GridDiceWriteRow  ( LstMoving[Y].Player.Team, UpperCase(Translate('attribute_Speed')),  LstMoving[Y].Player.SurName, LstMoving[Y].Player.Ids, 'VS',IntToStr(LstMoving[Y].Player.Speed));
     end;
 
     LstMoving.Free;
@@ -9205,8 +9180,6 @@ begin
      //     if Baseheading <= 0 then Baseheading :=1;
       CreateArrowDirection( lstInteractivePlayers[Y].Player, CellX,CellY );
       CreateBaseAttribute (  lstInteractivePlayers[Y].Player.CellX,lstInteractivePlayers[Y].Player.CellY, lstInteractivePlayers[Y].Player.heading );
-//      SE_GridDiceWriteRow  ( aHeading.Team, UpperCase(Translate('attribute_Heading')),  aHeading.SurName, aHeading.Ids, 'VS',
-//                         IntToStr(aHeading.heading + BonusDefenseHeading ));
 
     end;
 
@@ -9224,6 +9197,7 @@ begin
   anInteractivePlayer.Cell.Y := cellY;
   anInteractivePlayer.Attribute := atDefense;
   CreateArrowDirection(  MyBrain.ball.Player, CellX,CellY );
+  CreateBaseAttribute (  SelectedPlayer.CellX,SelectedPlayer.CellY, SelectedPlayer.BallControl + SelectedPlayer.Tal_Dribbling  );
   CreateBaseAttribute (  CellX,CellY, anOpponent.Defense  );
 
 //  SE_GridDiceWriteRow  ( SelectedPlayer.Team, UpperCase(Translate('attribute_Ball.Control')),  SelectedPlayer.SurName, SelectedPlayer.Ids, 'VS',
@@ -10448,19 +10422,21 @@ begin
     SE_GridDice.ColCount :=9;
     SE_GridDice.RowCount :=1;
     SE_GridDice.Columns [0].Width := 1;
-    SE_GridDice.Columns [1].Width := 70;
-    SE_GridDice.Columns [2].Width := 110;
+    SE_GridDice.Columns [1].Width := 80;
+    SE_GridDice.Columns [2].Width := 80;
 
     SE_GridDice.Columns [3].Width := 20;
     SE_GridDice.Columns [4].Width := 20;
     SE_GridDice.Columns [5].Width := 20;
 
-    SE_GridDice.Columns [6].Width := 110;
-    SE_GridDice.Columns [7].Width := 70;
+    SE_GridDice.Columns [6].Width := 80;
+    SE_GridDice.Columns [7].Width := 80;
     SE_GridDice.Columns [8].Width := 1 ;
 
    // SE_GridDice.Height := 16*9;// 9 righe
-    SE_GridDice.Width := 1+70+110+60+110+71;//SE_GridDice.VirtualWidth;
+    SE_GridDice.Width := SE_GridDice.TotalCellsWidth;
+    PanelCombatLog.Width := SE_GridDice.Width +3 + 443;
+    PanelCombatLog.Refresh;
     SE_GridDice.rows[0].Height := 16;
     SE_GridDice.CellsEngine.ProcessSprites(2000);
     SE_GridDice.refreshSurface (SE_GridDice);

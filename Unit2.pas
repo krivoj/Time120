@@ -92,7 +92,7 @@ begin
   Form1.PanelDismiss.Top := Form1.PanelInfoPlayer0.Top + Form1.PanelInfoPlayer0.height;
   Form1.PanelDismiss.Left:= Form1.PanelInfoPlayer0.left ;
 
-  Form1.PanelCombatLog.Left :=  (Form1.PanelBack.Width div 2 ) - (Form1.PanelCombatLog.Width div 2 );   ;
+  Form1.PanelCombatLog.Left := Form1.SE_Theater1.Left; //PanelSkill.Left + PanelSkill.Width;
   Form1.PanelCombatLog.Top := Form1.se_theater1.top + Form1.se_theater1.height + 3;
 
 

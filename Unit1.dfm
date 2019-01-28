@@ -243,17 +243,17 @@ object Form1: TForm1
     Height = 788
     TabOrder = 1
     object PanelCombatLog: SE_Panel
-      Left = 917
+      Left = 926
       Top = 10
-      Width = 466
+      Width = 411
       Height = 172
       Color = 8081721
       TabOrder = 0
       Visible = False
       object SE_GridDice: SE_Grid
-        Left = 9
-        Top = 6
-        Width = 440
+        Left = 3
+        Top = 3
+        Width = 328
         Height = 158
         Cursor = crHandPoint
         MouseScrollRate = 1.000000000000000000
@@ -963,8 +963,8 @@ object Form1: TForm1
       end
     end
     object PanelListMatches: SE_Panel
-      Left = 644
-      Top = 3
+      Left = 43
+      Top = 576
       Width = 685
       Height = 292
       BevelOuter = bvNone
