@@ -10435,8 +10435,7 @@ begin
 
    // SE_GridDice.Height := 16*9;// 9 righe
     SE_GridDice.Width := SE_GridDice.TotalCellsWidth;
-    PanelCombatLog.Width := SE_GridDice.Width +3 + 443;
-    PanelCombatLog.Refresh;
+    PanelCombatLog.Width := SE_GridDice.Width +3 + 3;
     SE_GridDice.rows[0].Height := 16;
     SE_GridDice.CellsEngine.ProcessSprites(2000);
     SE_GridDice.refreshSurface (SE_GridDice);
