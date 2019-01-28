@@ -129,7 +129,6 @@ begin
 
   RoundCornerOf ( Form1.PanelInfoPlayer0 );
   RoundCornerOf ( Form1.PanelXPplayer0 );
-  RoundCornerOf ( Form1.PanelCombatLog );
   RoundCornerOf ( Form1.PanelScore );
   RoundCornerOf ( Form1.PanelSell );
   RoundCornerOf ( Form1.PanelMain );
@@ -200,10 +199,11 @@ begin
   Form1.PanelCombatLog.Visible := false;
   Form1.PanelInfoPlayer0.Visible := false;
   Form1.PanelXPPlayer0.Visible := false;
+  Form1.PanelSkill.Visible := false;
 
 
   Form1.SE_GridTime.Active := False;
-  Form1.SE_GridTime.Visible:= False;
+  //Form1.SE_GridTime.Visible:= False;
 
 end;
 procedure ShowCornerFreeKickGrid;

@@ -3474,6 +3474,7 @@ end;
 
 procedure Tform1.PrepareAnim;
 begin
+  Form1.PanelCombatLog.Visible := True;
   SE_GridDice.ClearData ;
   SE_GridDice.RowCount :=1;
   SE_GridDice.CellsEngine.ProcessSprites(2000);
@@ -4692,7 +4693,7 @@ begin
 
   PanelMatchInfo.Left := PanelScore.Left + (PanelScore.Width div 2) - (PanelMatchInfo.Width div 2);
   PanelMatchInfo.Top := PanelScore.Top + PanelScore.Height;
-  RoundCornerOf ( Form1.PanelMatchInfo );
+  RoundCornerOf ( PanelMatchInfo );
   PanelMatchInfo.Visible := True;
   PanelMatchInfo.BringToFront;
   SE_GridMatchInfo.CellsEngine.ProcessSprites(2000);
@@ -8990,6 +8991,8 @@ begin
     end;
   end;
 
+  PanelCombatLog.Width := SE_GridDice.Width +3 + 3;
+  RoundCornerOf( PanelCombatLog);
   SE_GridDice.CellsEngine.ProcessSprites(20);
   SE_GridDice.RefreshSurface (SE_GridDice);
 

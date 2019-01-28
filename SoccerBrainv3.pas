@@ -11065,7 +11065,7 @@ begin
       if Result = TacticDone then
         Exit;
   end;
-  if fMinute >= 100 then begin   // 100 su 120
+  if fMinute >= 85 then begin   // 85 su 120
       // Stay/Free sempre dentro >= 100 ultimi 20
       Cks := CheckScore (team);
       Result := AI_Think_StayFree ( team, Cks ); // in caso di pareggio elimino gli stay con i free

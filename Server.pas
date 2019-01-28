@@ -7776,8 +7776,8 @@ begin
 
   lenMatchInfo:=  PWORD(@buf3[Cur] )^; // punta ai 2 byte word che indicano la lunghezza della stringa
   // non carico tsscript
-//  if lenMatchInfo > 0 then
-//    MyBrain.MatchInfo.CommaText :=  midStr ( DataStr , Cur +1+2, lenMatchInfo ); //+1 ragiona in base 1  +2 per len della stringa
+  if lenMatchInfo > 0 then
+    MyBrain.MatchInfo.CommaText :=  midStr ( DataStr , Cur +1+2, lenMatchInfo ); //+1 ragiona in base 1  +2 per len della stringa
 
   cur := Cur + lenMatchInfo + 2;
 
@@ -8060,9 +8060,10 @@ begin
     sf.Free;
     MyBrain.Score.AI[0]:=True;
     MyBrain.Score.AI[1]:=True;
-    MyBrain.SaveData (MyBrain.incMove);//<-- riempe mmbraindata che zippata in mmbraindatazip viene inviata al client
+    MyBrain.dir_log := dir_log;
     MyBrain.LogUser[0] := 1;
     MyBrain.LogUser[1] := 1;
+    MyBrain.SaveData (MyBrain.incMove);//<-- riempe mmbraindata che zippata in mmbraindatazip viene inviata al client
     BrainManager.AddBrain(MyBrain );
 
 

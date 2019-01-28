@@ -243,7 +243,7 @@ object Form1: TForm1
     Height = 788
     TabOrder = 1
     object PanelCombatLog: SE_Panel
-      Left = 926
+      Left = 953
       Top = 10
       Width = 411
       Height = 172
