@@ -223,8 +223,8 @@ object FormServer: TFormServer
     OnClick = Button4Click
   end
   object Panel1: TPanel
-    Left = 217
-    Top = 431
+    Left = 201
+    Top = 358
     Width = 185
     Height = 98
     TabOrder = 18

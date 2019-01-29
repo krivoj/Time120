@@ -19,7 +19,6 @@
       //    procedure ClientLoadBrainMM  ( incMove: Byte ) Carica il brain arrivato dal server
       //    procedure Anim --> esegue realmente l'animazione
 
-      { TODO : in futuro talento: se non ha hostile nearby e diventa portatore palla da un shp a distanza 2+, guadagna mossa)}
 interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Types, System.Classes, Vcl.Graphics,
@@ -8797,7 +8796,7 @@ begin
 
           MyBrain.GetPath (SelectedPlayer.Team , SelectedPlayer.CellX , SelectedPlayer.Celly, CellX, CellY,
                                 MoveValue{Limit},false{useFlank},FriendlyWall{FriendlyWall},
-                                OpponentWall{OpponentWall},FinalWall{FinalWall},ExcludeNotOneDir{OneDir}, SelectedPlayer.MovePath );
+                                OpponentWall{OpponentWall},FinalWall{FinalWall},AbortMultipleDirection{OneDir}, SelectedPlayer.MovePath );
           if SelectedPlayer.MovePath.Count > 0 then begin
             // ultimo del path, non cellx celly
             HighLightField (SelectedPlayer.MovePath[SelectedPlayer.MovePath.count-1].X , SelectedPlayer.MovePath[SelectedPlayer.MovePath.count-1].Y, 0 );
@@ -9010,7 +9009,6 @@ begin
         lstInteractivePlayers[au].Attribute := atDefense;
         CreateArrowDirection( lstInteractivePlayers[au].Player  , lstInteractivePlayers[au].Cell.X ,lstInteractivePlayers[au].Cell.Y );
         CreateBaseAttribute (  lstInteractivePlayers[au].Player.CellX, lstInteractivePlayers[au].Player.CellY, lstInteractivePlayers[au].Player.Defense );
-//        SE_GridDiceWriteRow  ( lstInteractivePlayers[au].Player.Team, UpperCase(Translate('attribute_Defense')),  lstInteractivePlayers[au].Player.SurName, lstInteractivePlayers[au].Player.Ids, 'VS',IntToStr(lstInteractivePlayers[au].Player.Defense));
       end;
 
       break; //goto MyExit;
@@ -9181,11 +9179,6 @@ begin
   CreateBaseAttribute (  SelectedPlayer.CellX,SelectedPlayer.CellY, SelectedPlayer.BallControl +  Abs(Integer(SelectedPlayer.TalentId = TALENT_ID_DRIBBLING))  );
   CreateBaseAttribute (  CellX,CellY, anOpponent.Defense  );
 
-//  SE_GridDiceWriteRow  ( SelectedPlayer.Team, UpperCase(Translate('attribute_Ball.Control')),  SelectedPlayer.SurName, SelectedPlayer.Ids, 'VS',
-//                      IntToStr(SelectedPlayer.BallControl + SelectedPlayer.Tal_Dribbling ) );
-//  SE_GridDiceWriteRow  ( anOpponent.Team, UpperCase(Translate('attribute_Defense')),  anOpponent.SurName, anOpponent.Ids, 'VS',
-//                      IntToStr(anOpponent.Defense ));
-
 end;
 function Tform1.FieldGuid2Cell (guid:string): Tpoint;
 var
@@ -9334,16 +9327,6 @@ begin
 
 
       end;
-
-            // MBRIGHT market
-  //         aPlayer := MyBrain.GetSoccerPlayer(CellX, CellY);
-  //        if aPlayer = nil then Exit;
-
-  //        edtBid.Min := aPlayer.MarketValue;
-  //        edtBid.Value := aPlayer.MarketValue;
-  //        lblConfirmBid.Caption := Translate('Confirm offer' ) +': ' + APlayer.SurName +', ' + Translate('Age') +': ' +
-  //        IntToStr(aPlayer.age) + ', ' + Translate('Value' ) + ': ' + IntToStr(aPlayer.MarketValue) + ' ' +  Translate('Gold' );
-
 
 
     end;

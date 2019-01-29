@@ -20,7 +20,7 @@ unit SoccerBrainv3;
       { TODO : utility flag market 0 o 1 e delete player in market da lanciare ogni 24 ore.PULIZIA MARKET e game.players team=0 }
 
 interface
-uses DSE_theater, DSE_Random, DSE_PathPlanner, DSE_list,
+uses DSE_theater, DSE_Random, DSE_PathPlanner, DSE_list, DSE_MISC,
   generics.collections, generics.defaults, system.classes, ZLIBEX,
   System.SysUtils, System.Types, strutils, Inifiles, IOUtils, winapi.windows ;
 const DICE = 4;
@@ -116,7 +116,7 @@ TYPE  TNotifyFileData    = procedure (filename: string ) of object;
 type TAccelerationMode = ( AccBestDistance, AccSelfY, AccDoor );
 type TMoveModeX = ( LeftToRight, RightToLeft, Xnone);
 type TMoveModeY= ( UpToDown, DownToUp, Ynone);
-type TOneDir= ( TruncOneDir, ExcludeNotOneDir, falseOneDir);
+type TOneDir= ( TruncOneDir, AbortMultipleDirection, EveryDirection);
 
 type TTrueFalse = array[Boolean] of String;
 type TSoccerParam = ( withPlayer, withoutPlayer, withBall, withoutBall );
@@ -609,6 +609,8 @@ end;
         // Dummy AI
         function GetDummyGoAheadCell : TPoint;  // il player con la palla cerca di avanzare
         function GetDummyMaxAcceleration(AccelerationMode: TAccelerationMode): TPoint;
+        function GetDummyMaxAccelerationShotCells ( OnlyBuffed: boolean ): TPoint; // cerca di raggiungere una shotCell
+        function GetDummyMaxAccelerationBottom: TPoint; // cerca il fondo, l'ultima cella
         function GetDummyShpCellXY : TPoint;
           function DummyGetAnyFriendToBall (  dist, team: Integer; meIds:string; CellX, CellY: integer): TSoccerPlayer;
         function GetDummyLopCellXY : Tpoint;
@@ -1200,13 +1202,13 @@ var
   i: integer;
 begin
   Result := false;
-      for i := 0 to  brain.ShotCells.Count -1 do begin
-        if  (brain.ShotCells[i].CellX = CellX) and (brain.ShotCells[i].CellY = CellY)
-        and (brain.ShotCells[i].DoorTeam  <> Team) then begin// opposto, bene cosi'
-          result := True;
-          Exit;
-        end;
-      end;
+  for i := 0 to  brain.ShotCells.Count -1 do begin
+    if  (brain.ShotCells[i].CellX = CellX) and (brain.ShotCells[i].CellY = CellY)
+    and (brain.ShotCells[i].DoorTeam  <> Team) then begin// opposto, bene cosi'
+      result := True;
+      Exit;
+    end;
+  end;
 
 end;
 function TSoccerPlayer.onBottom : TBottomPosition; // 1 NearCornerCell 2 BottomNoShot 3 BottomShot
@@ -1894,7 +1896,7 @@ var
   MoveModeX,MoveModeX2: TMoveModeX;
   MoveModeY,MoveModeY2: TMoveModeY;
   aBorted: boolean;
-  label ExitPath,NextPath;
+  label ExitPath,NextPath,ExitPath2;
 begin
   Aborted:=False;
   aPath.Clear;
@@ -1960,7 +1962,7 @@ begin
 
 
 
-        if (OneDir <> FalseOneDir ) and (AStar.Path.Count > 1) then begin   // la partenza c'è ancora
+        if (OneDir <> EveryDirection ) and (AStar.Path.Count > 1) then begin   // la partenza c'è ancora
 
           // se ho la prima direzione
           if AStar.Path[0].X < AStar.Path[1].X then
@@ -1999,8 +2001,10 @@ begin
 
             Last := i;
             if ( MoveModeX  <> MoveModeX2) or  ( MoveModeY  <> MoveModeY2) then  begin
-              if OneDir = ExcludeNotOneDir then   // non voglio pezzi di OneDir. la annullo
-                Aborted := True;
+              if OneDir = AbortMultipleDirection then  begin // non voglio pezzi di OneDir. la annullo
+                Aborted := true;
+                goto ExitPath2;
+              end;
 
               if OneDir = TruncOneDir then
               break;
@@ -2026,7 +2030,12 @@ begin
 
 
         //
-        aStar.Path.Limit  := Limit + 1 + Flank ;
+        if OneDir = EveryDirection then
+          aStar.Path.Limit  := Limit + 1 + Flank
+          else if OneDir = TruncOneDir then
+            aStar.Path.Limit  := iMin ( aStar.Path.Count + 1, Limit + 1);
+
+
 //  for I := AStar.Path.Count -1 downto 0 do begin
 //    outputdebugstring  (pchar (  IntTostr(AStar.Path[i].X) +':' + IntTostr(AStar.Path[i].Y)   )  );
 
@@ -2062,6 +2071,7 @@ ExitPath:
  //   end;
   end;
 
+ExitPath2:
   if Aborted then
     aPath.Clear;
 
@@ -11461,17 +11471,63 @@ end;
 procedure TSoccerbrain.AI_Think_myball_middle ( Team: integer  );
 var
   dstCell: TPoint;
-  ShpOrLopOrPlm,MoveValue: Integer;
-  aDoor,aPlmCell: TPoint;
-  label lopdef,lopatt,plmmoveatt;
+  ShpOrLopOrPlm,ShotCellsOrBottom,MoveValue,aRnd: Integer;
+  aDoor,aPlmCell,aplmCell2: TPoint;
+  label lopdef,lopatt,plmmoveatt,normalversion;
 begin
-      if not Ball.Player.CanSkill  then begin
-        if AI_Injured_sub_tactic_stay(team) = none then
-          BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'PASS'  );
-        Exit;
-      end;
+  if not Ball.Player.CanSkill  then begin
+    if AI_Injured_sub_tactic_stay(team) = none then
+      BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'PASS'  );
+    Exit;
+  end;
+  // se il ball.player ha una speed > 2 penso in un modo, altrimenti posso pensare in un un altro.
+  aRnd := RndGenerate(100);
+  if aRnd > 70 then goto normalversion;// 70% speed version  30% normal version
 
-      if DummyAheadPass ( team ) then Exit;
+
+      {  provo a puntare una shotcell > 2 se speed > 2}
+  if (Ball.Player.canMove) and (Ball.Player.Speed > 2) then begin // quindi minimo 3 che diventa 2 con la palla
+    aplmCell.X := -1;
+    aplmCell2.X := -1;
+    ShotCellsOrBottom :=0;
+    // vedo se è possibile raggiungere una shotcell con buff
+    aplmCell:= GetDummyMaxAccelerationSHotCells( True {OnlyBuffed} ) ;
+    // se sono sulle fascie posso cercare il fondo per un cross se ho almeno 1 friendly in area o sulla celly dell'area per eventuale inserimento
+    if (Ball.Player.CellY = 0) or (Ball.Player.CellY = 1) or (Ball.Player.CellY = 5) or (Ball.Player.CellY = 6) then begin // se sono sulle fascie
+      aplmCell2:= GetDummyMaxAccelerationBottom ; // GetDummyMaxAcceleration (AccSelfY ) + check è sul fondo (ultima o penultima cella)
+    end;
+
+    // o ho 2 possibilità (fondo o shotcell o solo una delle 2 o nessuna delle 2
+    if (aplmCell.X <> -1) and (aplmCell2.X <> -1)
+      then  ShotCellsOrBottom := 50
+        else if aplmCell.X <> -1 then begin
+          BrainInput  ( IntTostr(score.TeamGuid [team]) + ',' +'PLM,' + ball.Player.Ids +',' + IntToStr(aplmCell.X) +','+ IntToStr(aplmCell.Y));
+          exit;
+        end
+        else if aplmCell2.X <> -1 then begin
+          BrainInput  ( IntTostr(score.TeamGuid [team]) + ',' +'PLM,' + ball.Player.Ids +',' + IntToStr(aplmCell2.X) +','+ IntToStr(aplmCell2.Y));
+          exit;
+        end;
+
+    // se arrivo qui significa che ho tutte e le possibilità
+
+    if  ShotCellsOrBottom = 50 then begin
+     aRnd :=rndgenerate (100);
+     case ShotCellsOrBottom of
+          1..50: begin
+            BrainInput  ( IntTostr(score.TeamGuid [team]) + ',' +'PLM,' + ball.Player.Ids +',' + IntToStr(aplmCell.X) +','+ IntToStr(aplmCell.Y));
+            exit;
+          end;
+          51..100: begin
+            BrainInput  ( IntTostr(score.TeamGuid [team]) + ',' +'PLM,' + ball.Player.Ids +',' + IntToStr(aplmCell2.X) +','+ IntToStr(aplmCell2.Y));
+            exit;
+          end;
+     end;
+    end;
+  end;
+normalversion:
+    // qui nel caso la speed di ball.player sia inferiore a 3
+    if DummyAheadPass ( team ) then Exit;  // provo un shp dritto
 
       // la palla si sposta , devo sempre usare exit
       // mia metacampo AI SHP or LOP
@@ -11788,7 +11844,7 @@ begin
           Result := true;
           Exit;
        end;
-      end;
+     end;
    end
    else if Ball.Player.Team = 0 then begin
      for x := 10 downto Ball.Player.CellX +1 do begin
@@ -11825,7 +11881,7 @@ begin
   aDoor:= GetOpponentDoor(ball.Player);
           if aDoor.X = 0 then aDoor.X := 1 else // il dischetto dl rigore
             if aDoor.X = 11 then aDoor.X := 10; // il dischetto dl rigore
-  GetPath ( Ball.Player.Team, Ball.Player.CellX, Ball.Player.CellY, aDoor.X, aDoor.Y,12,False,False,False,false,FalseOneDir, Ball.Player.MovePath  );
+  GetPath ( Ball.Player.Team, Ball.Player.CellX, Ball.Player.CellY, aDoor.X, aDoor.Y,12,False,False,False,false,EveryDirection, Ball.Player.MovePath  );
           anOpponent := GetSoccerPlayer(Ball.Player.MovePath[0].X , Ball.Player.MovePath[0].Y );
           if anOpponent = nil then begin
             if Ball.Player.canMove then begin
@@ -12775,7 +12831,7 @@ begin
           if (Ball.Player = nil) then begin
             GetPath (aPlayer.Team, aPlayer.CellX ,aPlayer.Celly,
             Ball.CellX, Ball.CellY, aPlayer.Speed{Limit},
-            aPlayer.Flank <> 0{useFlank}, false, false,false ,ExcludeNotOneDir{OneDir},aPlayer.MovePath  );
+            aPlayer.Flank <> 0{useFlank}, false, false,false ,AbortMultipleDirection{OneDir},aPlayer.MovePath  );
             if aPlayer.MovePath.Count > 0 then begin
                // se ha raggiunto la palla
                if (aPlayer.MovePath[aPlayer.MovePath.Count-1].X = Ball.CellX)and (aPlayer.MovePath[aPlayer.MovePath.Count-1].Y = Ball.CellY) then begin // raggiunge la palla
@@ -13185,6 +13241,69 @@ begin
       end;
   end;
   aList.free;
+
+end;
+function TSoccerbrain.GetDummyMaxAccelerationShotCells ( OnlyBuffed: boolean ): TPoint;
+var
+  P: Integer;
+  aList: TList<TPoint>;
+  aRnd,iSpeed:Integer;
+  i,dist: Integer;
+  TvShotCell: TPoint;
+begin
+
+  result.X := -1;
+  if not Ball.Player.CanMove then Exit;
+  aList:= TList<TPoint>.create;
+
+  iSpeed := Ball.player.speed -1;
+  if iSpeed < 1 then iSpeed := 1;
+  // riempo una lista di ShotCells (dipende dal team) e per ognuna valuto se posso raggiungerla
+  for I := 0 to ShotCells.Count -1 do begin
+    if ShotCells[i].doorTeam = Ball.Player.Team then Continue; // solo shotCell Avversarie
+    TvShotCell :=  Point(ShotCells[i].CellX, ShotCells[i].CellY) ;
+    if GetSoccerPlayer (TvShotCell.X,TvShotCell.Y) <> nil then Continue;  // cerco una cella libera
+    dist :=  AbsDistance(ball.Player.CellX,ball.Player.CellY,TvShotCell.X,TvShotCell.Y);
+    if dist <= iSpeed then begin   // cella nel raggio di speed
+
+      if not OnlyBuffed then
+      GetPath (Ball.Player.Team , Ball.Player.CellX , Ball.Player.CellY, TvShotCell.X,TvShotCell.Y,iSpeed{Limit},false{useFlank},true{FriendlyWall},
+                         true{OpponentWall},true{FinalWall},AbortMultipleDirection{OneDir}, Ball.Player.MovePath )
+      else if dist > 1 then begin  // minimo 2 celle per buff
+      GetPath (Ball.Player.Team , Ball.Player.CellX , Ball.Player.CellY, TvShotCell.X,TvShotCell.Y,iSpeed{Limit},false{useFlank},true{FriendlyWall},
+                         true{OpponentWall},true{FinalWall},AbortMultipleDirection{OneDir}, Ball.Player.MovePath )
+
+      end;
+
+      if Ball.Player.MovePath.Count > 0 then
+        aList.Add(TvShotCell);
+    end;
+  end;
+
+
+
+  if aList.Count > 0 then begin
+
+      aRnd := RndGenerate0(aList.Count -1);
+      Result.X := aList[aRnd].X;
+      Result.Y := aList[aRnd].Y;
+  end;
+
+  aList.Free;
+
+end;
+function TSoccerbrain.GetDummyMaxAccelerationBottom: TPoint;
+var
+  aplmCell: TPoint;
+begin
+  result.X := -1;
+  aplmCell := GetDummyMaxAcceleration( AccSelfY );
+  if aplmCell.X <> -1 then begin
+    if (aplmCell.X = 1) or (aplmCell.X = 10) then begin
+      Result.X := aplmCell.X;
+      Result.Y := aplmCell.Y;
+    end;
+  end;
 
 end;
 function TSoccerbrain.GetDummyGoAheadCell : Tpoint; // il player con la palla cerca di avanzare

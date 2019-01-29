@@ -8,6 +8,8 @@ unit Server;
 //{$DEFINE MYDAC}    //  uso devart Mydac.
 {$DEFINE BOTS}     // se uso i bot o solo partite di player reali
 {$DEFINE useMemo}  // se uso il debug a video delle informazioni importanti
+//{$DEFINE allPlayerSpeed3}  // cheat: setta la speed di tutti i player a 3
+//{$DEFINE allPlayerSpeed4}  // cheat: setta la speed di tutti i player a 4
 interface
  { TODO : verificare fine stagioen e new season, giovani ecc.. }
  { TODO : creare testfault come testcorner }
@@ -3608,6 +3610,12 @@ begin
       aIds :=   MyQueryGamePlayers.FieldByName('guid').AsString;
 
       aTeam := TT;
+      {$IFDEF allPlayerSpeed3}
+      Attributes[1]:='3';
+      {$ENDIF}
+      {$IFDEF allPlayerSpeed4}
+      Attributes[1]:='4';
+      {$ENDIF}
 
       // la formationcells determina il role
       aPoint.X := MyQueryGamePlayers.FieldByName('formation_x').AsInteger ;
