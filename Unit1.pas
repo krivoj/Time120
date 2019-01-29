@@ -9471,6 +9471,7 @@ begin
 
     for I := 1 to NUM_TALENT do begin
       GridXP.Cells[1,i+6].Text := IntToStr(aPlayer.xpTal[I]) + '/' + IntToStr (xpNeedTal[I]); // ogni talento necessita di una certa xp
+      GridXP.Cells[1,i+6].ProgressBarValue :=  (aPlayer.xpTal[I] * 100) div xpNeedTal[I];
     end;
 
 
