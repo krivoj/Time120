@@ -19,7 +19,7 @@
       //    procedure ClientLoadBrainMM  ( incMove: Byte ) Carica il brain arrivato dal server
       //    procedure Anim --> esegue realmente l'animazione
 
-      { TODO : in futuro talento: se non ha hostile nearby e diventa portatore palla, guadagna mossa)}
+      { TODO : in futuro talento: se non ha hostile nearby e diventa portatore palla da un shp a distanza 2+, guadagna mossa)}
 interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Types, System.Classes, Vcl.Graphics,
@@ -1090,6 +1090,7 @@ begin
   xpNeedTal[TALENT_ID_MARKING] := 120;
   xpNeedTal[TALENT_ID_POSITIONING] := 120;
   xpNeedTal[TALENT_ID_FREEKICKS] := 40;
+  xpNeedTal[TALENT_ID_AGILITY] := 120;
 
   MutexAnimation:=CreateMutex(nil,false,'tsscript');
   SE_GridCountryTeam.Active := false;
@@ -1180,6 +1181,7 @@ begin
   StringTalents[15] :=  'marking';
   StringTalents[16] :=  'positioning';
   StringTalents[17] :=  'freekicks';
+  StringTalents[18] :=  'agility';
 
   LstSkill[0]:= 'Move';
   LstSkill[1]:= 'Short.Passing';
@@ -9409,7 +9411,7 @@ begin
   GridXp.DefaultColWidth := 16;
   GridXp.DefaultRowHeight := 16;
   GridXp.ColCount :=3;
-  GridXp.RowCount :=24;
+  GridXp.RowCount :=25;
   GridXp.Columns[0].Width := 120;
   GridXp.Columns[1].Width := 60;
   GridXp.Columns[2].Width := 40;

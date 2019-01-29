@@ -47,6 +47,7 @@ talent_Faul=Faul
 talent_Marking=Marking
 talent_Positioning=Positioning
 talent_FreeKicks=Free Kicks
+talent_Agility=Agility
 
 role_G=Gk
 role_D=Def
@@ -89,9 +90,10 @@ descr_talent_Defensive=Tende a muoversi verso la propria area.
 descr_talent_Bomb=+1 a tutti i bonus di Tiro.
 descr_talent_Playmaker=Cerca di avvicinarsi al proprio portatore di palla. Inoltre i suoi passaggi corti terminanti in area avversaria conferiscono un bonus al ricevente.
 descr_talent_Faul=+15% chance di commettere un fallo.
-descr_talent_Marking=DIF=Marca l'attaccante con il Tiro piu' alto. Cen=Marca il Centrocampista con il passaggi piu' alto. ATT=Marca il difensore con il Controllo piu' basso.
+descr_talent_Marking=DIF=Marca l'attaccante con il Tiro piu' alto. Cen=Marca il Centrocampista con il passaggio piu' alto. ATT=Marca il difensore con il Controllo piu' basso.
 descr_talent_positioning=Cerca di tornare verso la propria zona di campo.
 descr_talent_FreeKicks=+1 Tiro sui Calci di punizione.
+descr_talent_Agility=Quando riceve un passaggio corto distante almeno 2 celle, non costa mosse.
 
 
 lbl_Talent=Talent

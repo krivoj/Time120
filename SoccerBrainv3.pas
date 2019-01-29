@@ -42,7 +42,7 @@ const xp_SHOT_POINTS = 120;
 const xp_HEADING_POINTS = 120;
 
 // Queste costanti sono uguali al DB game.talents . Gli ID devono corrispondere
-const NUM_TALENT               = 17; // uguale a game.talents
+const NUM_TALENT               = 18; // uguale a game.talents
 const TALENT_ID_GOALKEEPER     = 1;  // può giocare in porta
 const TALENT_ID_CHALLENGE      = 2;  // lottatore + 1 autotackle
 const TALENT_ID_TOUGHNESS      = 3;  // +1 tackle
@@ -60,6 +60,7 @@ const TALENT_ID_FAUL           = 14; // +15% chance di commettere un fallo
 const TALENT_ID_MARKING        = 15;
 const TALENT_ID_POSITIONING    = 16;
 const TALENT_ID_FREEKICKS      = 17;
+const TALENT_ID_AGILITY        = 18; // Quando riceve un passaggio corto distante almeno 2 celle, non costa mosse.
 //------------------------------------------------------------------
  { nel server c'è array xpNeedTAL[I] e si puntano così xpTAL[TALENT_ID_EXPERIENCE]}
 
@@ -344,7 +345,7 @@ TSoccerPlayer = class
     Flank: Integer;
     InterceptModifier: integer;
 
-    XpTal: array [1..17] of Integer;  // come i talenti sul db game.talents. xp guadagnata in questa partita(brain) per futuro trylevelup del talento
+    XpTal: array [1..NUM_TALENT] of Integer;  // come i talenti sul db game.talents. xp guadagnata in questa partita(brain) per futuro trylevelup del talento
 
     PlayerOut : Boolean; // sostituito
     Injured: Byte; // giornate di infortunio rimaste
@@ -5580,27 +5581,27 @@ begin
 
          { Playmaker if aplyaer.tal_playmaker shp in area avversaria +N lunghezza passaggio al shot }
 //           aPath.count è la lunghezza del passaggio che qui non +è stato intercettato perchè sopra exit
-           if (aPlayer.TalentID = TALENT_ID_PlayMaker ) then begin
-             aFriend := GetSoccerPlayer(ball.CellX, ball.celly);
-             if aFriend <> nil then begin
-               if (aFriend.Team = aPlayer.team) and (aFriend.InCrossingArea) then begin
+           aFriend := GetSoccerPlayer(ball.CellX, ball.celly);
+           if aFriend <> nil then begin
+              if aPath.Count >= 2 then
+                aFriend.XpTal [TALENT_ID_AGILITY] := aFriend.XpTal [TALENT_ID_AGILITY] + 1;
 
-                 aFriend.BonusSHPAREAturn := 1;
-                 aFriend.Shot   := aPlayer.Defaultshot + aPath.count + Abs(Integer( aFriend.TalentId = TALENT_ID_BOMB));
+             if (aPlayer.TalentID = TALENT_ID_PLAYMAKER ) then begin
+               aFriend := GetSoccerPlayer(ball.CellX, ball.celly);
+               if aFriend <> nil then begin
+                 if (aFriend.Team = aPlayer.team) and (aFriend.InCrossingArea) then begin
+
+                   aFriend.BonusSHPAREAturn := 1;
+                   aFriend.Shot   := aPlayer.Defaultshot + aPath.count + Abs(Integer( aFriend.TalentId = TALENT_ID_BOMB));
+                 end;
+
                end;
-
+             end
+             else if (aFriend.TalentID = TALENT_ID_AGILITY ) then begin
+                 Inc(fteamMovesleft);
              end;
            end;
            //aPlayer.resetALL;
-{             aFriend := GetSoccerPlayer(ball.CellX, ball.celly);
-             if aFriend <> nil then begin
-               if (aFriend.Tal_Agility > 0) then begin     xp= proprio quando riceve palla
-               if (aFriend.Team = aPlayer.team)  then begin
-                 Inc(fteamsMoveleft)
-                 aFriend.Shot   := aPlayer.Defaultshot + aPath.count + aPlayer.tal_bomb ;
-               end;
-              end;
-             end;   }
 
 
             if aPlayer.Role <> 'G' then Dec(ShpFree);

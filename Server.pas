@@ -943,7 +943,7 @@ begin
 
         // xp qui sommo al db la xp guadagnata in partita
         tsXP := TStringList.Create;
-        tsXP.commaText := MyQueryGamePlayers.FieldByName('xp').asstring; // <-- 6 attributes , 12 talenti
+        tsXP.commaText := MyQueryGamePlayers.FieldByName('xp').asstring; // <-- 6 attributes , NUM_TALENT talenti
 
         // rispettare esatto ordine
         aPlayer.xp_Speed         := aPlayer.xp_Speed + StrToInt( tsXP[0]);
@@ -1415,6 +1415,7 @@ begin
   xpNeedTal[TALENT_ID_MARKING] := 120;
   xpNeedTal[TALENT_ID_POSITIONING] := 120;
   xpNeedTal[TALENT_ID_FREEKICKS] := 40;
+  xpNeedTal[TALENT_ID_AGILITY] := 120;
 
 
   TsWorldCountries:= TStringList.Create ;
@@ -2212,7 +2213,7 @@ o o o o o o
   aplayer.Age := age;
 
   tsXP := TStringList.Create;
-  tsXP.commaText := xp; // <-- init importante 17 talenti
+  tsXP.commaText := xp; // <-- init importante 18 talenti
   // rispettare esatto ordine
 
   aPlayer.xp_Speed         := StrToInt( tsXP[0]);
