@@ -8834,9 +8834,9 @@ begin
           ArrowShowLopHeading( CellX, CellY, ToEmptyCell) ;
           HighLightField( CellX, CellY, 0);
           if aFriend <> nil then begin
-            SE_GridDiceWriteRow( aFriend.Team, UpperCase(Translate('attribute_BallControl')) , aFriend.SurName , aFriend.Ids ,'VS', IntToStr(aFriend.BallControl) );
+            CreateBaseAttribute (  CellX, CellY, aFriend.BallControl );
             if aFriend.InCrossingArea then
-              SE_GridDiceWriteRow( aFriend.Team, '10: ' + UpperCase(Translate('skill_Volley')) , aFriend.SurName , aFriend.Ids ,'VS',IntToStr(aFriend.Shot) );
+              CreateBaseAttribute (  CellX, CellY, aFriend.Shot );
           end;
         end
         else if WaitForXY_Crossing then begin   // mostro i colpi di testa difensivi o chi arriva sulla palla
