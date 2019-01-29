@@ -497,6 +497,7 @@ end;
 
 var
   Form1: TForm1;
+  xpNeedTal: array [1..NUM_TALENT] of integer;  // come i talenti sul db game.talents. xp necessaria per trylevelup del talento
   SelCountryTeam: string;
   Language: string;
   MutexAnimation : Cardinal;
@@ -549,7 +550,7 @@ var
 
   SE_DragGuid: Se_Sprite; // sprite che sto spostando con il drag and drop
   Animating:Boolean;
-  tsTalents: TStringList;
+  StringTalents: array [1..NUM_TALENT] of string;
   LstSkill: array[0..10] of string; // 11 skill totali
   ShowPixelInfo: Boolean;
 
@@ -1071,6 +1072,25 @@ var
   I: Integer;
   ini : TIniFile;
 begin
+  // deve essere ubgual a quella del server formcreate
+  xpNeedTal[TALENT_ID_GOALKEEPER] := 120;
+  xpNeedTal[TALENT_ID_CHALLENGE] := 120;
+  xpNeedTal[TALENT_ID_TOUGHNESS] := 120;
+  xpNeedTal[TALENT_ID_POWER] := 120;
+  xpNeedTal[TALENT_ID_CROSSING] := 120;
+  xpNeedTal[TALENT_ID_LONGPASS] := 120;
+  xpNeedTal[TALENT_ID_EXPERIENCE] := 120;
+  xpNeedTal[TALENT_ID_DRIBBLING] := 80;
+  xpNeedTal[TALENT_ID_BULLDOG] := 120;
+  xpNeedTal[TALENT_ID_OFFENSIVE] := 120;
+  xpNeedTal[TALENT_ID_DEFENSIVE] := 120;
+  xpNeedTal[TALENT_ID_BOMB] := 120;
+  xpNeedTal[TALENT_ID_PLAYMAKER] := 120;
+  xpNeedTal[TALENT_ID_FAUL] := 120;
+  xpNeedTal[TALENT_ID_MARKING] := 120;
+  xpNeedTal[TALENT_ID_POSITIONING] := 120;
+  xpNeedTal[TALENT_ID_FREEKICKS] := 40;
+
   MutexAnimation:=CreateMutex(nil,false,'tsscript');
   SE_GridCountryTeam.Active := false;
 
@@ -1143,24 +1163,23 @@ begin
   Application.ProcessMessages ;
 
   // rispetto l'esatto ordine dei talenti sul DB
-  tsTalents := Tstringlist.Create;
-  tsTalents.add  ('goalkeeper');
-  tsTalents.add ('challenge'); // lottatore
-  tsTalents.add ('toughness'); // durezza
-  tsTalents.add ('power');      // potenza
-  tsTalents.add  ('crossing');
-  tsTalents.add  ('longpass');  // solo distanza
-  tsTalents.add  ('experience');  // pressing gratis
-  tsTalents.add  ('dribbling');
-  tsTalents.add  ('bulldog');
-  tsTalents.add  ('offensive');
-  tsTalents.add  ('defensive');
-  tsTalents.add  ('bomb');
-  tsTalents.add  ('playmaker');
-  tsTalents.add  ('faul');
-  tsTalents.add  ('marking');
-  tsTalents.add  ('Positioning');
-  tsTalents.add  ('freekicks');
+  StringTalents[1]:= 'goalkeeper';
+  StringTalents[2] := 'challenge'; // lottatore
+  StringTalents[3] := 'toughness'; // durezza
+  StringTalents[4] := 'power';      // potenza
+  StringTalents[5] :=  'crossing';
+  StringTalents[6] :=  'longpass';  // solo distanza
+  StringTalents[7] :=  'experience';  // pressing gratis
+  StringTalents[8] :=  'dribbling';
+  StringTalents[9] :=  'bulldog';
+  StringTalents[10] :=  'offensive';
+  StringTalents[11] :=  'defensive';
+  StringTalents[12] :=  'bomb';
+  StringTalents[13] :=  'playmaker';
+  StringTalents[14] :=  'faul';
+  StringTalents[15] :=  'marking';
+  StringTalents[16] :=  'positioning';
+  StringTalents[17] :=  'freekicks';
 
   LstSkill[0]:= 'Move';
   LstSkill[1]:= 'Short.Passing';
@@ -1275,7 +1294,6 @@ begin
   AnimationScript.Ts.Free;
   AnimationScript.Free;
   TranslateMessages.Free;
-  tsTalents.free;
   TsWorldCountries.Free;
   TsNationTeams.Free;
 
@@ -1603,48 +1621,30 @@ begin
       WAITING_GETFORMATION:= True;
       case CellY of
         0: begin
-          tcp.SendStr( 'levelup,'+ se_gridxp0.SceneName + ',speed'  + EndofLine);
+          tcp.SendStr( 'levelupattribute,'+ se_gridxp0.SceneName + ',0'  + EndofLine);
         end;
         1: begin
-          tcp.SendStr( 'levelup,'+ se_gridxp0.SceneName + ',defense'  + EndofLine);
+          tcp.SendStr( 'levelupattribute,'+ se_gridxp0.SceneName + ',1'  + EndofLine);
         end;
         2: begin
-          tcp.SendStr( 'levelup,'+ se_gridxp0.SceneName + ',passing'  + EndofLine);
+          tcp.SendStr( 'levelupattribute,'+ se_gridxp0.SceneName + ',2'  + EndofLine);
         end;
         3: begin
-          tcp.SendStr( 'levelup,'+ se_gridxp0.SceneName + ',ballcontrol'  + EndofLine);
+          tcp.SendStr( 'levelupattribute,'+ se_gridxp0.SceneName + ',3'  + EndofLine);
         end;
         4: begin
-          tcp.SendStr( 'levelup,'+ se_gridxp0.SceneName + ',shot'  + EndofLine);
+          tcp.SendStr( 'levelupattribute,'+ se_gridxp0.SceneName + ',4'  + EndofLine);
         end;
         5: begin
-          tcp.SendStr( 'levelup,'+ se_gridxp0.SceneName + ',heading'  + EndofLine);
+          tcp.SendStr( 'levelupattribute,'+ se_gridxp0.SceneName + ',5'  + EndofLine);
         end;
         // 6 vuota
         7..23: begin
-          tcp.SendStr( 'levelup,'+ se_gridxp0.SceneName + ',' + IntTostr (CellY - 6) + EndofLine); // i talenti qui sotto
+          tcp.SendStr( 'leveluptalent,'+ se_gridxp0.SceneName + ',' + IntTostr (CellY - 6) + EndofLine); // i talenti qui sotto
         end;
       end;
     end;
   end;
-{
-    GridXP.Cells[0,7] := Translate('talent_Goalkeeper');
-    GridXP.Cells[0,8] :=  Translate('talent_Challenge');
-    GridXP.Cells[0,9] :=  Translate('talent_Toughness');
-    GridXP.Cells[0,10] := Translate('talent_Power');
-    GridXP.Cells[0,11] := Translate('talent_Crossing');
-    GridXP.Cells[0,12] := Translate('talent_Long.Pass');
-    GridXP.Cells[0,13] := Translate('talent_Experience');
-    GridXP.Cells[0,14] := Translate('talent_Dribbling');
-    GridXP.Cells[0,15] := Translate('talent_Bulldog');
-    GridXP.Cells[0,16] := Translate('talent_Offensive');
-    GridXP.Cells[0,17] := Translate('talent_Defensive');
-    GridXP.Cells[0,18] := Translate('talent_Bomb');
-    GridXP.Cells[0,19] := Translate('talent_Playmaker');
-    GridXP.Cells[0,20] := Translate('talent_Faul');
-    GridXP.Cells[0,21] := Translate('talent_Marking');
-    GridXP.Cells[0,22] := Translate('talent_Positioning');
-    GridXP.Cells[0,23] := Translate('talent_FreeKicks');    }
 
 end;
 
@@ -2069,11 +2069,11 @@ var
   dataStr, Attributes,tmps : string;
   GraphicSe: boolean;
   TalentID: Byte;
-  aTalents: string[25];
   TsHistory,tsXP: TStringList;
   DefaultSpeed,DefaultDefense,DefaultPassing,DefaultBallControl  ,DefaultShot,DefaultHeading: Byte;
   UniformBitmap,UniformBitmapGK:SE_Bitmap;
   aColor: TColor;
+  IndexTal: Integer;
 procedure setupBMp (bmp:TBitmap; aColor: Tcolor);
 begin
   BMP.Canvas.Font.Size := 8;
@@ -2194,10 +2194,6 @@ begin
       TalentID := Ord( buf3[0] [ cur ]);           // identificativo talento
       Cur := Cur + 1;
 
-      if TalentID > 0 then                         // il talento lo carico anchein formato stringa
-        aTalents := tsTalents [ TalentID -1]
-        else aTalents := '';
-
       Stamina := Ord( buf3[0] [ cur ]);
       Cur := Cur + 1;
 
@@ -2232,7 +2228,7 @@ begin
       Cur := Cur + 4;
 
 
-      aPlayer:= TSoccerPlayer.create(0,MyGuidTeam,Matches_Played,IntToStr(guid),'',surname,aTalents,Attributes);
+      aPlayer:= TSoccerPlayer.create(0,MyGuidTeam,Matches_Played,IntToStr(guid),'',surname,Attributes,TalentID);
       aPlayer.TalentId := TalentID;
       aPlayer.GuidTeam := MyguidTeam;
       aPlayer.Stamina := Stamina;
@@ -2283,23 +2279,9 @@ begin
       aPlayer.xp_Shot          := aPlayer.xp_Shot + StrToInt( tsXP[4]);
       aPlayer.xp_Heading       := aPlayer.xp_Heading + StrToInt( tsXP[5]);
 
-      aPlayer.xpTal_GoalKeeper       := aPlayer.xpTal_GoalKeeper + StrToInt( tsXP[6]);
-      aPlayer.xpTal_Challenge        := aPlayer.xpTal_Challenge + StrToInt( tsXP[7]);
-      aPlayer.xpTal_Toughness        := aPlayer.xpTal_Toughness + StrToInt( tsXP[8]);
-      aPlayer.xpTal_Power            := aPlayer.xpTal_Power + StrToInt( tsXP[9]);
-      aPlayer.xpTal_Crossing         := aPlayer.xpTal_Crossing + StrToInt( tsXP[10]);
-      aPlayer.xptal_longpass         := aPlayer.xptal_longpass + StrToInt( tsXP[11]);
-      aPlayer.xpTal_Experience       := aPlayer.xpTal_Experience + StrToInt( tsXP[12]);
-      aPlayer.xpTal_Dribbling        := aPlayer.xpTal_Dribbling + StrToInt( tsXP[13]);
-      aPlayer.xpTal_Bulldog          := aPlayer.xpTal_Bulldog + StrToInt( tsXP[14]);
-      aPlayer.xpTal_midOffensive     := aPlayer.xpTal_midOffensive + StrToInt( tsXP[15]);
-      aPlayer.xpTal_midDefensive     := aPlayer.xpTal_midDefensive + StrToInt( tsXP[16]);
-      aPlayer.xpTal_Bomb             := aPlayer.xpTal_Bomb + StrToInt( tsXP[17]);
-      aPlayer.xpTal_PlayMaker        := aPlayer.xpTal_Bomb + StrToInt( tsXP[18]);
-      aPlayer.xpTal_faul             := aPlayer.xpTal_Bomb + StrToInt( tsXP[19]);
-      aPlayer.xpTal_Marking          := aPlayer.xpTal_Bomb + StrToInt( tsXP[20]);
-      aPlayer.xpTal_Positioning           := aPlayer.xpTal_Bomb + StrToInt( tsXP[21]);
-      aPlayer.xpTal_freekicks        := aPlayer.xpTal_Bomb + StrToInt( tsXP[22]);
+      for IndexTal := 1 to NUM_TALENT do begin
+        aPlayer.xpTal[IndexTal]:=aPlayer.xpTal[IndexTal] + StrToInt( tsXP[IndexTal+5])
+      end;
 
       tsXP.Free;
 
@@ -2837,7 +2819,7 @@ begin
 
   if MyBrain.w_FreeKick3 then begin
     aGK := Mybrain.GetOpponentGK ( SelectedPlayer.Team );
-    BaseShot :=  SelectedPlayer.DefaultShot + Mybrain.MalusPrecisionShot[SelectedPlayer.CellX] +1 + SelectedPlayer.Tal_freekicks;  // . il +1 è importante al shot. è una freekick3
+    BaseShot :=  SelectedPlayer.DefaultShot + Mybrain.MalusPrecisionShot[SelectedPlayer.CellX] +1 + Abs(Integer(SelectedPlayer.TalentId = TALENT_ID_FREEKICKS ));  // . il +1 è importante al shot. è una freekick3
     if BaseShot <= 0 then BaseShot := 1;
     CreateBaseAttribute (  selectedPlayer.CellX, SelectedPlayer.CellY, BaseShot) ;
   // mostro le 4 chance in barriera
@@ -2902,7 +2884,7 @@ begin
 end;
 procedure TForm1.CreateBaseAttribute ( CellX, CellY, value: integer );
 var
-  aSeField,aSprite: SE_Sprite;
+  aSeField: SE_Sprite;
   sebmp: SE_Bitmap;
 
 begin
@@ -2927,7 +2909,7 @@ begin
 //      SE_GridDicewriterow ( aplayer.Team,  UpperCase( Translate ( 'skill_' + ts[3])),  aplayer.surname,  aPlayer.ids , ts[2], '' )
 //      else SE_GridDicewriterow ( aplayer.Team,  UpperCase( Translate ( 'attribute_' + ts[3])),  aplayer.surname,  aPlayer.ids , ts[2], '' );
 
-    aSprite := se_interface.CreateSprite( sebmp.bitmap, 'numbers', 1, 1, 100, aSEField.Position.X  , aSEField.Position.Y , true );
+    se_interface.CreateSprite( sebmp.bitmap, 'numbers', 1, 1, 100, aSEField.Position.X  , aSEField.Position.Y , true );
     sebmp.Free;
 
 end;
@@ -3082,7 +3064,7 @@ begin
 
   if MyBrain.w_FreeKick3 then begin
     aGK := Mybrain.GetOpponentGK ( SelectedPlayer.Team );
-    BaseShot :=  SelectedPlayer.DefaultShot + Mybrain.MalusPrecisionShot[SelectedPlayer.CellX] +1 + SelectedPlayer.Tal_freekicks;  // . il +1 è importante al shot. è una freekick3
+    BaseShot :=  SelectedPlayer.DefaultShot + Mybrain.MalusPrecisionShot[SelectedPlayer.CellX] +1 + Abs(Integer(SelectedPlayer.TalentId = TALENT_ID_FREEKICKS ));;  // . il +1 è importante al shot. è una freekick3
     if BaseShot <= 0 then BaseShot := 1;
     CreateBaseAttribute (  SelectedPlayer.CellX,SelectedPlayer.CellY, BaseShot) ;
   // mostro le 4 chance in barriera
@@ -3614,7 +3596,7 @@ var
   FC: TFormationCell;
   aPoint : TPoint;
   aCell: TSoccerCell;
-  aName, aSurname,  aTalents,Attributes,aIds: string;
+  aName, aSurname,  Attributes,aIds: string;
   bmp: se_Bitmap;
   PenaltyCell: TPoint;
   bmp1: SE_Bitmap;
@@ -3879,10 +3861,6 @@ begin
     aTalentID := Ord( buf3[incMove][ cur ]);
     Cur := Cur + 1;
 
-    if aTalentID > 0 then
-      aTalents := tsTalents [ aTalentID -1]
-      else aTalents := '';
-
     aStamina := Ord( buf3[incMove][ cur ]);
     Cur := Cur + 1;
 
@@ -3908,8 +3886,8 @@ begin
                                  aIds,
                                  aName,
                                  aSurname,
-                                 aTalents,
-                                 Attributes  );     // attributes e defaultAttrributes sono uguali
+                                 Attributes,
+                                 aTalentID  );     // attributes e defaultAttrributes sono uguali
       MyBrain.AddSoccerPlayer(aPlayer);       // lo aggiune per la prima ed unica volta
     end
     else begin
@@ -4109,10 +4087,6 @@ begin
     aTalentID := Ord( buf3[incMove][ cur ]);
     Cur := Cur + 1;
 
-    if aTalentID > 0 then
-      aTalents := tsTalents [ aTalentID -1]
-      else aTalents := '';
-
     aStamina := Ord( buf3[incMove][ cur ]);
     Cur := Cur + 1;
 
@@ -4138,8 +4112,8 @@ begin
                                  aIds,
                                  aName,
                                  aSurname,
-                                 aTalents,
-                                 Attributes  );     // attributes e defaultAttrributes sono uguali
+                                 Attributes,
+                                 aTalentID  );     // attributes e defaultAttrributes sono uguali
       MyBrain.AddSoccerReserve(aPlayer);
     end
     else
@@ -7513,11 +7487,11 @@ begin
     for i := 0 to MyBrain.lstSoccerPlayer.Count -1 do begin
       aPlayer2 := MyBrain.lstSoccerPlayer[i];
       if aPlayer2.Team = aPlayer.Team  then begin
-        if (aPlayer.Talents = 'goalkeeper') and (aPlayer.Talents = 'goalkeeper') then begin
+        if (aPlayer.TalentID = TALENT_ID_GOALKEEPER) and (aPlayer2.TalentID = TALENT_ID_GOALKEEPER) then begin
           aSEField := SE_field.FindSprite(IntToStr ( aPlayer2.CellX ) + '.' + IntToStr (aPlayer2.CellY ));
           aSEField.SubSprites[0].lVisible := true;
         end
-        else if (aPlayer.Talents <> 'goalkeeper') and (aPlayer.Talents <> 'goalkeeper') then begin
+        else if (aPlayer.TalentID <> TALENT_ID_GOALKEEPER) and (aPlayer2.TalentID <> TALENT_ID_GOALKEEPER) then begin
           aSEField := SE_field.FindSprite(IntToStr ( aPlayer2.CellX ) + '.' + IntToStr (aPlayer2.CellY ));
           aSEField.SubSprites[0].lVisible := true;
         end
@@ -7692,7 +7666,7 @@ begin
 
 
     if SelectedPlayer.isCOF then begin
-      if SelectedPlayer.Role <> 'G' then SelectedPlayer.ActiveSkills.Add('Corner.Kick=' + IntTostr(SelectedPlayer.Passing + SelectedPlayer.Tal_Crossing  ));
+      if SelectedPlayer.Role <> 'G' then SelectedPlayer.ActiveSkills.Add('Corner.Kick=' + IntTostr(SelectedPlayer.Passing + Abs(Integer(SelectedPlayer.TalentId = TALENT_ID_CROSSING))) );
       goto LoadGridSkill; // break
     end
     else if SelectedPlayer.isFK1 then begin
@@ -7748,13 +7722,13 @@ begin
        then SelectedPlayer.ActiveSkills.Add('Protection=2'); // ha la palla
 
       if (SelectedPlayer.Role <> 'G') and ( MyBrain.GetFriendInCrossingArea( SelectedPlayer ) ) then // ha la palla
-              SelectedPlayer.ActiveSkills.Add('Crossing=' + IntTostr(SelectedPlayer.Passing + SelectedPlayer.Tal_crossing  ));
+              SelectedPlayer.ActiveSkills.Add('Crossing=' + IntTostr(SelectedPlayer.Passing + Abs(Integer(SelectedPlayer.TalentId = TALENT_ID_CROSSING))) );
 
       if SelectedPlayer.canDribbling then begin
         if (SelectedPlayer.Role <> 'G') then begin
           aList := TObjectList<TSoccerPlayer>.Create (false);
           MyBrain.GetNeighbournsOpponent (SelectedPlayer.cellX, SelectedPlayer.CellY, SelectedPlayer.Team, aList  );
-          if aList.Count > 0 then SelectedPlayer.ActiveSkills.Add('Dribbling=' + IntTostr(SelectedPlayer.BallControl  + SelectedPlayer.Tal_Dribbling   ));
+          if aList.Count > 0 then SelectedPlayer.ActiveSkills.Add('Dribbling=' + IntTostr(SelectedPlayer.BallControl  + Abs(Integer(SelectedPlayer.TalentId = TALENT_ID_DRIBBLING))) );
           // ha la palla e ci sono avversari a distanza 1 da potere dribblare
           aList.Free;
         end;
@@ -7769,7 +7743,7 @@ begin
           if( AbsDistance ( SelectedPlayer.CellX, SelectedPlayer.CellY , Mybrain.Ball.CellX , Mybrain.Ball.CellY ) = 1) and
             (Mybrain.Ball.Player.Team <> SelectedPlayer.Team) and( Mybrain.Ball.Player.Role <> 'G')
           then begin
-            if (SelectedPlayer.Role <> 'G') and ( not SelectedPlayer.PressingDone) then SelectedPlayer.ActiveSkills.Add('Tackle=' + IntTostr(SelectedPlayer.Defense  + SelectedPlayer.Tal_Toughness    ));;
+            if (SelectedPlayer.Role <> 'G') and ( not SelectedPlayer.PressingDone) then SelectedPlayer.ActiveSkills.Add('Tackle=' + IntTostr(SelectedPlayer.Defense  + Abs(Integer(SelectedPlayer.TalentId = TALENT_ID_TOUGHNESS))) );
             if (SelectedPlayer.Role <> 'G') and ( not SelectedPlayer.PressingDone) then SelectedPlayer.ActiveSkills.Add('Pressing=-2');
           end;
         end;
@@ -8249,7 +8223,7 @@ begin
 
 
       if (Stat = 'Crossing') or (Stat = 'Passing')  then
-        SE_GridFreeKick.Cells [2,Y].Text := IntTostr (MyBrain.lstSoccerPlayer[i].defaultPassing + MyBrain.lstSoccerPlayer[i].Tal_Crossing)
+        SE_GridFreeKick.Cells [2,Y].Text := IntTostr (MyBrain.lstSoccerPlayer[i].defaultPassing + Abs(Integer(SelectedPlayer.TalentId = TALENT_ID_CROSSING)))
       else if Stat = 'Heading' then
         SE_GridFreeKick.Cells [2,Y].Text := IntTostr(MyBrain.lstSoccerPlayer[i].defaultheading)
       else if Stat = 'Shot' then
@@ -8550,7 +8524,7 @@ begin
           end
           else if (SelectedPlayer = Mybrain.Ball.Player) and (WaitForXY_Shortpass) then begin
 
-            if absDistance (SelectedPlayer.CellX , SelectedPlayer.CellY, Cellx, Celly  ) > (ShortPassRange +  SelectedPlayer.Tal_LongPass) then exit;
+            if absDistance (SelectedPlayer.CellX , SelectedPlayer.CellY, Cellx, Celly  ) > (ShortPassRange +  Abs(Integer(SelectedPlayer.TalentId = TALENT_ID_LONGPASS))) then exit;
 
 
             aFriend := MyBrain.GetSoccerPlayer ( CellX, CellY );
@@ -8578,7 +8552,7 @@ begin
           else if (SelectedPlayer = Mybrain.Ball.Player) and (WaitForXY_Loftedpass)  then begin
             // controllo lato client. il server lo ripete
             if ( SelectedPlayer.Role <> 'G' ) and
-            ( (absDistance (SelectedPlayer.CellX , SelectedPlayer.CellY, Cellx, Celly  ) >( LoftedPassRangeMax +  SelectedPlayer.Tal_LongPass))
+            ( (absDistance (SelectedPlayer.CellX , SelectedPlayer.CellY, Cellx, Celly  ) >( LoftedPassRangeMax +  Abs(Integer(SelectedPlayer.TalentId = TALENT_ID_LONGPASS))))
              or (absDistance (SelectedPlayer.CellX , SelectedPlayer.CellY, Cellx, Celly  )   < LoftedPassRangeMin ) )
              then exit
              else begin // è un portiere
@@ -8610,7 +8584,7 @@ begin
           end
           else if (SelectedPlayer = Mybrain.Ball.Player) and (WaitForXY_Crossing)  then begin
             // controllo lato client. il server lo ripete
-            if (absDistance (SelectedPlayer.CellX , SelectedPlayer.CellY, Cellx, Celly  ) > (CrossingRangeMax+  SelectedPlayer.Tal_LongPass))
+            if (absDistance (SelectedPlayer.CellX , SelectedPlayer.CellY, Cellx, Celly  ) > (CrossingRangeMax +  Abs(Integer(SelectedPlayer.TalentId = TALENT_ID_LONGPASS))))
              or (absDistance (SelectedPlayer.CellX , SelectedPlayer.CellY, Cellx, Celly  )   < CrossingRangeMin )
              then exit;
 
@@ -8750,21 +8724,23 @@ begin
 
         end;
 
-          if CheckBox1.Checked then
-            lbl_Surname0.Caption := aPlayer.Ids + ' ' + aPlayer.SurName + ' (' + aPlayer.Role +')'
-              else lbl_Surname0.Caption := aPlayer.SurName + ' (' + aPlayer.Role +')' ;
+        if CheckBox1.Checked then
+          lbl_Surname0.Caption := aPlayer.Ids + ' ' + aPlayer.SurName + ' (' + aPlayer.Role +')'
+            else lbl_Surname0.Caption := aPlayer.SurName + ' (' + aPlayer.Role +')' ;
 
 
 
-           lbl_talent0.Caption :=  Capitalize  ( Translate( 'Talent_' + capitalize ( aPlayer.Talents) ));
-           lbl_descrTalent0.Caption := Translate('descr_talent_' + aPlayer.Talents);
-              //          lblR.Caption := '';
-           if aPlayer.Talents <> '' then begin
-               btnTalentBmp0.Glyph.LoadFromFile( dir_talent + aPlayer.Talents + '.bmp' );
-               btnTalentBmp0.Visible := True;
-           end
-           else btnTalentBmp0.Visible := False;
-
+         if aPlayer.TalentID <> 0 then begin
+           lbl_talent0.Caption :=  Capitalize  ( Translate( 'talent_' + capitalize (  StringTalents[aPlayer.TalentId]) ));
+           lbl_descrTalent0.Caption := Translate('descr_talent_' + StringTalents[aPlayer.TalentId]);
+           btnTalentBmp0.Glyph.LoadFromFile( dir_talent + StringTalents[aPlayer.TalentId] + '.bmp' );
+           btnTalentBmp0.Visible := True;
+         end
+         else begin
+           lbl_talent0.Caption:='';
+           lbl_descrTalent0.Caption:='';
+           btnTalentBmp0.Visible := False;
+         end;
 
      // end;
     end
@@ -8787,7 +8763,7 @@ begin
         if WaitForXY_Shortpass then begin       // shp su friend o cella vuota
           ClearInterface;
           ToEmptyCell := true;
-          if (absDistance (MyBrain.Ball.Player.CellX , MyBrain.Ball.Player.CellY, Cellx, Celly  ) > (ShortPassRange +  MyBrain.Ball.Player.Tal_LongPass))
+          if (absDistance (MyBrain.Ball.Player.CellX , MyBrain.Ball.Player.CellY, Cellx, Celly  ) > (ShortPassRange +  Abs(Integer(MyBrain.Ball.Player.TalentId = TALENT_ID_LONGPASS))))
           or (absDistance (MyBrain.Ball.Player.CellX , MyBrain.Ball.Player.CellY, Cellx, Celly  ) = 0)
           then continue;
           aFriend := MyBrain.GetSoccerPlayer(CellX,CellY);
@@ -8834,7 +8810,7 @@ begin
           ClearInterface;
           ToEmptyCell := true;
           if ( MyBrain.Ball.Player.Role <> 'G' ) and
-          ( (absDistance (MyBrain.Ball.Player.CellX , MyBrain.Ball.Player.CellY, Cellx, Celly  ) >( LoftedPassRangeMax +  MyBrain.Ball.Player.Tal_LongPass))
+          ( (absDistance (MyBrain.Ball.Player.CellX , MyBrain.Ball.Player.CellY, Cellx, Celly  ) >( LoftedPassRangeMax +   Abs(Integer(MyBrain.Ball.Player.TalentId = TALENT_ID_LONGPASS))))
            or (absDistance (MyBrain.Ball.Player.CellX , MyBrain.Ball.Player.CellY, Cellx, Celly  )   < LoftedPassRangeMin ) )
            then begin
              continue;
@@ -8863,7 +8839,7 @@ begin
         end
         else if WaitForXY_Crossing then begin   // mostro i colpi di testa difensivi o chi arriva sulla palla
           ClearInterface;
-          if (absDistance ( MyBrain.ball.Player.CellX ,  MyBrain.ball.Player.CellY, CellX, CellY  ) > (CrossingRangeMax + MyBrain.ball.Player.tal_longpass ) )
+          if (absDistance ( MyBrain.ball.Player.CellX ,  MyBrain.ball.Player.CellY, CellX, CellY  ) > (CrossingRangeMax +  Abs(Integer(MyBrain.Ball.Player.TalentId = TALENT_ID_LONGPASS))))
             or (absDistance ( MyBrain.ball.Player.CellX ,  MyBrain.ball.Player.CellY, CellX, CellY  ) < CrossingRangeMin)  then begin
              continue;
           end;
@@ -9200,7 +9176,7 @@ begin
   anInteractivePlayer.Cell.Y := cellY;
   anInteractivePlayer.Attribute := atDefense;
   CreateArrowDirection(  MyBrain.ball.Player, CellX,CellY );
-  CreateBaseAttribute (  SelectedPlayer.CellX,SelectedPlayer.CellY, SelectedPlayer.BallControl + SelectedPlayer.Tal_Dribbling  );
+  CreateBaseAttribute (  SelectedPlayer.CellX,SelectedPlayer.CellY, SelectedPlayer.BallControl +  Abs(Integer(SelectedPlayer.TalentId = TALENT_ID_DRIBBLING))  );
   CreateBaseAttribute (  CellX,CellY, anOpponent.Defense  );
 
 //  SE_GridDiceWriteRow  ( SelectedPlayer.Team, UpperCase(Translate('attribute_Ball.Control')),  SelectedPlayer.SurName, SelectedPlayer.Ids, 'VS',
@@ -9250,8 +9226,8 @@ begin
 
           if (CellX = 0) or (CellX = 2)  or  (CellX = 5) or (CellX = 8) then begin // uso TvCell
 
-            if (isGKcell ( CellX, CellY ) ) and (aPlayer.Talents <> 'goalkeeper') then goto reserve;    // un goalkeeper può essere schierato solo in porta
-            if  ( not isGKcell ( CellX, CellY ) ) and (aPlayer.Talents = 'goalkeeper') then goto reserve;    // un goalkeeper può essere schierato solo in porta
+            if (isGKcell ( CellX, CellY ) ) and (aPlayer.TalentID <> 1) then goto reserve;    // un goalkeeper può essere schierato solo in porta
+            if  ( not isGKcell ( CellX, CellY ) ) and (aPlayer.TalentID = 1) then goto reserve;    // un goalkeeper può essere schierato solo in porta
 
              //MoveInDefaultField(aPlayer);
              // se c'è un player in quella polyCell lo sposto nelle riserve
@@ -9392,8 +9368,8 @@ begin
           if MyBrain.w_CornerSetup or MyBrain.w_FreeKickSetup1 or MyBrain.w_FreeKickSetup2 or MyBrain.w_FreeKickSetup3 or MyBrain.w_FreeKickSetup4
           or (Mybrain.Score.TeamGuid [ Mybrain.TeamTurn ]  <> MyGuidTeam) then goto exitScreenSubs;
           if aPlayer.Ids = aPlayer2.Ids then goto exitScreenSubs;
-          if (isGKcell ( CellX, CellY ) ) and (aPlayer.Talents <> 'goalkeeper') then goto exitScreenSubs;;    // un goalkeeper può essere schierato solo in porta
-          if  ( not isGKcell ( CellX, CellY ) ) and (aPlayer.Talents = 'goalkeeper') then goto exitScreenSubs;;    // un goalkeeper può essere schierato solo in porta
+          if (isGKcell ( CellX, CellY ) ) and (aPlayer.TalentID <> 1) then goto exitScreenSubs;;    // un goalkeeper può essere schierato solo in porta
+          if  ( not isGKcell ( CellX, CellY ) ) and (aPlayer.TalentID = 1) then goto exitScreenSubs;;    // un goalkeeper può essere schierato solo in porta
           if aPlayer.Team <>  MyBrain.TeamTurn  then goto exitScreenSubs;;  // sposto solo i miei
           if aPlayer.gameover then goto exitScreenSubs;;  // non espulsi o già sostitutiti
           if aPlayer.disqualified > 0 then goto exitScreenSubs;;  // non squalificati
@@ -9489,59 +9465,14 @@ begin
   // rispetto l'esatto ordine dei talenti sul DB
   if aPlayer.TalentId = 0 then begin
 
-    GridXP.Cells[0,7].Text := Translate('talent_Goalkeeper');
-    GridXP.Cells[0,8].Text :=  Translate('talent_Challenge');
-    GridXP.Cells[0,9].Text :=  Translate('talent_Toughness');
-    GridXP.Cells[0,10].Text := Translate('talent_Power');
-    GridXP.Cells[0,11].Text := Translate('talent_Crossing');
-    GridXP.Cells[0,12].Text := Translate('talent_LongPass');
-    GridXP.Cells[0,13].Text := Translate('talent_Experience');
-    GridXP.Cells[0,14].Text := Translate('talent_Dribbling');
-    GridXP.Cells[0,15].Text := Translate('talent_Bulldog');
-    GridXP.Cells[0,16].Text := Translate('talent_Offensive');
-    GridXP.Cells[0,17].Text := Translate('talent_Defensive');
-    GridXP.Cells[0,18].Text := Translate('talent_Bomb');
-    GridXP.Cells[0,19].Text := Translate('talent_Playmaker');
-    GridXP.Cells[0,20].Text := Translate('talent_Faul');
-    GridXP.Cells[0,21].Text := Translate('talent_Marking');
-    GridXP.Cells[0,22].Text := Translate('talent_Positioning');
-    GridXP.Cells[0,23].Text := Translate('talent_FreeKicks');
+    for I := 1 to NUM_TALENT do begin
+      GridXP.Cells[0,i+6].Text := Translate('Talent_' + Capitalize (stringTalents[i])); // comincio dalla riga 7, la 6 è vuota
+    end;
 
+    for I := 1 to NUM_TALENT do begin
+      GridXP.Cells[1,i+6].Text := IntToStr(aPlayer.xpTal[I]) + '/' + IntToStr (xpNeedTal[I]); // ogni talento necessita di una certa xp
+    end;
 
-    GridXP.Cells[1,7].Text  := IntToStr(aPlayer.xpTal_GoalKeeper) + '/120' ;
-    GridXP.Cells[1,7].ProgressBarValue :=  (aPlayer.xpTal_GoalKeeper * 100) div 120;
-    GridXP.Cells[1,8].Text  := IntToStr(aPlayer.xpTal_Challenge) + '/120';  // lottatore
-    GridXP.Cells[1,8].ProgressBarValue :=  (aPlayer.xpTal_Challenge * 100) div 120;
-    GridXP.Cells[1,9].Text  := IntToStr(aPlayer.xpTal_Toughness) + '/120';
-    GridXP.Cells[1,9].ProgressBarValue :=  (aPlayer.xpTal_Toughness * 100) div 120;
-    GridXP.Cells[1,10].Text  := IntToStr(aPlayer.xpTal_Power ) + '/120';   // toughness
-    GridXP.Cells[1,10].ProgressBarValue :=  (aPlayer.xpTal_Power * 100) div 120;
-    GridXP.Cells[1,11].Text  := IntToStr(aPlayer.xpTal_Crossing ) + '/120';
-    GridXP.Cells[1,11].ProgressBarValue :=  (aPlayer.xpTal_Crossing * 100) div 120;
-    GridXP.Cells[1,12].Text  := IntToStr(aPlayer.xptal_longpass) + '/120';  // solo distanza
-    GridXP.Cells[1,12].ProgressBarValue :=  (aPlayer.xptal_longpass * 100) div 120;
-    GridXP.Cells[1,13].Text  := IntToStr(aPlayer.xpTal_Experience) + '/120';
-    GridXP.Cells[1,13].ProgressBarValue :=  (aPlayer.xpTal_Experience * 100) div 120;
-    GridXP.Cells[1,14].Text  := IntToStr(aPlayer.xpTal_Dribbling) + '/120';
-    GridXP.Cells[1,14].ProgressBarValue :=  (aPlayer.xpTal_Dribbling * 100) div 120;
-    GridXP.Cells[1,15].Text  := IntToStr(aPlayer.xpTal_Bulldog) + '/120'; // mastino +1 anticipo
-    GridXP.Cells[1,15].ProgressBarValue :=  (aPlayer.xpTal_Bulldog * 100) div 120;
-    GridXP.Cells[1,16].Text  := IntToStr(aPlayer.xpTal_midOffensive) + '/120';
-    GridXP.Cells[1,16].ProgressBarValue :=  (aPlayer.xpTal_midOffensive * 100) div 120;
-    GridXP.Cells[1,17].Text  := IntToStr(aPlayer.xpTal_midDefensive) + '/120';
-    GridXP.Cells[1,17].ProgressBarValue :=  (aPlayer.xpTal_midDefensive * 100) div 120;
-    GridXP.Cells[1,18].Text  := IntToStr(aPlayer.xpTal_Bomb) + '/120';
-    GridXP.Cells[1,18].ProgressBarValue :=  (aPlayer.xpTal_Bomb * 100) div 120;
-    GridXP.Cells[1,19].Text  := IntToStr(aPlayer.xpTal_PlayMaker) + '/120';
-    GridXP.Cells[1,19].ProgressBarValue :=  (aPlayer.xpTal_PlayMaker * 100) div 120;
-    GridXP.Cells[1,20].Text  := IntToStr(aPlayer.xpTal_faul) + '/120';
-    GridXP.Cells[1,20].ProgressBarValue :=  (aPlayer.xpTal_faul * 100) div 120;
-    GridXP.Cells[1,21].Text  := IntToStr(aPlayer.xpTal_marking) + '/120';
-    GridXP.Cells[1,21].ProgressBarValue :=  (aPlayer.xpTal_marking * 100) div 120;
-    GridXP.Cells[1,22].Text  := IntToStr(aPlayer.xpTal_Positioning) + '/120';
-    GridXP.Cells[1,22].ProgressBarValue :=  (aPlayer.xpTal_Positioning * 100) div 120;
-    GridXP.Cells[1,23].Text  := IntToStr(aPlayer.xpTal_freekicks) + '/120';
-    GridXP.Cells[1,23].ProgressBarValue :=  (aPlayer.xpTal_freekicks * 100) div 120;
 
   end
   else begin
@@ -10800,7 +10731,7 @@ begin
     Cur := Cur + 1;
 
     if talentID <> 0 then begin
-      cBitmap := SE_Bitmap.Create ( dir_talent + tsTalents[talentID-1]+'.bmp' ) ;
+      cBitmap := SE_Bitmap.Create ( dir_talent + StringTalents[talentID]+'.bmp' ) ;
       cBitmap.Stretch(30,22);
       SE_GridMarket.AddSE_Bitmap (9,i1,1, cBitmap,true);
     end;

@@ -30,8 +30,8 @@ const modifier_autotackle = 0;
 const modifier_penalty = 2;
 const TurnMoves = 4;
 const TurnMovesStart = 2;
-const SEASON_MATCHES = 38;
-const REGEN_STAMINA = 10;
+const SEASON_MATCHES = 38;        // numero di partite a stagione
+const REGEN_STAMINA = 10;         // rigenerazione stamina dopo 1 partita
 const YELLOW_DISQUALIFIED = 3;
 
 const xp_SPEED_POINTS = 120;
@@ -41,27 +41,31 @@ const xp_PASSING_POINTS = 120;
 const xp_SHOT_POINTS = 120;
 const xp_HEADING_POINTS = 120;
 
-const xp_TAL_GOALKEEPER_POINTS = 120;
-const xp_TAL_CHALLENGE_POINTS = 120;
-const xp_TAL_TOUGHNESS_POINTS = 120;
-const xp_TAL_POWER_POINTS = 120;
-const xp_TAL_CROSSING_POINTS = 120;
-const xp_TAL_LONGPASS_POINTS = 120;
-const xp_TAL_EXPERIENCE_POINTS = 120;
-const xp_TAL_DRIBBLING_POINTS = 120;
-const xp_TAL_BULLDOG_POINTS = 120;
-const xp_TAL_MIDOFFENSIVE_POINTS = 120;
-const xp_TAL_MIDDEFENSIVE_POINTS = 120;
-const xp_TAL_BOMB_POINTS = 120;
-const xp_TAL_PLAYMAKER_POINTS = 120;
-const xp_TAL_FAUL_POINTS = 120;
-const xp_TAL_MARKING_POINTS = 120;
-const xp_TAL_Positioning_POINTS = 120;
-const xp_TAL_FREEKICKS_POINTS = 120;
-
+// Queste costanti sono uguali al DB game.talents . Gli ID devono corrispondere
+const NUM_TALENT               = 17; // uguale a game.talents
+const TALENT_ID_GOALKEEPER     = 1;  // può giocare in porta
+const TALENT_ID_CHALLENGE      = 2;  // lottatore + 1 autotackle
+const TALENT_ID_TOUGHNESS      = 3;  // +1 tackle
+const TALENT_ID_POWER          = 4;  // +1 resist tackle
+const TALENT_ID_CROSSING       = 5;  // +1 crossing
+const TALENT_ID_LONGPASS       = 6;  // +1 distanza passaggi
+const TALENT_ID_EXPERIENCE     = 7;  // pressing non costa mosse
+const TALENT_ID_DRIBBLING      = 8;  // +1 dribbling
+const TALENT_ID_BULLDOG        = 9;  // mastino +1 intercept
+const TALENT_ID_OFFENSIVE      = 10; // durante ai_moveall tende ad attaccare
+const TALENT_ID_DEFENSIVE      = 11; // durante ai_moveall tende a difendere
+const TALENT_ID_BOMB           = 12; // tal_bomb è un +1 quando si buffa con corsa o riceve shp o vince tackle o vince dribbling
+const TALENT_ID_PLAYMAKER      = 13;
+const TALENT_ID_FAUL           = 14; // +15% chance di commettere un fallo
+const TALENT_ID_MARKING        = 15;
+const TALENT_ID_POSITIONING    = 16;
+const TALENT_ID_FREEKICKS      = 17;
+//------------------------------------------------------------------
+ { nel server c'è array xpNeedTAL[I] e si puntano così xpTAL[TALENT_ID_EXPERIENCE]}
 
 const Turnmilliseconds = 120 * 1000;// 90;
 
+// costi in stamina delle singole skill
 const cost_bac = 1; // ball control su lop
 const cost_plm = 1;
 const cost_mov = 0;  // ai_moveAll
@@ -242,7 +246,6 @@ TSoccerPlayer = class
   private
     brain: TSoccerBrain;
     fAttributes: Shortstring;
-    fTalents: shortstring;
     fDefaultAttributes: Shortstring;
     fDefaultTalents: Shortstring;
     fGameOver: boolean;
@@ -253,7 +256,6 @@ TSoccerPlayer = class
     procedure SetCellX ( v: ShortInt );
     procedure SetCellY ( v: ShortInt );
     procedure LoadDefaultAttributes ( v: shortstring );
-    procedure LoadTalents ( v: shortstring );
     procedure LoadAttributes ( v: ShortString );
 
     procedure SetGameOver( const value: Boolean);
@@ -342,41 +344,7 @@ TSoccerPlayer = class
     Flank: Integer;
     InterceptModifier: integer;
 
-    Tal_longpass: integer;  // +1 distanza passaggi
-    Tal_Toughness: integer;  // +1 tackle
-    Tal_Challenge: integer;  // lottatore + 1 autotackle
-    Tal_Power : integer;   // toughness +1 resist takcle
-    Tal_Crossing : integer;  // +1 crossing
-    Tal_Experience: integer; // pressing non costa mosse
-    Tal_Dribbling: integer;  // +1 dribbling
-    Tal_Bulldog: Integer; // mastino +1 intercept
-    Tal_GoalKeeper: integer;  // può giocare in porta
-    Tal_midOffensive: Integer; // durante ai_moveall tende ad attaccare
-    Tal_midDefensive: Integer; // durante ai_moveall tende a difendere
-    Tal_Bomb: Integer;        // tal_bomb è un +1 quando si buffa con corsa o riceve shp o vince tackle o vince dribbling
-    Tal_PlayMaker: integer;
-    Tal_faul: Integer;
-    Tal_marking: Integer;
-    Tal_Positioning: Integer;
-    Tal_freekicks: Integer;
-
-    xpTal_GoalKeeper: integer;
-    xpTal_Challenge: integer;  // lottatore
-    xpTal_Toughness: integer;
-    xpTal_Power : integer;   // toughness
-    xpTal_Crossing : integer;
-    xptal_longpass: integer;  // solo distanza
-    xpTal_Experience: integer;
-    xpTal_Dribbling: integer;
-    xpTal_Bulldog: Integer; // mastino +1 anticipo
-    xpTal_midOffensive: Integer;
-    xpTal_midDefensive: Integer;
-    xpTal_Bomb: Integer;
-    xpTal_PlayMaker: integer;
-    xpTal_faul: Integer;
-    xpTal_marking: Integer;
-    xpTal_Positioning: Integer;
-    xpTal_freekicks: Integer;
+    XpTal: array [1..17] of Integer;  // come i talenti sul db game.talents. xp guadagnata in questa partita(brain) per futuro trylevelup del talento
 
     PlayerOut : Boolean; // sostituito
     Injured: Byte; // giornate di infortunio rimaste
@@ -405,10 +373,10 @@ TSoccerPlayer = class
     DefaultCrossing: integer;
 
     TalentId: Integer;
-
+    tmp: Integer;
     OnMarket : Boolean;
 
-    constructor create ( const aTeam, aGuidTeam, aMatchesPlayed : integer; const aIds, aName, aSurname, aTalents, AT: string );
+    constructor create ( const aTeam, aGuidTeam, aMatchesPlayed : integer; const aIds, aName, aSurname, AT: string; aTalent: integer );
     destructor Destroy; override;
     function HasBall: boolean;
     function InCrossingArea : boolean;
@@ -420,7 +388,6 @@ TSoccerPlayer = class
 
     property CellX : ShortInt read cx write SetCellX;
     property CellY : ShortInt read cy write SetCellY;
-    property Talents : shortstring read fTalents write LoadTalents;
     property Attributes : ShortString read fAttributes write LoadAttributes;
     property DefaultAttributes : ShortString read fDefaultAttributes write LoadDefaultAttributes;
 
@@ -487,16 +454,12 @@ end;
       Score: TScore;
       incMove : Byte;
 
-      OnNotifyFileData: TNotifyFileData;
-      //FormationCells: TList<TFormationCell>;
+      MalusPowerShot: array [0..11] of integer;           // pos modificatori al tiro in porta
+      MalusPrecisionShot: array [0..11] of integer;       // prs modificatori al tiro in porta
 
-      MalusPowerShot: array [0..11] of integer;           // definizioni
-      MalusPrecisionShot: array [0..11] of integer;       // definizioni
-      ShotCells : TObjectList<TShotCell>;                       // definizioni
+      ShotCells : TObjectList<TShotCell>;                 // cella dalle quali è possibile tirare in porta con pos o prs
       AICrossingAreaCells: TList<TAICrossAreaCell>;
       TVCrossingAreaCells: TList<TTVCrossAreaCell>;
-//      BonusDefenseShots: integer;
-//      InterceptMalus
       ToEmptyCellMalus: integer;                          // definizioni
 
       Ball: Tball;
@@ -1173,7 +1136,7 @@ end;
 ██║     ███████╗██║  ██║   ██║   ███████╗██║  ██║
 ╚═╝     ╚══════╝╚═╝  ╚═╝   ╚═╝   ╚══════╝╚═╝  ╚═╝
 ---------------------------------------------------------------------------------------------------------------------------------------------------}
-constructor TSoccerPlayer.create ( const aTeam, aGuidTeam, aMatchesPlayed : integer; const aIds, aName, aSurname, aTalents, AT: string);
+constructor TSoccerPlayer.create ( const aTeam, aGuidTeam, aMatchesPlayed : integer; const aIds, aName, aSurname, AT: string; aTalent: integer );
 begin
   Ids := aIds;
   Team := aTeam;
@@ -1187,7 +1150,7 @@ begin
 
   DefaultAttributes:= AT;
   Attributes:= AT;
-  Talents := aTalents;
+  TalentId := aTalent;
   InterceptModifier := 0;
   ActiveSkills:= TstringList.Create;
   cx := 0;
@@ -1246,8 +1209,6 @@ begin
 
 end;
 function TSoccerPlayer.onBottom : TBottomPosition; // 1 NearCornerCell 2 BottomNoShot 3 BottomShot
-var
-  i: integer;
 begin
   Result := BottomNone;
   case Team of
@@ -1478,48 +1439,7 @@ begin
   Ts.Free;
 
 
-  if role = 'G' then  CanMove:= false;
-
-end;
-procedure TSoccerPlayer.LoadTalents (  v: shortstring );
-begin
-  fTalents := v;
-
-  if fTalents = 'goalkeeper' then  Tal_GoalKeeper:=1;
-  if fTalents = 'challenge' then  tal_Challenge:=1;
-  if fTalents = 'toughness' then  tal_Toughness:=1;
-  if fTalents = 'power' then  tal_Power:=1;
-  if fTalents = 'crossing' then  tal_Crossing:=1;
-  if fTalents = 'longpass' then  tal_longpass:=1;
-  if fTalents = 'experience' then  Tal_Experience:=1;
-  if fTalents = 'dribbling' then  Tal_Dribbling:=1;
-  if fTalents = 'bulldog' then  Tal_Bulldog:=1;
-  if fTalents = 'offensive' then  Tal_midOffensive:=1;
-  if fTalents = 'defensive' then  Tal_midDefensive:=1;
-  if fTalents = 'bomb' then  Tal_Bomb:=1;
-  if fTalents = 'playmaker' then  Tal_PlayMaker:=1;
-  if fTalents = 'faul' then  Tal_faul:=1;
-  if fTalents = 'marking' then  Tal_marking:=1;
-  if fTalents = 'Positioning' then  Tal_Positioning:=1;
-  if fTalents = 'freekicks' then  Tal_freekicks:=1;
-
-  if (Tal_GoalKeeper <= 0) and (Role = 'G') then begin
-    DefaultDefense:= DefaultDefense - 3;
-    if DefaultDefense <= 0 then DefaultDefense:=1;
-    Defense:= DefaultDefense;
-  end;
-  //  Tal_PlayMaker:= StrToBool(ts.Values ['PlayMaker']);
-
-//  Flank:= StrToIntDef(ts.Values ['Flank'],0);
-//  Positioning:= StrToIntDef(ts.Values ['Positioning'],0);
-
-//  LowThroughBall:= StrToIntDef(ts.Values ['Low.Through.Ball'],0);
-//  Bomb:= StrToIntDef(ts.Values ['Bomb'],0);
-
-//  Diving:=StrToIntDef(ts.Values ['Diving'],0);// risponde a PrecisionShot,PowerShot,
-//  Reflexes:=StrToIntDef(ts.Values ['Reflexes'],0);// risponde a Heading
-//  Positioning:= StrToIntDef(ts.Values ['Positioning'],0);// risponde a Bomb
-
+  if (role = 'G')  or (TalentID=1) then  CanMove:= false;
 
 end;
 procedure TSoccerPlayer.SetGameOver ( const value: Boolean);
@@ -2575,13 +2495,19 @@ begin
     lstBestCross.sort(TComparer<TSoccerPlayer>.Construct(
     function (const L, R: TSoccerPlayer): integer
     begin
-      Result := (R.Passing + R.Tal_crossing )- (L.Passing + L.Tal_Crossing );
+      R.tmp := R.Passing;
+      L.tmp := L.Passing;
+      if R.TalentId = TALENT_ID_CROSSING then
+        R.tmp := R.tmp + 1;
+      if L.TalentId = TALENT_ID_CROSSING then
+        L.tmp := L.tmp + 1;
+      Result := (R.tmp )- (L.tmp );
     end
    ));
-    MaxCrossing := lstBestCross[0].Passing + lstBestCross[0].Tal_Crossing  ;
+    MaxCrossing := lstBestCross[0].tmp ;
 
     for P := lstBestCross.Count -1 downto 0 do begin
-      if (lstBestCross[p].Passing + lstBestCross[0].Tal_Crossing) < MaxCrossing then
+      if (lstBestCross[p].tmp ) < MaxCrossing then
         lstBestCross.Delete(p);
     end;
 
@@ -2840,7 +2766,7 @@ begin
 end;
 function TSoccerBrain.GetRandomDefaultMidFieldCellFree ( team:Integer ): TPoint;
 var
-  i,y: Integer;
+  y: Integer;
   lstCellY : Tlist<Integer>;
 begin
   Result.X := -1;
@@ -2870,7 +2796,7 @@ begin
 end;
 function TSoccerBrain.GetRandomDefaultDefenseCellFree ( team:Integer ): TPoint;
 var
-  i,y: Integer;
+  y: Integer;
   lstCellY : Tlist<Integer>;
 begin
   Result.X := -1;
@@ -2900,7 +2826,7 @@ begin
 end;
 function TSoccerBrain.GetRandomDefaultForwardCellFree ( team:Integer ): TPoint;
 var
-  i,y: Integer;
+  y: Integer;
   lstCellY : Tlist<Integer>;
 begin
   Result.X := -1;
@@ -3212,11 +3138,15 @@ function TSoccerBrain.GetFriendInCrossingArea ( const aPlayer: TSoccerPlayer ) :
 var
   p: integer;
   aFriend: TSoccerPlayer;
+  tmp: Integer;
 begin
   Result := false;
+  tmp := CrossingRangeMax;
+  if aPlayer.TalentId = TALENT_ID_LONGPASS then
+    tmp := tmp +1;
   for P := lstSoccerPlayer.Count -1 downto 0 do begin
     aFriend := lstSoccerPlayer[p];
-    if (absDistance( aPlayer.CellX ,aPlayer.CellY,  aFriend.CellX, aFriend.CellY ) > ( CrossingRangeMax  + aPlayer.tal_longpass ))
+    if (absDistance( aPlayer.CellX ,aPlayer.CellY,  aFriend.CellX, aFriend.CellY ) > ( tmp ))
     or (absDistance( aPlayer.CellX ,aPlayer.CellY,  aFriend.CellX, aFriend.CellY ) < CrossingRangeMin)  then begin
       continue;
     end;
@@ -3267,7 +3197,6 @@ var
   aList: TObjectList<TSoccerPlayer>;
   aInteractivePlayer: TInteractivePlayer;
 //  aList: TList<TSoccerPlayer>;
-  MaxSpeed: integer;
 
 begin
     lstMoving.Clear;
@@ -3863,7 +3792,7 @@ end;
 procedure TSoccerBrain.GetNeighbournsCells ( CellX, CellY, Speed: integer; NoPlayer,noOutSide,noGK: boolean; var aCellList:Tlist<TPoint> );
 var
   aPoint: Tpoint;
-  i,aRnd: integer;
+  i: integer;
   x,y: Integer;
 begin
 
@@ -4034,9 +3963,6 @@ begin
 end;
 procedure TSoccerBrain.GetAggressionCellPath ( aSoccerPlayer: TSoccerPlayer; X2, Y2: integer );
 var
-  aSearchMap : TSearchableMap;
-  j,P: integer;
-  aStep: TpathStep;
   acellList: Tlist<TPoint>;
   aPoint: Tpoint;
   label exitpath;
@@ -4120,8 +4046,6 @@ end;
 procedure TSoccerBrain.GetFavourCellPath ( aSoccerPlayer: TSoccerPlayer; X2, Y2: integer );
 var
   aSearchMap : TSearchableMap;
-  i,j,P: integer;
-  aStep: TpathStep;
   acellList: Tlist<TPoint>;
   aPoint: Tpoint;
   label exitpath;
@@ -4269,6 +4193,9 @@ begin
   MalusPrecisionShot[9]:= -2;
   MalusPrecisionShot[10]:= -1;
   MalusPrecisionShot[11]:= 0;
+
+
+
 
   inherited Create;
  // if not (csDesigning in ComponentState) then begin
@@ -5146,7 +5073,7 @@ begin
 end;
 procedure TSoccerbrain.SetTeamMovesLeft ( const Value: ShortInt );
 var
-  P,teamFault,Isfault: integer;
+  P: integer;
   label noCheckCheat;
 begin
 
@@ -5434,8 +5361,11 @@ begin
      goto myexit; // hack
     end;
 
+    aPlayer.tmp := ShortPassRange;
+    if aPlayer.TalentId = TALENT_ID_LONGPASS then
+      aPlayer.tmp := aPlayer.tmp +1;
 
-    if (absDistance( Ball.CellX ,Ball.CellY,  CellX, CellY ) > (ShortPassRange + aPlayer.tal_longpass))
+    if (absDistance( Ball.CellX ,Ball.CellY,  CellX, CellY ) > (aPlayer.tmp))
        or (absDistance (Ball.Player.CellX , Ball.Player.CellY, Cellx, Celly  ) = 0) then begin
       reason := 'SHP,Destination range error: ' + tsCmd.CommaText ;
       goto MyExit;
@@ -5475,7 +5405,7 @@ begin
 
     aPlayer.Stamina := aPlayer.Stamina - cost_shp;
     aPlayer.xp_passing := aPlayer.xp_passing + 1;
-    aPlayer.xpTal_PlayMaker := aPlayer.xpTal_PlayMaker + 1;
+    aPlayer.xpTal[TALENT_ID_PLAYMAKER] := aPlayer.xpTal[TALENT_ID_PLAYMAKER] + 1;
 
     if w_FreeKick1 then begin
       w_FreeKick1:= False;
@@ -5537,14 +5467,18 @@ begin
 
           if ( lstIntercepts[Y].Cell.X = aPath[i].X) and (lstIntercepts[Y].Cell.Y = aPath[i].Y) then begin  // se questa cella
 
+            anIntercept.tmp := 0;
+            if anIntercept.TalentId = TALENT_ID_BULLDOG then
+              anIntercept.tmp := anIntercept.tmp +1;
             preRoll2 := RndGenerate (dice);
             Roll2 := AdjustFatigue (anIntercept.Stamina , preRoll2);
-            aRnd2:=  Roll2.value + anIntercept.Defense + anIntercept.Tal_bulldog + ToEmptyCell -1 ;
+            aRnd2:=  Roll2.value + anIntercept.Defense + anIntercept.tmp + ToEmptyCell -1 ;
 
             TsScript.add ( 'sc_DICE,' + IntTostr(CellX) + ',' + Inttostr(CellY) +','+ IntTostr(aRnd2) +',' + IntToStr(anIntercept.Defense )+
-            ',Intercept,'+ anIntercept.ids+','+IntTostr(Roll2.value) + ',' + Roll2.fatigue +',' + IntToStr(anIntercept.Tal_bulldog + ToEmptyCell -1));
+            ',Intercept,'+ anIntercept.ids+','+IntTostr(Roll2.value) + ',' + Roll2.fatigue +',' + IntToStr((anIntercept.tmp) + ToEmptyCell -1));
             anIntercept.xp_Defense:= anIntercept.xp_Defense + 1;
-            anIntercept.xpTal_bulldog:= anIntercept.Tal_bulldog + 1;
+            anIntercept.xpTal[TALENT_ID_BULLDOG] := anIntercept.xpTal[TALENT_ID_BULLDOG] + 1;
+
             //arnd2:=arnd+1;
             if aRnd2 > aRnd then begin // passaggio ---> intercpet prende la palla
               Diff := aRnd2 - aRnd;
@@ -5642,25 +5576,39 @@ begin
 
            end;
 
+
+
          { Playmaker if aplyaer.tal_playmaker shp in area avversaria +N lunghezza passaggio al shot }
 //           aPath.count è la lunghezza del passaggio che qui non +è stato intercettato perchè sopra exit
-           if (aPlayer.Tal_PlayMaker > 0) then begin
+           if (aPlayer.TalentID = TALENT_ID_PlayMaker ) then begin
              aFriend := GetSoccerPlayer(ball.CellX, ball.celly);
              if aFriend <> nil then begin
                if (aFriend.Team = aPlayer.team) and (aFriend.InCrossingArea) then begin
+
                  aFriend.BonusSHPAREAturn := 1;
-                 aFriend.Shot   := aPlayer.Defaultshot + aPath.count + aPlayer.tal_bomb ;
+                 aFriend.Shot   := aPlayer.Defaultshot + aPath.count + Abs(Integer( aFriend.TalentId = TALENT_ID_BOMB));
                end;
 
              end;
            end;
            //aPlayer.resetALL;
+{             aFriend := GetSoccerPlayer(ball.CellX, ball.celly);
+             if aFriend <> nil then begin
+               if (aFriend.Tal_Agility > 0) then begin     xp= proprio quando riceve palla
+               if (aFriend.Team = aPlayer.team)  then begin
+                 Inc(fteamsMoveleft)
+                 aFriend.Shot   := aPlayer.Defaultshot + aPath.count + aPlayer.tal_bomb ;
+               end;
+              end;
+             end;   }
+
+
             if aPlayer.Role <> 'G' then Dec(ShpFree);
             if (ShpFree < 0) and (aPlayer.Role <> 'G')then TeamMovesLeft := TeamMovesLeft - 1; //<--- esaurische shpfree se minore di 0, non uguale
               if (AbsDistance(aPlayer.CellX,aPlayer.CellY, Ball.cellx, Ball.celly ) <= 1) then // se la muove di 2 o più la può raggiungere e buffarsi
 
             ExceptPlayers.Add(aPlayer);
-            shpBuff := true;
+            shpBuff := true;  // chi raggiunge la palla ottiene il buff    { TODO : forse se afreind = nil. aggiustare tutto con nuovo talento }
             AI_moveAll;
             if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
             TsScript.add ('E');
@@ -5715,7 +5663,11 @@ begin
     end;  // concesso nulla
 
     if tsCmd[3] <> 'GKLOP' then begin
-      if (absDistance( Ball.CellX ,Ball.CellY,  CellX, CellY ) > (LoftedPassRangeMax + aPlayer.Tal_longpass))
+      aPlayer.tmp := LoftedPassRangeMax;
+      if aPlayer.TalentId = TALENT_ID_LONGPASS then
+        aPlayer.tmp := aPlayer.tmp +1;
+
+      if (absDistance( Ball.CellX ,Ball.CellY,  CellX, CellY ) > (aPlayer.tmp))
     or (absDistance( Ball.CellX ,Ball.CellY,  CellX, CellY ) < LoftedPassRangeMin)  then begin
       reason := 'LOP,Destination range error: ' + tsCmd.CommaText ;
       goto MyExit;
@@ -5752,10 +5704,10 @@ begin
     TsScript.add ('SERVER_LOP,' + aPlayer.ids + ',' + IntToStr(aPlayer.CellX) + ',' + IntToStr(aPlayer.CellY) + ',' +tsCmd[1] + ',' + tsCmd[2] ) ;//  skillused  tentativo
     aPlayer.Stamina := aPlayer.Stamina - cost_lop;
    // aPlayer.xp_passing := aPlayer.xp_passing + 1; giusto cosi'
-    aPlayer.xpTal_longPass := aPlayer.xpTal_longPass + 1;
+    aPlayer.xpTal[TALENT_ID_LONGPASS] := aPlayer.xpTal[TALENT_ID_LONGPASS] + 1;
 
     if aPlayer.Team = aPlayer.Field then
-      aPlayer.xpTal_PlayMaker := aPlayer.xpTal_PlayMaker + 1; {  solo il lop nella propria metacampo }
+      aPlayer.xpTal[TALENT_ID_PLAYMAKER] := aPlayer.xpTal[TALENT_ID_PLAYMAKER] + 1; {  solo il lop nella propria metacampo }
 
     TsScript.add ('sc_ST,' + aPlayer.ids +',' + IntToStr(cost_lop) ) ;
     ExceptPlayers.Add(aPlayer);   //no  unico caso. lop segue l'azione
@@ -6046,7 +5998,7 @@ begin
                      // può finire in: sc_pos.bounce, sc_pos.bounce.gk, sc_pos.bounce.crossbar
                     tsSpeaker.Add(aFriend.Surname + ' tira al volo');
                     preRoll2 := RndGenerate (dice);
-                    Roll2 := AdjustFatigue (aFriend.Stamina , preRoll);
+                    Roll2 := AdjustFatigue (aFriend.Stamina , preRoll2);
                     BaseShot :=  aFriend.Shot + MalusPowerShot[aPlayer.CellX];
                     BaseShot:= BaseShot + 1;           // bonus volley
                     if BaseShot <=0 then BaseShot := 1;
@@ -6506,8 +6458,11 @@ begin
      goto myexit; // hack
     end;
 
+      aPlayer.tmp := CrossingRangeMax;
+      if aPlayer.TalentId = TALENT_ID_LONGPASS then
+        aPlayer.tmp := aPlayer.tmp +1;
 
-      if (absDistance( Ball.CellX ,Ball.CellY,  CellX, CellY ) > (CrossingRangeMax + aPlayer.tal_longpass))
+      if (absDistance( Ball.CellX ,Ball.CellY,  CellX, CellY ) > (aPlayer.tmp))
       or (absDistance( Ball.CellX ,Ball.CellY,  CellX, CellY ) < CrossingRangeMin)  then begin
         reason := 'CRO,Destination range error: ' + tsCmd.CommaText + ' ball=' + IntToStr(Ball.CellX)+','+IntToStr(Ball.CellY );
         goto MyExit;
@@ -6532,11 +6487,16 @@ begin
 
     preRoll := RndGenerate (dice);
     Roll := AdjustFatigue (aPlayer.Stamina , preRoll);
-    aRnd:= Roll.value + aPlayer.Passing + aPlayer.Tal_Crossing ; // se undepressure 0   il talento gli conferisce 1
+    aPlayer.tmp := 0;
+    if aPlayer.TalentId = TALENT_ID_CROSSING then
+      aPlayer.tmp:= 1;
+
+    aRnd:= Roll.value + aPlayer.Passing + aPlayer.tmp ; // se undepressure 0   il talento gli conferisce 1
     aPlayer.resetALL;
-    aPlayer.xpTal_Crossing := aPlayer.xpTal_Crossing + 1;
+    aPlayer.xpTal[TALENT_ID_CROSSING] :=  aPlayer.xpTal[TALENT_ID_CROSSING] + 1;
+
     TsScript.add ( 'sc_DICE,' + IntTostr(aPlayer.CellX) + ',' + Inttostr(aPlayer.CellY) +','+  IntTostr(aRnd) + ','+
-    IntToStr(aPlayer.Passing )+',Crossing,'+ aPlayer.ids+','+IntTostr(Roll.value)+','+Roll.fatigue+','+IntToStr(aPlayer.Tal_Crossing)  );
+    IntToStr(aPlayer.Passing )+',Crossing,'+ aPlayer.ids+','+IntTostr(Roll.value)+','+Roll.fatigue+','+IntToStr(aPlayer.tmp)  );
 
     DefenseHeadingWin:= false;
     BonusDefenseHeading := GetCrossDefenseBonus (aPlayer, CellX, CellY );
@@ -6783,7 +6743,7 @@ HVSH:
               preRoll4 :=  RndGenerate (dice);
               Roll4 := AdjustFatigue (aGK.Stamina , preRoll4);
               aRnd4 := Roll4.value + BaseGK + BonusDefenseHeading ;
-              aGK.xpTal_GoalKeeper := aGK.xpTal_GoalKeeper + 1;
+              aGK.xpTal[TALENT_ID_GoalKeeper] := aGK.xpTal[TALENT_ID_GoalKeeper] + 1;
               //              TsScript.add ('gkdive,'+ anOpponent.Ids ) ;
 
 
@@ -6917,7 +6877,7 @@ cro_crossbar:
        TsScript.add ('SERVER_DRI,' + aPlayer.ids  + ',' + IntToStr(aPlayer.CellX) + ',' + IntToStr(aPlayer.CellY) + ',' +tsCmd[1] + ',' + tsCmd[2] ) ;//  skillused  tentativo) ;
        aPlayer.Stamina := aPlayer.Stamina - cost_dri;
        TsScript.add ('sc_ST,' + aPlayer.ids +',' + IntToStr(cost_dri) ) ;
-       aPlayer.xpTal_Dribbling :=  aPlayer.xpTal_Dribbling + 1;
+       aPlayer.xpTal[TALENT_ID_DRIBBLING] :=  aPlayer.xpTal[TALENT_ID_DRIBBLING] + 1;
        ExceptPlayers.Add(aPlayer);
        preRoll := RndGenerate (dice);
        Roll := AdjustFatigue (aPlayer.Stamina , preRoll);
@@ -7018,10 +6978,14 @@ cro_crossbar:
     preRoll := RndGenerate (dice);
     Roll := AdjustFatigue (aPlayer.Stamina , preRoll);
     if w_FreeKick3 then begin
-      BaseShot :=  aPlayer.Shot + (MalusPowerShot[aPlayer.CellX]+1) + aPlayer.Tal_freekicks ; // punizione bonus +1
+      aPlayer.tmp := 0;
+      if aPlayer.TalentId = TALENT_ID_FREEKICKS then
+        aPlayer.tmp:= 1;
+
+      BaseShot :=  aPlayer.Shot + (MalusPowerShot[aPlayer.CellX]+1) + aPlayer.tmp ; // punizione bonus +1
       TsScript.add ('SERVER_POS3,' + aPlayer.ids + ',' + IntToStr(aPlayer.CellX) + ',' + IntToStr(aPlayer.CellY) + ',' + IntToStr( aDoor.X) +',' + IntToStr( aDoor.Y));
       Kind := '.golpos3.';
-      Modifier :=  MalusPowerShot[aPlayer.CellX]+1 + aPlayer.Tal_freekicks;
+      Modifier :=  MalusPowerShot[aPlayer.CellX]+1 + aPlayer.tmp;
     end
     else if w_FreeKick4 then begin
       BaseShot :=  aPlayer.Shot + modifier_penalty + 2; // rigore  ( in prs + 3 )
@@ -7037,14 +7001,16 @@ cro_crossbar:
       Modifier :=  MalusPowerShot[aPlayer.CellX];
     end;
     if BaseShot <= 0 then BaseShot := 1;
-    Ball.Player.xpTal_Bomb := Ball.Player.xpTal_Bomb + 1;
+    Ball.Player.xpTal[TALENT_ID_BOMB] :=  Ball.Player.xpTal[TALENT_ID_BOMB] + 1;
+
     Ball.Player.xp_Shot  := Ball.Player.xp_Shot + 1;
     aRnd:= Roll.value + BaseShot  ;
 
     {$ifDEF SetAlwaysGol} arnd := 10; {$endif}
 
     aPlayer.Stamina := aPlayer.Stamina - cost_pos;
-    aPlayer.xpTal_freekicks :=  aPlayer.xpTal_freekicks +1;
+    aPlayer.xpTal[TALENT_ID_FREEKICKS] :=  aPlayer.xpTal[TALENT_ID_FREEKICKS] + 1;
+
     TsScript.add ('sc_ST,' +aPlayer.ids +',' + IntToStr(cost_pos) ) ;
     TsScript.add ( 'sc_DICE,' + IntTostr(aPlayer.CellX) + ',' + Inttostr(aPlayer.CellY) +','+  IntTostr(aRnd) +','+
     IntTostr ( BaseShot)+',Power.Shot,'+ Ball.Player.ids+','+IntTostr(Roll.value ) + ',' + Roll.fatigue + ',' + IntToStr(Modifier) );
@@ -7059,7 +7025,8 @@ cro_crossbar:
       w_FreeKickSetup3:= False;
       TeamFreeKick := -1;
       aPlayer.isFK3  := false;
-      aPlayer.xpTal_freekicks :=  aPlayer.xpTal_freekicks +1;     // 1 punto aggountivo a quello di default
+      aPlayer.xpTal[TALENT_ID_FREEKICKS] :=  aPlayer.xpTal[TALENT_ID_FREEKICKS] + 1; // 1 punto aggountivo a quello di default
+
      // le shotcells vensgono ignorate. la barriera respinge o il gk respinge o gol. può essere corner. la barriera viene rotta dopo il tiro
       (* il roll della barriera. Sono tutti i player presenti nella cella barriera *)
       aCellBarrier:= GetBarrierCell( TeamTurn, Ball.CellX, Ball.CellY);
@@ -7191,7 +7158,7 @@ POSvsGK:
             preRoll2 := RndGenerate (dice);
             Roll2 := AdjustFatigue (aGK.Stamina , preRoll2);
             aRnd2:= roll2.value + aGK.defense ;
-            aGK.xpTal_GoalKeeper := aGK.xpTal_GoalKeeper + 1;
+            aGK.xpTal[TALENT_ID_GoalKeeper] := aGK.xpTal[TALENT_ID_GoalKeeper] + 1;
             TsScript.add ( 'sc_DICE,' + IntTostr(aGK.CellX) + ',' + Inttostr(aGK.CellY) +','+  IntTostr(aRnd2) +','+
             IntTostr ( aGK.defense ) +',Defense,'+ aGK.ids+','+IntTostr(Roll2.value)+','+Roll2.fatigue+',0');
             // o angolo o respinta o gol
@@ -7312,9 +7279,12 @@ POSvsGK:
     preRoll := RndGenerate (dice);
     Roll := AdjustFatigue (aPlayer.Stamina , preRoll);
     if w_FreeKick3 then begin
-      BaseShot :=  aPlayer.Shot + (MalusPrecisionShot[aPlayer.CellX]+1)  + aPlayer.Tal_freekicks ; // punizione bonus -1 di base
+      aPlayer.tmp := 0;
+      if aPlayer.TalentId = TALENT_ID_FREEKICKS then
+        aPlayer.tmp:= 1;
+      BaseShot :=  aPlayer.Shot + (MalusPrecisionShot[aPlayer.CellX]+1)  + aPlayer.tmp ; // punizione bonus -1 di base
       Kind := '.golprs3.';
-      Modifier :=  MalusPrecisionShot[aPlayer.CellX]+1 + aPlayer.Tal_freekicks;
+      Modifier :=  MalusPrecisionShot[aPlayer.CellX]+1 + aPlayer.tmp;
     end
     else if w_FreeKick4 then begin
       BaseShot :=  aPlayer.Shot + modifier_penalty + 3; // rigore prs
@@ -7335,7 +7305,7 @@ POSvsGK:
 
     TsScript.add ('SERVER_PRS,' + aPlayer.ids + ',' + IntToStr(aPlayer.CellX) + ',' + IntToStr(aPlayer.CellY)+ ',' + IntToStr( aDoor.X) +',' + IntToStr( aDoor.Y));
     aPlayer.Stamina := aPlayer.Stamina - cost_prs;
-    aPlayer.xpTal_freekicks :=  aPlayer.xpTal_freekicks +1;
+    aPlayer.xpTal[TALENT_ID_FREEKICKS] :=  aPlayer.xpTal[TALENT_ID_FREEKICKS] + 1;
     ExceptPlayers.Add(aPlayer);
 
     TsScript.add ('sc_ST,' +aPlayer.ids +',' + inttostr(cost_prs) ) ;
@@ -7351,7 +7321,7 @@ POSvsGK:
       TeamFreeKick := -1;
       //aPlayer := GetFK3 ;
       aPlayer.isFK3  := false;
-      aPlayer.xpTal_freekicks :=  aPlayer.xpTal_freekicks +1;     // 1 punto aggountivo a quello di default
+      aPlayer.xpTal[TALENT_ID_FREEKICKS] :=  aPlayer.xpTal[TALENT_ID_FREEKICKS] + 1;
       Kind := '.golprs3.';
      // le shotcells vensgono ignorate. la barriera respinge o il gk respinge o gol. può essere corner. la barriera viene rotta dopo il tiro
 
@@ -7479,7 +7449,7 @@ PRSvsGK:
             preRoll2 := RndGenerate (dice);
             Roll2 := AdjustFatigue (aGK.Stamina , preRoll2);
             aRnd2:= roll2.value + aGK.defense ;
-            aGK.xpTal_GoalKeeper := aGK.xpTal_GoalKeeper + 1;
+            aGK.xpTal[TALENT_ID_GoalKeeper] := aGK.xpTal[TALENT_ID_GoalKeeper] + 1;
             // o gol o presa
               TsScript.add ( 'sc_DICE,' + IntTostr(aGK.CellX) + ',' + Inttostr(aGK.CellY) +','+  IntTostr(aRnd2) +','+
               IntTostr ( aGK.defense ) +',Defense,'+ aGK.ids+','+IntTostr(Roll2.value)+','+Roll2.fatigue+',0');
@@ -7580,7 +7550,7 @@ reason:='';
     TsScript.add ('SERVER_PRE,' + aPlayer.ids + ',' + IntToStr(aPlayer.CellX) + ',' + IntToStr(aPlayer.CellY) + ',' + IntToStr(Ball.Player.CellX) + ',' + IntToStr(Ball.Player.CellY) ) ;
     TsScript.add ('ST,' + aPlayer.ids +',' + IntToStr(cost_pre) ) ; // pressing costa come tackle. molto.
     aPlayer.Stamina := aPlayer.Stamina - cost_pre;
-    aPlayer.xpTal_Experience := aPlayer.xpTal_Experience + 1;
+    aPlayer.xpTal[TALENT_ID_EXPERIENCE] :=  aPlayer.xpTal[TALENT_ID_EXPERIENCE] + 1;
     ExceptPlayers.Add(aPlayer);
 
     if (absDistance (aPlayer.CellX , aPlayer.CellY, Ball.Cellx, Ball.Celly  ) = 1) and
@@ -7600,7 +7570,7 @@ reason:='';
       //Ball.Player.Defense := Ball.Player.Defense Ball.Player.BonusProtection
       //Ball.Player.BonusProtection:=  Ball.Player.BonusProtection - aPlayer.Pressing ;
       tsSpeaker.Add( aPlayer.Surname +' (Pressing) fa pressing su ' + Ball.Player.ids {cella}  ) ;
-      if aPlayer.Tal_Experience = 0 then begin
+      if aPlayer.TalentId <> TALENT_ID_EXPERIENCE then begin // se non ga il talento Experience
         TeamMovesLeft := TeamMovesLeft - 1;
       end else Minute := Minute + 1; // il minuto passa anche se non ha costo la skill
 
@@ -7634,7 +7604,8 @@ reason:='';
     TsScript.add ('SERVER_PRO,' + aPlayer.ids + ',' + IntToStr(aPlayer.cellX) + ',' + IntToStr(aPlayer.cellY)+ ',' + IntToStr(aPlayer.cellX) + ',' + IntToStr(aPlayer.cellY) ) ;
     aPlayer.Stamina := aPlayer.Stamina - cost_pro;
     TsScript.add ('ST,' + aPlayer.ids +',' + IntToStr(cost_pro) ) ;
-    aPlayer.xpTal_Power :=  aPlayer.xpTal_Power + 1;
+    aPlayer.xpTal[TALENT_ID_POWER] :=  aPlayer.xpTal[TALENT_ID_POWER] + 1;
+
     ExceptPlayers.Add(aPlayer);
     aPlayer.BonusProtectionTurn := 2;
     aPlayer.BallControl := aPlayer.BallControl + 2;
@@ -8003,7 +7974,7 @@ reason:='';
       MyParam := withball;
     end
     else begin
-      aPlayer.xpTal_Positioning := aPlayer.xpTal_Positioning + 1; // solo senza palla
+      aPlayer.xpTal[TALENT_ID_POSITIONING] :=  aPlayer.xpTal[TALENT_ID_POSITIONING] + 1; // solo senza palla
       MoveValue := aPlayer.Speed ;
       FriendlyWall := false;
       OpponentWall := false;
@@ -8099,20 +8070,23 @@ reason:='';
     aPlayer.resetALL;
     if (aPlayer.MovePath.Count >= 2) and ( aPlayer.HasBall )  then begin
      aPlayer.BonusPLMTurn := 1;
-     aPlayer.Shot   := aPlayer.Defaultshot + 2 + aPlayer.tal_bomb;
+     aPlayer.tmp:=0;
+     if aPlayer.TalentId = TALENT_ID_BOMB then
+      aPlayer.tmp:=1;
+     aPlayer.Shot   := aPlayer.Defaultshot + 2 + aPlayer.tmp;
      aPlayer.Passing   := aPlayer.DefaultPassing + 2 ;
     end;
     TeamMovesLeft := TeamMovesLeft - 1;
     case aPlayer.Team of
       0: begin
         if aPlayer.CellX <= 5 then
-          aPlayer.xpTal_midDefensive := aPlayer.xpTal_midDefensive + 1
-          else aPlayer.xpTal_midOffensive := aPlayer.xpTal_midOffensive + 1;
+          aPlayer.xpTal[TALENT_ID_DEFENSIVE] := aPlayer.xpTal[TALENT_ID_DEFENSIVE] + 1
+          else aPlayer.xpTal[TALENT_ID_OFFENSIVE] := aPlayer.xpTal[TALENT_ID_OFFENSIVE] + 1;
       end;
       1: begin
         if aPlayer.CellX >= 6 then
-          aPlayer.xpTal_midDefensive := aPlayer.xpTal_midDefensive + 1
-          else aPlayer.xpTal_midOffensive := aPlayer.xpTal_midOffensive + 1;
+          aPlayer.xpTal[TALENT_ID_DEFENSIVE] := aPlayer.xpTal[TALENT_ID_DEFENSIVE] + 1
+          else aPlayer.xpTal[TALENT_ID_OFFENSIVE] := aPlayer.xpTal[TALENT_ID_OFFENSIVE] + 1;
       end;
     end;
 
@@ -9058,25 +9032,33 @@ begin
        TsScript.add ('sc_ST,' + aPlayer.ids +',' + IntToStr(cost_tac)) ;
        preRoll := RndGenerate (dice);
        Roll := AdjustFatigue (aPlayer.Stamina , preRoll);
-       aRnd:=  Roll.value + aPlayer.Defense + aPlayer.tal_toughness;  // durezza
+       aPlayer.tmp:=0;
+       if aPlayer.TalentId = TALENT_ID_TOUGHNESS then
+        aPlayer.tmp:=1;
+
+       aRnd:=  Roll.value + aPlayer.Defense + aPlayer.tmp;  // durezza
        aPlayer.xp_defense := aPlayer.xp_Defense + 1;
-       aPlayer.xpTal_Toughness := aPlayer.xpTal_Toughness + 1;
-       aPlayer.xpTal_faul := aPlayer.xpTal_faul + 1;
-       aPlayer.xpTal_Marking := aPlayer.xpTal_Marking + 1;
+       aPlayer.xpTal[TALENT_ID_TOUGHNESS] := aPlayer.xpTal[TALENT_ID_TOUGHNESS] + 1;
+       aPlayer.xpTal[TALENT_ID_FAUL] := aPlayer.xpTal[TALENT_ID_FAUL] + 1;
+       aPlayer.xpTal[TALENT_ID_MARKING] := aPlayer.xpTal[TALENT_ID_MARKING] + 1;
 
        preRoll2 := RndGenerate (dice);
        Roll2 := AdjustFatigue (Ball.Player.Stamina , preRoll2);
-       aRnd2:= Roll2.value + Ball.Player.ballControl + Ball.Player.Tal_Power ;  // se a 0 perchè underpressure, il talento gli conferisce minimo 1
+       Ball.Player.tmp:=0;
+       if Ball.Player.TalentId = TALENT_ID_POWER then
+        Ball.Player.tmp:=1;
+
+       aRnd2:= Roll2.value + Ball.Player.ballControl + Ball.Player.tmp ;  // se a 0 perchè underpressure, il talento gli conferisce minimo 1
        Ball.Player.xp_ballControl:= Ball.Player.xp_ballControl + 1;
-       Ball.Player.xpTal_Power := Ball.Player.xpTal_Power + 1;
+       Ball.Player.xpTal[TALENT_ID_POWER] := Ball.Player.xpTal[TALENT_ID_POWER] + 1;
        if aRnd2 < 0 then aRnd2 :=0;
        ExceptPlayers.Add(ball.player);
 
         TsScript.add ( 'sc_DICE,' + IntTostr(aPlayer.CellX) + ',' + Inttostr(aPlayer.CellY) +','+  IntTostr(aRnd) +','+
-        IntTostr (aPlayer.Defense) + ',Tackle,'+ aPlayer.ids+','+IntTostr(Roll.value) + ','+ Roll.fatigue +','+IntToStr(aPlayer.tal_toughness));
+        IntTostr (aPlayer.Defense) + ',Tackle,'+ aPlayer.ids+','+IntTostr(Roll.value) + ','+ Roll.fatigue +','+IntToStr(aPlayer.tmp));
 
         TsScript.add ( 'sc_DICE,' + IntTostr(Ball.Player.CellX) + ',' + Inttostr(Ball.Player.CellY) +','+  IntTostr(aRnd2) +','+
-        IntTostr (  Ball.Player.ballControl ) +',Ball.Control,'+  Ball.Player.ids+','+IntTostr(Roll2.value) + ',' +Roll2.fatigue+','+IntTostr(Ball.Player.Tal_Power));
+        IntTostr (  Ball.Player.ballControl ) +',Ball.Control,'+  Ball.Player.ids+','+IntTostr(Roll2.value) + ',' +Roll2.fatigue+','+IntTostr(Ball.Player.tmp));
 // DEBUG forza il fallo
 //        aRnd:=1;
 //        aRnd2 := 10;
@@ -9103,7 +9085,10 @@ begin
           aPlayer.Cells := dstCell;
           // bonus di tackle perfect
           aPlayer.BonusTackleTurn := 1 ;
-          aPLayer.Shot := aPlayer.DefaultShot + 2 + aPlayer.tal_bomb;
+          aPlayer.tmp:=0;
+          if aPlayer.TalentId = TALENT_ID_BOMB then
+            aPlayer.tmp := 1;
+          aPLayer.Shot := aPlayer.DefaultShot + 2 + aPlayer.tmp;
           aPLayer.Passing  := aPlayer.Defaultpassing + 2;
           tsSpeaker.Add( aPlayer.Surname +' (Tackle) vince il contrasto pefettamente su ' + oldPlayerBall.Surname );
 
@@ -9166,8 +9151,7 @@ begin
             end;
           end;
 
-
-          if aPlayer.Tal_faul > 0 then fault := fault + 15;
+          if aPlayer.TalentId = TALENT_ID_FAUL then fault := fault + 15;
           aPlayer.CanSkill := False;
           TsScript.add ('sc_tackle.no,' + aPlayer.ids{sfidante} +',' + Ball.Player.ids {cella}
                                       + ',' + IntTostr(aPlayer.CellX)+',' + IntTostr(aPlayer.CellY)
@@ -9330,16 +9314,25 @@ begin
        TsScript.add ('sc_ST,' + aPlayer.ids +',' + IntToStr(cost_autotac) ) ;
        preRoll := RndGenerate (dice);
        Roll := AdjustFatigue (aPlayer.Stamina , preRoll);
-       aRnd:=  Roll.value + aPlayer.Defense +  aPlayer.Tal_Challenge ; // lottatore
+
+       aPlayer.tmp:=0;
+       if aPlayer.TalentId = TALENT_ID_CHALLENGE then
+        aPlayer.tmp := 1;
+
+       aRnd:=  Roll.value + aPlayer.Defense +  aPlayer.tmp ; // lottatore
        aPlayer.xp_defense := aPlayer.xp_Defense + 1;
-       aPlayer.xpTal_Challenge :=  aPlayer.xpTal_Challenge +1;
-       aPlayer.xpTal_Marking := aPlayer.xpTal_Marking + 1;
+       aPlayer.xpTal[TALENT_ID_CHALLENGE] :=  aPlayer.xpTal[TALENT_ID_CHALLENGE] +1;
+       aPlayer.xpTal[TALENT_ID_MARKING] := aPlayer.xpTal[TALENT_ID_MARKING] + 1;
 
        preRoll2 := RndGenerate (dice);
        Roll2 := AdjustFatigue (Ball.Player.Stamina , preRoll2);
-       aRnd2:= Roll2.value + Ball.Player.ballControl + Ball.Player.tal_Power ; //  resiste aigli autotackle e ai tackle  toughness
+        Ball.Player.tmp:=0;
+       if  Ball.Player.TalentId = TALENT_ID_CHALLENGE then
+         Ball.Player.tmp := 1;
+
+       aRnd2:= Roll2.value + Ball.Player.ballControl + Ball.Player.tmp ; //  resiste aigli autotackle e ai tackle  toughness
        Ball.Player.xp_ballControl:= Ball.Player.xp_ballControl + 1;
-       Ball.Player.xptal_Power :=  Ball.Player.xptal_Power +1;
+       Ball.Player.xpTal[TALENT_ID_POWER] :=  Ball.Player.xpTal[TALENT_ID_POWER] +1;
 
        if aRnd2 < 0 then aRnd2 :=0;
 
@@ -9348,9 +9341,9 @@ begin
         { ..........................TODO :  malus da dietro, e 50% fallo e cartellino }
         oldPlayerBall := Ball.Player;
         TsScript.add ( 'sc_DICE,' + IntTostr(aPlayer.CellX) + ',' + Inttostr(aPlayer.CellY) +','+  IntTostr(aRnd) +','+
-        IntTostr ( aPlayer.Defense )+',Tackle,'+ aPlayer.ids+','+IntTostr(Roll.value)+','+Roll.fatigue+','+IntToStr(aPlayer.Tal_Challenge));
+        IntTostr ( aPlayer.Defense )+',Tackle,'+ aPlayer.ids+','+IntTostr(Roll.value)+','+Roll.fatigue+','+IntToStr(aPlayer.tmp));
         TsScript.add ( 'sc_DICE,' + IntTostr(oldPlayerBall.CellX) + ',' + Inttostr(oldPlayerBall.CellY) +','+  IntTostr(aRnd2) +','+
-        IntTostr(oldPlayerBall.ballControl) +',Ball.Control,'+  oldPlayerBall.ids+','+IntTostr(Roll2.value)+','+Roll2.fatigue+','+IntToStr(oldPlayerBall.tal_Power));
+        IntTostr(oldPlayerBall.ballControl) +',Ball.Control,'+  oldPlayerBall.ids+','+IntTostr(Roll2.value)+','+Roll2.fatigue+','+IntToStr(oldPlayerBall.tmp));
 
         SwapPlayers ( aPlayer, Ball.Player );
         TsScript.add ('sc_swap,' + aPlayer.ids{sfidante} +',' + oldPlayerBall.ids {cella}
@@ -9373,10 +9366,11 @@ begin
         oldPlayerBall := Ball.Player;
        // non resetto PROPRE
         { TODO -cgameplay : potrebbe anche non tornare indietro e spostarsi di cella }
+
         TsScript.add ( 'sc_DICE,' + IntTostr(aPlayer.CellX) + ',' + Inttostr(aPlayer.CellY) +','+  IntTostr(aRnd) +',' +
-        IntTostr ( aPlayer.Defense )+',Tackle,'+ aPlayer.ids+','+IntTostr(Roll.value)+','+Roll.fatigue+','+IntToStr(aPlayer.Tal_Challenge));
+        IntTostr ( aPlayer.Defense )+',Tackle,'+ aPlayer.ids+','+IntTostr(Roll.value)+','+Roll.fatigue+','+IntToStr(aPlayer.tmp));
         TsScript.add ( 'sc_DICE,' + IntTostr(oldPlayerBall.CellX) + ',' + Inttostr(oldPlayerBall.CellY) +','+  IntTostr(aRnd2) +','+
-        IntTostr(oldPlayerBall.ballControl ) +',Ball.Control,'+  oldPlayerBall.ids+','+IntTostr(Roll2.value)+','+Roll2.fatigue+','+IntToStr(oldPlayerBall.tal_Power));
+        IntTostr(oldPlayerBall.ballControl ) +',Ball.Control,'+  oldPlayerBall.ids+','+IntTostr(Roll2.value)+','+Roll2.fatigue+','+IntToStr(oldPlayerBall.tmp));
         aPlayer.Cells := ball.Cells;
      //   TsScript.add ( 'sc_noswap,' + aPlayer.ids{sfidante} +',' + Ball.Player.ids {cella} + ',' + IntTostr(Ball.Player.CellX)+',' + IntTostr(Ball.Player.CellY)
      //    + ',' + IntTostr(OldCell.x)+',' + IntTostr(OldCell.Y) {provenienza PlayerB}   ) ;
@@ -9973,11 +9967,15 @@ begin
 
   preRoll := RndGenerate (dice);
   Roll := AdjustFatigue(aPlayer.Stamina,PreRoll);
-  aRnd:= aPlayer.Passing + aPlayer.Tal_Crossing  + Roll.value;
+  aPlayer.tmp :=0;
+  if aPlayer.TalentId = TALENT_ID_CROSSING then
+    aPlayer.tmp := 1;
+
+  aRnd:= aPlayer.Passing + aPlayer.tmp + Roll.value;
   {$ifdef SetCornergol}aRnd := 10;{$endif}
   BonusDefenseHeading := 0;
         TsScript.add ( 'sc_DICE,' + IntTostr(CornerMap.CornerCell.X) + ',' + Inttostr(CornerMap.CornerCell.Y) +','+  IntTostr(aRnd) +',' +
-        IntToStr(aPlayer.Passing ) +',Crossing,'+ aPlayer.ids+','+IntTostr(Roll.value)+','+Roll.fatigue+','+IntTostr(aPlayer.Tal_Crossing));
+        IntToStr(aPlayer.Passing ) +',Crossing,'+ aPlayer.ids+','+IntTostr(Roll.value)+','+Roll.fatigue+','+IntTostr(aPlayer.tmp));
     case aRnd of
       1..2:begin //  palla a headingD [2]
         Ball.Cells :=  Point (CornerMap.HeadingCellD [2].X , CornerMap.HeadingCellD [2].Y);
@@ -10098,7 +10096,7 @@ begin
               preRoll4 :=  RndGenerate (dice);
               Roll4 := AdjustFatigue(aGK.Stamina,preRoll4);
               aRnd4 := Roll4.value +  aGK.Defense + BonusDefenseHeading ;
-              aGK.xpTal_GoalKeeper := aGK.xpTal_GoalKeeper + 1;
+              aGK.xpTal[TALENT_ID_GoalKeeper] := aGK.xpTal[TALENT_ID_GoalKeeper] + 1;
              // aRnd4:= 10;
 
                  TsScript.add ( 'sc_DICE,' + IntTostr(aGK.CellX) + ',' + Inttostr(aGK.CellY) +','+  IntTostr(aRnd4) +','+
@@ -10194,7 +10192,11 @@ begin
 
   preRoll := RndGenerate (dice);
   Roll := AdjustFatigue(aPlayer.Stamina,preRoll);
-  aRnd:= aPlayer.Passing + aPlayer.Tal_Crossing  + Roll.value;
+  aPlayer.tmp :=0;
+  if aPlayer.TalentId = TALENT_ID_CROSSING then
+    aPlayer.tmp := 1;
+
+  aRnd:= aPlayer.Passing + aPlayer.tmp  + Roll.value;
   {$ifdef SetCornergol}aRnd := 10;{$endif}
 
   //DefenseHeadingWin:= false;
@@ -10205,7 +10207,7 @@ begin
   // in tutti i casi varia comuqnue la cella e quindi i player che si condfrontano
 
         TsScript.add ( 'sc_DICE,' + IntTostr(CornerMap.CornerCell.X) + ',' + Inttostr(CornerMap.CornerCell.Y) +','+  IntTostr(aRnd) +',' +
-        IntToStr(aPlayer.Passing) +',Crossing,'+ aPlayer.ids+','+IntTostr(Roll.value)+','+Roll.fatigue+','+IntToStr(aPlayer.Tal_Crossing));
+        IntToStr(aPlayer.Passing) +',Crossing,'+ aPlayer.ids+','+IntTostr(Roll.value)+','+Roll.fatigue+','+IntToStr(aPlayer.tmp));
     case aRnd of
       1..2:begin //  palla a headingD [2]
         Ball.Cells :=  Point (CornerMap.HeadingCellD [2].X , CornerMap.HeadingCellD [2].Y);
@@ -10329,7 +10331,7 @@ begin
               preRoll4 :=  RndGenerate (dice);
               Roll4 := AdjustFatigue(aGK.Stamina,preRoll4);
               aRnd4 := Roll4.value +  aGK.Defense + BonusDefenseHeading ;
-              aGK.xpTal_GoalKeeper := aGK.xpTal_GoalKeeper + 1;
+              aGK.xpTal[TALENT_ID_GoalKeeper] := aGK.xpTal[TALENT_ID_GoalKeeper] + 1;
              // aRnd4:= 10;
 
                  TsScript.add ( 'sc_DICE,' + IntTostr(aGK.CellX) + ',' + Inttostr(aGK.CellY) +','+  IntTostr(aRnd4) +','+
@@ -10910,7 +10912,7 @@ begin
 end;
 function TSoccerbrain.AI_Think_CleanSomeRows ( team:Integer): TBetterSolution;
 var
-  i,x: integer;
+  x: integer;
   aPlayer: TsoccerPlayer;
   lstSameRow: TObjectlist<TSoccerPlayer>;
   aplmcell: TPoint;
@@ -11081,8 +11083,8 @@ end;
 procedure TSoccerbrain.AI_Think (team: integer);
 var
   tmp: TStringList;
-  cof,fkf1,fkf2,fkf3,fkf4: string;
-  ShpOrLop,PosChance: Integer;
+  cof,fkf2,fkf3,fkf4: string;
+  ShpOrLop: Integer;
   dstCell: TPoint;
   CornerMap: TCornerMap;
   aHeadingFriend: TSoccerPlayer;
@@ -11306,10 +11308,8 @@ lopfkf1:
 end;
 procedure TSoccerbrain.AI_Think_myball_iDefend ( Team: integer );
 var
-  MidChance : TAIMidChance;
-  MidChances : TList<TAIMidChance>;
-  ShpOrLop,ShpOrLopOrPlm,MoveValue: Integer;
-  aList: TList<TAimidChance>;
+  ShpOrLopOrPlm,MoveValue: Integer;
+//  aList: TList<TAimidChance>;
   dstCell: TPoint;
   aDoor,aPlmCell: TPoint;
   label lopdef;
@@ -11460,7 +11460,7 @@ end;
 procedure TSoccerbrain.AI_Think_myball_middle ( Team: integer  );
 var
   dstCell: TPoint;
-  ShpOrLop,ShpOrLopOrPlm,MoveValue: Integer;
+  ShpOrLopOrPlm,MoveValue: Integer;
   aDoor,aPlmCell: TPoint;
   label lopdef,lopatt,plmmoveatt;
 begin
@@ -11612,10 +11612,7 @@ lopatt:
 end;
 procedure TSoccerbrain.AI_Think_myball_iAttack ( Team: integer );
 var
-  dstCell: TPoint;
-  aVolleyFriend,aHeadingfriend,anOpponent,aFriend: TSoccerPlayer;
-  aDoor: TPoint;
-  ShotOrPlm,CrossOrlopVolley,MoveValue,ShotOrDri,ShotOrFindCross,PlmOrFindCross: Integer;
+  ShotOrPlm: Integer;
   aplmCell: TPoint;
   label todoor,shot,shot2,tobottomfield,cantcross;
 begin
@@ -11744,7 +11741,7 @@ cantcross:
 end;
 function TSoccerBrain.GetDummyAheadPass( Team: integer ): TSoccerPlayer;
 var
-  i,x: integer;
+  x: integer;
   aPlayer: TSoccerPlayer;
 begin
   Result := nil;
@@ -11776,7 +11773,7 @@ begin
 end;
 function TSoccerBrain.DummyAheadPass( Team: integer ): Boolean;
 var
-  i,x: integer;
+  x: integer;
   aPlayer: TSoccerPlayer;
 begin
   Result := False;
@@ -11820,7 +11817,7 @@ begin
 end;
 procedure TSoccerBrain.DummyFindaWay;
 var
-  anOpponent,aFriend: TSoccerPlayer;
+  anOpponent: TSoccerPlayer;
   aDoor: TPoint;
 begin
     //Getpath FALSE ! poi cella per cella vede cosa è
@@ -11860,7 +11857,6 @@ end;
 function TSoccerbrain.DummyTryCross( Team: integer ): Boolean;
 var
   aVolleyFriend,aHeadingfriend: TSoccerPlayer;
-  aDoor: TPoint;
 
 begin
   result := false;
@@ -11897,12 +11893,17 @@ begin
   tmpCrossCells := Tlist<TTVCrossAreaCell>.Create;
   Listfriends:= TList<TCellAndPlayer>.Create;
 
+    ball.Player.tmp := CrossingRangeMax;
+    if ball.Player.TalentId = TALENT_ID_LONGPASS then
+      ball.Player.tmp := ball.Player.tmp + 1 ;
+
   for I := 0 to TVCrossingAreaCells.Count -1 do begin
     aCrossCell :=  TvCrossingAreaCells[i];
+
     if aCrossCell.DoorTeam <> aPlayer.Team then begin // <> opponent
       if (GetSoccerPlayer ( aCrossCell.cellX, aCrossCell.CellY) = nil) and // la distanza minima e massima crossing
       ( AbsDistance( Ball.Player.CellX,ball.Player.CellY, aCrossCell.CellX , aCrossCell.cellY ) >= CrossingRangeMin )
-      and  ( AbsDistance( Ball.Player.CellX,ball.Player.CellY, aCrossCell.CellX , aCrossCell.cellY ) <= (CrossingRangeMax + ball.Player.tal_longpass ) )
+      and  ( AbsDistance( Ball.Player.CellX,ball.Player.CellY, aCrossCell.CellX , aCrossCell.cellY ) <= (ball.Player.tmp ) )
       then begin
         // la aggiungo alla lista di celle cross libere in versione AIfield
         tmpCrossCells.Add ( aCrossCell );
@@ -11976,12 +11977,18 @@ begin
   tmpCrossCells := Tlist<TTVCrossAreaCell>.Create;
   Listfriends:= TList<TCellAndPlayer>.Create;
 
+    ball.Player.tmp := CrossingRangeMax;
+    if ball.Player.TalentId = TALENT_ID_LONGPASS then
+      ball.Player.tmp := ball.Player.tmp + 1 ;
+
+
   for I := 0 to TVCrossingAreaCells.Count -1 do begin
     aCrossCell :=  TvCrossingAreaCells[i];
+
     if aCrossCell.DoorTeam <> aPlayer.Team then begin // <> opponent
       if (GetSoccerPlayer ( aCrossCell.cellX, aCrossCell.CellY) = nil) and // la distanza minima e massima crossing
       ( AbsDistance( Ball.Player.CellX,ball.Player.CellY, aCrossCell.CellX , aCrossCell.cellY ) >= CrossingRangeMin )
-      and  ( AbsDistance( Ball.Player.CellX,ball.Player.CellY, aCrossCell.CellX , aCrossCell.cellY ) <= (CrossingRangeMax + ball.Player.tal_longpass ) )
+      and  ( AbsDistance( Ball.Player.CellX,ball.Player.CellY, aCrossCell.CellX , aCrossCell.cellY ) <= (ball.Player.tmp) )
       then begin
         // la aggiungo alla lista di celle cross libere in versione AIfield
         tmpCrossCells.Add ( aCrossCell );
@@ -12231,6 +12238,9 @@ begin
         // Ball.Player.MovePath è in TVmode
         aMidChance.X := newX;
         aMidChance.Y := newY;
+        ball.Player.tmp := 0;
+        if ball.Player.TalentId = TALENT_ID_TOUGHNESS then
+          ball.Player.tmp :=  1 ;
 
         //per ognuna delle celle ottengo la chance sugli autotackle, per esempio a distanza 2 chance 70, a distanza 3 chance 30
         LstAutoTackle:= TList<TInteractivePlayer>.create;
@@ -12243,9 +12253,13 @@ begin
             for t := 0 to LstAutoTackle.Count -1 do begin
 
                 if (LstAutoTackle[t].Cell.X = Ball.Player.MovePath[p].X) and (LstAutoTackle[t].Cell.Y = Ball.Player.MovePath[p].Y) then begin // se la cella lo riguarda. questo fa la giusta animazione
+                  LstAutoTackle[t].Player.tmp := 0;
+                  if LstAutoTackle[t].Player.TalentId = TALENT_ID_CHALLENGE then
+                  LstAutoTackle[t].Player.tmp :=  1 ;
 
-                    CalculateChance  (Ball.player.Defense  +Ball.player.Tal_Toughness  , LstAutoTackle[t].Player.Defense
-                    + LstAutoTackle[t].Player.tal_challenge + Modifier_autotackle , chanceA,chanceB);
+
+                    CalculateChance  (Ball.player.Defense  + ball.Player.tmp  , LstAutoTackle[t].Player.Defense
+                    + LstAutoTackle[t].Player.tmp + Modifier_autotackle , chanceA,chanceB);
                     // esempio chanceA 37, poi chanceA 65. prendo il valore più basso di chance di riuscita
                     if chanceA < lastChance  then lastChance:= chanceA;    { QUI bug, forse devo prende il valore più alto di chance }
                 end;                         // la chance di riuscita di me , non del difensore
@@ -12281,6 +12295,9 @@ begin
         // Ball.Player.MovePath è in TVmode
         aMidChance.X := newX;
         aMidChance.Y := newY;
+        ball.Player.tmp := 0;
+        if ball.Player.TalentId = TALENT_ID_TOUGHNESS then
+          ball.Player.tmp :=  1 ;
 
         //per ognuna delle celle ottengo la chance sugli autotackle, per esempio a distanza 2 chance 70, a distanza 3 chance 30
         LstAutoTackle:= TList<TInteractivePlayer>.create;
@@ -12293,9 +12310,12 @@ begin
             for t := 0 to LstAutoTackle.Count -1 do begin
 
                 if (LstAutoTackle[t].Cell.X = Ball.Player.MovePath[p].X) and (LstAutoTackle[t].Cell.Y = Ball.Player.MovePath[p].Y) then begin // se la cella lo riguarda. questo fa la giusta animazione
+                  LstAutoTackle[t].Player.tmp := 0;
+                  if LstAutoTackle[t].Player.TalentId = TALENT_ID_CHALLENGE then
+                  LstAutoTackle[t].Player.tmp :=  1 ;
 
-                    CalculateChance  (Ball.player.Defense  +Ball.player.Tal_Toughness  , LstAutoTackle[t].Player.Defense
-                    + LstAutoTackle[t].Player.tal_challenge + Modifier_autotackle , chanceA,chanceB);
+                    CalculateChance  (Ball.player.Defense  +Ball.player.tmp  , LstAutoTackle[t].Player.Defense
+                    + LstAutoTackle[t].Player.tmp + Modifier_autotackle , chanceA,chanceB);
                     // esempio chanceA 37, poi chanceA 65. prendo il valore più basso di chance di riuscita
                     if chanceA < lastChance  then lastChance:= chanceA;
                 end;
@@ -12332,6 +12352,9 @@ begin
         // Ball.Player.MovePath è in TVmode
         aMidChance.X := newX;
         aMidChance.Y := newY;
+        ball.Player.tmp := 0;
+        if ball.Player.TalentId = TALENT_ID_TOUGHNESS then
+          ball.Player.tmp :=  1 ;
 
         //per ognuna delle celle ottengo la chance sugli autotackle, per esempio a distanza 2 chance 70, a distanza 3 chance 30
         LstAutoTackle:= TList<TInteractivePlayer>.create;
@@ -12344,9 +12367,12 @@ begin
             for t := 0 to LstAutoTackle.Count -1 do begin
 
                 if (LstAutoTackle[t].Cell.X = Ball.Player.MovePath[p].X) and (LstAutoTackle[t].Cell.Y = Ball.Player.MovePath[p].Y) then begin // se la cella lo riguarda. questo fa la giusta animazione
+                  LstAutoTackle[t].Player.tmp := 0;
+                  if LstAutoTackle[t].Player.TalentId = TALENT_ID_CHALLENGE then
+                  LstAutoTackle[t].Player.tmp :=  1 ;
 
-                    CalculateChance  (Ball.player.Defense  +Ball.player.Tal_Toughness  , LstAutoTackle[t].Player.Defense
-                    + LstAutoTackle[t].Player.tal_challenge + Modifier_autotackle , chanceA,chanceB);
+                    CalculateChance  (Ball.player.Defense  + Ball.player.tmp  , LstAutoTackle[t].Player.Defense
+                    + LstAutoTackle[t].Player.tmp + Modifier_autotackle , chanceA,chanceB);
                     // esempio chanceA 37, poi chanceA 65. prendo il valore più basso di chance di riuscita
                     if chanceA < lastChance  then lastChance:= chanceA;
                 end;
@@ -12384,7 +12410,9 @@ begin
     Result.Y := -1;
     // butto la palla in avanti a caso il più lontano
     AICell := Tv2AiField (Ball.player.Team, Ball.player.CellX,Ball.player.CellY ) ;
-    MaxDistance := LoftedPassRangeMax + Ball.Player.tal_longpass;
+    MaxDistance := LoftedPassRangeMax ;
+    if ball.Player.TalentId = TALENT_ID_LONGPASS then
+      MaxDistance :=  MaxDistance + 1;
     aList:= Tlist<TPoint>.Create;
 
 
@@ -12396,7 +12424,7 @@ begin
 
         (*absdistance è diversa dal rangeMAx, va checkata ora*)
         TvCell := AiField [ Ball.player.Team, dstCell.X,dstCell.Y ];
-        if AbsDistance( Ball.player.CellX,Ball.player.CellY,TvCell.X,TvCell.Y) > (LoftedPassRangeMax + Ball.Player.tal_longpass) then Continue;
+        if AbsDistance( Ball.player.CellX,Ball.player.CellY,TvCell.X,TvCell.Y) > (MaxDistance) then Continue;
         if IsOutSide(TvCell.X, TvCell.Y ) then Continue;
 
           TvCell := AiField [ Ball.player.Team, dstCell.X,dstCell.Y ];
@@ -12478,7 +12506,9 @@ begin
     Result.Y := -1;
 
     AICell := Tv2AiField (Ball.player.Team, Ball.player.CellX,Ball.player.CellY ) ;
-    MaxDistance := LoftedPassRangeMax + Ball.Player.tal_longpass;
+    MaxDistance := LoftedPassRangeMax ;
+    if ball.Player.TalentId = TALENT_ID_LONGPASS then
+      MaxDistance :=  MaxDistance + 1;
     aList:= Tlist<TPoint>.Create;
 
 
@@ -12490,7 +12520,7 @@ begin
 
         (*absdistance è diversa dal rangeMAx, va checkata ora*)
         TvCell := AiField [ Ball.player.Team, dstCell.X,dstCell.Y ];
-        if AbsDistance( Ball.player.CellX,Ball.player.CellY,TvCell.X,TvCell.Y) > (LoftedPassRangeMax + Ball.Player.tal_longpass) then Continue;
+        if AbsDistance( Ball.player.CellX,Ball.player.CellY,TvCell.X,TvCell.Y) > (MaxDistance) then Continue;
         if IsOutSide(TvCell.X, TvCell.Y ) then Continue;
 
           TvCell := AiField [ Ball.player.Team, dstCell.X,dstCell.Y ];
@@ -12515,19 +12545,23 @@ end;
 
 function TSoccerbrain.GetDummyCrossFriend ( aPlayer: TSoccerPlayer ): TSoccerPlayer;
 var
-  p: integer;
+  p,MaxDistance: integer;
   aFriend: TSoccerPlayer;
   AICell,TvCell,dstCell: TPoint;
   aList: TObjectList<TSoccerPlayer>;
 
 begin
-    Result := nil;
+  Result := nil;
+
+    MaxDistance := CrossingRangeMax ;
+    if aPlayer.TalentId = TALENT_ID_LONGPASS then
+      MaxDistance :=  MaxDistance + 1;
 
   aList:= TObjectList<TSoccerPlayer>.Create(false);
 
   for P := lstSoccerPlayer.Count -1 downto 0 do begin
     aFriend := lstSoccerPlayer[p];
-    if (absDistance( aPlayer.CellX ,aPlayer.CellY,  aFriend.CellX, aFriend.CellY ) > ( CrossingRangeMax + aPlayer.tal_longpass ))
+    if (absDistance( aPlayer.CellX ,aPlayer.CellY,  aFriend.CellX, aFriend.CellY ) > ( MaxDistance ))
     or (absDistance( aPlayer.CellX ,aPlayer.CellY,  aFriend.CellX, aFriend.CellY ) < CrossingRangeMin)  then begin
       continue;
     end;
@@ -12554,19 +12588,21 @@ begin
 end;
 function TSoccerbrain.GetDummyVolleyFriend ( aPlayer: TSoccerPlayer ): TSoccerPlayer;
 var
-  p: integer;
+  p,MaxDistance: integer;
   aFriend: TSoccerPlayer;
-  AICell,TvCell,dstCell: TPoint;
   aList: TObjectList<TSoccerPlayer>;
 
 begin
-    Result := nil;
+   Result := nil;
+   MaxDistance := CrossingRangeMax ;
+   if aPlayer.TalentId = TALENT_ID_LONGPASS then
+   MaxDistance :=  MaxDistance + 1;
 
   aList:= TObjectList<TSoccerPlayer>.Create(false);
 
   for P := lstSoccerPlayer.Count -1 downto 0 do begin
     aFriend := lstSoccerPlayer[p];
-    if (absDistance( aPlayer.CellX ,aPlayer.CellY,  aFriend.CellX, aFriend.CellY ) > ( CrossingRangeMax + aPlayer.tal_longpass ))
+    if (absDistance( aPlayer.CellX ,aPlayer.CellY,  aFriend.CellX, aFriend.CellY ) > ( MaxDistance ))
     or (absDistance( aPlayer.CellX ,aPlayer.CellY,  aFriend.CellX, aFriend.CellY ) < CrossingRangeMin)  then begin
       continue;
     end;
@@ -12610,7 +12646,11 @@ begin
     // il compagno deve avere un path libero
     // la cella è davanti o in linea, preferendo davanti
     AICell := Tv2AiField (Ball.player.Team, Ball.player.CellX,Ball.player.CellY ) ;
-    MaxDistance := ShortPassRange + Ball.Player.tal_longpass;
+    MaxDistance := ShortPassRange ;
+    if Ball.Player.TalentId = TALENT_ID_LONGPASS then
+    MaxDistance :=  MaxDistance + 1;
+
+
     aList:= Tlist<TPoint>.Create;
 
 
@@ -12622,7 +12662,7 @@ begin
 
         (*absdistance è diversa dal rangeMAx, va checkata ora*)
         TvCell := AiField [ Ball.player.Team, dstCell.X,dstCell.Y ];
-        if AbsDistance( Ball.player.CellX,Ball.player.CellY,TvCell.X,TvCell.Y) > (ShortPassRange + Ball.Player.tal_longpass) then Continue;
+        if AbsDistance( Ball.player.CellX,Ball.player.CellY,TvCell.X,TvCell.Y) > (MaxDistance) then Continue;
         if IsOutSide(TvCell.X, TvCell.Y ) then Continue;
 
           TvCell := AiField [ Ball.player.Team, dstCell.X,dstCell.Y ];
@@ -12700,7 +12740,7 @@ begin
     for I := lstSoccerPlayer.Count -1 downto 0 do begin
       if ( not lstSoccerPlayer[i].PressingDone ) and (lstSoccerPlayer[i].canSkill) and (lstSoccerPlayer[i].Role <> 'G') and
           (AbsDistance(lstSoccerPlayer[i].CellX, lstSoccerPlayer[i].CellY, Ball.Player.CellX,Ball.Player.CellY )=1) and
-           (lstSoccerPlayer[i].Team = team) and ( lstSoccerPlayer[i].Tal_Experience > 00 )
+           (lstSoccerPlayer[i].Team = team) and ( lstSoccerPlayer[i].TalentId = TALENT_ID_EXPERIENCE )
         then begin
           Result := lstSoccerPlayer[i];
           Exit;
@@ -12711,8 +12751,7 @@ begin
 end;
 function TSoccerbrain.DummyReachTheBall ( team: Integer): TSoccerPlayer;
 var
-  i,dist,MinDist,idx,aRnd,p: Integer;
-  FriendlyWall,FinalWall,OpponentWall: boolean;
+  i,MinDist,aRnd,p: Integer;
   aPlayer: TSoccerPlayer;
   aListToBall: TObjectList<TSoccerPlayer>;
   aListToBalldist1: TObjectList<TSoccerPlayer>;
@@ -12807,7 +12846,6 @@ function TSoccerbrain.ai_check_plmballSpeed ( Team: Integer ): TAIMidChance;
 var
   aList: TList<TAimidChance>;
   pick : TAimidChance;
-  I: Integer;
 begin
   Result.Chance := -1;
   Result.inputAI :=  'PASS,' + IntTostr (Team);
@@ -12873,6 +12911,9 @@ begin
         // Ball.Player.MovePath è in TVmode
         aMidChance.X := newX;
         aMidChance.Y := newY;
+        ball.Player.tmp := 0;
+        if ball.Player.TalentId = TALENT_ID_TOUGHNESS then
+          ball.Player.tmp :=  1 ;
 
         //per ognuna delle celle ottengo la chance sugli autotackle, per esempio a distanza 2 chance 70, a distanza 3 chance 30
         LstAutoTackle:= TList<TInteractivePlayer>.create;
@@ -12885,9 +12926,12 @@ begin
             for t := 0 to LstAutoTackle.Count -1 do begin
 
                 if (LstAutoTackle[t].Cell.X = Ball.Player.MovePath[p].X) and (LstAutoTackle[t].Cell.Y = Ball.Player.MovePath[p].Y) then begin // se la cella lo riguarda. questo fa la giusta animazione
+                  LstAutoTackle[t].Player.tmp := 0;
+                  if LstAutoTackle[t].Player.TalentId = TALENT_ID_CHALLENGE then
+                  LstAutoTackle[t].Player.tmp :=  1 ;
 
-                    CalculateChance  (Ball.player.Defense  +Ball.player.Tal_Toughness  , LstAutoTackle[t].Player.Defense
-                    + LstAutoTackle[t].Player.tal_challenge + Modifier_autotackle , chanceA,chanceB);
+                    CalculateChance  (Ball.player.Defense  +Ball.player.tmp  , LstAutoTackle[t].Player.Defense
+                    + LstAutoTackle[t].Player.tmp + Modifier_autotackle , chanceA,chanceB);
                     // esempio chanceA 37, poi chanceA 65. prendo il valore più basso di chance di riuscita
                     if chanceA < lastChance  then lastChance:= chanceA;
                 end;
@@ -12923,6 +12967,9 @@ begin
         // Ball.Player.MovePath è in TVmode
         aMidChance.X := newX;
         aMidChance.Y := newY;
+        ball.Player.tmp := 0;
+        if ball.Player.TalentId = TALENT_ID_TOUGHNESS then
+          ball.Player.tmp :=  1 ;
 
         //per ognuna delle celle ottengo la chance sugli autotackle, per esempio a distanza 2 chance 70, a distanza 3 chance 30
         LstAutoTackle:= TList<TInteractivePlayer>.create;
@@ -12935,9 +12982,12 @@ begin
             for t := 0 to LstAutoTackle.Count -1 do begin
 
                 if (LstAutoTackle[t].Cell.X = Ball.Player.MovePath[p].X) and (LstAutoTackle[t].Cell.Y = Ball.Player.MovePath[p].Y) then begin // se la cella lo riguarda. questo fa la giusta animazione
+                  LstAutoTackle[t].Player.tmp := 0;
+                  if LstAutoTackle[t].Player.TalentId = TALENT_ID_CHALLENGE then
+                  LstAutoTackle[t].Player.tmp :=  1 ;
 
-                    CalculateChance  (Ball.player.Defense  +Ball.player.Tal_Toughness  , LstAutoTackle[t].Player.Defense
-                    + LstAutoTackle[t].Player.tal_challenge + Modifier_autotackle , chanceA,chanceB);
+                    CalculateChance  (Ball.player.Defense  +Ball.player.tmp  , LstAutoTackle[t].Player.Defense
+                    + LstAutoTackle[t].Player.tmp + Modifier_autotackle , chanceA,chanceB);
                     // esempio chanceA 37, poi chanceA 65. prendo il valore più basso di chance di riuscita
                     if chanceA < lastChance  then lastChance:= chanceA;
                 end;
@@ -12974,6 +13024,9 @@ begin
         // Ball.Player.MovePath è in TVmode
         aMidChance.X := newX;
         aMidChance.Y := newY;
+        ball.Player.tmp := 0;
+        if ball.Player.TalentId = TALENT_ID_TOUGHNESS then
+          ball.Player.tmp :=  1 ;
 
         //per ognuna delle celle ottengo la chance sugli autotackle, per esempio a distanza 2 chance 70, a distanza 3 chance 30
         LstAutoTackle:= TList<TInteractivePlayer>.create;
@@ -12986,9 +13039,12 @@ begin
             for t := 0 to LstAutoTackle.Count -1 do begin
 
                 if (LstAutoTackle[t].Cell.X = Ball.Player.MovePath[p].X) and (LstAutoTackle[t].Cell.Y = Ball.Player.MovePath[p].Y) then begin // se la cella lo riguarda. questo fa la giusta animazione
+                  LstAutoTackle[t].Player.tmp := 0;
+                  if LstAutoTackle[t].Player.TalentId = TALENT_ID_CHALLENGE then
+                  LstAutoTackle[t].Player.tmp :=  1 ;
 
-                    CalculateChance  (Ball.player.Defense  +Ball.player.Tal_Toughness  , LstAutoTackle[t].Player.Defense
-                    + LstAutoTackle[t].Player.tal_challenge + Modifier_autotackle , chanceA,chanceB);
+                    CalculateChance  (Ball.player.Defense  +Ball.player.tmp  , LstAutoTackle[t].Player.Defense
+                    + LstAutoTackle[t].Player.tmp + Modifier_autotackle , chanceA,chanceB);
                     // esempio chanceA 37, poi chanceA 65. prendo il valore più basso di chance di riuscita
                     if chanceA < lastChance  then lastChance:= chanceA;
                 end;
@@ -13016,8 +13072,7 @@ begin
 end;
 function TSoccerbrain.GetDummyMaxAcceleration ( AccelerationMode: TAccelerationMode): TPoint;
 var
-  i,NewX,NewY,P: Integer;
-  aCell: TPoint;
+  P: Integer;
   aList: TList<TAICells>;
   aRnd,iSpeed,MaxSpeed:Integer;
   x,y: Integer;
@@ -13133,8 +13188,7 @@ begin
 end;
 function TSoccerbrain.GetDummyGoAheadCell : Tpoint; // il player con la palla cerca di avanzare
 var
-  i,NewX,NewY,P,t: Integer;
-  aCell: TPoint;
+  i: Integer;
   aList: TList<TAICells>;
   aRnd,iSpeed:Integer;
   x,y: Integer;
@@ -13447,7 +13501,7 @@ begin
         aRnd := Roll.value + aList[i].Speed;
         aList[i].itag := aRnd;
         TsScript.add ( 'sc_mtbDICE,' + IntTostr(aList[i].CellX) + ',' + Inttostr(aList[i].CellY) +','+  IntTostr(aRnd) +','+
-        IntTostr(aPlayer.Speed)+',Speed,'+ aList[i].ids+','+IntTostr(Roll.value));
+        IntTostr(aList[i].Speed)+',Speed,'+ aList[i].ids+','+IntTostr(Roll.value));
       end;
 
       // prendo i roll più alti
@@ -13475,7 +13529,11 @@ begin
        aPlayer.BonusSHPTurn := 1;
        aPlayer.BallControl := aPlayer.DefaultBallControl + 2 ;
        aPlayer.Passing  := aPlayer.DefaultPassing + 2 ;
-       aPlayer.Shot   := aPlayer.Defaultshot + 2 + aPlayer.tal_bomb ;
+       aPlayer.tmp:=0;
+       if aPlayer.TalentId = TALENT_ID_BOMB then
+         aPlayer.tmp := 1;
+
+       aPlayer.Shot   := aPlayer.Defaultshot + 2 + aPlayer.tmp ;
       end;
       //ExceptPlayers.Add(aPlayer); //<--- chi riceve un shp e lo raggiunge con movetoball non può rimanere senza canskill
     //  aPlayer.grouped := true;
@@ -13533,10 +13591,10 @@ begin
                                               //nor	…
                                               //dif	defaultX-1
 
-                                              if aPlayer.Tal_midOffensive > 0 then begin
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                    AI_MovePlayer_DefaultX_plus_1 ( aPlayer  ) ;
                                               end
-                                              else if aPlayer.Tal_midDefensive > 0 then begin
+                                              else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                    AI_MovePlayer_DefaultX_minus_1 ( aPlayer  ) ;
                                               end
 
@@ -13546,11 +13604,11 @@ begin
                                             //off	ball= se palla davanti
                                             //nor	…..
                                             //dif	ball-1
-                                              if aPlayer.Tal_midOffensive > 0 then begin
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                  if Ball.CellX > aPlayer.cellX then
                                                    AI_MovePlayer_Ball_equal ( aPlayer ) ;
                                               end
-                                              else if aPlayer.Tal_midDefensive > 0 then begin
+                                              else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                  AI_MovePlayer_Ball_minus_1 ( aPlayer  ) ;
                                               end;
 
@@ -13560,7 +13618,7 @@ begin
                                               //off	…
                                               //nor	…
                                               //dif	default-1 se oltre default
-                                              if aPlayer.Tal_midDefensive > 0 then begin
+                                              if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                  if aPlayer.CellX > aPlayer.DefaultCellX then begin
                                                  AI_MovePlayer_DefaultX_minus_1 ( aPlayer  ) ;
                                                  end;
@@ -13575,10 +13633,10 @@ begin
                                               //nor	defaultX
                                               //dif	defaultX
 
-                                              if aPlayer.Tal_midOffensive > 0 then begin
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                    AI_MovePlayer_DefaultX_plus_1 ( aPlayer  ) ;
                                               end
-                                              else if aPlayer.Tal_midDefensive > 0 then begin
+                                              else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                    AI_MovePlayer_DefaultX ( aPlayer  ) ;
                                               end
                                               // cerco la posizione default se la palla è davanti
@@ -13592,10 +13650,10 @@ begin
                                                 //nor	p+1palla
                                                 //dif	p=palla
 
-                                              if aPlayer.Tal_midOffensive > 0 then begin
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                    AI_MovePlayer_Ball_plus_2 ( aPlayer  ) ;
                                               end
-                                              else if aPlayer.Tal_midDefensive > 0 then begin
+                                              else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                  AI_MovePlayer_Ball_equal ( aPlayer ) ;
                                               end
                                               else AI_MovePlayer_Ball_plus_1 ( aPlayer  ) ;
@@ -13607,12 +13665,12 @@ begin
                                              // nor	default
                                              // dif	default se oltre default
 
-                                               if aPlayer.Tal_midOffensive > 0 then begin
+                                               if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                  if aPlayer.CellX < aPlayer.DefaultCellX then begin
                                                    AI_MovePlayer_DefaultX ( aPlayer  ) ;
                                                  end;
                                                end
-                                               else if aPlayer.Tal_midDefensive > 0 then begin
+                                               else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                    AI_MovePlayer_DefaultX ( aPlayer  ) ;
                                                end
                                                else begin
@@ -13634,11 +13692,11 @@ begin
                                                   //nor	p-1  se palla <= o defaultX
                                                   //dif	defaultX-1
 
-                                              if aPlayer.Tal_midOffensive > 0 then begin
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                    if Ball.CellX > aPlayer.cellX then
                                                      AI_MovePlayer_DefaultX ( aPlayer ) ;
                                               end
-                                              else if aPlayer.Tal_midDefensive > 0 then begin
+                                              else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                      AI_MovePlayer_DefaultX_minus_1 ( aPlayer ) ;
                                               end
                                               // cerco la posizione default se la palla è davanti
@@ -13655,11 +13713,11 @@ begin
                                               //nor	…..
                                               //dif	p-1 palla
 
-                                              if aPlayer.Tal_midOffensive > 0 then begin
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                    if Ball.CellX > aPlayer.cellX then
                                                      AI_MovePlayer_Ball_equal ( aPlayer ) ;
                                               end
-                                              else if aPlayer.Tal_midDefensive > 0 then begin
+                                              else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                  AI_MovePlayer_Ball_minus_1 ( aPlayer  ) ;
                                               end;
 
@@ -13668,12 +13726,12 @@ begin
                                               //  off	default se oltre default
                                               //  nor	default
                                               //  dif	default-1
-                                              if aPlayer.Tal_midOffensive > 0 then begin
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                  if aPlayer.CellX > aPlayer.DefaultCellX then begin
                                                    AI_MovePlayer_DefaultX( aPlayer ) ;
                                                  end;
                                               end
-                                              else if aPlayer.Tal_midDefensive > 0 then begin
+                                              else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                    AI_MovePlayer_DefaultX_minus_1( aPlayer ) ;
                                               end
                                               else begin
@@ -13694,10 +13752,10 @@ begin
                                             //off	defaultX+1
                                             //nor	…..
                                             //dif	defaultX
-                                              if aPlayer.Tal_midOffensive > 0 then begin
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                    AI_MovePlayer_DefaultX_plus_1 ( aPlayer ) ;
                                               end
-                                              else if aPlayer.Tal_midDefensive > 0 then begin
+                                              else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                    AI_MovePlayer_DefaultX( aPlayer ) ;
                                               end;
                                         end
@@ -13705,11 +13763,11 @@ begin
                                           //off	…..
                                           //nor	…..
                                           //dif	p-1palla
-                                              if aPlayer.Tal_midOffensive > 0 then begin
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                if aPlayer.CellX >= 9 then
                                                 AI_MovePlayer_DefaultX ( aPlayer )
                                               end
-                                              else if aPlayer.Tal_midDefensive > 0 then begin
+                                              else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                        AI_MovePlayer_Ball_minus_1 ( aPlayer  ) ;
                                                 end
                                               else begin
@@ -13723,10 +13781,10 @@ begin
                                             //  off	p=palla
                                             //  nor	…..
                                             //  dif	default se oltre default
-                                                if aPlayer.Tal_midOffensive > 0 then begin
+                                                if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                        AI_MovePlayer_Ball_equal ( aPlayer  ) ;
                                                 end
-                                                else if aPlayer.Tal_midDefensive > 0 then begin
+                                                else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                   if aPlayer.CellX > aPlayer.DefaultCellX  then
                                                        AI_MovePlayer_DefaultX ( aPlayer  ) ;
                                                 end
@@ -13744,10 +13802,10 @@ begin
 //                                            nor	…
 //                                            dif	defaultX
 
-                                                if aPlayer.Tal_midOffensive > 0 then begin
+                                                if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                        AI_MovePlayer_DefaultX ( aPlayer  ) ;
                                                 end
-                                                else if aPlayer.Tal_midDefensive > 0 then begin
+                                                else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                   if aPlayer.CellX > aPlayer.DefaultCellX  then
                                                        AI_MovePlayer_DefaultX ( aPlayer  ) ;
                                                 end
@@ -13761,9 +13819,9 @@ begin
                                           //off	…..
                                           //nor	p-1palla se palla dietro
                                           //dif	p-1palla
-                                              if aPlayer.Tal_midOffensive > 0 then Continue;
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then Continue;
 
-                                                if aPlayer.Tal_midDefensive > 0 then begin
+                                                if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                    AI_MovePlayer_Ball_minus_1 ( aPlayer  ) ;
                                                 end
                                                 else begin
@@ -13779,11 +13837,11 @@ begin
                                                 //    off	default se oltre default
                                                 //    nor	…
                                                 //    dif	default se oltre default
-                                                if aPlayer.Tal_midOffensive > 0 then begin
+                                                if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                   if aPlayer.CellX > aPlayer.DefaultCellX  then
                                                        AI_MovePlayer_Ball_equal ( aPlayer  ) ;
                                                 end
-                                                else if aPlayer.Tal_midDefensive > 0 then begin
+                                                else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                   if aPlayer.CellX > aPlayer.DefaultCellX  then
                                                        AI_MovePlayer_DefaultX ( aPlayer  ) ;
                                                 end;
@@ -13797,10 +13855,10 @@ begin
                                               //off	defaultX+1
                                               //nor	…
                                               //dif	defaultX
-                                                if aPlayer.Tal_midOffensive > 0 then begin
+                                                if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                        AI_MovePlayer_DefaultX_plus_1 ( aPlayer  ) ;
                                                 end
-                                                else if aPlayer.Tal_midDefensive > 0 then begin
+                                                else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                   if aPlayer.CellX > aPlayer.DefaultCellX  then
                                                        AI_MovePlayer_DefaultX ( aPlayer  ) ;
                                                 end;
@@ -13809,12 +13867,12 @@ begin
                                             //off	…
                                             //nor	p-1palla se palla dietro
                                             //dif	p-1palla
-                                                if aPlayer.Tal_midOffensive > 0 then begin
+                                                if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                     if aPlayer.CellX >= 9 then
                                                       AI_MovePlayer_DefaultX ( aPlayer ) ;
                                                 end
 
-                                                else if aPlayer.Tal_midDefensive > 0 then begin
+                                                else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                    AI_MovePlayer_Ball_minus_1 ( aPlayer  ) ;
                                                 end
                                                 else begin
@@ -13829,7 +13887,7 @@ begin
                                              // off	p+1palla
                                              // nor	…
                                              // dif	p-1palla
-                                                if aPlayer.Tal_midDefensive > 0 then begin
+                                                if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                    AI_MovePlayer_Ball_plus_1 ( aPlayer  ) ;
                                                 end
                                                 else begin
@@ -13856,10 +13914,10 @@ begin
                                           //off	defaultX
                                           //nor	…
                                           //dif	defaultX-1
-                                                if aPlayer.Tal_midOffensive > 0 then begin
+                                                if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                    AI_MovePlayer_DefaultX ( aPlayer  ) ;
                                                 end
-                                                else if aPlayer.Tal_midDefensive > 0 then begin
+                                                else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                    AI_MovePlayer_DefaultX_minus_1 ( aPlayer  ) ;
                                                 end;
                                         end
@@ -13867,9 +13925,9 @@ begin
                                           //off	…..
                                           //nor	p-1palla se palla dietro
                                           //dif	p-1palla
-                                              if aPlayer.Tal_midOffensive > 0 then Continue;
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then Continue;
 
-                                                if aPlayer.Tal_midDefensive > 0 then begin
+                                                if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                    AI_MovePlayer_Ball_minus_1 ( aPlayer  ) ;
                                                 end
                                                 else begin
@@ -13881,10 +13939,10 @@ begin
                                            // off	default
                                            // nor	…
                                            // dif	default-1
-                                                if aPlayer.Tal_midOffensive > 0 then begin
+                                                if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                    AI_MovePlayer_DefaultX ( aPlayer  ) ;
                                                 end
-                                                else if aPlayer.Tal_midDefensive > 0 then begin
+                                                else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                    AI_MovePlayer_DefaultX_minus_1 ( aPlayer  ) ;
                                                 end;
 
@@ -13898,11 +13956,11 @@ begin
                                               //off	defaultX+1
                                               //nor	p-2  se palla <= o defaultX
                                               //dif	defaultX-1
-                                              if aPlayer.Tal_midOffensive > 0 then begin
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                    AI_MovePlayer_Ball_plus_1 ( aPlayer  ) ;
                                               end
 
-                                              else if aPlayer.Tal_midDefensive > 0 then begin
+                                              else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                    AI_MovePlayer_Ball_minus_1 ( aPlayer  ) ;
                                               end
 
@@ -13917,9 +13975,9 @@ begin
                                            // off	….
                                            // nor	p-1palla se palla dietro
                                            // dif	p-1palla
-                                              if aPlayer.Tal_midOffensive > 0 then Continue;
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then Continue;
 
-                                                if aPlayer.Tal_midDefensive > 0 then begin
+                                                if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                    AI_MovePlayer_Ball_minus_1 ( aPlayer  ) ;
                                                 end
                                                 else begin
@@ -13933,10 +13991,10 @@ begin
                                           //nor	…
                                           //dif	default
 
-                                                if aPlayer.Tal_midOffensive > 0 then begin
+                                                if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                    AI_MovePlayer_DefaultX ( aPlayer  ) ;
                                                 end
-                                                else if aPlayer.Tal_midOffensive > 0 then begin
+                                                else if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                    AI_MovePlayer_DefaultX ( aPlayer  ) ;
                                                 end;
                                         end;
@@ -13949,10 +14007,10 @@ begin
                                             //nor	defaultX
                                             //dif	defaultX-2
 
-                                              if aPlayer.Tal_midOffensive > 0 then begin
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                 AI_MovePlayer_DefaultX ( aPlayer ) ;
                                               end
-                                              else if aPlayer.Tal_midDefensive > 0 then begin
+                                              else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                 AI_MovePlayer_DefaultX_minus_2 ( aPlayer ) ;
                                               end
                                               // -1 palla difendo solo se la palla è alle mie spalle o in linea
@@ -13966,10 +14024,10 @@ begin
                                             //off	p=palla
                                             //nor	p-1palla se palla dietro
                                             //dif	p-2palla
-                                              if aPlayer.Tal_midOffensive > 0 then begin
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                 AI_MovePlayer_Ball_equal ( aPlayer ) ;
                                               end
-                                              else if aPlayer.Tal_midDefensive > 0 then begin
+                                              else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                  AI_MovePlayer_Ball_minus_2 ( aPlayer  ) ;
                                               end
                                               else begin
@@ -13983,11 +14041,11 @@ begin
                                           //off	default se oltre default
                                           //nor	default se oltre default
                                          // dif	default-2
-                                              if aPlayer.Tal_midOffensive > 0 then begin
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                 if aPlayer.CellX > aPlayer.DefaultCellX  then
                                                   AI_MovePlayer_DefaultX ( aPlayer ) ;
                                               end
-                                              else if aPlayer.Tal_midDefensive > 0 then begin
+                                              else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                   AI_MovePlayer_DefaultX_minus_2 ( aPlayer ) ;
                                               end
                                               else begin
@@ -14010,10 +14068,10 @@ begin
                                               //off	defaultX+1
                                               //nor	…
                                               //dif	defaultX
-                                              if aPlayer.Tal_midOffensive > 0 then begin
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                    AI_MovePlayer_DefaultX_plus_1 ( aPlayer  ) ;
                                               end
-                                              else if aPlayer.Tal_midDefensive > 0 then begin
+                                              else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                    AI_MovePlayer_DefaultX ( aPlayer  ) ;
                                               end;
 
@@ -14023,10 +14081,10 @@ begin
                                               //off	p+1palla
                                               //nor	….
                                               //dif	p=se palla dietro
-                                              if aPlayer.Tal_midOffensive > 0 then begin
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                  AI_MovePlayer_Ball_plus_1 ( aPlayer  ) ;
                                               end
-                                              else if aPlayer.Tal_midDefensive > 0 then begin
+                                              else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                 if Ball.CellX > aPlayer.cellX then
                                                    AI_MovePlayer_Ball_equal ( aPlayer ) ;
                                               end
@@ -14042,10 +14100,10 @@ begin
                                               //  nor	…
                                               //  dif	default
 
-                                              if aPlayer.Tal_midOffensive > 0 then begin
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                  AI_MovePlayer_Ball_plus_1 ( aPlayer  ) ;
                                               end
-                                              else if aPlayer.Tal_midDefensive > 0 then begin
+                                              else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                 if Ball.CellX > aPlayer.cellX then
                                                    AI_MovePlayer_DefaultX ( aPlayer ) ;
                                               end
@@ -14068,10 +14126,10 @@ begin
                                               //off	p=palla
                                               //nor	….
                                               //dif	p-1palla se palla dietro
-                                              if aPlayer.Tal_midOffensive > 0 then begin
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                  AI_MovePlayer_Ball_equal ( aPlayer ) ;
                                               end
-                                              else if aPlayer.Tal_midDefensive > 0 then begin
+                                              else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                  if Ball.CellX > aPlayer.CellX then
                                                    AI_MovePlayer_Ball_minus_1 ( aPlayer  ) ;
                                               end
@@ -14085,10 +14143,10 @@ begin
                                           //  off	default
                                           //  nor	…
                                          //   dif	default se oltre default
-                                              if aPlayer.Tal_midOffensive > 0 then begin
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                  AI_MovePlayer_DefaultX ( aPlayer ) ;
                                               end
-                                              else if aPlayer.Tal_midDefensive > 0 then begin
+                                              else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                  if aPlayer.CellX > aPlayer.defaultcellX then
                                                    AI_MovePlayer_DefaultX ( aPlayer ) ;
                                               end
@@ -14105,10 +14163,10 @@ begin
                                               //off	defaultX+2
                                               //nor	defaultX
                                               //dif	defaultX
-                                              if aPlayer.Tal_midOffensive > 0 then begin
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                    AI_MovePlayer_DefaultX_plus_2 ( aPlayer  ) ;
                                               end
-                                              else if aPlayer.Tal_midDefensive > 0 then begin
+                                              else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                    AI_MovePlayer_DefaultX ( aPlayer  ) ;
                                               end
 
@@ -14121,10 +14179,10 @@ begin
                                               //off	p+2palla
                                               //nor	p+1palla
                                               //dif	p=se palla dietro
-                                              if aPlayer.Tal_midOffensive > 0 then begin
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                  AI_MovePlayer_Ball_plus_2 ( aPlayer  ) ;
                                               end
-                                              else if aPlayer.Tal_midDefensive > 0 then begin
+                                              else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                  AI_MovePlayer_Ball_equal ( aPlayer ) ;
                                               end
                                               else begin
@@ -14138,10 +14196,10 @@ begin
                                             //off	p+2
                                             //nor	p+1 se dietro palla
                                             //dif	p=palla
-                                              if aPlayer.Tal_midOffensive > 0 then begin
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                  AI_MovePlayer_Ball_plus_2 ( aPlayer  ) ;
                                               end
-                                              else if aPlayer.Tal_midDefensive > 0 then begin
+                                              else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                  AI_MovePlayer_Ball_equal ( aPlayer ) ;
                                               end
                                               else begin
@@ -14197,7 +14255,7 @@ begin
                 aPlayer.MovePath.Clear ;
 
 //      in ai_moveall prima fa aimoveall poi cerca la cella Y precisa defaultcellY ,  . spende di più a correr . utile per chi deve stare sulle fascie
-                if ( aPlayer.Tal_Positioning > 0 )  and ( not toball)  then begin  // o not aPlayer.hasball
+                if ( aPlayer.TalentId = TALENT_ID_POSITIONING )  and ( not toball)  then begin  // o not aPlayer.hasball
                   AI_MovePlayer_DefaultY ( aPlayer ) ;
                   if aPlayer.MovePath.Count > 0 then begin
                     aPlayer.Stamina := aPlayer.Stamina - cost_plm;
@@ -14212,7 +14270,7 @@ begin
 
    { Playmaker GETFAVOURCELLPATH si avvicina al proprio compagno portatore di palla}
 
-                else if ( aPlayer.Tal_PlayMaker > 0 )  and ( not toball)  then begin  // o not aPlayer.hasball
+                else if ( aPlayer.TalentId = TALENT_ID_PLAYMAKER )  and ( not toball)  then begin  // o not aPlayer.hasball
                   if Ball.Player <> nil then begin // se qualcuno ha la palla
                     if Ball.Player.Team = aPlayer.team then begin // se questo qualcuno che ha la palla è del mio stesso team
                        GetFavourCellPath( aPlayer, ball.CellX, ball.celly ); // cerfco la cella di favore
@@ -14230,7 +14288,7 @@ begin
                   end;
                 end
 
-                else if ( aPlayer.Tal_Marking > 0 )  and ( not toball)  then begin  // o not aPlayer.hasball
+                else if ( aPlayer.TalentId = TALENT_ID_MARKING )  and ( not toball)  then begin  // o not aPlayer.hasball
                         GetMarkingPath ( aPlayer );
                         if aPlayer.MovePath.Count > 0 then begin
                           aPlayer.Stamina := aPlayer.Stamina - cost_plm;
@@ -14275,10 +14333,10 @@ begin
                                               //off	defaultX+1
                                               //nor	…
                                               //dif	defaultX
-                                              if aPlayer.Tal_midOffensive > 0 then begin
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                    AI_MovePlayer_DefaultX_plus_1 ( aPlayer  ) ;
                                               end
-                                              else if aPlayer.Tal_midDefensive > 0 then begin
+                                              else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                    AI_MovePlayer_DefaultX ( aPlayer  ) ;
                                               end;
 
@@ -14288,10 +14346,10 @@ begin
                                               //off	p+1palla
                                               //nor	….
                                               //dif	p=se palla dietro
-                                              if aPlayer.Tal_midOffensive > 0 then begin
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                  AI_MovePlayer_Ball_plus_1 ( aPlayer  ) ;
                                               end
-                                              else if aPlayer.Tal_midDefensive > 0 then begin
+                                              else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                 if Ball.CellX < aPlayer.cellX then
                                                    AI_MovePlayer_Ball_equal ( aPlayer ) ;
                                               end
@@ -14307,10 +14365,10 @@ begin
                                               //  nor	…
                                               //  dif	default
 
-                                              if aPlayer.Tal_midOffensive > 0 then begin
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                  AI_MovePlayer_Ball_plus_1 ( aPlayer  ) ;
                                               end
-                                              else if aPlayer.Tal_midDefensive > 0 then begin
+                                              else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                 if Ball.CellX > aPlayer.cellX then
                                                    AI_MovePlayer_DefaultX ( aPlayer ) ;
                                               end
@@ -14326,10 +14384,10 @@ begin
                                                // off	defaultX+2
                                               //  nor	defaultX
                                               //  dif	defaultX
-                                              if aPlayer.Tal_midOffensive > 0 then begin
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                    AI_MovePlayer_DefaultX_plus_2 ( aPlayer  ) ;
                                               end
-                                              else if aPlayer.Tal_midDefensive > 0 then begin
+                                              else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                    AI_MovePlayer_DefaultX ( aPlayer  ) ;
                                               end
 
@@ -14343,10 +14401,10 @@ begin
                                               //off	p+2palla
                                               //nor	p+1palla
                                               //dif	p=se palla dietro
-                                              if aPlayer.Tal_midOffensive > 0 then begin
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                  AI_MovePlayer_Ball_plus_2 ( aPlayer  ) ;
                                               end
-                                              else if aPlayer.Tal_midDefensive > 0 then begin
+                                              else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                  AI_MovePlayer_Ball_equal ( aPlayer ) ;
                                               end
                                               else begin
@@ -14361,10 +14419,10 @@ begin
                                             //off	p+2
                                             //nor	p+1 se dietro palla
                                             //dif	p=palla
-                                              if aPlayer.Tal_midOffensive > 0 then begin
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                  AI_MovePlayer_Ball_plus_2 ( aPlayer  ) ;
                                               end
-                                              else if aPlayer.Tal_midDefensive > 0 then begin
+                                              else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                  AI_MovePlayer_Ball_equal ( aPlayer ) ;
                                               end
                                               else begin
@@ -14391,10 +14449,10 @@ begin
                                               //off	p=palla
                                               //nor	….
                                               //dif	p-1palla se palla dietro
-                                              if aPlayer.Tal_midOffensive > 0 then begin
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                  AI_MovePlayer_Ball_equal ( aPlayer ) ;
                                               end
-                                              else if aPlayer.Tal_midDefensive > 0 then begin
+                                              else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                  if Ball.CellX < aPlayer.CellX then
                                                    AI_MovePlayer_Ball_minus_1 ( aPlayer  ) ;
                                               end
@@ -14408,10 +14466,10 @@ begin
                                           //  off	default
                                           //  nor	…
                                          //   dif	default se oltre default
-                                              if aPlayer.Tal_midOffensive > 0 then begin
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                  AI_MovePlayer_DefaultX ( aPlayer ) ;
                                               end
-                                              else if aPlayer.Tal_midDefensive > 0 then begin
+                                              else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                  if aPlayer.CellX < aPlayer.defaultcellX then
                                                    AI_MovePlayer_DefaultX ( aPlayer ) ;
                                               end
@@ -14433,10 +14491,10 @@ begin
                                           //off	defaultX
                                           //nor	…
                                           //dif	defaultX-1
-                                                if aPlayer.Tal_midOffensive > 0 then begin
+                                                if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                    AI_MovePlayer_DefaultX ( aPlayer  ) ;
                                                 end
-                                                else if aPlayer.Tal_midDefensive > 0 then begin
+                                                else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                    AI_MovePlayer_DefaultX_minus_1 ( aPlayer  ) ;
                                                 end
                                         end
@@ -14444,9 +14502,9 @@ begin
                                           //off	…..
                                           //nor	p-1palla se palla dietro
                                           //dif	p-1palla
-                                              if aPlayer.Tal_midOffensive > 0 then Continue;
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then Continue;
 
-                                                if aPlayer.Tal_midDefensive > 0 then begin
+                                                if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                    AI_MovePlayer_Ball_minus_1 ( aPlayer  ) ;
                                                 end
                                                 else begin
@@ -14458,10 +14516,10 @@ begin
                                            // off	default
                                            // nor	…
                                            // dif	default-1
-                                                if aPlayer.Tal_midOffensive > 0 then begin
+                                                if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                    AI_MovePlayer_DefaultX ( aPlayer  ) ;
                                                 end
-                                                else if aPlayer.Tal_midDefensive > 0 then begin
+                                                else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                    AI_MovePlayer_DefaultX_minus_1 ( aPlayer  ) ;
                                                 end;
                                         end;
@@ -14474,10 +14532,10 @@ begin
                                             //nor	defaultX
                                             //dif	defaultX-2
 
-                                              if aPlayer.Tal_midOffensive > 0 then begin
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                 AI_MovePlayer_DefaultX ( aPlayer ) ;
                                               end
-                                              else if aPlayer.Tal_midDefensive > 0 then begin
+                                              else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                 AI_MovePlayer_DefaultX_minus_2 ( aPlayer ) ;
                                               end
                                               // -1 palla difendo solo se la palla è alle mie spalle o in linea
@@ -14492,10 +14550,10 @@ begin
                                             //off	p=palla
                                             //nor	p-1palla se palla dietro
                                             //dif	p-2palla
-                                              if aPlayer.Tal_midOffensive > 0 then begin
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                 AI_MovePlayer_Ball_equal ( aPlayer ) ;
                                               end
-                                              else if aPlayer.Tal_midDefensive > 0 then begin
+                                              else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                  AI_MovePlayer_Ball_minus_2 ( aPlayer  ) ;
                                               end
                                               else begin
@@ -14507,11 +14565,11 @@ begin
                                           //off	default se oltre default
                                           //nor	default se oltre default
                                          // dif	default-2
-                                              if aPlayer.Tal_midOffensive > 0 then begin
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                 if aPlayer.CellX < aPlayer.DefaultCellX  then
                                                   AI_MovePlayer_DefaultX ( aPlayer ) ;
                                               end
-                                              else if aPlayer.Tal_midDefensive > 0 then begin
+                                              else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                   AI_MovePlayer_DefaultX_minus_2 ( aPlayer ) ;
                                               end
                                               else begin
@@ -14527,11 +14585,11 @@ begin
                                               //off	defaultX+1
                                               //nor	p-2  se palla <= o defaultX
                                               //dif	defaultX-1
-                                              if aPlayer.Tal_midOffensive > 0 then begin
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                    AI_MovePlayer_Ball_plus_1 ( aPlayer  ) ;
                                               end
 
-                                              else if aPlayer.Tal_midDefensive > 0 then begin
+                                              else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                    AI_MovePlayer_Ball_minus_1 ( aPlayer  ) ;
                                               end
 
@@ -14547,9 +14605,9 @@ begin
                                            // off	….
                                            // nor	p-1palla se palla dietro
                                            // dif	p-1palla
-                                              if aPlayer.Tal_midOffensive > 0 then Continue;
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then Continue;
 
-                                                if aPlayer.Tal_midDefensive > 0 then begin
+                                                if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                    AI_MovePlayer_Ball_minus_1 ( aPlayer  ) ;
                                                 end
                                                 else begin
@@ -14562,10 +14620,10 @@ begin
                                           //nor	…
                                           //dif	default
 
-                                                if aPlayer.Tal_midOffensive > 0 then begin
+                                                if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                    AI_MovePlayer_DefaultX ( aPlayer  ) ;
                                                 end
-                                                else if aPlayer.Tal_midOffensive > 0 then begin
+                                                else if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                    AI_MovePlayer_DefaultX ( aPlayer  ) ;
                                                 end;
                                         end;
@@ -14586,10 +14644,10 @@ begin
                                             //off	defaultX+1
                                             //nor	…..
                                             //dif	defaultX
-                                              if aPlayer.Tal_midOffensive > 0 then begin
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                    AI_MovePlayer_DefaultX_plus_1 ( aPlayer ) ;
                                               end
-                                              else if aPlayer.Tal_midDefensive > 0 then begin
+                                              else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                    AI_MovePlayer_DefaultX( aPlayer ) ;
                                               end;
                                         end
@@ -14597,11 +14655,11 @@ begin
                                           //off	…..
                                           //nor	…..
                                           //dif	p-1palla
-                                              if aPlayer.Tal_midOffensive > 0 then begin
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                if aPlayer.CellX <=2 then
                                                 AI_MovePlayer_DefaultX ( aPlayer ) ;
                                               end
-                                              else if aPlayer.Tal_midDefensive > 0 then begin
+                                              else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                        AI_MovePlayer_Ball_minus_1 ( aPlayer  ) ;
                                                 end
                                               else begin
@@ -14614,10 +14672,10 @@ begin
                                             //  off	p=palla
                                             //  nor	…..
                                             //  dif	default se oltre default
-                                                if aPlayer.Tal_midOffensive > 0 then begin
+                                                if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                        AI_MovePlayer_Ball_equal ( aPlayer  ) ;
                                                 end
-                                                else if aPlayer.Tal_midDefensive > 0 then begin
+                                                else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                   if aPlayer.CellX < aPlayer.DefaultCellX  then
                                                        AI_MovePlayer_DefaultX ( aPlayer  ) ;
                                                 end
@@ -14634,10 +14692,10 @@ begin
                                               //off	defaultX+1
                                               //nor	…
                                               //dif	defaultX
-                                                if aPlayer.Tal_midOffensive > 0 then begin
+                                                if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                        AI_MovePlayer_DefaultX_plus_1 ( aPlayer  ) ;
                                                 end
-                                                else if aPlayer.Tal_midDefensive > 0 then begin
+                                                else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                   if aPlayer.CellX > aPlayer.DefaultCellX  then
                                                        AI_MovePlayer_DefaultX ( aPlayer  ) ;
                                                 end;
@@ -14646,11 +14704,11 @@ begin
                                             //off	…
                                             //nor	p-1palla se palla dietro
                                             //dif	p-1palla
-                                                if aPlayer.Tal_midOffensive > 0 then begin
+                                                if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                     if aPlayer.CellX <=2  then
                                                       AI_MovePlayer_DefaultX ( aPlayer ) ;
                                                 end
-                                                else if aPlayer.Tal_midDefensive > 0 then begin
+                                                else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                    AI_MovePlayer_Ball_minus_1 ( aPlayer  ) ;
                                                 end
                                                 else begin
@@ -14664,7 +14722,7 @@ begin
                                              // off	p+1palla
                                              // nor	…
                                              // dif	p-1palla
-                                                if aPlayer.Tal_midDefensive > 0 then begin
+                                                if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                    AI_MovePlayer_Ball_plus_1 ( aPlayer  ) ;
                                                 end
                                                 else begin
@@ -14682,10 +14740,10 @@ begin
                                         if aPlayer.Role ='D' then begin
                                                // L L L
 
-                                                if aPlayer.Tal_midOffensive > 0 then begin
+                                                if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                        AI_MovePlayer_DefaultX ( aPlayer  ) ;
                                                 end
-                                                else if aPlayer.Tal_midDefensive > 0 then begin
+                                                else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                   if aPlayer.CellX > aPlayer.DefaultCellX  then
                                                        AI_MovePlayer_DefaultX ( aPlayer  ) ;
                                                 end
@@ -14699,9 +14757,9 @@ begin
                                           //off	…..
                                           //nor	p-1palla se palla dietro
                                           //dif	p-1palla
-                                              if aPlayer.Tal_midOffensive > 0 then Continue;
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then Continue;
 
-                                                if aPlayer.Tal_midDefensive > 0 then begin
+                                                if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                    AI_MovePlayer_Ball_minus_1 ( aPlayer  ) ;
                                                 end
                                                 else begin
@@ -14720,11 +14778,11 @@ begin
                                                 //    off	default se oltre default
                                                 //    nor	…
                                                 //    dif	default se oltre default
-                                                if aPlayer.Tal_midOffensive > 0 then begin
+                                                if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                   if aPlayer.CellX < aPlayer.DefaultCellX  then
                                                        AI_MovePlayer_Ball_equal ( aPlayer  ) ;
                                                 end
-                                                else if aPlayer.Tal_midDefensive > 0 then begin
+                                                else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                   if aPlayer.CellX < aPlayer.DefaultCellX  then
                                                        AI_MovePlayer_DefaultX ( aPlayer  ) ;
                                                 end;
@@ -14743,10 +14801,10 @@ begin
                                               //nor	…
                                               //dif	defaultX-1
 
-                                              if aPlayer.Tal_midOffensive > 0 then begin
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                    AI_MovePlayer_DefaultX_plus_1 ( aPlayer  ) ;
                                               end
-                                              else if aPlayer.Tal_midDefensive > 0 then begin
+                                              else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                    AI_MovePlayer_DefaultX_minus_1 ( aPlayer  ) ;
                                               end
                                         end
@@ -14754,11 +14812,11 @@ begin
 //                                              p=palla se palla davanti
 //                                              …..
 //                                              p-1 palla
-                                              if aPlayer.Tal_midOffensive > 0 then begin
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                  if Ball.CellX < aPlayer.cellX then
                                                    AI_MovePlayer_Ball_equal ( aPlayer  ) ;
                                               end
-                                              else if aPlayer.Tal_midDefensive > 0 then begin
+                                              else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                  AI_MovePlayer_Ball_minus_1 ( aPlayer  ) ;
                                               end;
 
@@ -14768,7 +14826,7 @@ begin
                                               //off	…
                                               //nor	…
                                               //dif	default-1 se oltre default
-                                              if aPlayer.Tal_midDefensive > 0 then begin
+                                              if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                  if aPlayer.CellX < aPlayer.DefaultCellX then begin
                                                  AI_MovePlayer_DefaultX_minus_1 ( aPlayer  ) ;
                                                  end;
@@ -14783,11 +14841,11 @@ begin
                                                   //nor	p-1  se palla <= o defaultX
                                                   //dif	defaultX-1
 
-                                              if aPlayer.Tal_midOffensive > 0 then begin
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                    if Ball.CellX > aPlayer.cellX then
                                                      AI_MovePlayer_DefaultX ( aPlayer ) ;
                                               end
-                                              else if aPlayer.Tal_midDefensive > 0 then begin
+                                              else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                      AI_MovePlayer_DefaultX_minus_1 ( aPlayer ) ;
                                               end
                                               // cerco la posizione default se la palla è davanti
@@ -14803,11 +14861,11 @@ begin
                                               //nor	…..
                                               //dif	p-1 palla
 
-                                              if aPlayer.Tal_midOffensive > 0 then begin
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                    if Ball.CellX < aPlayer.cellX then
                                                      AI_MovePlayer_Ball_equal ( aPlayer ) ;
                                               end
-                                              else if aPlayer.Tal_midDefensive > 0 then begin
+                                              else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                  AI_MovePlayer_Ball_minus_1 ( aPlayer  ) ;
                                               end;
                                         end
@@ -14815,12 +14873,12 @@ begin
                                               //  off	default se oltre default
                                               //  nor	default
                                               //  dif	default-1
-                                              if aPlayer.Tal_midOffensive > 0 then begin
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                  if aPlayer.CellX < aPlayer.DefaultCellX then begin
                                                    AI_MovePlayer_DefaultX( aPlayer ) ;
                                                  end;
                                               end
-                                              else if aPlayer.Tal_midDefensive > 0 then begin
+                                              else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                    AI_MovePlayer_DefaultX_minus_1( aPlayer ) ;
                                               end
                                               else begin
@@ -14837,10 +14895,10 @@ begin
 //                                              nor	default
  //                                             dif	p=palla
 
-                                              if aPlayer.Tal_midOffensive > 0 then begin
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                    AI_MovePlayer_Ball_plus_2 ( aPlayer  ) ;
                                               end
-                                              else if aPlayer.Tal_midDefensive > 0 then begin
+                                              else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                  AI_MovePlayer_Ball_equal ( aPlayer ) ;
                                               end
                                               // cerco la posizione default se la palla è davanti
@@ -14854,10 +14912,10 @@ begin
                                                 //nor	p+1palla
                                                 //dif	p=palla
 
-                                              if aPlayer.Tal_midOffensive > 0 then begin
+                                              if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
                                                    AI_MovePlayer_Ball_plus_2 ( aPlayer  ) ;
                                               end
-                                              else if aPlayer.Tal_midDefensive > 0 then begin
+                                              else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                  AI_MovePlayer_Ball_equal ( aPlayer  ) ;
                                               end
                                               else AI_MovePlayer_Ball_plus_1 ( aPlayer  ) ;
@@ -14867,13 +14925,13 @@ begin
                                              // nor	default
                                              // dif	default se oltre default
 
-                                               if aPlayer.Tal_midOffensive > 0 then begin
+                                               if aPlayer.TalentID = TALENT_ID_OFFENSIVE then begin
 
                                                  if aPlayer.CellX > aPlayer.DefaultCellX then begin
                                                    AI_MovePlayer_DefaultX ( aPlayer  ) ;
                                                  end;
                                                end
-                                               else if aPlayer.Tal_midDefensive > 0 then begin
+                                               else if aPlayer.TalentID = TALENT_ID_DEFENSIVE then begin
                                                    AI_MovePlayer_DefaultX ( aPlayer  ) ;
                                                end
                                                else begin
@@ -14927,7 +14985,7 @@ begin
                   aPlayer.CellS :=  dstCell;
                   aPlayer.MovePath.Clear ;
 //      in ai_moveall prima fa aimoveall poi cerca la cella Y precisa defaultcellY ,  . spende di più a correr . utile per chi deve stare sulle fascie
-                if ( aPlayer.Tal_Positioning > 0 )  and ( not toball)  then begin  // o not aPlayer.hasball
+                if ( aPlayer.TalentId = TALENT_ID_POSITIONING )  and ( not toball)  then begin  // o not aPlayer.hasball
                   AI_MovePlayer_DefaultY ( aPlayer ) ;
                   if aPlayer.MovePath.Count > 0 then begin
                     aPlayer.Stamina := aPlayer.Stamina - cost_plm;
@@ -14942,7 +15000,7 @@ begin
 
    { Playmaker GETFAVOURCELLPATH si avvicina al proprio compagno portatore di palla}
 
-                else if ( aPlayer.Tal_PlayMaker > 0 )  and ( not toball)  then begin  // o not aPlayer.hasball
+                else if ( aPlayer.TalentId = TALENT_ID_PLAYMAKER )  and ( not toball)  then begin  // o not aPlayer.hasball
                   if Ball.Player <> nil then begin // se qualcuno ha la palla
                     if Ball.Player.Team = aPlayer.team then begin // se questo qualcuno che ha la palla è del mio stesso team
                        GetFavourCellPath( aPlayer, ball.CellX, ball.celly ); // cerfco la cella di favore
@@ -14960,7 +15018,7 @@ begin
                   end;
                 end
 
-                else if ( aPlayer.Tal_Marking > 0 )  and ( not toball)  then begin  // o not aPlayer.hasball
+                else if ( aPlayer.TalentId = TALENT_ID_MARKING )  and ( not toball)  then begin  // o not aPlayer.hasball
                         GetMarkingPath ( aPlayer );
                         if aPlayer.MovePath.Count > 0 then begin
                           aPlayer.Stamina := aPlayer.Stamina - cost_plm;
