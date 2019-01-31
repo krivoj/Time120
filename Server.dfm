@@ -304,7 +304,7 @@ object FormServer: TFormServer
   end
   object threadBot: SE_ThreadTimer
     Enabled = True
-    Interval = 10000
+    Interval = 3000
     KeepAlive = True
     OnTimer = threadBotTimer
     Left = 104

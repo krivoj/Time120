@@ -8,7 +8,7 @@ unit SoccerBrainv3;
    { TODO :  le db query uppdate senza +1 locale, ma direttammete le deve fare mysql }
    { TODO  : Gameplay: Valutare se Pos (tiro potente) può innescare autogol }
 
-   { TODO  : testare offside e lastman }
+   { TODO  : testare offside su crossing e lastman }
 
    { TODO valutare aggiiunta talento agression e talento buff reparto }
    { TODO creare più formazioni , forse bug nella fatigue }
@@ -2032,7 +2032,7 @@ begin
         //
         if OneDir = EveryDirection then
           aStar.Path.Limit  := Limit + 1 + Flank
-          else if OneDir = TruncOneDir then
+          else if (OneDir = TruncOneDir) or (OneDir = AbortMultipleDirection) then
             aStar.Path.Limit  := iMin ( aStar.Path.Count + 1, Limit + 1);
 
 
@@ -2536,7 +2536,7 @@ begin
     for I := lstSoccerPlayer.Count -1 downto 0 do begin
       if IsOutSide( lstSoccerPlayer[i].CellX ,lstSoccerPlayer[i].CellY ) then Continue;
       if lstSoccerPlayer[i].Team = Team then begin
-        if (lstSoccerPlayer[i].Role <> 'G' ) and (lstSoccerPlayer[i].Ids <> excludeIds)  then begin  // iscof feve essere ancora settato
+        if (lstSoccerPlayer[i].Role <> 'G' ) and (lstSoccerPlayer[i].ids <> excludeIds)  then begin  // iscof feve essere ancora settato
           lstBestHeading.Add(lstSoccerPlayer[i]);
         end;
       end;
@@ -6905,7 +6905,7 @@ cro_crossbar:
         IntToStr(aPlayer.BallControl) +',Ball.Control,'+  aPlayer.ids+','+IntTostr(Roll.value) + ',' + Roll.fatigue +',-2');
 
         TsScript.add ( 'sc_DICE,' + IntTostr(anOpponent.CellX) + ',' + Inttostr(anOpponent.CellY) +','+  IntTostr(aRnd2) +',' +
-        IntToStr(anOpponent.Defense) +',Defense,'+ anOpponent.ids+','+IntTostr(Roll2.value) + Roll2.fatigue + ',0');{ TODO -cgameplay :talento antidribbling}
+        IntToStr(anOpponent.Defense) +',Defense,'+ anOpponent.ids+','+IntTostr(Roll2.value) + Roll2.fatigue + ',0');
 
 
       if ( aRnd >= aRnd2 )  then begin // dribbling ---> player riesce nel dribbling
@@ -7970,7 +7970,7 @@ reason:='';
 
     // controllo client del movimento
     aPlayer.Stamina := aPlayer.Stamina - cost_plm;
-                    ExceptPlayers.Add(aPlayer);
+    ExceptPlayers.Add(aPlayer);
     TsScript.add ('SERVER_PLM,' + aPlayer.ids + ',' + IntToStr(aPlayer.CellX) + ',' + IntToStr(aPlayer.CellY) + ',' + tsCmd[2] + ',' + tsCmd[3]) ;
     TsScript.add ('sc_ST,' + aPlayer.ids +',' + IntToStr(cost_plm) ) ;
     aPlayer.xp_speed := aPlayer.xp_speed + 1;
@@ -7993,8 +7993,8 @@ reason:='';
       MyParam := withoutball;
     end;
 
-    // qui per via della fatigue il path potrebbe essere, in base al roll, non raggiungibile. check normale speed
-      MoveValue := aPlayer.Speed;
+    // qui per via della fatigue il path potrebbe essere, in base al roll, non raggiungibile. check normale speed o speed-1
+    // questo valida l'intenzione
       GetPath (aPlayer.Team , aPlayer.CellX , aPlayer.CellY, CellX, CellY,
                               MoveValue{Limit},false{useFlank},FriendlyWall{FriendlyWall},
                               OpponentWall{OpponentWall},FinalWall{FinalWall},TruncOneDir{OneDir}, aPlayer.MovePath );
@@ -10263,7 +10263,8 @@ begin
     end;
 
   // esistono per forza 3 coa e 3 cod, per il momento swappo solo dove cade la palla.
-
+            { TODO : qui si è piantato. 1 partita si migliaia }
+            if aHeadingOpponent = nil then asm int 3 end;
 
             aHeadingFriend.Stamina := aHeadingFriend.Stamina - cost_hea ;
             TsScript.add ('sc_ST,' + aHeadingFriend.ids +',' + IntToStr(cost_hea) ) ;
