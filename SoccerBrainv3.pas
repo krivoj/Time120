@@ -558,7 +558,6 @@ end;
       function exec_autotackle ( ids: string):boolean; // non c'è fallo
       Function GetFault ( Team, CellX, CellY : integer): Integer;
 
-
       procedure exec_corner ;
       procedure exec_freekick2 ;
       procedure TurnChange( MovesLeft: integer);
@@ -646,10 +645,12 @@ end;
       function GetCrossDefenseBonus (aPlayer: TsoccerPlayer; CellX, CellY: integer ): integer;
       function GetTeamBall: integer;
 
-      function NextReserveSlot ( aPlayer: TSoccerPlayer): Tpoint;
+      function NextReserveSlot ( aPlayer: TSoccerPlayer): Tpoint; overload;
+      function NextReserveSlot ( team: Integer): Tpoint; overload;
       procedure PutInReserveSlot ( aPlayer: TSoccerPlayer );
       procedure ClearReserveSlot;
       function isReserveSlot (CellX, CellY: integer): boolean;
+      procedure CleanReserveSlot ( team: integer );
 
 
 
@@ -9936,6 +9937,31 @@ begin
     result := True;
 
 end;
+function TSoccerbrain.NextReserveSlot ( team: integer ): Tpoint;
+var
+  x,y: Integer;
+begin
+
+    for x := -4 to -1 do begin
+      for y := 0 to 6 do begin
+        if ReserveSlot [team,x,y] = '' then begin
+          Result := Point(x,y);
+          Exit;
+        end;
+      end;
+    end;
+end;
+procedure TSoccerbrain.CleanReserveSlot ( team: integer );
+var
+  x,y: Integer;
+begin
+    for x := -4 to -1 do begin
+      for y := 0 to 6 do begin
+          ReserveSlot [team, x,y] := '';
+      end;
+    end;
+end;
+
 function TSoccerbrain.GetOpponentStart (SelectedPlayer: TSoccerPlayer ): TPoint;
 begin
    if SelectedPlayer.Team = 0 then begin
@@ -10263,7 +10289,7 @@ begin
     end;
 
   // esistono per forza 3 coa e 3 cod, per il momento swappo solo dove cade la palla.
-            { TODO : qui si è piantato. 1 partita si migliaia }
+            { TODO : qui si è piantato. 1 partita su migliaia }
             if aHeadingOpponent = nil then asm int 3 end;
 
             aHeadingFriend.Stamina := aHeadingFriend.Stamina - cost_hea ;

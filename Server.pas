@@ -935,8 +935,8 @@ begin
         // rispettare esatto ordine
         aPlayer.xp_Speed         := aPlayer.xp_Speed + StrToInt( tsXP[0]);
         aPlayer.xp_Defense       := aPlayer.xp_Defense + StrToInt( tsXP[1]);
-        aPlayer.xp_BallControl   := aPlayer.xp_BallControl + StrToInt( tsXP[2]);
-        aPlayer.xp_Passing       := aPlayer.xp_Passing + StrToInt( tsXP[3]);
+        aPlayer.xp_Passing       := aPlayer.xp_Passing + StrToInt( tsXP[2]);
+        aPlayer.xp_BallControl   := aPlayer.xp_BallControl + StrToInt( tsXP[3]);
         aPlayer.xp_Shot          := aPlayer.xp_Shot + StrToInt( tsXP[4]);
         aPlayer.xp_Heading       := aPlayer.xp_Heading + StrToInt( tsXP[5]);
 
@@ -1100,50 +1100,21 @@ begin
           MyQueryGameTeams.Execute;
           { TODO : verificare creazione GK se manca GK. }
           // c'è 1 posto libero lo metto in squadra. se manca il gk creo un gk
-          { TODO : devo metterlo a nextreserveslot }
+          { TODO : verificare nextreserveslot }
           GKpresent := false;
-  // ottengo il prossimo slot delle riserve
-//  CleanReserveSlot ( ReserveSlot );   da sopra prendere formation_x
-//  {$IFDEF MYDAC}
-//  MyQueryGamePlayers := TMyQuery.Create(nil);
-//  MyQueryGamePlayers.Connection := ConnGame;   // game
-//  MyQueryGamePlayers.SQL.text := 'SELECT guid,formation_x,formation_y from game.players WHERE  team=' + IntToStr(Cli.GuidTeam);
-//  MyQueryGamePlayers.Execute ;
-//  {$ELSE}
-//  MyQueryGamePlayers := TFDQuery.Create(nil);
-//  MyQueryGamePlayers.Connection := ConnGame;   // game
-//  MyQueryGamePlayers.Open ('SELECT guid,formation_x,formation_y from game.players WHERE  team=' + IntToStr(Cli.GuidTeam));
-//  {$ENDIF}
-
-
-//  for i := MyQueryGamePlayers.RecordCount -1 downto 0 do begin
-
-//    if isReserveSlot ( MyQueryGamePlayers.FieldByName('formation_x').AsInteger, MyQueryGamePlayers.FieldByName('formation_y').AsInteger) then
-//    ReserveSlot[MyQueryGamePlayers.FieldByName('formation_x').AsInteger, MyQueryGamePlayers.FieldByName('formation_y').AsInteger]:=
-//                              MyQueryGamePlayers.FieldByName('guid').AsString;
-
-//  end;
-//  aReserveSlot := NextReserveSlot ( ReserveSlot ); //<--- la prossima libera
-
-
-
-//  MyQueryGamePlayers.SQL.text := 'UPDATE game.players set onmarket=0,team='+IntToStr(Cli.GuidTeam) +  // cambio team
-//                              ',formation_x=' + IntToStr(aReserveSlot.X) +',formation_y=' + IntToStr(aReserveSlot.Y) +' WHERE guid =' + ts[1];
-
-//  MyQueryGamePlayers.Execute ;
-
-
+          brain.CleanReserveSlot ( T );
           for I := 0 to MyQueryGamePlayers.RecordCount -1 do begin
             if MyQueryGamePlayers.fieldByName('talent').AsInteger = 1 then begin
               GKpresent := true;
             end;
 
-           //   if isReserveSlot ( MyQueryGamePlayers.FieldByName('formation_x').AsInteger, MyQueryGamePlayers.FieldByName('formation_y').AsInteger) then
-           //   ReserveSlot[MyQueryGamePlayers.FieldByName('formation_x').AsInteger, MyQueryGamePlayers.FieldByName('formation_y').AsInteger]:=
-           //                          MyQueryGamePlayers.FieldByName('guid').AsString;
+              if FormServer.isReserveSlotFormation ( MyQueryGamePlayers.FieldByName('formation_x').AsInteger, MyQueryGamePlayers.FieldByName('formation_y').AsInteger) then
+              brain.ReserveSlot [ T, MyQueryGamePlayers.FieldByName('formation_x').AsInteger, MyQueryGamePlayers.FieldByName('formation_y').AsInteger]:=
+                                     MyQueryGamePlayers.FieldByName('guid').AsString;
+            MyQueryGamePlayers.Next;
           end;
-          //aReserveSlot := NextReserveSlot ( ReserveSlot ); //<--- la prossima libera
-
+          // ottengo il prossimo slot delle riserve
+          aReserveSlot := brain.NextReserveSlot ( T ); //<--- la prossima libera
 
           aBasePlayer := FormServer.CreatePlayer ( IntToStr(worldTeam[T]) , 50{chance di generare un talento} );
           MatchesPlayed := 0; //38 * 18  ; // 18 anni
@@ -1154,29 +1125,39 @@ begin
           MyQueryGamePlayers.SQL.text := 'INSERT into game.players (Team,Name,Matches_Played,Matches_Left,'+
                                         'injured_penalty1,injured_penalty2,injured_penalty3,'+
                                         'growth1,growth2,growth3,talent1,talent2,talent3,'+
-                                        'talent, speed,defense,passing,ballcontrol,heading,shot,injured,totyellowcard,disqualified,face)'+
+                                        'talent, speed,defense,passing,ballcontrol,heading,shot,injured,totyellowcard,disqualified,face,'+
+                                        'formation_x, formation_y)'+
                                         ' VALUES ('+
                                         IntToStr(brain.Score.TeamGuid [T]) +',"'+ aBasePlayer.Surname +'",'+ IntToStr(MatchesPlayed)+','+ IntToStr(MatchesLeft)+','+
                                         IntToStr(aBasePlayer.Injured_Penalty1)+','+IntToStr(aBasePlayer.Injured_Penalty2)+','+IntToStr(aBasePlayer.Injured_Penalty3)+','+
                                         IntToStr(aBasePlayer.Growth1)+','+IntToStr(aBasePlayer.Growth2)+','+IntToStr(aBasePlayer.Growth3)+','+
                                         IntToStr(aBasePlayer.talent1)+','+IntToStr(aBasePlayer.talent2)+','+IntToStr(aBasePlayer.talent3)+','+
                                         IntToStr(aBasePlayer.TalentId) + ',' +  aBasePlayer.Attributes +','+
-                                        '0,0,0,' + IntToStr(aBasePlayer.Face) //injured,totyellowcard,disqualified
+                                        '0,0,0,' + IntToStr(aBasePlayer.Face) +','+ //injured,totyellowcard,disqualified, face
+                                        IntToStr(aReserveSlot.X) + ',' +  IntToStr(aReserveSlot.Y)
                                         +')';
 
           MyQueryGamePlayers.Execute;
+          brain.ReserveSlot[T,aReserveSlot.X,aReserveSlot.Y]:= 'X'; //tanto per riempirla , non è ''
 
         end;
         else begin // 2 o più
 
           // copiata e incollata da sopra 2 volte, per editing futuro ( es. centro giovani genera 3 giovani oppure con più points da distribuire )
           GKpresent := false;
+          brain.CleanReserveSlot ( T );
           for I := 0 to MyQueryGamePlayers.RecordCount -1 do begin
             if MyQueryGamePlayers.fieldByName('talent').AsInteger = 1 then begin
               GKpresent := true;
-              break;
             end;
+
+              if FormServer.isReserveSlotFormation ( MyQueryGamePlayers.FieldByName('formation_x').AsInteger, MyQueryGamePlayers.FieldByName('formation_y').AsInteger) then
+              brain.ReserveSlot [ T, MyQueryGamePlayers.FieldByName('formation_x').AsInteger, MyQueryGamePlayers.FieldByName('formation_y').AsInteger]:=
+                                     MyQueryGamePlayers.FieldByName('guid').AsString;
+            MyQueryGamePlayers.Next;
           end;
+          // ottengo il prossimo slot delle riserve
+          aReserveSlot := brain.NextReserveSlot ( T ); //<--- la prossima libera
 
           aBasePlayer := FormServer.CreatePlayer ( IntToStr(worldTeam[T])  , 50{chance di generare un talento} );
           MatchesPlayed := 0;//38 * 18  ; // 18 anni
@@ -1186,34 +1167,44 @@ begin
           MyQueryGamePlayers.SQL.text := 'INSERT into game.players (Team,Name,Matches_Played,Matches_Left,'+
                                         'injured_penalty1,injured_penalty2,injured_penalty3,'+
                                         'growth1,growth2,growth3,talent1,talent2,talent3,'+
-                                        'talent, speed,defense,passing,ballcontrol,heading,shot,injured,totyellowcard,disqualified,face)'+
+                                        'talent, speed,defense,passing,ballcontrol,heading,shot,injured,totyellowcard,disqualified,face,'+
+                                        'formation_x, formation_y)'+
                                         ' VALUES ('+
                                         IntToStr(brain.Score.TeamGuid [T]) +',"'+ aBasePlayer.Surname +'",'+ IntToStr(MatchesPlayed)+','+ IntToStr(MatchesLeft)+','+
                                         IntToStr(aBasePlayer.Injured_Penalty1)+','+IntToStr(aBasePlayer.Injured_Penalty2)+','+IntToStr(aBasePlayer.Injured_Penalty3)+','+
                                         IntToStr(aBasePlayer.Growth1)+','+IntToStr(aBasePlayer.Growth2)+','+IntToStr(aBasePlayer.Growth3)+','+
                                         IntToStr(aBasePlayer.talent1)+','+IntToStr(aBasePlayer.talent2)+','+IntToStr(aBasePlayer.talent3)+','+
                                         IntToStr(aBasePlayer.TalentId) + ',' +  aBasePlayer.Attributes +','+
-                                        '0,0,0,' + IntToStr(aBasePlayer.Face) //injured,totyellowcard,disqualified
+                                        '0,0,0,' + IntToStr(aBasePlayer.Face) +','+ //injured,totyellowcard,disqualified, face
+                                        IntToStr(aReserveSlot.X) + ',' +  IntToStr(aReserveSlot.Y)
                                         +')';
 
           MyQueryGamePlayers.Execute;
+          brain.ReserveSlot[T,aReserveSlot.X,aReserveSlot.Y]:= 'X'; //tanto per riempirla , non è ''
+
+          // ottengo il prossimo slot delle riserve anche per questo player
+          aReserveSlot := brain.NextReserveSlot ( T ); //<--- la prossima libera
+
           aBasePlayer := FormServer.CreatePlayer ( IntToStr(worldTeam[T])  , 50{chance di generare un talento} );
           MatchesPlayed := 0;//38 * 18  ; // 18 anni
           MatchesLeft := (38*15) - MatchesPlayed;
           MyQueryGamePlayers.SQL.text := 'INSERT into game.players (Team,Name,Matches_Played,Matches_Left,'+
                                         'injured_penalty1,injured_penalty2,injured_penalty3,'+
                                         'growth1,growth2,growth3,talent1,talent2,talent3,'+
-                                        'talent, speed,defense,passing,ballcontrol,heading,shot,injured,totyellowcard,disqualified,face)'+
+                                        'talent, speed,defense,passing,ballcontrol,heading,shot,injured,totyellowcard,disqualified,face,'+
+                                        'formation_x, formation_y)'+
                                         ' VALUES ('+
                                         IntToStr(brain.Score.TeamGuid [T]) +',"'+ aBasePlayer.Surname +'",'+ IntToStr(MatchesPlayed)+','+ IntToStr(MatchesLeft)+','+
                                         IntToStr(aBasePlayer.Injured_Penalty1)+','+IntToStr(aBasePlayer.Injured_Penalty2)+','+IntToStr(aBasePlayer.Injured_Penalty3)+','+
                                         IntToStr(aBasePlayer.Growth1)+','+IntToStr(aBasePlayer.Growth2)+','+IntToStr(aBasePlayer.Growth3)+','+
                                         IntToStr(aBasePlayer.talent1)+','+IntToStr(aBasePlayer.talent2)+','+IntToStr(aBasePlayer.talent3)+','+
                                         IntToStr(aBasePlayer.TalentId) + ',' +  aBasePlayer.Attributes +','+
-                                        '0,0,0,' + IntToStr(aBasePlayer.Face) //injured,totyellowcard,disqualified
+                                        '0,0,0,' + IntToStr(aBasePlayer.Face) +','+ //injured,totyellowcard,disqualified, face
+                                        IntToStr(aReserveSlot.X) + ',' +  IntToStr(aReserveSlot.Y)
                                         +')';
 
           MyQueryGamePlayers.Execute;
+          brain.ReserveSlot[T,aReserveSlot.X,aReserveSlot.Y]:= 'X'; //tanto per riempirla , non è ''
 
         end;
       end;
@@ -2265,8 +2256,8 @@ o o o o o o
 
   aPlayer.xp_Speed         := StrToInt( tsXP[0]);
   aPlayer.xp_Defense       := StrToInt( tsXP[1]);
-  aPlayer.xp_BallControl   := StrToInt( tsXP[2]);
-  aPlayer.xp_Passing       := StrToInt( tsXP[3]);
+  aPlayer.xp_Passing       := StrToInt( tsXP[2]);
+  aPlayer.xp_BallControl   := StrToInt( tsXP[3]);
   aPlayer.xp_Shot          := StrToInt( tsXP[4]);
   aPlayer.xp_Heading       := StrToInt( tsXP[5]);
 

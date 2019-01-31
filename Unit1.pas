@@ -508,6 +508,7 @@ var
   GCD: Integer; // global cooldown temporaneo per braininput
   dir_tmp, dir_stadium, dir_ball, dir_skill, dir_player, dir_interface, dir_data, dir_sound, dir_attributes, dir_help, dir_talent: string;
   LastSpriteMouseMoveGuid: string;
+  lastMouseMovePlayer:TSoccerPlayer;
   WAITING_GETFORMATION, WAITING_STOREFORMATION: boolean;
 
   // il client si mette in attesa di una rispoosta dal server:
@@ -1666,43 +1667,16 @@ begin
     b := StrToInt(ts[1]);
     if a >= b then begin
 
-      Cursor := crHandPoint;
+      SE_GridXP0.Cursor := crHandPoint;
+//      Cursor := crHandPoint;
 
     end
-    else Cursor := crDefault;
+    else SE_GridXP0.Cursor := crDefault;
 
     ts.Free;
 
   end;
 end;
-
-
-{procedure TForm1.se_gridXP1GetCellCursor(Sender: TObject; ACol, ARow, X, Y: Integer; var ACursor: TCursor);
-var
-  a,b: Integer;
-  Ts:TStringList;
-begin
-
-  if Length ( se_gridXP1.Cells[1,aRow]) >= 5 then  begin
-
-    ts := TStringList.Create;
-    ts.Delimiter := '/';
-    ts.StrictDelimiter:= True;
-    ts.DelimitedText := se_gridXP1.Cells[1,aRow];
-
-    a := StrToInt(ts[0]);
-    b := StrToInt(ts[1]);
-    if a >= b then begin
-
-      ACursor := crHandPoint;
-
-    end
-    else aCursor := crDefault;
-
-    ts.Free;
-
-  end;
-end;  }
 
 procedure TForm1.InitializeTheaterMatch;
 var
@@ -2275,8 +2249,8 @@ begin
       // rispettare esatto ordine dei talenti sul db
       aPlayer.xp_Speed         := aPlayer.xp_Speed + StrToInt( tsXP[0]);
       aPlayer.xp_Defense       := aPlayer.xp_Defense + StrToInt( tsXP[1]);
-      aPlayer.xp_BallControl   := aPlayer.xp_BallControl + StrToInt( tsXP[2]);
-      aPlayer.xp_Passing       := aPlayer.xp_Passing + StrToInt( tsXP[3]);
+      aPlayer.xp_Passing       := aPlayer.xp_Passing + StrToInt( tsXP[2]);
+      aPlayer.xp_BallControl   := aPlayer.xp_BallControl + StrToInt( tsXP[3]);
       aPlayer.xp_Shot          := aPlayer.xp_Shot + StrToInt( tsXP[4]);
       aPlayer.xp_Heading       := aPlayer.xp_Heading + StrToInt( tsXP[5]);
 
@@ -7326,6 +7300,7 @@ procedure TForm1.btnxp0Click(Sender: TObject);
 begin
   PanelXPPlayer0.Visible := True;
   SE_GridXP0.Active := True;
+  SetupGridXP(SE_Gridxp0,lastMouseMovePlayer);
 end;
 
 procedure TForm1.btnxpBack0Click(Sender: TObject);
@@ -8676,6 +8651,7 @@ begin
 
         if LastSpriteMouseMoveGuid = lstSprite[i].guid then continue;
         LastSpriteMouseMoveGuid := lstSprite[i].guid;
+        lastMouseMovePlayer := MyBrain.GetSoccerPlayer2 ( lstSprite[i].guid );
 
         btnxp0.Visible := True;
         btnsell0.Visible := True;
