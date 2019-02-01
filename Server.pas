@@ -85,6 +85,10 @@ type TBasePlayer = record
   Face: Integer;
   TalentId: Integer;
 end;
+type TValidPlayer = record
+  speed,defense,passing,ballcontrol,shot,heading, disqualified, chancelvlUp, chancetalentlvlUp,talentID,age : integer;
+  history,xp:string;
+end;
   type TAttributeName = ( atSpeed , atDefense, atBallControl, atPassing, atShot, atHeading);
   type TLevelUp = record
     Guid : Integer;
@@ -209,7 +213,7 @@ type
     procedure validate_pause ( const CommaText: string; Cli:TWSocketThrdClient );
     procedure validate_setformation ( CommaText: string; Cli:TWSocketThrdClient );
     procedure validate_setuniform ( CommaText: string; Cli:TWSocketThrdClient );
-    procedure validate_player ( const guid: integer; Cli:TWSocketThrdClient; var s,d,p,b,sh,h, disqualified, chancelvlUp, chancetalentlvlUp,talentID,age: integer;var history,xp:string );
+    function validate_player ( const guid: integer; Cli:TWSocketThrdClient): TValidPlayer;
     procedure validate_sell ( commatext: string; Cli:TWSocketThrdClient  );
     procedure validate_cancelsell ( commatext: string; Cli:TWSocketThrdClient  );
     procedure validate_buy ( commatext: string; Cli:TWSocketThrdClient  );
@@ -268,7 +272,7 @@ type
     function GetTeamStream ( GuidTeam: Integer): string; // dati compressi del proprio team
     function GetListActiveBrainStream: string;
     function GetMarketPlayers ( Myteam, Maxvalue: Integer): string;
-    function TrylevelUp ( Guid, AttrOrTalentID, s,d,p,b,sh,h,  chanceA,chanceT,talentID,Age: integer; history,xp:string ): TLevelUp;
+    function TrylevelUp  ( Guid, AttrOrTalentId : integer; aValidPlayer: TValidPlayer ): TLevelUp;
       function can6 (aPlayer: TSoccerPlayer; at : TAttributeName): boolean;
 
       function isReserveSlot (CellX, CellY: integer): boolean;
@@ -1072,7 +1076,7 @@ begin
       // azzero il campionato. nuova season
       Season[T] := Season[T] + 1;
       Money[T] := Money[T] + ( Trunc(Points[T] div Rank[T] * 100  ) );
-      MyQueryGameTeams.SQL.text := 'UPDATE game.teams SET mi = 0, matchesplayed = 0, points=0, season=' + IntToStr(Season[T])+
+      MyQueryGameTeams.SQL.text := 'UPDATE game.teams SET matchesplayed = 0, points=0, season=' + IntToStr(Season[T])+
                                    ',money=' + IntToStr(Money[T]) +
                                    ' WHERE Guid = ' + IntToStr( brain.Score.TeamGuid [T]);
       MyQueryGameTeams.Execute;
@@ -1608,10 +1612,10 @@ var
     RcvdLine,NewData,history,xp: string;
     aBrain: TSoccerBrain;
     ts: TStringList;
-    s,d,p,b,sh,h: integer;
-    i,Start,aValue, chanceG,chanceT, talentID,Age: Integer;
+    i,Start,aValue: Integer;
     anAuth: TAuthInfo;
     tsNationTeam: TStringList;
+    aValidPlayer: TValidPlayer;
     alvlUp: TLevelUp;
     ConnGame,ConnAccount : {$IFDEF MYDAC}TMyConnection{$ELSE}TFDConnection{$ENDIF};
     MyQueryCheat,MyQueryTeam:  {$IFDEF MYDAC}TMyQuery{$ELSE}TFDQuery{$ENDIF};
@@ -1787,9 +1791,9 @@ begin
           validate_levelupAttribute (ts.CommaText, Cli); // levelup, ids, attr or talentID  // qui controlla sql injection
           if cli.sReason <> '' then  goto cheat;
           TryDecimalStrToInt( ts[1], aValue); // ids è numerico passato da validate_levelup
-          validate_player( aValue, cli, aValue,s,d,p,b,sh,h, chanceG, chanceT, talentID, age, history,xp  ); // disqualified ora non ci interessa , mi interessa la chance in base all'età
-
-          alvlUp:=  TrylevelUp ( StrToInt(ts[1]),  StrToInt( ts[2]), s,d,p,b,sh,h, chanceG, chanceT,talentID,age, history,xp  ); // il client aggiorna in mybrainformation e resetta le infoxp
+          aValidPlayer := validate_player( aValue, cli ); // disqualified ora non ci interessa , mi interessa la chance in base all'età
+          { TODO : bug su heading }
+          alvlUp:=  TrylevelUp ( StrToInt(ts[1]),  StrToInt( ts[2]), aValidPlayer ); // il client aggiorna in mybrainformation e resetta le infoxp
           Cli.SendStr ( 'BEGINTEAM' + GetTeamStream ( Cli.GuidTeam ) + EndofLine);
       end
       else if ts[0]= 'leveluptalent' then  begin  // guid attr
@@ -1799,14 +1803,14 @@ begin
           end;
           validate_levelupTalent (ts.CommaText, Cli); // levelup, ids, attr or talentID  // qui controlla sql injection
           if cli.sReason <> '' then  goto cheat;
-          validate_player( aValue, cli, aValue,s,d,p,b,sh,h, chanceG, chanceT, talentID, age, history,xp  ); // disqualified ora non ci interessa , mi interessa la chance in base all'età
+          aValidPlayer:= validate_player( aValue, cli  ); // disqualified ora non ci interessa , mi interessa la chance in base all'età
           if cli.sReason <> '' then  goto cheat;
-          if talentID <> 0 then begin
+          if aValidPlayer.talentID <> 0 then begin
             cli.sreason := 'player with talent tryLevelup talent';
             goto cheat;
           end;
 
-          alvlUp:=  TrylevelUp ( StrToInt(ts[1]),  StrToInt( ts[2]), s,d,p,b,sh,h, chanceG, chanceT,talentID,age, history,xp  ); // il client aggiorna in mybrainformation e resetta le infoxp
+          alvlUp:=  TrylevelUp ( StrToInt(ts[1]),  StrToInt( ts[2]), aValidPlayer  ); // il client aggiorna in mybrainformation e resetta le infoxp
           Cli.SendStr ( 'BEGINTEAM' + GetTeamStream ( Cli.GuidTeam ) + EndofLine);
       end
       else if ts[0]= 'sell' then  begin  // ids value
@@ -2210,7 +2214,7 @@ begin
       End;
   end;
 end;
-function TFormServer.TrylevelUp ( Guid, AttrOrTalentId, s,d,p,b,sh,h,  chanceA,chanceT,talentID,Age: integer; history,xp:string ): TLevelUp;
+function TFormServer.TrylevelUp ( Guid, AttrOrTalentId : integer; aValidPlayer: TValidPlayer ): TLevelUp;
 var
   i, aRnd: Integer;
   aPlayer: TSoccerPlayer;
@@ -2242,16 +2246,16 @@ o o o o o o
 
   // creo un player virtuale
   aPlayer:= TSoccerPlayer.create(0,0,0,IntToStr(Guid),'virtual','virtual','1,1,1,1,1,1',0 );
-  aPlayer.DefaultSpeed := s;
-  aPlayer.Defaultdefense := d;
-  aPlayer.DefaultPassing := p;
-  aPlayer.DefaultBallControl := b;
-  aPlayer.DefaultShot := sh;
-  aPlayer.DefaultHeading := h;
-  aplayer.Age := age;
+  aPlayer.DefaultSpeed := aValidPlayer.Speed;
+  aPlayer.Defaultdefense := aValidPlayer.defense;
+  aPlayer.DefaultPassing := aValidPlayer.passing;
+  aPlayer.DefaultBallControl := aValidPlayer.ballcontrol;
+  aPlayer.DefaultShot := aValidPlayer.shot;
+  aPlayer.DefaultHeading := aValidPlayer.heading;
+  aplayer.Age := aValidPlayer.age;
 
   tsXP := TStringList.Create;
-  tsXP.commaText := xp; // <-- init importante 18 talenti
+  tsXP.commaText := aValidPlayer.xp; // <-- init importante 18 talenti
   // rispettare esatto ordine
 
   aPlayer.xp_Speed         := StrToInt( tsXP[0]);
@@ -2266,11 +2270,11 @@ o o o o o o
   end;
 
   tsXPHistory := TStringList.Create;
-  tsXPHistory.commaText := HISTORY;
+  tsXPHistory.commaText := aValidPlayer.HISTORY;
   aPlayer.History_Speed         := StrToInt( tsXPHistory[0]);  // riguarda solo le 6 stats
   aPlayer.History_Defense       := StrToInt( tsXPHistory[1]);
-  aPlayer.History_BallControl   := StrToInt( tsXPHistory[2]);
-  aPlayer.History_Passing       := StrToInt( tsXPHistory[3]);
+  aPlayer.History_Passing       := StrToInt( tsXPHistory[2]);
+  aPlayer.History_BallControl   := StrToInt( tsXPHistory[3]);
   aPlayer.History_Shot          := StrToInt( tsXPHistory[4]);
   aPlayer.History_Heading       := StrToInt( tsXPHistory[5]);
 
@@ -2281,7 +2285,7 @@ o o o o o o
         aPlayer.xp_Speed := aPlayer.xp_Speed - xp_SPEED_POINTS;
         tsXP[0]:= IntToStr(aPlayer.xp_Speed );
         if aPlayer.Age > 24 then goto MyExit; // dopo i 24 anni non incrementa più in speed    . esce con result.value = false
-        if aRnd <= chanceA then begin
+        if aRnd <= aValidPlayer.chancelvlUp then begin
           if (aPlayer.History_Speed = 0) and (aPlayer.DefaultSpeed < 4) then begin // speed incrementa solo una volta e al amssimo a 4
             aPlayer.DefaultSpeed := aPlayer.DefaultSpeed + 1;
             aPlayer.History_Speed := aPlayer.History_Speed + 1;
@@ -2297,7 +2301,7 @@ o o o o o o
         aPlayer.xp_Defense := aPlayer.xp_Defense - xp_DEFENSE_POINTS;
         tsXP[1]:= IntToStr(aPlayer.xp_Defense );
         if aPlayer.Shot >= 3 then goto MyExit; // difesa / shot        . esce con result.value = false
-        if aRnd <= chanceA then begin
+        if aRnd <= aValidPlayer.chancelvlUp then begin
           if aPlayer.DefaultDefense < 6 then begin
             if aPlayer.DefaultDefense +1 = 6 then Result.value := Can6 ( aPlayer, atDefense )
             else begin
@@ -2315,7 +2319,7 @@ o o o o o o
       if aPlayer.xp_Passing >= xp_PASSING_POINTS then begin
         aPlayer.xp_Passing := aPlayer.xp_Passing - xp_Passing_POINTS;
         tsXP[2]:= IntToStr(aPlayer.xp_Passing );
-        if aRnd <= chanceA then begin
+        if aRnd <= aValidPlayer.chancelvlUp then begin
           if aPlayer.DefaultPassing < 6 then begin
             if aPlayer.DefaultPassing +1 = 6 then Result.value := Can6 ( aPlayer, atPassing )
             else begin
@@ -2334,7 +2338,7 @@ o o o o o o
       if aPlayer.xp_BallControl  >= xp_BALLCONTROL_POINTS then begin
         aPlayer.xp_BallControl := aPlayer.xp_BallControl - xp_BallControl_POINTS;
         tsXP[3]:= IntToStr(aPlayer.xp_BallControl );
-        if aRnd <= chanceA then begin
+        if aRnd <= aValidPlayer.chancelvlUp then begin
           if aPlayer.DefaultBallControl < 6 then begin
             if aPlayer.DefaultBallControl +1 = 6 then Result.value := Can6 ( aPlayer, atBallControl )
             else begin
@@ -2354,7 +2358,7 @@ o o o o o o
         aPlayer.xp_Shot := aPlayer.xp_Shot - xp_Shot_POINTS;
         tsXP[4]:= IntToStr(aPlayer.xp_Shot );
           if aPlayer.Defense >= 3 then goto MyExit;; // difesa / shot
-        if aRnd <= chanceA then begin
+        if aRnd <= aValidPlayer.chancelvlUp then begin
           if aPlayer.DefaultShot < 6 then begin
             if aPlayer.DefaultShot +1 = 6 then Result.value :=Can6 ( aPlayer, atShot )
             else begin
@@ -2374,7 +2378,7 @@ o o o o o o
       if aPlayer.xp_Heading >= xp_HEADING_POINTS then begin
         aPlayer.xp_Heading := aPlayer.xp_Heading - xp_Heading_POINTS;
         tsXP[5]:= IntToStr(aPlayer.xp_Heading );
-        if aRnd <= chanceA then begin
+        if aRnd <= aValidPlayer.chancelvlUp then begin
           if aPlayer.History_Heading = 0  then begin // Heading incrementa solo una volta
             if aPlayer.DefaultHeading < 6 then begin
               if aPlayer.DefaultHeading + 1 = 6 then Result.value :=Can6 ( aPlayer, atHeading )
@@ -2398,7 +2402,7 @@ o o o o o o
 
       if aPlayer.XpTal[attrortalentid] >= xpNeedTal[attrortalentid] then begin
         aPlayer.xpTal[attrortalentid] := aPlayer.xpTal[attrortalentid] - xpNeedTal[attrortalentid]; // sottraggo la xp per il tentativo
-        if aRnd <= chanceT then begin
+        if aRnd <= aValidPlayer.chancetalentlvlUp then begin
           aPlayer.TalentId := attrortalentid;
           tsXP[attrortalentid+5]:= IntToStr(aPlayer.xpTal[attrortalentid] );
           Result.value:= True;
@@ -6026,6 +6030,7 @@ var
   s,d,p,b,sh,h: Integer;
   talentID,age,aValue: Integer;
   history,xp: string;
+  aValidPlayer: TValidPlayer;
 begin
 
   ts:= TStringList.Create ;
@@ -6038,7 +6043,7 @@ begin
     Guid := StrToIntDef(  ts.Names [i] , 0  );
     // validate player. dal cli risale al guidteam (cli.guidteam)
     disqualified:=0;
-    validate_player (guid,Cli,s,d,p,b,sh,h,disqualified, chanceA, chanceT,talentID,age,history,xp);
+    aValidPlayer:= validate_player (guid,Cli);
     if cli.sReason <> '' then Exit;
     strCells:= ts.ValueFromIndex [i];
     tscells:= TStringList.Create ;
@@ -6244,7 +6249,7 @@ begin
   ts.Free;
 
 end;
-procedure TFormServer.validate_player ( const guid: integer; Cli:TWSocketThrdClient;  var s,d,p,b,sh,h, disqualified, chancelvlUp, chancetalentlvlUp,talentID,age : integer;var history,xp:string );
+function TFormServer.validate_player ( const guid: integer; Cli:TWSocketThrdClient): TValidPlayer;
 var
   MyQueryGamePlayers:{$IFDEF MYDAC} TMyQuery{$ELSE}TFDQuery{$ENDIF};
   ConnGame : {$IFDEF MYDAC}TMyConnection{$ELSE}TFDConnection{$ENDIF};
@@ -6293,30 +6298,30 @@ begin
   end
   else begin
 
-    disqualified := MyQueryGamePlayers.FieldByName ('disqualified').AsInteger;
-    Age:= Trunc(  MyQueryGamePlayers.FieldByName ('Matches_Played').AsInteger  div SEASON_MATCHES) + 18 ;
-    talentID := MyQueryGamePlayers.FieldByName ('talent').AsInteger;
-    s :=  MyQueryGamePlayers.FieldByName ('speed').AsInteger;
-    d :=  MyQueryGamePlayers.FieldByName ('defense').AsInteger;
-    p :=  MyQueryGamePlayers.FieldByName ('passing').AsInteger;
-    b :=  MyQueryGamePlayers.FieldByName ('ballcontrol').AsInteger;
-    sh :=  MyQueryGamePlayers.FieldByName ('shot').AsInteger;
-    h :=  MyQueryGamePlayers.FieldByName ('heading').AsInteger;
-    history := MyQueryGamePlayers.FieldByName ('history').AsString;
-    xp := MyQueryGamePlayers.FieldByName ('xp').AsString;
+    Result.disqualified := MyQueryGamePlayers.FieldByName ('disqualified').AsInteger;
+    Result.Age:= Trunc(  MyQueryGamePlayers.FieldByName ('Matches_Played').AsInteger  div SEASON_MATCHES) + 18 ;
+    Result.talentID := MyQueryGamePlayers.FieldByName ('talent').AsInteger;
+    Result.speed :=  MyQueryGamePlayers.FieldByName ('speed').AsInteger;
+    Result.defense :=  MyQueryGamePlayers.FieldByName ('defense').AsInteger;
+    Result.passing :=  MyQueryGamePlayers.FieldByName ('passing').AsInteger;
+    Result.ballcontrol :=  MyQueryGamePlayers.FieldByName ('ballcontrol').AsInteger;
+    Result.shot :=  MyQueryGamePlayers.FieldByName ('shot').AsInteger;
+    Result.heading :=  MyQueryGamePlayers.FieldByName ('heading').AsInteger;
+    Result.history := MyQueryGamePlayers.FieldByName ('history').AsString;
+    Result.xp := MyQueryGamePlayers.FieldByName ('xp').AsString;
 
-    case Age of
+    case Result.Age of
       18..24: begin
-        chancelvlUp := MyQueryGamePlayers.FieldByName ('growth1').AsInteger;
-        chancetalentlvlUp :=  MyQueryGamePlayers.FieldByName ('talent1').AsInteger;
+        Result.chancelvlUp := MyQueryGamePlayers.FieldByName ('growth1').AsInteger;
+        Result.chancetalentlvlUp :=  MyQueryGamePlayers.FieldByName ('talent1').AsInteger;
       end;
       25..30: begin
-        chancelvlUp := MyQueryGamePlayers.FieldByName ('growth2').AsInteger;
-        chancetalentlvlUp :=  MyQueryGamePlayers.FieldByName ('talent2').AsInteger;
+        Result.chancelvlUp := MyQueryGamePlayers.FieldByName ('growth2').AsInteger;
+        Result.chancetalentlvlUp :=  MyQueryGamePlayers.FieldByName ('talent2').AsInteger;
       end;
       31..33: begin
-        chancelvlUp := MyQueryGamePlayers.FieldByName ('growth3').AsInteger;
-        chancetalentlvlUp :=  MyQueryGamePlayers.FieldByName ('talent3').AsInteger;
+        Result.chancelvlUp := MyQueryGamePlayers.FieldByName ('growth3').AsInteger;
+        Result.chancetalentlvlUp :=  MyQueryGamePlayers.FieldByName ('talent3').AsInteger;
       end;
     end;
 

@@ -2537,7 +2537,7 @@ begin
     for I := lstSoccerPlayer.Count -1 downto 0 do begin
       if IsOutSide( lstSoccerPlayer[i].CellX ,lstSoccerPlayer[i].CellY ) then Continue;
       if lstSoccerPlayer[i].Team = Team then begin
-        if (lstSoccerPlayer[i].Role <> 'G' ) and (lstSoccerPlayer[i].ids <> excludeIds)  then begin  // iscof feve essere ancora settato
+        if (lstSoccerPlayer[i].talentid <> 1 ) and (lstSoccerPlayer[i].ids <> excludeIds)  then begin  // iscof feve essere ancora settato
           lstBestHeading.Add(lstSoccerPlayer[i]);
         end;
       end;
@@ -2573,7 +2573,7 @@ begin
     for I := lstSoccerPlayer.Count -1 downto 0 do begin
       if IsOutSide( lstSoccerPlayer[i].CellX ,lstSoccerPlayer[i].CellY ) then Continue;
       if lstSoccerPlayer[i].Team = Team then begin
-        if lstSoccerPlayer[i].Role <> 'G'  then begin
+        if lstSoccerPlayer[i].TalentId <> 1  then begin
           lstBestPassing.Add(lstSoccerPlayer[i]);
         end;
       end;
@@ -2608,7 +2608,7 @@ begin
     for I := lstSoccerPlayer.Count -1 downto 0 do begin
       if IsOutSide( lstSoccerPlayer[i].CellX ,lstSoccerPlayer[i].CellY ) then Continue;
       if lstSoccerPlayer[i].Team = Team then begin
-        if lstSoccerPlayer[i].Role <> 'G'  then begin
+        if lstSoccerPlayer[i].TalentId <> 1  then begin
           lstBestShot.Add(lstSoccerPlayer[i]);
         end;
       end;
@@ -2643,7 +2643,7 @@ begin
     for I := lstSoccerPlayer.Count -1 downto 0 do begin
       if IsOutSide( lstSoccerPlayer[i].CellX ,lstSoccerPlayer[i].CellY ) then Continue;
       if lstSoccerPlayer[i].Team = Team then begin
-        if lstSoccerPlayer[i].Role <> 'G'  then begin
+        if lstSoccerPlayer[i].TalentId <> 1  then begin
           lstBestDefense.Add(lstSoccerPlayer[i]);
         end;
       end;
