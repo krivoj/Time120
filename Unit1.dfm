@@ -19,6 +19,7 @@ object Form1: TForm1
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnKeyDown = FormKeyDown
+  OnKeyUp = FormKeyUp
   PixelsPerInch = 96
   TextHeight = 13
   object Panel1: TPanel
@@ -768,10 +769,10 @@ object Form1: TForm1
       end
     end
     object PanelMain: SE_Panel
-      Left = 1136
-      Top = 188
+      Left = 1152
+      Top = 12
       Width = 241
-      Height = 225
+      Height = 245
       BevelOuter = bvNone
       Color = 8081721
       TabOrder = 3
@@ -878,7 +879,7 @@ object Form1: TForm1
       end
       object btnExit: TCnSpeedButton
         Left = 3
-        Top = 177
+        Top = 208
         Width = 233
         Height = 32
         Cursor = crHandPoint
@@ -895,6 +896,26 @@ object Form1: TForm1
         Margin = 4
         ParentFont = False
         OnClick = btnExitClick
+      end
+      object btnLogout: TCnSpeedButton
+        Left = 3
+        Top = 176
+        Width = 233
+        Height = 32
+        Cursor = crHandPoint
+        Color = clGray
+        DownBold = False
+        FlatBorder = False
+        HotTrackBold = False
+        Caption = 'Logout'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = 4308735
+        Font.Height = -21
+        Font.Name = 'Calibri'
+        Font.Style = [fsBold]
+        Margin = 4
+        ParentFont = False
+        OnClick = btnLogoutClick
       end
     end
     object PanelCountryTeam: SE_Panel
@@ -2022,8 +2043,8 @@ object Form1: TForm1
       end
     end
     object PanelMarket: SE_Panel
-      Left = 721
-      Top = 135
+      Left = 616
+      Top = 448
       Width = 1200
       Height = 292
       BevelOuter = bvNone

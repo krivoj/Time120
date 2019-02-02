@@ -18,6 +18,7 @@ unit SoccerBrainv3;
       { TODO  : cmd_login = 0 cmd_plm=101. tutti i validate semplificati. da valutare. ordinrali per performance }
       { TODO  : espandere gameplaye con nazionali }
       { TODO : utility flag market 0 o 1 e delete player in market da lanciare ogni 24 ore.PULIZIA MARKET e game.players team=0 }
+    { TODO : ischeatingball è  da rifare }
 
 interface
 uses DSE_theater, DSE_Random, DSE_PathPlanner, DSE_list, DSE_MISC,
@@ -5125,8 +5126,10 @@ procedure TSoccerbrain.TurnChange ( MovesLeft: integer);
 var
   p,i,TeamFaultFavour,Isfault: Integer;
 begin
+    { TODO : ischeatingball è tutta da rifare }
     TsSpeaker.Clear ;
     { TODO : nei 2 casi ,anche gk, se ultimo è un bounce non c'è cheating. devo usare un flag bounce o lop andato a vuoto. ma va bene anche cosi' }
+   {
      if isCheatingBall ( TeamTurn ) then begin
        if TeamTurn = 0 then TeamFaultFavour := 1 else TeamFaultFavour :=0;
        TsScript.add ('sc_fault.cheatball,' + intTostr(TeamFaultFavour) + ',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
@@ -5157,7 +5160,7 @@ begin
 
         Exit; // evito fine partita
 
-     end;
+     end;    }
 
 
 
@@ -11213,7 +11216,8 @@ lopfkf1:
 
     // cerco il saltatore centrale, di solito quello più forte
     aHeadingFriend := GetSoccerPlayer ( CornerMap.HeadingCellA [0].X , CornerMap.HeadingCellA [0].Y  );
-
+    if aHeadingFriend = nil then asm int 3 end;
+    
     BrainInput(  IntTostr(score.TeamGuid [team]) + ',' +'CRO2,'  + IntToStr(aHeadingFriend.CellX) + ',' + IntToStr( aHeadingFriend.CellY)  );
     Exit;
   end

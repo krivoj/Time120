@@ -11,9 +11,9 @@ unit Server;
 //{$DEFINE allPlayerSpeed3}  // cheat: setta la speed di tutti i player a 3
 //{$DEFINE allPlayerSpeed4}  // cheat: setta la speed di tutti i player a 4
 interface
- { TODO : verificare fine stagioen e new season, giovani ecc.. }
- { TODO : per ogni gol 10 money }
+ { TODO : youngqueue fine stagioen da finire }
  { TODO : creare testfault come testcorner }
+ { TODO : cheatdetected SUB bug }
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics, System.Hash , DateUtils,
@@ -1120,7 +1120,7 @@ begin
           // ottengo il prossimo slot delle riserve
           aReserveSlot := brain.NextReserveSlot ( T ); //<--- la prossima libera
 
-          aBasePlayer := FormServer.CreatePlayer ( IntToStr(worldTeam[T]) , 50{chance di generare un talento} );
+          aBasePlayer := FormServer.CreatePlayer ( IntToStr(worldTeam[T]) , 8{chance di generare un talento} );
           MatchesPlayed := 0; //38 * 18  ; // 18 anni
           MatchesLeft := (38*15) - MatchesPlayed;
           if not GKpresent then
@@ -1163,7 +1163,7 @@ begin
           // ottengo il prossimo slot delle riserve
           aReserveSlot := brain.NextReserveSlot ( T ); //<--- la prossima libera
 
-          aBasePlayer := FormServer.CreatePlayer ( IntToStr(worldTeam[T])  , 50{chance di generare un talento} );
+          aBasePlayer := FormServer.CreatePlayer ( IntToStr(worldTeam[T])  , 8{chance di generare un talento} );
           MatchesPlayed := 0;//38 * 18  ; // 18 anni
           MatchesLeft := (38*15) - MatchesPlayed;
           if not GKpresent then
@@ -1189,7 +1189,7 @@ begin
           // ottengo il prossimo slot delle riserve anche per questo player
           aReserveSlot := brain.NextReserveSlot ( T ); //<--- la prossima libera
 
-          aBasePlayer := FormServer.CreatePlayer ( IntToStr(worldTeam[T])  , 50{chance di generare un talento} );
+          aBasePlayer := FormServer.CreatePlayer ( IntToStr(worldTeam[T])  , 8{chance di generare un talento} );
           MatchesPlayed := 0;//38 * 18  ; // 18 anni
           MatchesLeft := (38*15) - MatchesPlayed;
           MyQueryGamePlayers.SQL.text := 'INSERT into game.players (Team,Name,Matches_Played,Matches_Left,'+
@@ -1803,6 +1803,7 @@ begin
           end;
           validate_levelupTalent (ts.CommaText, Cli); // levelup, ids, attr or talentID  // qui controlla sql injection
           if cli.sReason <> '' then  goto cheat;
+          TryDecimalStrToInt( ts[1], aValue); // ids è numerico passato da validate_levelup
           aValidPlayer:= validate_player( aValue, cli  ); // disqualified ora non ci interessa , mi interessa la chance in base all'età
           if cli.sReason <> '' then  goto cheat;
           if aValidPlayer.talentID <> 0 then begin
@@ -2300,7 +2301,7 @@ o o o o o o
       if aPlayer.xp_Defense >= xp_DEFENSE_POINTS then begin
         aPlayer.xp_Defense := aPlayer.xp_Defense - xp_DEFENSE_POINTS;
         tsXP[1]:= IntToStr(aPlayer.xp_Defense );
-        if aPlayer.Shot >= 3 then goto MyExit; // difesa / shot        . esce con result.value = false
+        if aPlayer.DefaultShot >= 3 then goto MyExit; // difesa / shot        . esce con result.value = false
         if aRnd <= aValidPlayer.chancelvlUp then begin
           if aPlayer.DefaultDefense < 6 then begin
             if aPlayer.DefaultDefense +1 = 6 then Result.value := Can6 ( aPlayer, atDefense )
@@ -2357,7 +2358,7 @@ o o o o o o
       if aPlayer.xp_Shot >= xp_SHOT_POINTS then begin
         aPlayer.xp_Shot := aPlayer.xp_Shot - xp_Shot_POINTS;
         tsXP[4]:= IntToStr(aPlayer.xp_Shot );
-          if aPlayer.Defense >= 3 then goto MyExit;; // difesa / shot
+          if aPlayer.DefaultDefense >= 3 then goto MyExit;; // difesa / shot
         if aRnd <= aValidPlayer.chancelvlUp then begin
           if aPlayer.DefaultShot < 6 then begin
             if aPlayer.DefaultShot +1 = 6 then Result.value :=Can6 ( aPlayer, atShot )
@@ -2402,9 +2403,9 @@ o o o o o o
 
       if aPlayer.XpTal[attrortalentid] >= xpNeedTal[attrortalentid] then begin
         aPlayer.xpTal[attrortalentid] := aPlayer.xpTal[attrortalentid] - xpNeedTal[attrortalentid]; // sottraggo la xp per il tentativo
+        tsXP[attrortalentid+5]:= IntToStr(aPlayer.xpTal[attrortalentid] );
         if aRnd <= aValidPlayer.chancetalentlvlUp then begin
           aPlayer.TalentId := attrortalentid;
-          tsXP[attrortalentid+5]:= IntToStr(aPlayer.xpTal[attrortalentid] );
           Result.value:= True;
         end;
       end;

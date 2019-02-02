@@ -252,6 +252,7 @@ type
     SE_GridMatchInfo: SE_Grid;
     Label1: TLabel;
     Button5: TButton;
+    btnLogout: TCnSpeedButton;
 
 // General
     procedure FormCreate(Sender: TObject);
@@ -370,6 +371,8 @@ type
     procedure btnSelCountryTeamClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure Button5Click(Sender: TObject);
+    procedure FormKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure btnLogoutClick(Sender: TObject);
 
   private
     { Private declarations }
@@ -731,6 +734,11 @@ begin
 end;
 
 
+procedure TForm1.btnLogoutClick(Sender: TObject);
+begin
+  tcp.CloseDelayed;
+end;
+
 procedure TForm1.btnMainPlayClick(Sender: TObject);
 begin
       WaitForSingleObject ( MutexAnimation, INFINITE );
@@ -904,7 +912,7 @@ begin
     tcp.SendStr(  'standings' + EndofLine  );
     GCD := GCD_DEFAULT;
   end;
- { TODO -con the road : riceve in zlib la query pvp dell m.i. vicine a me }
+ { TODO : riceve in zlib la query pvp dell m.i. vicine a me }
 end;
 
 procedure TForm1.Button10Click(Sender: TObject);
@@ -1320,7 +1328,28 @@ begin
 
    end;
 
+  if (ssShift in Shift) then begin
+    if (GameScreen = ScreenFormation) or (GameScreen = ScreenLiveMatch ) or (GameScreen = ScreenWatchLive )  then begin
+      if lastMouseMovePlayer <> nil then
+      SetupGridAttributes (SE_Grid0, lastMouseMovePlayer, 'h'  );  // history
+    end;
+
+  end;
+
 end;
+procedure TForm1.FormKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+  if not (ssShift in Shift) then begin
+
+    if (GameScreen = ScreenFormation) or (GameScreen = ScreenLiveMatch ) or (GameScreen = ScreenWatchLive )  then begin
+      if lastMouseMovePlayer <> nil then
+      SetupGridAttributes (SE_Grid0, lastMouseMovePlayer, 'a'  );  // attributi
+    end;
+  end;
+
+
+end;
+
 procedure TForm1.SetTheaterMatchSize ;
 begin
   form1.Width := 1366;
@@ -2234,8 +2263,8 @@ begin
 //      tsHistory.commaText := ini.readString('player' + IntToStr(i),'History','0,0,0,0,0,0' ); // <-- 6 attributes
       aPlayer.History_Speed         := StrToInt( tsHistory[0]);
       aPlayer.History_Defense       := StrToInt( tsHistory[1]);
-      aPlayer.History_BallControl   := StrToInt( tsHistory[2]);
-      aPlayer.History_Passing       := StrToInt( tsHistory[3]);
+      aPlayer.History_Passing       := StrToInt( tsHistory[2]);
+      aPlayer.History_BallControl   := StrToInt( tsHistory[3]);
       aPlayer.History_Shot          := StrToInt( tsHistory[4]);
       aPlayer.History_Heading       := StrToInt( tsHistory[5]);
       tsHistory.Free;
@@ -9396,13 +9425,25 @@ begin
 
   GridXP.Cells[0,6].Text :=  '';
 
-  if aPlayer.DefaultSpeed < 6 then begin
-    GridXP.Cells[1,0].Text  := IntToStr(aPlayer.xp_Speed) + '/120' ;
-    GridXP.Cells[1,0].ProgressBarValue :=  (aPlayer.xp_Speed * 100) div 120;
+  if (aPlayer.DefaultSpeed < 4) or (aPlayer.Age > 24) or (aPlayer.History_Speed > 0) then begin
+     // dopo i 24 anni non incrementa più in speed.speed incrementa solo una volta e al amssimo a 4
+      GridXP.Cells[1,0].Text  := '' ;
+      GridXP.Cells[1,0].ProgressBarValue :=  0;
+  end
+  else  begin
+      GridXP.Cells[1,0].Text  := IntToStr(aPlayer.xp_Speed) + '/120' ;
+      GridXP.Cells[1,0].ProgressBarValue :=  (aPlayer.xp_Speed * 100) div 120;
   end;
+
   if aPlayer.DefaultDefense < 6 then begin
-    GridXP.Cells[1,1].Text  := IntToStr(aPlayer.xp_Defense) + '/120' ;
-    GridXP.Cells[1,1].ProgressBarValue :=  (aPlayer.xp_Defense * 100) div 120;
+    if aPlayer.DefaultShot >= 3 then begin // difesa / shot
+      GridXP.Cells[1,1].Text  := '' ;
+      GridXP.Cells[1,1].ProgressBarValue :=  0;
+    end
+    else begin
+      GridXP.Cells[1,1].Text  := IntToStr(aPlayer.xp_Defense) + '/120' ;
+      GridXP.Cells[1,1].ProgressBarValue :=  (aPlayer.xp_Defense * 100) div 120;
+    end;
   end;
   if aPlayer.DefaultPassing < 6 then begin
     GridXP.Cells[1,2].Text  := IntToStr(aPlayer.xp_Passing) + '/120' ;
@@ -9413,12 +9454,25 @@ begin
     GridXP.Cells[1,3].ProgressBarValue :=  (aPlayer.xp_BallControl * 100) div 120;
   end;
   if aPlayer.DefaultShot < 6 then begin
-    GridXP.Cells[1,4].Text  := IntToStr(aPlayer.xp_Shot) + '/120' ;
-    GridXP.Cells[1,4].ProgressBarValue :=  (aPlayer.xp_Shot * 100) div 120;
+    if aPlayer.DefaultDefense >= 3 then begin // difesa / shot
+      GridXP.Cells[1,4].Text  := '' ;
+      GridXP.Cells[1,4].ProgressBarValue :=  0;
+    end
+    else begin
+      GridXP.Cells[1,4].Text  := IntToStr(aPlayer.xp_Shot) + '/120' ;
+      GridXP.Cells[1,4].ProgressBarValue :=  (aPlayer.xp_Shot * 100) div 120;
+    end;
   end;
   if aPlayer.DefaultHeading < 6 then begin
-    GridXP.Cells[1,5].Text  := IntToStr(aPlayer.xp_Heading) + '/120' ;
-    GridXP.Cells[1,5].ProgressBarValue :=  (aPlayer.xp_Heading * 100) div 120;
+    // Heading incrementa solo una volta
+    if aPlayer.History_Heading > 0 then begin
+      GridXP.Cells[1,5].Text  := '' ;
+      GridXP.Cells[1,5].ProgressBarValue :=  0;
+    end
+    else begin
+      GridXP.Cells[1,5].Text  := IntToStr(aPlayer.xp_Heading) + '/120' ;
+      GridXP.Cells[1,5].ProgressBarValue :=  (aPlayer.xp_Heading * 100) div 120;
+    end;
   end;
 
   GridXP.Cells[1,6].Text  := '';
