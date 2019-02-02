@@ -11,6 +11,7 @@
       { TODO : finire traduzioni DATA/EN}
       { TODO : bug grafico probabile dopo espulsione non trova sprite perchè passato di lista. occorre accettare nil }
       { TODO : bug grafico dopo gol }
+         { TODO : SetupGridXP nascondere attrinuti gk }
 
 
       // procedure importanti:

@@ -13,12 +13,13 @@ unit Server;
 interface
  { TODO : youngqueue fine stagioen da finire }
  { TODO : creare testfault come testcorner }
- { TODO : cheatdetected SUB bug }
+ { TODO : cheatdetected SUB bug da tracciare con punto interruzuine braininput}
+ { TODO : BUg GK new season . reset DB }
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics, System.Hash , DateUtils,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Strutils,generics.collections, generics.defaults, Data.DB,
-  Vcl.ExtCtrls, Vcl.Mask, Vcl.Grids, inifiles, System.Types,
+  Vcl.ExtCtrls, Vcl.Mask, Vcl.Grids, inifiles, System.Types, FolderDialog,
 
   ZLIBEX,
   Soccerbrainv3,
@@ -39,7 +40,7 @@ uses
   {$ENDIF}
 
 
-  OverbyteIcsWndControl, OverbyteIcsWSocket, OverbyteIcsWSocketS, OverbyteIcsWSocketTS, FolderDialog;
+  OverbyteIcsWndControl, OverbyteIcsWSocket, OverbyteIcsWSocketS, OverbyteIcsWSocketTS ;
 
 
 type
@@ -272,8 +273,9 @@ type
     function GetTeamStream ( GuidTeam: Integer): string; // dati compressi del proprio team
     function GetListActiveBrainStream: string;
     function GetMarketPlayers ( Myteam, Maxvalue: Integer): string;
-    function TrylevelUp  ( Guid, AttrOrTalentId : integer; aValidPlayer: TValidPlayer ): TLevelUp;
+    function TrylevelUpAttribute  ( Guid, Attribute : integer; aValidPlayer: TValidPlayer ): TLevelUp;
       function can6 (aPlayer: TSoccerPlayer; at : TAttributeName): boolean;
+    function TrylevelUpTalent  ( Guid, Talent : integer; aValidPlayer: TValidPlayer ): TLevelUp;
 
       function isReserveSlot (CellX, CellY: integer): boolean;
       function isReserveSlotFormation (CellX, CellY: integer): boolean;
@@ -1792,8 +1794,8 @@ begin
           if cli.sReason <> '' then  goto cheat;
           TryDecimalStrToInt( ts[1], aValue); // ids è numerico passato da validate_levelup
           aValidPlayer := validate_player( aValue, cli ); // disqualified ora non ci interessa , mi interessa la chance in base all'età
-          { TODO : bug su heading }
-          alvlUp:=  TrylevelUp ( StrToInt(ts[1]),  StrToInt( ts[2]), aValidPlayer ); // il client aggiorna in mybrainformation e resetta le infoxp
+
+          alvlUp:=  TrylevelUpAttribute ( StrToInt(ts[1]),  StrToInt( ts[2]), aValidPlayer ); // il client aggiorna in mybrainformation e resetta le infoxp
           Cli.SendStr ( 'BEGINTEAM' + GetTeamStream ( Cli.GuidTeam ) + EndofLine);
       end
       else if ts[0]= 'leveluptalent' then  begin  // guid attr
@@ -1811,7 +1813,7 @@ begin
             goto cheat;
           end;
 
-          alvlUp:=  TrylevelUp ( StrToInt(ts[1]),  StrToInt( ts[2]), aValidPlayer  ); // il client aggiorna in mybrainformation e resetta le infoxp
+          alvlUp:=  TrylevelUpTalent ( StrToInt(ts[1]),  StrToInt( ts[2]), aValidPlayer  ); // il client aggiorna in mybrainformation e resetta le infoxp
           Cli.SendStr ( 'BEGINTEAM' + GetTeamStream ( Cli.GuidTeam ) + EndofLine);
       end
       else if ts[0]= 'sell' then  begin  // ids value
@@ -2215,7 +2217,7 @@ begin
       End;
   end;
 end;
-function TFormServer.TrylevelUp ( Guid, AttrOrTalentId : integer; aValidPlayer: TValidPlayer ): TLevelUp;
+function TFormServer.TrylevelUpAttribute ( Guid, Attribute : integer; aValidPlayer: TValidPlayer ): TLevelUp;
 var
   i, aRnd: Integer;
   aPlayer: TSoccerPlayer;
@@ -2226,7 +2228,7 @@ var
 begin
   // il player è già validato e conosco le chance e le altre info che mi servono
   Result.Guid := Guid;
-  result.AttrOrTalentId := AttrOrTalentId;
+  result.AttrOrTalentId := Attribute;
   Result.value := false;
   aRnd := RndGenerate( 100 );
 //Scelta direzione  Difesa esclude tiro e viceversa
@@ -2266,10 +2268,6 @@ o o o o o o
   aPlayer.xp_Shot          := StrToInt( tsXP[4]);
   aPlayer.xp_Heading       := StrToInt( tsXP[5]);
 
-  for I := 1 to NUM_TALENT do begin
-    aPlayer.XpTal[i] := StrToInt( tsXP[i+5]);
-  end;
-
   tsXPHistory := TStringList.Create;
   tsXPHistory.commaText := aValidPlayer.HISTORY;
   aPlayer.History_Speed         := StrToInt( tsXPHistory[0]);  // riguarda solo le 6 stats
@@ -2280,7 +2278,7 @@ o o o o o o
   aPlayer.History_Heading       := StrToInt( tsXPHistory[5]);
 
   Result.value := False;
-  case AttrOrTalentId of
+  case Attribute of
     0: begin
       if aPlayer.xp_Speed >= xp_SPEED_POINTS then begin
         aPlayer.xp_Speed := aPlayer.xp_Speed - xp_SPEED_POINTS;
@@ -2393,25 +2391,8 @@ o o o o o o
           end;
         end;
       end;
-    end
-  // in caso di numerico id talent
-    else begin
-     if aPlayer.TalentId <> 0 then begin // se ha già il talento non può cambiarlo
-      Result.value := False;
-      Exit;
-     end;
-
-      if aPlayer.XpTal[attrortalentid] >= xpNeedTal[attrortalentid] then begin
-        aPlayer.xpTal[attrortalentid] := aPlayer.xpTal[attrortalentid] - xpNeedTal[attrortalentid]; // sottraggo la xp per il tentativo
-        tsXP[attrortalentid+5]:= IntToStr(aPlayer.xpTal[attrortalentid] );
-        if aRnd <= aValidPlayer.chancetalentlvlUp then begin
-          aPlayer.TalentId := attrortalentid;
-          Result.value:= True;
-        end;
-      end;
     end;
   end;
-
 MyExit:
 
 //   le commatext sono già pronte per storarle
@@ -2449,6 +2430,110 @@ MyExit:
                                    'ballcontrol='+IntToStr(aPlayer.DefaultBallControl) + ','+
                                    'shot='+IntToStr(aPlayer.DefaultShot)  + ','+
                                    'heading='+ IntToStr(aPlayer.DefaultHeading) + ','+
+                                   'xp="' + tsXP.CommaText + '",' +
+                                   'history="' + tsXPhistory.CommaText + '" WHERE guid =' + IntToStr(Guid);
+    MyQueryGamePlayers.Execute ;
+    MyQueryGamePlayers.Free;
+  end
+  else begin  // aggirno solo la perdita di xp
+    {$IFDEF MYDAC}
+    MyQueryGamePlayers := TMyQuery.Create(nil);
+    {$ELSE}
+    MyQueryGamePlayers := TFDQuery.Create(nil);
+    {$ENDIF}
+    MyQueryGamePlayers.Connection := ConnGame;   // game
+
+    MyQueryGamePlayers.SQL.text := 'UPDATE game.players SET ' +
+                                   'xp="' + tsXP.CommaText + '" WHERE guid =' + IntToStr(Guid);
+    MyQueryGamePlayers.Execute ;
+    MyQueryGamePlayers.Free;
+
+  end;
+    ConnGame.Connected := false;
+    ConnGame.Free;
+  tsXP.Free;
+  tsXPHistory.Free;
+  aPlayer.free;
+
+end;
+function TFormServer.TrylevelUpTalent ( Guid, Talent : integer; aValidPlayer: TValidPlayer ): TLevelUp;
+var
+  i, aRnd: Integer;
+  aPlayer: TSoccerPlayer;
+  tsXP,tsXPHistory: TStringList;
+  ConnGame : {$IFDEF MYDAC}TMyConnection{$ELSE}TFDConnection{$ENDIF};
+  MyQueryGamePlayers: {$IFDEF MYDAC}TMyQuery{$ELSE}TFDQuery{$ENDIF};
+  label myexit;
+begin
+  // il player è già validato e conosco le chance e le altre info che mi servono
+  Result.Guid := Guid;
+  result.AttrOrTalentId := Talent;
+  Result.value := false;
+  aRnd := RndGenerate( 100 );
+
+  // creo un player virtuale
+  aPlayer:= TSoccerPlayer.create(0,0,0,IntToStr(Guid),'virtual','virtual','1,1,1,1,1,1',0 );
+  aPlayer.DefaultSpeed := aValidPlayer.Speed;
+  aPlayer.Defaultdefense := aValidPlayer.defense;
+  aPlayer.DefaultPassing := aValidPlayer.passing;
+  aPlayer.DefaultBallControl := aValidPlayer.ballcontrol;
+  aPlayer.DefaultShot := aValidPlayer.shot;
+  aPlayer.DefaultHeading := aValidPlayer.heading;
+  aplayer.Age := aValidPlayer.age;
+
+  tsXP := TStringList.Create;
+  tsXP.commaText := aValidPlayer.xp; // <-- init importante 18 talenti
+
+  for I := 1 to NUM_TALENT do begin
+    aPlayer.XpTal[i] := StrToInt( tsXP[i+5]);
+  end;
+
+  tsXPHistory := TStringList.Create;
+  tsXPHistory.commaText := aValidPlayer.HISTORY;
+
+  Result.value := False;
+  // in caso di numerico id talent
+
+    if aPlayer.XpTal[Talent] >= xpNeedTal[Talent] then begin
+      aPlayer.xpTal[Talent] := aPlayer.xpTal[Talent] - xpNeedTal[Talent]; // sottraggo la xp per il tentativo
+      tsXP[Talent+5]:= IntToStr(aPlayer.xpTal[Talent] );
+      if aRnd <= aValidPlayer.chancetalentlvlUp then begin
+        aPlayer.TalentId := Talent;
+        Result.value:= True;
+      end;
+    end;
+
+MyExit:
+
+//   le commatext sono già pronte per storarle
+//  devo aggiornare anche in caso di false perchè ho speso i punti XP
+    {$IFDEF MYDAC}
+    ConnGame := TMyConnection.Create(nil);
+    ConnGame.Server := MySqlServerGame;
+    ConnGame.Username:='root';
+    Conngame.Password:='root';
+    ConnGame.Database:='game';
+    ConnGame.Connected := True;
+    {$ELSE}
+    ConnGame :=TFDConnection.Create(nil);
+    ConnGame.Params.DriverID := 'MySQL';
+    ConnGame.Params.Add('Server=' + MySqlServerGame);
+    ConnGame.Params.Database := 'game';
+    ConnGame.Params.UserName := 'root';
+    ConnGame.Params.Password := 'root';
+    ConnGame.LoginPrompt := False;
+    ConnGame.Connected := True;
+    {$ENDIF}
+  if Result.value then begin
+
+    {$IFDEF MYDAC}
+    MyQueryGamePlayers := TMyQuery.Create(nil);
+    {$ELSE}
+    MyQueryGamePlayers := TFDQuery.Create(nil);
+    {$ENDIF}
+    MyQueryGamePlayers.Connection := ConnGame;   // game
+
+    MyQueryGamePlayers.SQL.text := 'UPDATE game.players SET ' +
                                    'talent=' + IntToStr(aPlayer.TalentId) + ','+
                                    'xp="' + tsXP.CommaText + '",' +
                                    'history="' + tsXPhistory.CommaText + '" WHERE guid =' + IntToStr(Guid);

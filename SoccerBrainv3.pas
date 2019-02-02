@@ -1782,8 +1782,6 @@ NextFinal:
 
   end;
 
-//  if aPath.Count > 0 then
-//  if  ( apath[0].X = X1) and (apath[0].Y = Y1) then asm int 3 end;
 
 
 
@@ -1874,8 +1872,6 @@ begin
  // Elimino la FinalWall
 NextFinal:
   if (FinalWall) and (aPath.Count > 0) then begin
-//    for I := aPath.Count-1 downto 0 do begin
-//     if Y1 <> aPath[i].Y then asm Int 3 end;
       if GetSoccerPlayer (aPath[aPath.Count-1].X,aPath[aPath.Count-1].Y) <> nil then begin
         //aPath.Steps.Delete(i);
         aPath.RemoveLast ;
@@ -1883,9 +1879,6 @@ NextFinal:
       end
 
   end;
-
-//  if aPath.Count > 0 then
-//  if  ( apath[0].X = X1) and (apath[0].Y = Y1) then asm int 3 end;
 
 
 
@@ -3980,7 +3973,6 @@ var
   aPoint: Tpoint;
   label exitpath;
 begin
-//    if (X2 = 7) and (Y2=4) then asm int 3 end;
 
   aSoccerPlayer.MovePath.Clear;
   // una Nearest Cell è per forza una cella vuota
@@ -4063,7 +4055,6 @@ var
   aPoint: Tpoint;
   label exitpath;
 begin
-//    if (X2 = 7) and (Y2=4) then asm int 3 end;
 
   aSoccerPlayer.MovePath.Clear;
   // una Nearest Cell è per forza una cella vuota
@@ -6983,13 +6974,13 @@ cro_crossbar:
       reason := 'POS,Shot range error';
       goto MyExit;
     end;
-    if Not aPlayer.InShotCell  then begin
+    if (Not aPlayer.InShotCell) and (not w_FreeKick3) then begin // diventa una shot cell
       reason := 'POS,Not in shot cell';
       goto MyExit;
     end;
 
     tsSpeaker.Add(  aPlayer.Surname +' tira in porta'   );
-    { TODO -cfuturismi : pos3 e 4 non cambiano nulla a parte l'informativa }
+    { TODO : pos3 e 4 non cambiano nulla a parte l'informativa }
     preRoll := RndGenerate (dice);
     Roll := AdjustFatigue (aPlayer.Stamina , preRoll);
     if w_FreeKick3 then begin
@@ -7284,7 +7275,7 @@ POSvsGK:
       reason := 'PRS,Shot range error';
       goto MyExit;
     end;
-    if Not aPlayer.InShotCell  then begin
+    if (Not aPlayer.InShotCell) and (not w_FreeKick3) then begin // diventa una shot cell
       reason := 'PRS,Not in shot cell';
       goto MyExit;
     end;
@@ -10292,8 +10283,6 @@ begin
     end;
 
   // esistono per forza 3 coa e 3 cod, per il momento swappo solo dove cade la palla.
-            { TODO : qui si è piantato. 1 partita su migliaia }
-            if aHeadingOpponent = nil then asm int 3 end;
 
             aHeadingFriend.Stamina := aHeadingFriend.Stamina - cost_hea ;
             TsScript.add ('sc_ST,' + aHeadingFriend.ids +',' + IntToStr(cost_hea) ) ;
@@ -11216,7 +11205,6 @@ lopfkf1:
 
     // cerco il saltatore centrale, di solito quello più forte
     aHeadingFriend := GetSoccerPlayer ( CornerMap.HeadingCellA [0].X , CornerMap.HeadingCellA [0].Y  );
-    if aHeadingFriend = nil then asm int 3 end;
     
     BrainInput(  IntTostr(score.TeamGuid [team]) + ',' +'CRO2,'  + IntToStr(aHeadingFriend.CellX) + ',' + IntToStr( aHeadingFriend.CellY)  );
     Exit;
