@@ -6379,7 +6379,7 @@ begin
                                     OldPlayer := anOpponent.Cells;
                                     anOpponent.CellS:= aCell;
 
-                                     TsScript.add ('sc_lop.ballcontrol.bounce.toball,' + aPlayer.Ids {Lop} + ','+ aFriend.ids{cella}
+                                     TsScript.add ('sc_lop.ballcontrol.bounce.toball,' + aPlayer.Ids {Lop} + ','+ anOpponent.ids{cella}
                                                                        + ',' + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) {celle}
                                                                        + ',' + IntTostr(anOpponent.cellx)+',' + IntTostr(anOpponent.cellY)
                                                                        + ',' + IntTostr(Ball.cellx)+',' + IntTostr(ball.celly)); {celle}
