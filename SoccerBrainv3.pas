@@ -6350,7 +6350,7 @@ begin
                       Roll3 := AdjustFatigue (anOpponent.Stamina , preRoll3);
                       aRnd3 :=  Roll3.value + anOpponent.BallControl + 4 ;
                       if aRnd3 < 0  then aRnd3 := 1;
-                      TsScript.add ( 'sc_DICE,' + IntTostr(aFriend.CellX) + ',' + Inttostr(aFriend.CellY) +','+  IntTostr(aRnd3) + ','+
+                      TsScript.add ( 'sc_DICE,' + IntTostr(anOpponent.CellX) + ',' + Inttostr(anOpponent.CellY) +','+  IntTostr(aRnd3) + ','+
                       IntToStr(anOpponent.BallControl)+',Ball.Control,'+ aFriend.ids+','+IntTostr(Roll3.value)+','+Roll3.fatigue+',4' );
                       anOpponent.Stamina := anOpponent.Stamina - cost_bac;
                       anOpponent.xp_BallControl := anOpponent.xp_BallControl + 1;
@@ -11362,7 +11362,7 @@ begin
       end;
 
 
-      if Ball.Player.TalentId = 1 then begin  // probelma getlinepoints per short.passing
+      if Ball.Player.TalentId = 1 then begin  // problema getlinepoints per short.passing
         dstCell:= GetDummyLopCellXYinfinite;
         BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'LOP,'  + IntToStr(dstCell.X) + ',' + IntToStr(dstCell.Y) + ',GKLOP');
         Exit;
