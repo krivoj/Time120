@@ -5364,7 +5364,7 @@ begin
      goto myexit; // hack
     end;
     if not aPlayer.CanSkill then begin
-     reason := 'SHP,Player unable to use skill';
+     reason := 'SHP,Player ' + aPlayer.SurName +' unable to use skill';
      goto myexit; // hack
     end;
     if  aPlayer.TalentId = 1 then begin
@@ -10759,7 +10759,6 @@ var
   lstForward: TObjectList<TSoccerPlayer>;
   Newcell:TPoint;
   ids:string;
-
 begin
 // Tactic costa mosse com sub
   result := None;
@@ -10814,7 +10813,7 @@ begin
         BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'TACTIC' + ',' + ids + ',' + IntToStr(Newcell.X)+ ',' + IntToStr(Newcell.Y)  );// 1 c'è per forza altrimenti no candosub
         Result := TacticDone;
       end;
-      Exit;
+      exit;
     end
     else if M >=3 then begin  // se almeno 3 midfield , uno random diventa un forward
       ids :=  lstMidfield[ RndGenerate0(lstMidfield.Count-1)].Ids ;
@@ -10826,7 +10825,7 @@ begin
         BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'TACTIC' + ',' + ids + ',' + IntToStr(Newcell.X)+ ',' + IntToStr(Newcell.Y)  );// 1 c'è per forza altrimenti no candosub
         Result := TacticDone;
       end;
-      Exit;
+      exit;
     end;
 
   end
@@ -10841,7 +10840,7 @@ begin
         BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'TACTIC' + ',' + ids + ',' + IntToStr(Newcell.X)+ ',' + IntToStr(Newcell.Y)  );// 1 c'è per forza altrimenti no candosub
         Result := TacticDone;
       end;
-      Exit;
+      exit;
     end
     else if F >= 2 then begin// se almeno 2 Attaccanti , uno random diventa midfield
       ids :=  lstForward[ RndGenerate0(lstForward.Count-1)].Ids ;
@@ -10853,9 +10852,14 @@ begin
         BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'TACTIC' + ',' + ids + ',' + IntToStr(Newcell.X)+ ',' + IntToStr(Newcell.Y)  );// 1 c'è per forza altrimenti no candosub
         Result := TacticDone;
       end;
-      Exit;
+      exit;
     end
 
+  end
+  else begin // 0-0
+      lstDefense.Free;
+      lstMidfield.Free;
+      lstForward.Free;
   end;
 
 end;
@@ -11253,8 +11257,8 @@ lopfkf1:
     { ai sostituzioni stamina e tattiche }
 
   ASol := AI_Injured_sub_tactic_stay ( team );
-  if (ASol = subDone ) or (ASol = tacticDone )  or (ASol = StayfreeDone ) or (aSol = CleanRowDone ) // bug risolto
-    then Exit; // se abs4 passo al giro dopo, se stay/free per il momento nulla
+  if (ASol = subDone ) or (ASol = tacticDone )  or (ASol = StayfreeDone ) or (aSol = CleanRowDone ) //or (aSol = SubAbs4) // bug risolto
+    then Exit; // se abs4 passo al giro dop ma proseguo qui sotto, se stay/free per il momento nulla
 
 
   if Ball.Player <> nil then begin
@@ -11349,17 +11353,20 @@ var
 //  aList: TList<TAimidChance>;
   dstCell: TPoint;
   aDoor,aPlmCell: TPoint;
+  aSol : TBetterSolution;
   label lopdef;
 begin
 (*  MidChances := Tlist<TAIMidChance>.Create;*)
       // Dummy AI
 // COPIATA SEMPRE DA AI_Think_myball_middle ma il GK non può fare short.passing
 
-      if not Ball.Player.CanSkill  then begin
-        if AI_Injured_sub_tactic_stay(team) = none then
-          BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'PASS'  );
-        Exit;
-      end;
+  if not Ball.Player.CanSkill  then begin
+    aSol := AI_Injured_sub_tactic_stay(team);
+    if  (aSol = none) or (aSol = SubAbs4) or (aSol = SubCant) then begin // subCant non arriva mai. candosub è chechata prima
+      BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'PASS'  ); // o ha fatto qualcosa o passo
+    end;
+      Exit;
+  end;
 
 
       if Ball.Player.TalentId = 1 then begin  // problema getlinepoints per short.passing
@@ -11508,12 +11515,13 @@ var
   aSol: TBetterSolution;
   label lopdef,lopatt,plmmoveatt,normalversion;
 begin
+
   if not Ball.Player.CanSkill  then begin
     aSol := AI_Injured_sub_tactic_stay(team);
-    if  (aSol = none) or (aSol = SubAbs4)  then begin
-      BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'PASS'  );
-      Exit;
+    if  (aSol = none) or (aSol = SubAbs4) or (aSol = SubCant) then begin // subCant non arriva mai. candosub è chechata prima
+      BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'PASS'  ); // o ha fatto qualcosa o passo
     end;
+      Exit;
   end;
   // se il ball.player ha una speed > 2 penso in un modo, altrimenti posso pensare in un un altro.
   aRnd := RndGenerate(100);
@@ -11706,15 +11714,18 @@ procedure TSoccerbrain.AI_Think_myball_iAttack ( Team: integer );
 var
   ShotOrPlm: Integer;
   aplmCell: TPoint;
+  aSol: TBetterSolution;
   label todoor,shot,shot2,tobottomfield,cantcross;
 begin
       // Dummy AI
       // se può tirare cerca il tiro o potente o preciso, se non può fa un lop in X (non Y)
-      if not Ball.Player.CanSkill  then begin
-        if AI_Injured_sub_tactic_stay(team) = none then
-          BrainInput(IntTostr(score.TeamGuid [team]) + ',' + 'PASS'  );
-        Exit;
-      end;
+  if not Ball.Player.CanSkill  then begin
+    aSol := AI_Injured_sub_tactic_stay(team);
+    if  (aSol = none) or (aSol = SubAbs4) or (aSol = SubCant) then begin // subCant non arriva mai. candosub è chechata prima
+      BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'PASS'  ); // o ha fatto qualcosa o passo
+    end;
+      Exit;
+  end;
 
 
       case Ball.Player.onBottom of

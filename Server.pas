@@ -11,9 +11,8 @@ unit Server;
 //{$DEFINE allPlayerSpeed3}  // cheat: setta la speed di tutti i player a 3
 //{$DEFINE allPlayerSpeed4}  // cheat: setta la speed di tutti i player a 4
 interface
- { TODO : youngqueue fine stagioen da finire }
+ { TODO : youngqueue fine stagioen da finire con anche passaggio di rank in base ai punti}
  { TODO : creare testfault come testcorner }
- { TODO : BUg GK new season . reset DB }
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics, System.Hash , DateUtils,
@@ -1441,24 +1440,24 @@ begin
   MySqlServerWorld := ini.ReadString('Tcp','Address','localhost');
   MySqlServerAccount := ini.ReadString('Tcp','Address','localhost');
 
-  xpNeedTal[TALENT_ID_GOALKEEPER] := 120;
-  xpNeedTal[TALENT_ID_CHALLENGE] := 120;
-  xpNeedTal[TALENT_ID_TOUGHNESS] := 120;
-  xpNeedTal[TALENT_ID_POWER] := 120;
-  xpNeedTal[TALENT_ID_CROSSING] := 120;
-  xpNeedTal[TALENT_ID_LONGPASS] := 120;
-  xpNeedTal[TALENT_ID_EXPERIENCE] := 120;
-  xpNeedTal[TALENT_ID_DRIBBLING] := 80;
-  xpNeedTal[TALENT_ID_BULLDOG] := 120;
-  xpNeedTal[TALENT_ID_OFFENSIVE] := 120;
-  xpNeedTal[TALENT_ID_DEFENSIVE] := 120;
-  xpNeedTal[TALENT_ID_BOMB] := 120;
-  xpNeedTal[TALENT_ID_PLAYMAKER] := 120;
-  xpNeedTal[TALENT_ID_FAUL] := 120;
-  xpNeedTal[TALENT_ID_MARKING] := 120;
-  xpNeedTal[TALENT_ID_POSITIONING] := 120;
+  xpNeedTal[TALENT_ID_GOALKEEPER] := 50;
+  xpNeedTal[TALENT_ID_CHALLENGE] := 50;
+  xpNeedTal[TALENT_ID_TOUGHNESS] := 50;
+  xpNeedTal[TALENT_ID_POWER] := 50;
+  xpNeedTal[TALENT_ID_CROSSING] := 50;
+  xpNeedTal[TALENT_ID_LONGPASS] := 50;
+  xpNeedTal[TALENT_ID_EXPERIENCE] := 50;
+  xpNeedTal[TALENT_ID_DRIBBLING] := 40;
+  xpNeedTal[TALENT_ID_BULLDOG] := 50;
+  xpNeedTal[TALENT_ID_OFFENSIVE] := 50;
+  xpNeedTal[TALENT_ID_DEFENSIVE] := 50;
+  xpNeedTal[TALENT_ID_BOMB] := 50;
+  xpNeedTal[TALENT_ID_PLAYMAKER] := 50;
+  xpNeedTal[TALENT_ID_FAUL] := 50;
+  xpNeedTal[TALENT_ID_MARKING] := 50;
+  xpNeedTal[TALENT_ID_POSITIONING] := 50;
   xpNeedTal[TALENT_ID_FREEKICKS] := 40;
-  xpNeedTal[TALENT_ID_AGILITY] := 120;
+  xpNeedTal[TALENT_ID_AGILITY] := 50;
 
 
   TsWorldCountries:= TStringList.Create ;
