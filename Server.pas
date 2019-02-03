@@ -13,7 +13,6 @@ unit Server;
 interface
  { TODO : youngqueue fine stagioen da finire }
  { TODO : creare testfault come testcorner }
- { TODO : cheatdetected SUB bug da tracciare con punto interruzuine braininput}
  { TODO : BUg GK new season . reset DB }
 
 uses

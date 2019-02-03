@@ -37,10 +37,10 @@ const YELLOW_DISQUALIFIED = 3;
 
 const xp_SPEED_POINTS = 120;
 const xp_DEFENSE_POINTS = 120;
-const xp_BALLCONTROL_POINTS = 120;
 const xp_PASSING_POINTS = 120;
-const xp_SHOT_POINTS = 120;
-const xp_HEADING_POINTS = 120;
+const xp_BALLCONTROL_POINTS = 120;
+const xp_SHOT_POINTS = 80;
+const xp_HEADING_POINTS = 80;
 
 // Queste costanti sono uguali al DB game.talents . Gli ID devono corrispondere
 const NUM_TALENT               = 18; // uguale a game.talents
@@ -4227,7 +4227,8 @@ begin
     randGen.free;
     for i:= 0 to ShotCells.Count -1 do begin
       while  ShotCells[I].subCell.count > 0  do begin
-        ShotCells[I].subCell.clear ;
+       // ShotCells[I].subCell.clear ;
+        ShotCells[I].subCell.destroy ;
       end;
     end;
     ShotCells.free;
@@ -5366,6 +5367,10 @@ begin
      reason := 'SHP,Player unable to use skill';
      goto myexit; // hack
     end;
+    if  aPlayer.TalentId = 1 then begin
+     reason := 'SHP,GoalKeeper can not use skill short.passing';
+     goto myexit; // hack
+    end;
 
     aPlayer.tmp := ShortPassRange;
     if aPlayer.TalentId = TALENT_ID_LONGPASS then
@@ -5386,7 +5391,7 @@ begin
 
     // calcola il percorso della palla in linea retta e ottiene un path di celle interessate
     aPath:= dse_pathplanner.Tpath.Create;
-    GetLinePoints ( Ball.CellX ,Ball.CellY,  CellX, CellY, aPath );
+    GetLinePoints ( Ball.CellX ,Ball.CellY,  CellX, CellY, aPath ); // il GK non fa short.passing perchè il linepoints va fuori dal campo
     aPath.Steps.Delete(0); // elimino la cella di partenza
 
     preRoll := RndGenerate (dice);
@@ -5454,7 +5459,7 @@ begin
 //                  if (AbsDistance(aPlayer.CellX,aPlayer.CellY, Ball.CellX ,  Ball.CellY  ) = 1) or (aPlayer.CellY = Ball.CellY) or (aPlayer.CellX = Ball.CellX) then
                     ExceptPlayers.Add(aPlayer);
 
-                  if aPlayer.Role <> 'G' then Dec(ShpFree);
+                  if aPlayer.TalentId <> 1 then Dec(ShpFree);
                   if (ShpFree < 0) and (aPlayer.Role <> 'G')then TeamMovesLeft := TeamMovesLeft - 1; //<--- esaurische shpfree se minore di 0, non uguale
                     AI_moveAll;
                     if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
@@ -7553,6 +7558,11 @@ reason:='';
      reason := 'PRE,Ball.Player not found';
      goto myexit; // hack
     end;
+    if Ball.Player.TalentId = 1 then begin
+     reason := 'PRE,Ball.Player is GK';
+     goto myexit; // hack
+    end;
+
     TsScript.add ('SERVER_PRE,' + aPlayer.ids + ',' + IntToStr(aPlayer.CellX) + ',' + IntToStr(aPlayer.CellY) + ',' + IntToStr(Ball.Player.CellX) + ',' + IntToStr(Ball.Player.CellY) ) ;
     TsScript.add ('ST,' + aPlayer.ids +',' + IntToStr(cost_pre) ) ; // pressing costa come tackle. molto.
     aPlayer.Stamina := aPlayer.Stamina - cost_pre;
@@ -7565,9 +7575,6 @@ reason:='';
       aPlayer.canMove := false;
       aPlayer.PressingDone:= True;
       Ball.Player.UnderPressureTurn := 2;
-     // Ball.Player.Defense := Ball.Player.Defense - 2;
-     // if Ball.Player.Defense < 0 then Ball.Player.Defense :=0;
-
       Ball.Player.CanMove := False;  // NON PUO' MUOVERE , ma può dribblare con -2
       Ball.Player.BallControl  := Ball.Player.BallControl - 2;  //  MINIMO 0, mai in negativo
       Ball.Player.Passing  := Ball.Player.passing - 2;
@@ -11346,12 +11353,18 @@ var
 begin
 (*  MidChances := Tlist<TAIMidChance>.Create;*)
       // Dummy AI
-// COPIATA SEMPRE DA AI_Think_myball_middle
-
+// COPIATA SEMPRE DA AI_Think_myball_middle ma il GK non può fare short.passing
 
       if not Ball.Player.CanSkill  then begin
         if AI_Injured_sub_tactic_stay(team) = none then
           BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'PASS'  );
+        Exit;
+      end;
+
+
+      if Ball.Player.TalentId = 1 then begin  // probelma getlinepoints per short.passing
+        dstCell:= GetDummyLopCellXYinfinite;
+        BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'LOP,'  + IntToStr(dstCell.X) + ',' + IntToStr(dstCell.Y) + ',GKLOP');
         Exit;
       end;
 
@@ -11411,7 +11424,7 @@ lopdef:
                 BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'LOP' +',' + IntToStr(dstCell.X) + ',' + IntToStr(dstCell.Y)+ ',N' );
                 Exit;
               end
-              else if Ball.Player.Role <> 'G' then begin
+              else if Ball.Player.TalentId <> 1 then begin
                 if AI_Think_CleanSomeRows ( team ) = None then
                 BrainInput( IntTostr(score.TeamGuid [team]) + ',' +'PRO');
                 Exit;
@@ -12185,7 +12198,7 @@ var
 begin
       // Dummy AI
       // provo sempre il tackle se mi trovo a distanza 1 altrimenti passo
-      if Ball.Player.Role <> 'G' then begin
+      if Ball.Player.TalentId <> 1 then begin // se non è un portiere
 
         aPlayer := GetdummyPressing(Team); // vede se c'è a distanza 1 un player con talento experience
         if aPlayer <> nil then begin

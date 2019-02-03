@@ -7714,7 +7714,9 @@ begin
 
     if SelectedPlayer.HasBall then begin
       // Skill Standard Comuni
-      SelectedPlayer.ActiveSkills.Add('Short.Passing=' + IntTostr(SelectedPlayer.Passing));//; + SelectedPlayer.tal_longpass)  );
+      if SelectedPlayer.TalentId <> 1 then // i gk non  usano short.passing (getlinepoints)
+        SelectedPlayer.ActiveSkills.Add('Short.Passing=' + IntTostr(SelectedPlayer.Passing));//; + SelectedPlayer.tal_longpass)  );
+
       SelectedPlayer.ActiveSkills.Add('Lofted.Pass=' + IntTostr(SelectedPlayer.Passing ));//+ SelectedPlayer.tal_longpass  ));
       // Se nella metà campo avversaria e in shotCell aggiungo gli Shot
 
@@ -7723,15 +7725,15 @@ begin
         SelectedPlayer.ActiveSkills.Add('Power.Shot=' + IntTostr( SelectedPlayer.Shot  ));
       end;
 
-      if (SelectedPlayer.Role <> 'G') and not (MyBrain.w_CornerKick) and not (MyBrain.w_FreeKick1) and not (MyBrain.w_FreeKick2) and not
+      if (SelectedPlayer.TalentId <> 1) and not (MyBrain.w_CornerKick) and not (MyBrain.w_FreeKick1) and not (MyBrain.w_FreeKick2) and not
        (MyBrain.w_FreeKick3) and not(MyBrain.w_FreeKick4)
        then SelectedPlayer.ActiveSkills.Add('Protection=2'); // ha la palla
 
-      if (SelectedPlayer.Role <> 'G') and ( MyBrain.GetFriendInCrossingArea( SelectedPlayer ) ) then // ha la palla
+      if (SelectedPlayer.TalentId <> 1) and ( MyBrain.GetFriendInCrossingArea( SelectedPlayer ) ) then // ha la palla
               SelectedPlayer.ActiveSkills.Add('Crossing=' + IntTostr(SelectedPlayer.Passing + Abs(Integer(SelectedPlayer.TalentId = TALENT_ID_CROSSING))) );
 
       if SelectedPlayer.canDribbling then begin
-        if (SelectedPlayer.Role <> 'G') then begin
+        if (SelectedPlayer.TalentId <> 1) then begin
           aList := TObjectList<TSoccerPlayer>.Create (false);
           MyBrain.GetNeighbournsOpponent (SelectedPlayer.cellX, SelectedPlayer.CellY, SelectedPlayer.Team, aList  );
           if aList.Count > 0 then SelectedPlayer.ActiveSkills.Add('Dribbling=' + IntTostr(SelectedPlayer.BallControl  + Abs(Integer(SelectedPlayer.TalentId = TALENT_ID_DRIBBLING))) );
@@ -7747,10 +7749,10 @@ begin
       if  AbsDistance (Mybrain.Ball.CellX  ,Mybrain.Ball.CellY, SelectedPlayer.CellX, SelectedPlayer.CellY ) = 1 then begin
         if Mybrain.Ball.Player <> nil then begin
           if( AbsDistance ( SelectedPlayer.CellX, SelectedPlayer.CellY , Mybrain.Ball.CellX , Mybrain.Ball.CellY ) = 1) and
-            (Mybrain.Ball.Player.Team <> SelectedPlayer.Team) and( Mybrain.Ball.Player.Role <> 'G')
+            (Mybrain.Ball.Player.Team <> SelectedPlayer.Team) and( MyBrain.Ball.Player.TalentId <> 1)  // se la palla è del gk no pressing
           then begin
-            if (SelectedPlayer.Role <> 'G') and ( not SelectedPlayer.PressingDone) then SelectedPlayer.ActiveSkills.Add('Tackle=' + IntTostr(SelectedPlayer.Defense  + Abs(Integer(SelectedPlayer.TalentId = TALENT_ID_TOUGHNESS))) );
-            if (SelectedPlayer.Role <> 'G') and ( not SelectedPlayer.PressingDone) then SelectedPlayer.ActiveSkills.Add('Pressing=-2');
+            if (SelectedPlayer.TalentId <> 1) and ( not SelectedPlayer.PressingDone) then SelectedPlayer.ActiveSkills.Add('Tackle=' + IntTostr(SelectedPlayer.Defense  + Abs(Integer(SelectedPlayer.TalentId = TALENT_ID_TOUGHNESS))) );
+            if (SelectedPlayer.TalentId <> 1) and ( not SelectedPlayer.PressingDone) then SelectedPlayer.ActiveSkills.Add('Pressing=-2');
           end;
         end;
       end;
@@ -9432,8 +9434,8 @@ begin
       GridXP.Cells[1,0].ProgressBarValue :=  0;
   end
   else  begin
-      GridXP.Cells[1,0].Text  := IntToStr(aPlayer.xp_Speed) + '/120' ;
-      GridXP.Cells[1,0].ProgressBarValue :=  (aPlayer.xp_Speed * 100) div 120;
+      GridXP.Cells[1,0].Text  := IntToStr(aPlayer.xp_Speed) + '/' + IntToStr(xp_SPEED_POINTS) ;
+      GridXP.Cells[1,0].ProgressBarValue :=  (aPlayer.xp_Speed * 100) div xp_SPEED_POINTS;
   end;
 
   if aPlayer.DefaultDefense < 6 then begin
@@ -9442,17 +9444,17 @@ begin
       GridXP.Cells[1,1].ProgressBarValue :=  0;
     end
     else begin
-      GridXP.Cells[1,1].Text  := IntToStr(aPlayer.xp_Defense) + '/120' ;
-      GridXP.Cells[1,1].ProgressBarValue :=  (aPlayer.xp_Defense * 100) div 120;
+      GridXP.Cells[1,1].Text  := IntToStr(aPlayer.xp_Defense) + '/' + IntToStr(xp_DEFENSE_POINTS) ;
+      GridXP.Cells[1,1].ProgressBarValue :=  (aPlayer.xp_Defense * 100) div xp_DEFENSE_POINTS;
     end;
   end;
   if aPlayer.DefaultPassing < 6 then begin
-    GridXP.Cells[1,2].Text  := IntToStr(aPlayer.xp_Passing) + '/120' ;
-    GridXP.Cells[1,2].ProgressBarValue :=  (aPlayer.xp_Passing * 100) div 120;
+    GridXP.Cells[1,2].Text  := IntToStr(aPlayer.xp_Passing) + '/' + IntToStr(xp_PASSING_POINTS) ;
+    GridXP.Cells[1,2].ProgressBarValue :=  (aPlayer.xp_Passing * 100) div xp_PASSING_POINTS;
   end;
   if aPlayer.DefaultBallControl < 6 then begin
-    GridXP.Cells[1,3].Text  := IntToStr(aPlayer.xp_BallControl) + '/120' ;
-    GridXP.Cells[1,3].ProgressBarValue :=  (aPlayer.xp_BallControl * 100) div 120;
+    GridXP.Cells[1,3].Text  := IntToStr(aPlayer.xp_BallControl) + '/' + IntToStr(xp_BALLCONTROL_POINTS) ;
+    GridXP.Cells[1,3].ProgressBarValue :=  (aPlayer.xp_BallControl * 100) div xp_BALLCONTROL_POINTS;
   end;
   if aPlayer.DefaultShot < 6 then begin
     if aPlayer.DefaultDefense >= 3 then begin // difesa / shot
@@ -9460,8 +9462,8 @@ begin
       GridXP.Cells[1,4].ProgressBarValue :=  0;
     end
     else begin
-      GridXP.Cells[1,4].Text  := IntToStr(aPlayer.xp_Shot) + '/120' ;
-      GridXP.Cells[1,4].ProgressBarValue :=  (aPlayer.xp_Shot * 100) div 120;
+      GridXP.Cells[1,4].Text  := IntToStr(aPlayer.xp_Shot) + '/' + IntToStr(xp_SHOT_POINTS) ;
+      GridXP.Cells[1,4].ProgressBarValue :=  (aPlayer.xp_Shot * 100) div xp_SHOT_POINTS;
     end;
   end;
   if aPlayer.DefaultHeading < 6 then begin
@@ -9471,8 +9473,8 @@ begin
       GridXP.Cells[1,5].ProgressBarValue :=  0;
     end
     else begin
-      GridXP.Cells[1,5].Text  := IntToStr(aPlayer.xp_Heading) + '/120' ;
-      GridXP.Cells[1,5].ProgressBarValue :=  (aPlayer.xp_Heading * 100) div 120;
+      GridXP.Cells[1,5].Text  := IntToStr(aPlayer.xp_Heading) + '/' + IntToStr(xp_HEADING_POINTS) ;
+      GridXP.Cells[1,5].ProgressBarValue :=  (aPlayer.xp_Heading * 100) div xp_HEADING_POINTS;
     end;
   end;
 
