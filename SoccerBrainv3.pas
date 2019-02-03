@@ -11413,7 +11413,7 @@ begin
           end;
           1..20: begin
 lopdef:
-            dstCell:= GetDummyLopCellXYFriend;
+            dstCell:= GetDummyLopCellXYFriend;  // prima cerca un compagno
             if dstCell.X <> -1 then begin
                 BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'LOP' +',' + IntToStr(dstCell.X) + ',' + IntToStr(dstCell.Y)+ ',N' );
                 Exit;
@@ -11505,12 +11505,15 @@ var
   dstCell: TPoint;
   ShpOrLopOrPlm,ShotCellsOrBottom,MoveValue,aRnd: Integer;
   aDoor,aPlmCell,aplmCell2: TPoint;
+  aSol: TBetterSolution;
   label lopdef,lopatt,plmmoveatt,normalversion;
 begin
   if not Ball.Player.CanSkill  then begin
-    if AI_Injured_sub_tactic_stay(team) = none then
+    aSol := AI_Injured_sub_tactic_stay(team);
+    if  (aSol = none) or (aSol = SubAbs4)  then begin
       BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'PASS'  );
-    Exit;
+      Exit;
+    end;
   end;
   // se il ball.player ha una speed > 2 penso in un modo, altrimenti posso pensare in un un altro.
   aRnd := RndGenerate(100);
