@@ -9428,7 +9428,7 @@ begin
 
   GridXP.Cells[0,6].Text :=  '';
 
-  if (aPlayer.DefaultSpeed < 4) or (aPlayer.Age > 24) or (aPlayer.History_Speed > 0) then begin
+  if (aPlayer.DefaultSpeed >= 4) or (aPlayer.Age > 24) or (aPlayer.History_Speed > 0) then begin
      // dopo i 24 anni non incrementa più in speed.speed incrementa solo una volta e al amssimo a 4
       GridXP.Cells[1,0].Text  := '' ;
       GridXP.Cells[1,0].ProgressBarValue :=  0;

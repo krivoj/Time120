@@ -11,7 +11,7 @@ unit Server;
 //{$DEFINE allPlayerSpeed3}  // cheat: setta la speed di tutti i player a 3
 //{$DEFINE allPlayerSpeed4}  // cheat: setta la speed di tutti i player a 4
 interface
- { TODO : youngqueue fine stagioen da finire con anche passaggio di rank in base ai punti}
+ { TODO : youngqueue fine stagioen da finire con anche passaggio di rank in base ai punti. bug gk per il momento  }
  { TODO : creare testfault come testcorner }
 
 uses
@@ -1019,7 +1019,7 @@ begin
     MatchesplayedTeam[0] := 38;
   // in Questo momento potrebbe essere fine season con MatchesplayedTeam = 38
 
-  MyQueryGameTeams.SQL.text := 'UPDATE game.teams SET nextha = 1, mi = ' + IntToStr(brain.Score.TeamMI [0]) + ', MarketValue = ' +
+  MyQueryGameTeams.SQL.text := 'UPDATE game.teams SET nextha = '+ IntTostr(RndGenerate0(1)) +', mi = ' + IntToStr(brain.Score.TeamMI [0]) + ', MarketValue = ' +
   IntToStr( TotMarketValue[0]) + ',matchesplayed=' + IntToStr(MatchesplayedTeam[0]) + ',points=' + IntToStr(Points[0]) + ' WHERE Guid = ' + IntToStr( brain.Score.TeamGuid [0]);
   MyQueryGameTeams.Execute;
 
@@ -1042,7 +1042,7 @@ begin
   if MatchesplayedTeam[1] = 39 then
     MatchesplayedTeam[1] := 38;
 
-  MyQueryGameTeams.SQL.text := 'UPDATE game.teams SET nextha = 0, mi = ' + IntToStr(brain.Score.TeamMI [1]) + ', MarketValue = ' +
+  MyQueryGameTeams.SQL.text := 'UPDATE game.teams SET nextha = '+ IntTostr(RndGenerate0(1)) +', mi = ' + IntToStr(brain.Score.TeamMI [1]) + ', MarketValue = ' +
   IntToStr( TotMarketValue[1]) + ',matchesplayed=' + IntToStr(MatchesplayedTeam[1]) + ',points=' + IntToStr(Points[1]) + ' WHERE Guid = ' + IntToStr( brain.Score.TeamGuid [1]);
   MyQueryGameTeams.Execute;
 
@@ -1102,9 +1102,14 @@ begin
           YoungQueue[T] :=  YoungQueue[T] + 1;
           MyQueryGameTeams.SQL.text := 'UPDATE game.teams SET youngqueue = ' + IntToStr(YoungQueue[T]) + ' WHERE Guid = ' + IntToStr( brain.Score.TeamGuid [T]);
           MyQueryGameTeams.Execute;
-          { TODO : verificare creazione GK se manca GK. }
-          // c'è 1 posto libero lo metto in squadra. se manca il gk creo un gk
-          { TODO : verificare nextreserveslot }
+          // c'è 1 posto libero lo metto in squadra. se manca il gk creo un gk. devo rifare la query
+          {$IFDEF MYDAC}
+          MyQueryGamePlayers.SQL.Text := 'SELECT guid,talent,formation_x,formation_y from game.players WHERE team =' + IntToStr(brain.Score.TeamGuid [T] );
+          MyQueryGamePlayers.Execute ;
+          {$ELSE}
+          MyQueryGamePlayers.Open ( 'SELECT guid,talent,formation_x,formation_y from game.players WHERE team =' + IntToStr(brain.Score.TeamGuid [T] ));
+          {$ENDIF}
+
           GKpresent := false;
           brain.CleanReserveSlot ( T );
           for I := 0 to MyQueryGamePlayers.RecordCount -1 do begin
@@ -1148,6 +1153,13 @@ begin
         else begin // 2 o più
 
           // copiata e incollata da sopra 2 volte, per editing futuro ( es. centro giovani genera 3 giovani oppure con più points da distribuire )
+          // devo rifare la query per il gk
+          {$IFDEF MYDAC}
+          MyQueryGamePlayers.SQL.Text := 'SELECT guid,talent,formation_x,formation_y from game.players WHERE team =' + IntToStr(brain.Score.TeamGuid [T] );
+          MyQueryGamePlayers.Execute ;
+          {$ELSE}
+          MyQueryGamePlayers.Open ( 'SELECT guid,talent,formation_x,formation_y from game.players WHERE team =' + IntToStr(brain.Score.TeamGuid [T] ));
+          {$ENDIF}
           GKpresent := false;
           brain.CleanReserveSlot ( T );
           for I := 0 to MyQueryGamePlayers.RecordCount -1 do begin
