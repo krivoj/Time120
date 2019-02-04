@@ -289,7 +289,7 @@ object Form1: TForm1
     end
     object PanelScore: SE_Panel
       Left = 26
-      Top = 111
+      Top = 109
       Width = 640
       Height = 51
       BevelOuter = bvNone
@@ -658,7 +658,23 @@ object Form1: TForm1
         Visible = False
         OnClick = btnWatchLiveExitClick
       end
-      object btnAudioStadium: TCnSpeedButton
+      object btnOverrideUniformWhite: TCnSpeedButton
+        Tag = 119
+        Left = 600
+        Top = 3
+        Width = 20
+        Height = 20
+        Cursor = crHandPoint
+        AllowAllUp = True
+        Color = 8081721
+        DownBold = False
+        FlatBorder = False
+        HotTrackBold = False
+        GroupIndex = 3
+        Margin = 4
+        OnClick = btnOverrideUniformWhiteClick
+      end
+      object btnOverrideUniformBlack: TCnSpeedButton
         Tag = 119
         Left = 618
         Top = 3
@@ -666,13 +682,13 @@ object Form1: TForm1
         Height = 20
         Cursor = crHandPoint
         AllowAllUp = True
-        Color = clBtnFace
+        Color = 8081721
         DownBold = False
         FlatBorder = False
         HotTrackBold = False
         GroupIndex = 3
         Margin = 4
-        OnClick = btnAudioStadiumClick
+        OnClick = btnOverrideUniformBlackClick
       end
       object ToolSpin: TCnSpinEdit
         Left = 340

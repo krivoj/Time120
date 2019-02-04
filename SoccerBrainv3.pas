@@ -20,6 +20,7 @@ unit SoccerBrainv3;
       { TODO : utility flag market 0 o 1 e delete player in market da lanciare ogni 24 ore.PULIZIA MARKET e game.players team=0 }
     { TODO : ischeatingball è  da rifare }
     { TODO : bug abs4, qualche volta va a vuot oe scade il tempo }
+    { TODO : sostituire yellowcard con yc in matchinfo}
 
 interface
 uses DSE_theater, DSE_Random, DSE_PathPlanner, DSE_list, DSE_MISC,

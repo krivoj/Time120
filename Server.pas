@@ -11,8 +11,8 @@ unit Server;
 //{$DEFINE allPlayerSpeed3}  // cheat: setta la speed di tutti i player a 3
 //{$DEFINE allPlayerSpeed4}  // cheat: setta la speed di tutti i player a 4
 interface
- { TODO : youngqueue fine stagioen da finire con anche passaggio di rank in base ai punti. bug gk per il momento  }
- { TODO : creare testfault come testcorner }
+ { TODO : youngqueue fine stagioen da finire con anche passaggio di rank in base ai punti.  }
+ { TODO : creare testfault come testcorner per il problema sul client }
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics, System.Hash , DateUtils,

@@ -3,15 +3,12 @@
 
 
       { TODO  : gestire archivio e classifiche }
-      { TODO  : AudioCrowd in sottofondo }
       { TODO  : verificare suoni, sul rigore è mancata l'esultanza}
-      { TODO  : override maglie bianca o nera }
       { TODO : bug doppia animazione sui freekick }
       { TODO : risolvere sfarfallio in formation }
       { TODO : finire traduzioni DATA/EN}
       { TODO : bug grafico probabile dopo espulsione non trova sprite perchè passato di lista. occorre accettare nil }
       { TODO : bug grafico dopo gol }
-         { TODO : SetupGridXP nascondere attrinuti gk }
 
 
       // procedure importanti:
@@ -148,7 +145,7 @@ type
       lbl_Nick1: TCnAAScrollText;
       lbl_score: TLabel;
       lbl_minute: TLabel;
-      btnAudioStadium: TcnSpeedButton;
+    btnOverrideUniformWhite: TCnSpeedButton;
       ToolSpin: TCnSpinEdit;
       SE_GridTime: SE_Grid;
       btnWatchLiveExit: TcnSpeedButton;
@@ -254,6 +251,7 @@ type
     Label1: TLabel;
     Button5: TButton;
     btnLogout: TCnSpeedButton;
+    btnOverrideUniformBlack: TCnSpeedButton;
 
 // General
     procedure FormCreate(Sender: TObject);
@@ -272,7 +270,6 @@ type
     procedure btnTacticsClick(Sender: TObject);
     procedure btnSkillPASSClick(Sender: TObject);
     procedure btnSubsClick(Sender: TObject);
-    procedure btnAudioStadiumClick(Sender: TObject);
 
 // Tcp
     procedure tcpSessionConnected(Sender: TObject; ErrCode: Word);
@@ -374,6 +371,8 @@ type
     procedure Button5Click(Sender: TObject);
     procedure FormKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure btnLogoutClick(Sender: TObject);
+    procedure btnOverrideUniformWhiteClick(Sender: TObject);
+    procedure btnOverrideUniformBlackClick(Sender: TObject);
 
   private
     { Private declarations }
@@ -796,6 +795,50 @@ begin
   btnWatchLiveClick ( btnWatchLive );
 end;
 
+procedure TForm1.btnOverrideUniformBlackClick(Sender: TObject);
+var
+  i: Integer;
+  aSprite : SE_Sprite;
+begin
+
+  if btnOverrideUniformBlack.Down then begin
+    for I := 0 to MyBrain.lstSoccerPlayer.Count -1  do begin
+      if MyBrain.lstSoccerPlayer[i].Team = 1 then
+        MyBrain.lstSoccerPlayer[i].SE_Sprite.BlendMode := SE_BlendReflect;
+    end;
+  end
+  else begin
+    for I := 0 to MyBrain.lstSoccerPlayer.Count -1  do begin
+      if MyBrain.lstSoccerPlayer[i].Team = 1 then
+        MyBrain.lstSoccerPlayer[i].SE_Sprite.BlendMode := SE_BlendNormal;
+    end;
+  end;
+
+end;
+
+
+
+procedure TForm1.btnOverrideUniformWhiteClick(Sender: TObject);
+var
+  i: Integer;
+  aSprite : SE_Sprite;
+begin
+
+  if btnOverrideUniformWhite.Down then begin
+    for I := 0 to MyBrain.lstSoccerPlayer.Count -1  do begin
+      if MyBrain.lstSoccerPlayer[i].Team = 1 then
+        MyBrain.lstSoccerPlayer[i].SE_Sprite.BlendMode := SE_BlendAverage;
+    end;
+  end
+  else begin
+    for I := 0 to MyBrain.lstSoccerPlayer.Count -1  do begin
+      if MyBrain.lstSoccerPlayer[i].Team = 1 then
+        MyBrain.lstSoccerPlayer[i].SE_Sprite.BlendMode := SE_BlendNormal;
+    end;
+  end;
+
+end;
+
 procedure TForm1.btnReplayClick(Sender: TObject);
 var
   i: Integer;
@@ -1163,7 +1206,6 @@ begin
 
   ini := TIniFile.Create  ( ExtractFilePath(Application.ExeName) + 'client.ini');
   dir_log := ini.ReadString('directory','log','c:\temp');
-  btnAudioStadium.Down := not  ( ini.ReadBool('sound','stadium',true)); //1=suona 0=no     down è 0, non suonare
   Language := ini.ReadString('LANGUAGE','Text','EN');
   ini.Free;
 
@@ -1257,8 +1299,9 @@ begin
 
   btnSubs.Glyph.LoadFromFile ( dir_interface + 'inout.bmp') ;
   btnSubs.Glyph.LoadFromFile ( dir_interface + 'inout.bmp') ;
-  btnAudioStadium.Glyph.LoadFromFile ( dir_interface + 'audioon.bmp') ;
-  btnAudioStadium.Glyph.LoadFromFile ( dir_interface + 'audiooff.bmp') ;
+
+  btnOverrideUniformWhite.Glyph.LoadFromFile ( dir_interface + 'w.bmp') ;
+  btnOverrideUniformBlack.Glyph.LoadFromFile ( dir_interface + 'b.bmp') ;
 
   DeleteDirData;
 
@@ -1278,11 +1321,11 @@ end;
 procedure TForm1.FormDestroy(Sender: TObject);
 var
   i: integer;
-  ini : TIniFile;
+//  ini : TIniFile;
 begin
-  ini := TIniFile.Create  ( ExtractFilePath(Application.ExeName) + 'client.ini');
-  ini.Writebool('sound','stadium', not btnAudioStadium.down );  //1=suona 0=no     down è 0, non suonare
-  ini.Free;
+//  ini := TIniFile.Create  ( ExtractFilePath(Application.ExeName) + 'client.ini');
+ { TODO : last login/password }
+//  ini.Free;
 
   FaultBitmapBW.Free;
   UniformBitmapBW.Free;
@@ -1319,6 +1362,7 @@ end;
 
 procedure TForm1.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
+{$IFDEF  tools}
  if Key = VK_F1 then
   Panel1.Visible := not Panel1.Visible
 
@@ -1328,6 +1372,7 @@ begin
       else Panel1.Left:=0;
 
    end;
+{$ENDIF}
 
   if (ssShift in Shift) then begin
     if (GameScreen = ScreenFormation) or (GameScreen = ScreenLiveMatch ) or (GameScreen = ScreenWatchLive )  then begin
@@ -3674,6 +3719,7 @@ begin
 
   TsUniforms[0].CommaText := MyBrain.Score.Uniform [0] ; // in formazione casa/trasferta
   TsUniforms[1].CommaText := MyBrain.Score.Uniform [1] ;
+
   UniformBitmap[0] := SE_Bitmap.Create (dir_player + 'bw.bmp');
   PreLoadUniform (0, UniformBitmap[0] );  // usa tsuniforms e  UniformBitmapBW
 //  Portrait0.Glyph.LoadFromFile(dir_tmp + 'color0.bmp');
@@ -3681,7 +3727,6 @@ begin
   PreLoadUniform (1, UniformBitmap[1] );  // usa tsuniforms e  UniformBitmapBW
   UniformBitmapGK := SE_Bitmap.Create (dir_player + 'bw.bmp');
   PreLoadUniformGK (1, UniformBitmapGK );
-  { TODO : override maglie if checkbox ... black or white }
   MyBrain.Score.DominantColor[0]:=  StringToColor( CnColorgrid1.CustomColors [ StrToInt( TsUniforms[0][0] )]);
   if TsUniforms[0][0] = TsUniforms[0][1] then
     MyBrain.Score.FontColor[0]:= GetContrastColor( StringToColor( CnColorgrid1.CustomColors [ StrToInt(TsUniforms[0][0])]) )
@@ -4714,6 +4759,10 @@ begin
 
     AnimationScript.Tsadd ('cl_showroll,' + aPlayer.Ids + ',' + tsCmd[3]  + ',' + tsCmd[5] + ',' + tsCmd[8] );
   end
+  else if (tsCmd[0]= 'sc_fault')  then begin
+    AnimationScript.Tsadd ('cl_fault,' + tsCmd[1]+','+tsCmd[2]+','+tsCmd[3]  );
+    AnimationScript.Tsadd ('cl_wait,1500');
+  end
   else if tsCmd[0]= 'sc_ai.movetoball' then begin   // movetoball prima di aimoveall
     AnimationScript.Tsadd ('cl_wait,2000');
   end
@@ -4731,9 +4780,11 @@ begin
   end
   else if tsCmd[0]= 'sc_fault.cheatballgk' then begin
    AnimationScript.TsAdd  ( 'cl_fault.cheatballgk,' + tsCmd[1]);
+    AnimationScript.Tsadd ('cl_wait,1500');
   end
   else if tsCmd[0]= 'sc_fault.cheatball' then begin
    AnimationScript.TsAdd  ( 'cl_fault.cheatball,' + tsCmd[1]);
+    AnimationScript.Tsadd ('cl_wait,1500');
   end
   else if tsCmd[0]= 'sc_GAMEOVER' then begin
     AnimationScript.TsAdd  ( 'cl_splash.gameover');
@@ -5074,20 +5125,8 @@ begin
         else if tsCmd[0]= 'sc_injured' then begin
           AnimationScript.TsAdd  ( 'cl_injured,' + tsCmd[1]);
         end
-        else if (tsCmd[0]= 'sc_fault')  then begin
-          AnimationScript.Tsadd ('cl_fault,' + tsCmd[1]+','+tsCmd[2]+','+tsCmd[3]  );
-          AnimationScript.Tsadd ('cl_wait,' + IntTostr(( 1500)));
-        end
-        else if (tsCmd[0]= 'sc_fault.cheatballgk')  then begin
-          AnimationScript.Tsadd ('cl_fault.cheatballgk,' + tsCmd[1]+','+tsCmd[2]+','+tsCmd[3]  );
-          AnimationScript.Tsadd ('cl_wait,' + IntTostr(( 1500)));
-        end
-        else if (tsCmd[0]= 'sc_fault.cheatball')  then begin
-          AnimationScript.Tsadd ('cl_fault.cheatball,' + tsCmd[1]+','+tsCmd[2]+','+tsCmd[3]  );
-          AnimationScript.Tsadd ('cl_wait,' + IntTostr(( 1500)));
-        end
         else if tsCmd[0]= 'sc_FREEKICK1.FKA1' then begin
-//        AnimationScript.Tsadd ('cl_wait,' + IntTostr(( 3500)));
+          AnimationScript.Tsadd ('cl_wait,' + IntTostr(( 3500)));
           AnimationScript.Tsadd ('cl_freekick1.fka1,' + tsCmd[1]+','+tsCmd[2]+','+tsCmd[3]  );
         end
         else if tsCmd[0]= 'sc_FREEKICK2.FKA2' then begin
@@ -7073,7 +7112,6 @@ begin
 
     SE_GridDicewriterow ( 0,  UpperCase( Translate ( 'lbl_FreeKick' )),  '',  '' , '', '' );
 
-
   end
   else if ts[0]= 'cl_freekick2.fka2' then begin   // richiede un fka2 , mostro lo splash corner
 
@@ -7188,7 +7226,7 @@ begin
      SE_GridDicewriterow ( aplayer.Team, Translate('lbl_Fault'),  aplayer.surname,  aPlayer.ids , 'FAULT','');
 
   end
-  else if ts[0]= 'sc_fault.cheatballgk' then begin
+  else if ts[0]= 'cl_fault.cheatballgk' then begin
      FaultBitmap:= SE_Bitmap.Create ( FaultBitmapBW );
      ColorizeFault(  StrToInt(ts[1]) , FaultBitmap );
      aSeField := SE_field.FindSprite(  ts[2] + '.' + ts[3] );
@@ -7202,7 +7240,7 @@ begin
 
      SE_GridDicewriterow ( StrToInt(ts[1]), Translate('lbl_Fault'),  '',  '' , 'FAULT','');
   end
-  else if ts[0]= 'sc_fault.cheatball' then begin
+  else if ts[0]= 'cl_fault.cheatball' then begin
      FaultBitmap:= SE_Bitmap.Create ( FaultBitmapBW );
      ColorizeFault(  StrToInt(ts[1]) , FaultBitmap );
      aSeField := SE_field.FindSprite(  ts[2] + '.' + ts[3] );
@@ -7339,27 +7377,6 @@ begin
   SE_GridXP0.Active := False;
 
 end;
-
-procedure TForm1.btnAudioStadiumClick(Sender: TObject);
-begin
-{
-  if not btnAudioStadium.Down then begin
-
-    btnAudioStadium.NumGlyphs := 1;
-    if Not AudioCrowd.Playing then begin
-      AudioCrowd.Play;
-    end;
-  end
-  else begin // non suonare
-    btnAudioStadium.NumGlyphs := 2;
-    if AudioCrowd.Playing then begin
-      AudioCrowd.Stop;
-    end;
-
-  end;   }
-end;
-
-
 
 procedure TForm1.btnConfirmDismissClick(Sender: TObject);
 begin
@@ -9428,7 +9445,7 @@ begin
 
   GridXP.Cells[0,6].Text :=  '';
 
-  if (aPlayer.DefaultSpeed >= 4) or (aPlayer.Age > 24) or (aPlayer.History_Speed > 0) then begin
+  if (aPlayer.DefaultSpeed >= 4) or (aPlayer.Age > 24) or (aPlayer.History_Speed > 0) or (aPlayer.TalentId=1)  then begin
      // dopo i 24 anni non incrementa più in speed.speed incrementa solo una volta e al amssimo a 4
       GridXP.Cells[1,0].Text  := '' ;
       GridXP.Cells[1,0].ProgressBarValue :=  0;
@@ -9453,11 +9470,17 @@ begin
     GridXP.Cells[1,2].ProgressBarValue :=  (aPlayer.xp_Passing * 100) div xp_PASSING_POINTS;
   end;
   if aPlayer.DefaultBallControl < 6 then begin
-    GridXP.Cells[1,3].Text  := IntToStr(aPlayer.xp_BallControl) + '/' + IntToStr(xp_BALLCONTROL_POINTS) ;
-    GridXP.Cells[1,3].ProgressBarValue :=  (aPlayer.xp_BallControl * 100) div xp_BALLCONTROL_POINTS;
+    if (aPlayer.TalentId=1) then begin
+      GridXP.Cells[1,3].Text  := '' ;
+      GridXP.Cells[1,3].ProgressBarValue :=  0;
+    end
+    else begin
+      GridXP.Cells[1,3].Text  := IntToStr(aPlayer.xp_BallControl) + '/' + IntToStr(xp_BALLCONTROL_POINTS) ;
+      GridXP.Cells[1,3].ProgressBarValue :=  (aPlayer.xp_BallControl * 100) div xp_BALLCONTROL_POINTS;
+    end;
   end;
   if aPlayer.DefaultShot < 6 then begin
-    if aPlayer.DefaultDefense >= 3 then begin // difesa / shot
+    if (aPlayer.DefaultDefense >= 3) or (aPlayer.TalentId=1) then begin // difesa / shot
       GridXP.Cells[1,4].Text  := '' ;
       GridXP.Cells[1,4].ProgressBarValue :=  0;
     end
@@ -9468,7 +9491,7 @@ begin
   end;
   if aPlayer.DefaultHeading < 6 then begin
     // Heading incrementa solo una volta
-    if aPlayer.History_Heading > 0 then begin
+    if (aPlayer.History_Heading > 0) or (aPlayer.TalentId=1) then begin
       GridXP.Cells[1,5].Text  := '' ;
       GridXP.Cells[1,5].ProgressBarValue :=  0;
     end
