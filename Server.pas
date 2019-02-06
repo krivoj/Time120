@@ -11,8 +11,10 @@ unit Server;
 //{$DEFINE allPlayerSpeed3}  // cheat: setta la speed di tutti i player a 3
 //{$DEFINE allPlayerSpeed4}  // cheat: setta la speed di tutti i player a 4
 interface
+// bug importanti
  { TODO : youngqueue fine stagioen da finire con anche passaggio di rank in base ai punti.  }
- { TODO : creare testfault come testcorner per il problema sul client }
+// futuro
+ { TODO : allenamento punti xp a fine stagione su un player }
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics, System.Hash , DateUtils,
@@ -373,11 +375,11 @@ procedure TFormServer.btnKillAllBrainClick(Sender: TObject);
 var
   i: Integer;
 begin
-//  WaitForSingleObject(Mutex,INFINITE);
+  WaitForSingleObject(Mutex,INFINITE);
   for I := brainManager.lstBrain.Count -1 downto 0 do begin
     brainManager.RemoveBrain ( BrainManager.lstBrain[i].BrainIDS );
   end;
-//  ReleaseMutex(Mutex);
+  ReleaseMutex(Mutex);
 
 end;
 

@@ -227,15 +227,6 @@ object Form1: TForm1
       TabOrder = 20
       Text = '0'
     end
-    object Button5: TButton
-      Left = 81
-      Top = 608
-      Width = 75
-      Height = 25
-      Caption = 'Test Fault'
-      TabOrder = 21
-      OnClick = Button5Click
-    end
   end
   object PanelBack: SE_Panel
     Left = 8
@@ -660,8 +651,8 @@ object Form1: TForm1
       end
       object btnOverrideUniformWhite: TCnSpeedButton
         Tag = 119
-        Left = 600
-        Top = 3
+        Left = 618
+        Top = 23
         Width = 20
         Height = 20
         Cursor = crHandPoint
@@ -1316,7 +1307,6 @@ object Form1: TForm1
       GridHexSmallWidth = 10
       CollisionDelay = 0
       ShowPerformance = False
-      OnBeforeVisibleRender = SE_Theater1BeforeVisibleRender
       OnSpriteMouseMove = SE_Theater1SpriteMouseMove
       OnSpriteMouseDown = SE_Theater1SpriteMouseDown
       OnSpriteMouseUp = SE_Theater1SpriteMouseUp

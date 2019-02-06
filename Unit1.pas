@@ -4,8 +4,6 @@
 
       { TODO  : gestire archivio e classifiche }
       { TODO  : verificare suoni, sul rigore è mancata l'esultanza}
-      { TODO : bug doppia animazione sui freekick }
-      { TODO : risolvere sfarfallio in formation }
       { TODO : finire traduzioni DATA/EN}
       { TODO : bug grafico probabile dopo espulsione non trova sprite perchè passato di lista. occorre accettare nil }
       { TODO : bug grafico dopo gol }
@@ -249,7 +247,6 @@ type
     PanelMatchInfo: SE_Panel;
     SE_GridMatchInfo: SE_Grid;
     Label1: TLabel;
-    Button5: TButton;
     btnLogout: TCnSpeedButton;
     btnOverrideUniformBlack: TCnSpeedButton;
 
@@ -303,7 +300,6 @@ type
     procedure SE_Theater1SpriteMouseDown(Sender: TObject; lstSprite: TObjectList<DSE_theater.SE_Sprite>; Button: TMouseButton; Shift: TShiftState);
     procedure SE_Theater1SpriteMouseUp(Sender: TObject; lstSprite: TObjectList<DSE_theater.SE_Sprite>; Button: TMouseButton; Shift: TShiftState);
     procedure SE_Theater1TheaterMouseMove(Sender: TObject; VisibleX, VisibleY, VirtualX, VirtualY: Integer; Shift: TShiftState);
-    procedure SE_Theater1BeforeVisibleRender(Sender: TObject; VirtualBitmap, VisibleBitmap: SE_Bitmap);
     procedure SE_ballSpriteDestinationReached(ASprite: SE_Sprite);
 
 // Formation
@@ -368,7 +364,6 @@ type
     procedure CnColorGrid1SelectCell(Sender: TObject; ACol, ARow: Integer; var CanSelect: Boolean);
     procedure btnSelCountryTeamClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
-    procedure Button5Click(Sender: TObject);
     procedure FormKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure btnLogoutClick(Sender: TObject);
     procedure btnOverrideUniformWhiteClick(Sender: TObject);
@@ -1034,19 +1029,6 @@ end;
 procedure TForm1.Button4Click(Sender: TObject);
 begin
   MyBrain.AI_Think(MyBrain.TeamTurn);
-end;
-
-procedure TForm1.Button5Click(Sender: TObject);
-begin
-  {$ifdef tools}
-  if SelectedPlayer = nil  then Exit;
-
-  if GCD <= 0 then begin
-    tcp.SendStr(  'testfault,' + SelectedPlayer.ids + EndofLine  );
-    GCD := GCD_DEFAULT;
-  end;
-  {$endif tools}
-
 end;
 
 procedure TForm1.Button6Click(Sender: TObject);
@@ -2137,7 +2119,7 @@ begin
 
   if  WAITING_GETFORMATION then begin
     WAITING_GETFORMATION := False;
-    GameScreen := ScreenFormation;
+    fGameScreen := ScreenFormation;
     GraphicSE:= True;
   end
   else if  WAITING_STOREFORMATION then begin
@@ -2545,8 +2527,7 @@ begin
       bmp:= se_bitmap.Create(FieldCellW-4,FieldCellH-4);      // disegno le righe
       bmp.Bitmap.Canvas.Brush.Color :=  $48A881;//$3E906E;
       bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
-      aSubSprite := SE_SubSprite.create(bmp,'highlight' + IntToStr(x) + '.' + IntToStr(y), 2, 2, true, false );
-      aSubSprite.lVisible:= false;
+      aSubSprite := SE_SubSprite.create(bmp,'highlight', 2, 2, false, false );
       aSEField.SubSprites.Add(aSubSprite);
       bmp.Free;
 
@@ -6308,8 +6289,8 @@ begin
           i := i+1;
       end;
 
-//      AnimationScript.Tsadd ('cl_wait,' + IntTostr(sprite1cell));
       AnimationScript.Tsadd ('cl_wait.moving.players'); // Attende che tutti i movimenti dei player siano terminati prima di procedere
+      AnimationScript.Tsadd ('cl_wait,1500');
       AnimationScript.Index := 0;
 
 
@@ -6329,9 +6310,8 @@ begin
           i := i+1;
       end;
 
-//      AnimationScript.Tsadd ('cl_wait,' + IntTostr(sprite1cell));
- //     AnimationScript.Tsadd ('cl_wait,1000');
       AnimationScript.Tsadd ('cl_wait.moving.players'); // Attende che tutti i movimenti dei player siano terminati prima di procedere
+      AnimationScript.Tsadd ('cl_wait,1500');
       AnimationScript.Index := 0;
 
 
@@ -6345,6 +6325,9 @@ begin
 //  end;
   //Mybrain.tsScript.Clear ;
   TsCmd.Free;
+  for i := 0 to AnimationScript.Ts.Count -1 do begin
+    memo3.Lines.Add(AnimationScript.Ts[i]);
+  end;
 
 
 end;
@@ -6414,17 +6397,15 @@ Retry:
   end;
 
 
-  for i := 0 to AnimationScript.Ts.Count -1 do begin
-    memo3.Lines.Add(AnimationScript.Ts[i]);
-  end;
 end;
 
 
 
 procedure TForm1.UpdateSubSprites;
 var
-  p: Integer;
-  SeSprite: SE_SubSprite;
+  p,i2: Integer;
+  SeSprite,aSubSprite: SE_SubSprite;
+
   aPlayer: TSoccerPlayer;
 begin
 
@@ -6505,6 +6486,12 @@ begin
 
 
     end;
+
+        for I2 := se_Players.SpriteCount -1 downto 0 do begin
+          aSubSprite:= Se_Players.Sprites[i2].FindSubSprite('selected');
+          if aSubSprite <> nil then
+            Se_Players.Sprites[i2].SubSprites.Remove(aSubSprite);
+        end;
 
 end;
 
@@ -7557,13 +7544,10 @@ begin
 
         if ((CellX = 2)  or  (CellX = 5) or (CellX = 8)) and (aPlayer.Team = 0) then begin
 
-    //        aSubSprite := SE_SubSprite.create(bmp,'highlight' + IntToStr(CellX) + '.' + IntToStr(Y), 2, 2, true, false );
             aSEField.SubSprites[0].lVisible := true;
         end
         else if ( (CellX = 9)  or  (CellX = 6) or (CellX = 3)) and (aPlayer.Team = 1) then begin
 
-     //       aSubSprite := SE_SubSprite.create(bmp,'highlight' + IntToStr(CellX) + '.' + IntToStr(Y), 2, 2, true, false );
-   //        aSEField.SubSprites[0].lVisible := true;
         end;
 
       end;
@@ -7586,14 +7570,10 @@ begin
 
           if ((CellX = 2)  or  (CellX = 5) or (CellX = 8)) and (aPlayer.Team = 0) then begin
             aSEField.SubSprites[0].lVisible := true;
-//              aSubSprite := SE_SubSprite.create(bmp,'highlight' + IntToStr(CellX) + '.' + IntToStr(Y), 2, 2, true, false );
-//              aSEField.SubSprites.Add(aSubSprite);
           end
           else if ( (CellX = 9)  or  (CellX = 6) or (CellX = 3)) and (aPlayer.Team = 1) then begin
             aSEField.SubSprites[0].lVisible := true;
 
-//              aSubSprite := SE_SubSprite.create(bmp,'highlight' + IntToStr(CellX) + '.' + IntToStr(Y), 2, 2, true, false );
-//              aSEField.SubSprites.Add(aSubSprite);
           end;
 
         end
@@ -7607,8 +7587,6 @@ begin
           end;
 
           aSEField.SubSprites[0].lVisible := true;
-//        aSubSprite := SE_SubSprite.create(bmp,'highlight' + IntToStr(CellX) + '.' + IntToStr(Y), 2, 2, true, false );
-//          aSEField.SubSprites.Add(aSubSprite);
 
         end;
 
@@ -7625,6 +7603,7 @@ var
 begin
   for I := 0 to SE_field.SpriteCount -1 do begin
     SE_field.Sprites [i].SubSprites[0].lVisible := false;
+
   end;
 end;
 
@@ -7850,6 +7829,8 @@ LoadGridSkill:
 end;
 
 procedure TForm1.SE_Theater1TheaterMouseMove(Sender: TObject; VisibleX, VisibleY, VirtualX, VirtualY: Integer; Shift: TShiftState);
+var
+  aPlayer: TSoccerPlayer;
 begin
 //    caption := IntToStr(VirtualX) + '  ' +  IntToStr(VirtualY);
     panelsell.Visible := false;
@@ -7857,18 +7838,14 @@ begin
     if (se_dragGuid <> nil) then begin
 
 
-      // alla fine è outside lo metto nelle riserve
-  {      if (se_dragGuid.Position.X < 0 ) or (se_dragGuid.Position.X > se_Theater1.Width )
-        or (se_dragGuid.Position.Y < 0) or (se_dragGuid.Position.Y > se_Theater1.Height  )
-        then begin
-          MoveInReserves(aPlayer);
-          DragGuid := nil;
-          DrawPoly:= False;
-        end
-        else begin  }
-          se_dragGuid.MoverData.Destination := Point(VirtualX,VirtualY);
-          se_dragGuid.Position := Point (VirtualX,VirtualY);
-    //    end;
+     se_dragGuid.MoverData.Destination := Point(VirtualX,VirtualY);
+     se_dragGuid.Position := Point (VirtualX,VirtualY);
+
+  //  if GameScreen = ScreenFormation then begin
+  //     aPlayer := MyBrain.GetSoccerPlayer2 ( se_dragGuid.Guid );
+  //     HighLightFieldFriendly ( aPlayer, 't' ); // team e talent goalkeeper  , illumina celle di formazione libere o occupate
+  //   end;
+
     end;
 end;
 
@@ -8292,27 +8269,6 @@ begin
     Result := TRGB2TColor(aTrgb);
 end;
 
-procedure TForm1.SE_Theater1BeforeVisibleRender(Sender: TObject; VirtualBitmap, VisibleBitmap: SE_Bitmap);
-begin
-{  if MyBrain.Score.TeamGuid  [ MyBrain.TeamTurn ] = MyGuidTeam then begin
-
-    VirtualBitmap.Bitmap.Canvas.Pen.Color := clYellow - RndGenerate(100) ;
-    VirtualBitmap.Bitmap.Canvas.MoveTo(  0 ,0 );
-    VirtualBitmap.Bitmap.Canvas.LineTo(  VirtualBitmap.Width -1 , 0 );
-    VirtualBitmap.Bitmap.Canvas.LineTo(  VirtualBitmap.Width -1, VirtualBitmap.height -1 );
-    VirtualBitmap.Bitmap.Canvas.LineTo(  0, VirtualBitmap.height -1 );
-    VirtualBitmap.Bitmap.Canvas.LineTo(  0, 0 );
-
-    VirtualBitmap.Bitmap.Canvas.Pen.Color := clYellow - RndGenerate(100) ;
-    VirtualBitmap.Bitmap.Canvas.MoveTo(  1 ,1 );
-    VirtualBitmap.Bitmap.Canvas.LineTo(  VirtualBitmap.Width -1 , 1 );
-    VirtualBitmap.Bitmap.Canvas.LineTo(  VirtualBitmap.Width -1, VirtualBitmap.height -2 );
-    VirtualBitmap.Bitmap.Canvas.LineTo(  1, VirtualBitmap.height -2 );
-    VirtualBitmap.Bitmap.Canvas.LineTo(  1, 1 );
-  end;    }
-
-end;
-
 procedure TForm1.SE_Theater1SpriteMouseDown(Sender: TObject; lstSprite: TObjectList<DSE_theater.SE_Sprite>; Button: TMouseButton;
   Shift: TShiftState);
 var
@@ -8508,10 +8464,10 @@ begin
             if  SelectedPlayer = nil then Exit;
             if  not SelectedPlayer.CanSkill  then Exit;
             if  not SelectedPlayer.CanMove then Exit;
-            // trick, se non c'è il subsprite highlight non posso muovermi li'
-            aSeField := SE_field.FindSprite( IntToStr(CellX) + '.' + IntToStr(CellY));
-            highlight := aSeField.FindSubSprite(  'highlight' + IntToStr(CellX) + '.' + IntToStr(CellY));
-            if highlight = nil then
+
+            // trick, se non è visibile il subsprite highlight non posso muovermi li'
+            aSeField := SE_field.FindSprite( IntToStr(CellX)+'.' + IntToStr(CellY) )  ;
+            if not aSeField.SubSprites[0].lVisible  then
               Exit;
 
             if  SelectedPlayer.HasBall then begin

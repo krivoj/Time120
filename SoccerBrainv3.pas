@@ -5,22 +5,21 @@
 //{$DEFINE  SetAlwaysGol}
 //{$DEFINE  Setposprscorner}
 unit SoccerBrainv3;
-   { TODO :  le db query uppdate senza +1 locale, ma direttammete le deve fare mysql }
-   { TODO  : Gameplay: Valutare se Pos (tiro potente) può innescare autogol }
 
+// bug importanti
    { TODO  : testare offside su crossing e lastman }
-
-   { TODO valutare aggiiunta talento agression e talento buff reparto }
-   { TODO creare più formazioni , forse bug nella fatigue }
-   { TODO verificare tackle not underpressure}
-
-      { TODO  : valutare utilità marketvalue team sul db }
-      { TODO  : cmd_login = 0 cmd_plm=101. tutti i validate semplificati. da valutare. ordinrali per performance }
-      { TODO  : espandere gameplaye con nazionali }
-      { TODO : utility flag market 0 o 1 e delete player in market da lanciare ogni 24 ore.PULIZIA MARKET e game.players team=0 }
     { TODO : ischeatingball è  da rifare }
     { TODO : bug abs4, qualche volta va a vuot oe scade il tempo }
+// bug minori
+   { TODO creare più formazioni , forse bug nella fatigue }
+   { TODO  : cmd_login = 0 cmd_plm=101. tutti i validate semplificati. da valutare. ordinrali per performance }
+    { TODO : utility flag market 0 o 1 e delete player in market da lanciare ogni 24 ore.PULIZIA MARKET e game.players team=0 }
     { TODO : sostituire yellowcard con yc in matchinfo}
+// futuro
+
+   { TODO  : Gameplay: Valutare se Pos (tiro potente) può innescare autogol }
+   { TODO valutare aggiiunta talento agression e talento buff reparto }
+   { TODO  : espandere gameplaye con nazionali }
 
 interface
 uses DSE_theater, DSE_Random, DSE_PathPlanner, DSE_list, DSE_MISC,

@@ -93,7 +93,7 @@ descr_talent_Faul=+15% chance di commettere un fallo.
 descr_talent_Marking=DIF=Marca l'attaccante con il Tiro piu' alto. Cen=Marca il Centrocampista con il passaggio piu' alto. ATT=Marca il difensore con il Controllo piu' basso.
 descr_talent_positioning=Cerca di tornare verso la propria zona di campo.
 descr_talent_FreeKicks=+1 Tiro sui Calci di punizione.
-descr_talent_Agility=Quando riceve un passaggio corto distante almeno 2 celle, non costa mosse.
+descr_talent_Agility=Quando riceve un passaggio corto distante almeno 2 celle, guadagna 1 turno.
 
 
 lbl_Talent=Talent
