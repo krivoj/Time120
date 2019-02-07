@@ -12,7 +12,7 @@ unit Server;
 //{$DEFINE allPlayerSpeed4}  // cheat: setta la speed di tutti i player a 4
 interface
 // bug importanti
- { TODO : youngqueue fine stagioen da finire con anche passaggio di rank in base ai punti.  }
+ { TODO : youngqueue fine stagioen da finire con anche passaggio di rank in base ai punti. promozioni e retrocessioni. money a reward fissi   }
 // futuro
  { TODO : allenamento punti xp a fine stagione su un player }
 

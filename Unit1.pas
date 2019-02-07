@@ -8225,7 +8225,7 @@ begin
 
 
       if (Stat = 'Crossing') or (Stat = 'Passing')  then
-        SE_GridFreeKick.Cells [2,Y].Text := IntTostr (MyBrain.lstSoccerPlayer[i].defaultPassing + Abs(Integer(SelectedPlayer.TalentId = TALENT_ID_CROSSING)))
+        SE_GridFreeKick.Cells [2,Y].Text := IntTostr (MyBrain.lstSoccerPlayer[i].defaultPassing + Abs(Integer(MyBrain.lstSoccerPlayer[i].TalentId = TALENT_ID_CROSSING)))
       else if Stat = 'Heading' then
         SE_GridFreeKick.Cells [2,Y].Text := IntTostr(MyBrain.lstSoccerPlayer[i].defaultheading)
       else if Stat = 'Shot' then

@@ -4,6 +4,7 @@
 //{$DEFINE  SetCornergol}
 //{$DEFINE  SetAlwaysGol}
 //{$DEFINE  Setposprscorner}
+//{$DEFINE ADDITIONAL_MATCHINFO}
 unit SoccerBrainv3;
 
 // bug importanti
@@ -66,7 +67,7 @@ const TALENT_ID_AGILITY        = 18; // Quando riceve un passaggio corto distant
 //------------------------------------------------------------------
  { nel server c'è array xpNeedTAL[I] e si puntano così xpTAL[TALENT_ID_EXPERIENCE]}
 
-const Turnmilliseconds = 120 * 1000;// 90;
+const Turnmilliseconds = 120 * 1000;// 120 secondi per turno giocatore;
 
 // costi in stamina delle singole skill
 const cost_bac = 1; // ball control su lop
@@ -114,7 +115,7 @@ type TTacticType = ( D4M, D4F, M4D, M4F, F4d,F4M );
 type TTackleDirection = ( TackleBack, TackleSide, TackleAhead );
 type TSoccerAttribute =  ( atSpeed , atDefense, atPassing, atBallControl, atShot, atHeading );
 type TBottomPosition = ( NearCornerCell, BottomNoShot, BottomShot, BottomNone, BottomNoneCanCross);
-TYPE  TNotifyFileData    = procedure (filename: string ) of object;
+TYPE TNotifyFileData    = procedure (filename: string ) of object;
 type TAccelerationMode = ( AccBestDistance, AccSelfY, AccDoor );
 type TMoveModeX = ( LeftToRight, RightToLeft, Xnone);
 type TMoveModeY= ( UpToDown, DownToUp, Ynone);
@@ -4921,7 +4922,9 @@ begin
   CornerMap := GetCorner ( aPlayer.Team , Ball.CellY, OpponentCorner );
   Ball.CellX := CornerMap.CornerCell.X;
   Ball.CellY := CornerMap.CornerCell.Y;
-  //sOutput:= 'corner';
+
+  {$IFDEF ADDITIONAL_MATCHINFO}  MatchInfo.Add( IntToStr(fminute) + '.corner.' + aPlayer.ids);{$ENDIF}
+
   // da settemamovesleft. qui deve essere piazzato chi calcia il corner
   TeamTurn := aPlayer.Team ;
   TeamCorner := CornerMap.Team;
@@ -4949,6 +4952,7 @@ begin
   // allontano di 2 celle gli avversari
   ResetPassiveSkills;
   // prendo tutti i player avversari a distanza < 2 dalla palla, quindi quelli che devono spostarsi
+  {$IFDEF ADDITIONAL_MATCHINFO}  MatchInfo.Add( IntToStr(fminute) + '.freekick1.' + IntToStr(team));{$ENDIF}
 
   TsScript.add ('sc_FREEKICK1.FKA1,' + IntTostr(Team) + ',' +  IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client che si può proseguire
 
@@ -5020,6 +5024,7 @@ begin
 end;
 procedure TSoccerbrain.FreeKickSetup2 ( team : Integer  );
 begin
+  {$IFDEF ADDITIONAL_MATCHINFO}  MatchInfo.Add( IntToStr(fminute) + '.freekick2.' + IntToStr( team));{$ENDIF}
 
   ResetPassiveSkills;
   TeamTurn := Team ;
@@ -5042,6 +5047,7 @@ begin
   // il prs o pos che seguirà mantiene le shotcell. il malus è minore. il difensore può mettere fino a 4 in barriera. esiste una cella
   // specifica di barriera per ogni shotCell. l'animazione prevede che dopo il pos o prs con flag freekick3 veda gli uomini in barriera
   // raggiungere celle libere. Qui nel setup non devo liberare nulla, ma devo farlo dopo.
+  {$IFDEF ADDITIONAL_MATCHINFO}  MatchInfo.Add( IntToStr(fminute) + '.freekick3.' + IntToStr( team));{$ENDIF}
   ResetPassiveSkills;
   TeamTurn := Team ;
   TeamFreeKick := TeamTurn ;
@@ -5061,6 +5067,7 @@ end;
 procedure TSoccerbrain.FreeKickSetup4 ( team : Integer  );
 begin
   { devo mettere tutti fuori dall'area e dietro la palla }
+  {$IFDEF ADDITIONAL_MATCHINFO}  MatchInfo.Add( IntToStr(fminute) + '.freekick4.' + IntToStr( team));{$ENDIF}
   ResetPassiveSkills;
   FreePenaltyArea ( team );
 
@@ -6132,6 +6139,7 @@ begin
                                  aCell := GetGKBounceCell (aGK,  aGK.cellX, aGK.CellY,  RndGenerate (2),false );
                                  Ball.Cells := aCell;
                                  tsSpeaker.Add(' palo ');
+                                  {$IFDEF ADDITIONAL_MATCHINFO}  MatchInfo.Add( IntToStr(fminute) + '.crossbar.' + aGK.ids);{$ENDIF}
 
                                   TsScript.add ('sc_lop.bounce.crossbar,' + aPlayer.ids + ',' + aGK.ids{sfidante} +','
                                                             + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) + ','
@@ -6795,6 +6803,7 @@ HVSH:
                   if RndGenerate(12) = 12 then begin
 cro_crossbar:
 //aGK := GetOpponentGK ( aHeadingFriend.Team );
+                   {$IFDEF ADDITIONAL_MATCHINFO}  MatchInfo.Add( IntToStr(fminute) + '.crossbar.' + aGK.ids);{$ENDIF}
                    aCell := GetGKBounceCell (aGK,  aGK.cellX, aGK.CellY,  RndGenerate (2),false );
                   // se il portiere è fuori dai pali, la palla può rimbalzare in gol più sotto perchè il GK usa defense
                    Ball.Cells := aCell;
@@ -7217,6 +7226,7 @@ POSvsGK:
                    aCell := GetGKBounceCell (aGK,  aGK.cellX, aGK.CellY,  RndGenerate (2),false );
                    Ball.Cells := aCell;
                    tsSpeaker.Add(' palo ');
+                                  {$IFDEF ADDITIONAL_MATCHINFO}  MatchInfo.Add( IntToStr(fminute) + '.crossbar.' + aGK.ids);{$ENDIF}
 
                     TsScript.add ('sc_pos.bounce.crossbar,' + aPlayer.ids + ',' + aGK.ids{sfidante} +','
                                               + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) + ','
@@ -7496,6 +7506,7 @@ reason:='';
                    // non torna mai Corner
 prs_crossbar:
 //aGK := GetOpponentGK ( aPlayer.team);
+                   {$IFDEF ADDITIONAL_MATCHINFO}  MatchInfo.Add( IntToStr(fminute) + '.crossbar.' + aGK.ids);{$ENDIF}
                    aCell := GetGKBounceCell (aGK,  aGK.cellX, aGK.CellY,  RndGenerate (1) ,false);  //<--- prs 1 rimbalzo debole
                    Ball.Cells := aCell;
                    TsScript.add ('sc_prs.bounce.crossbar,' + aPlayer.ids + ',' + aGK.ids{sfidante} +','
@@ -9148,6 +9159,7 @@ begin
               injured:= 5;
               // se è l'ultimo uomo ( ma non davanti ) la chance di essere espulso è del 100%
               if IsLastMan ( aPlayer ) then begin
+  {$IFDEF ADDITIONAL_MATCHINFO}  MatchInfo.Add( IntToStr(fminute) + '.lastman.' + aPlayer.ids);{$ENDIF}
                 redCard := 100;
                 YellowCard := 0;
               end;
@@ -10174,6 +10186,7 @@ cor_crossbar:
                   // se il portiere è fuori dai pali, la palla può rimbalzare in gol più sotto perchè il GK usa defense
                    Ball.Cells := aCell;
                    tsSpeaker.Add(' palo ');
+                                  {$IFDEF ADDITIONAL_MATCHINFO}  MatchInfo.Add( IntToStr(fminute) + '.crossbar.' + aGK.ids);{$ENDIF}
 
                    TsScript.add ('sc_corner.bounce.crossbar,' + aPlayer.ids + ','+ aHeadingFriend.ids + ',' + aGK.ids +','
                                               + IntTostr(CornerMap.CornerCell.X)+','+ IntTostr(CornerMap.CornerCell.Y) +','
@@ -10408,6 +10421,7 @@ cor_crossbar:
                   // se il portiere è fuori dai pali, la palla può rimbalzare in gol più sotto perchè il GK usa defense
                    Ball.Cells := aCell;
                    tsSpeaker.Add(' palo ');
+                                  {$IFDEF ADDITIONAL_MATCHINFO}  MatchInfo.Add( IntToStr(fminute) + '.crossbar.' + aGK.ids);{$ENDIF}
 
                    TsScript.add ('sc_cro2.bounce.crossbar,' + aPlayer.ids + ','+ aHeadingFriend.ids + ',' + aGK.ids +','
                                               + IntTostr(CornerMap.CornerCell.X)+','+ IntTostr(CornerMap.CornerCell.Y) +','
