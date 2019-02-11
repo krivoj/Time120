@@ -1502,12 +1502,16 @@ begin
 end;
 procedure TSoccerBrain.ResetPassiveSkills;
 var
-  p: integer;
+  p, OldPassing, OldBallControl, OldShot: integer;
 begin
 
   for P := lstSoccerPlayer.Count -1  downto 0 do begin
 
     if IsOutSide( lstSoccerPlayer[p].CellX,lstSoccerPlayer[p].CellY)  then Continue; // espulsi, sostituiti , injured sono not canmove e stamina 0 per sempre ma sono ancora in campo
+
+    OldPassing := lstSoccerPlayer[p].Passing;
+    OldBallControl := lstSoccerPlayer[p].BallControl;
+    OldShot := lstSoccerPlayer[p].Shot;
 
     lstSoccerPlayer[p].PressingDone := False;
     lstSoccerPlayer[p].TackleDone:= false;
@@ -1559,10 +1563,18 @@ begin
       end;
     end;
 
-    lstSoccerPlayer[p].resetSHP ;  // resetta anche ballcontrol quindi ricalcolo protection  - resetta anche shpAREA
-    if lstSoccerPlayer[p].BonusProtectionTurn > 0 then lstSoccerPlayer[p].BallControl :=  lstSoccerPlayer[p].DefaultBallControl  + 2;
+    lstSoccerPlayer[p].resetSHP ;  // resetta anche ballcontrol quindi ricalcolo protection e pressing  - resetta anche shpAREA
     lstSoccerPlayer[p].resetPLM ;
 
+    // dopo i reset devo manatenere pressing e protection durante il passaggio di turno
+    if lstSoccerPlayer[p].BonusProtectionTurn > 0 then
+      lstSoccerPlayer[p].BallControl :=  lstSoccerPlayer[p].DefaultBallControl  + 2;
+    if lstSoccerPlayer[p].UnderPressureTurn > 0 then begin
+      lstSoccerPlayer[p].BallControl :=  oldBallControl;
+      lstSoccerPlayer[p].passing :=  OldPassing;
+      lstSoccerPlayer[p].Shot :=  OldShot;
+
+    end;
 
   end;
 
@@ -7518,8 +7530,8 @@ reason:='';
 
       if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
       TsScript.add ('E');
-reason:='';
-                    goto MyExit;
+      reason:='';
+      goto MyExit;
 
     end;
   end

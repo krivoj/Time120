@@ -6,12 +6,14 @@
       { TODO : finire traduzioni DATA/EN}
       { TODO : bug grafico probabile dopo espulsione non trova sprite perchè passato di lista. occorre accettare nil }
       { TODO : bug grafico dopo gol }
+      { TODO : suono palo con 12 }
+      { TODO : vedere tattiche durante viewmatch si può usare un altro theater passivo visible false }
 
-      { TODO : standings. snapshot db distinct worldteam e invio come icsSendfile, dinamyc selfposition, snapshot primi 100. stesso per guild }
+      { TODO : verificare animationinterval se_gridxp vedere tplowest }
+      { TODO : standings. mutex request/snapshot db distinct worldteam e invio come icsSendfile, dinamyc selfposition, snapshot primi 100. stesso per guild }
       { TODO : standings. snapshot classifica nazionali }
       { TODO : mi valida solo dopo 20 gare e activity account }
       { TODO : chat. altro server in futuro come per gli account. utilizzo CnnAtext + edit1.text }
-      { TODO : pressing e protection descrittivi in combatlog es.pressing ballcontrol 0 }
       { TODO : guilds: poi chat solo con propria squadra e gilda }
 
       // procedure importanti:
@@ -597,8 +599,6 @@ var
   Money: Integer;               // Denaro
   TotMarket: Integer;           // Valore totale dei player
 
-  //sounds
-
   procedure RoundCornerOf(Control: TWinControl) ;
 implementation
 
@@ -1132,6 +1132,7 @@ begin
   xpNeedTal[TALENT_ID_AGILITY] := 50;
 
   MutexAnimation:=CreateMutex(nil,false,'tsscript');
+
   SE_GridCountryTeam.Active := false;
 
   {$ifdef tools}
@@ -1304,6 +1305,8 @@ begin
   SE_GridTime.thrdAnimate.Priority := tplowest;
   SE_GridXP0.thrdAnimate.Priority := tplowest;
 
+
+
 end;
 procedure TForm1.FormDestroy(Sender: TObject);
 var
@@ -1369,6 +1372,10 @@ begin
 
   end;
 
+{  if Key = 84 then begin
+    if not SE_TheaterPassive.visible then
+      ShowTheaterPassive
+  end;}
 end;
 procedure TForm1.FormKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
@@ -1660,8 +1667,14 @@ begin
     SE_GridSkill.Cells[1,y].BackColor := $007B5139;
     SE_GridSkill.Cells[1,y].FontColor  := clyellow; //$0041BEFF;
   end;
+
+
+  SE_GridSkill.Cells [0,CellY].BackColor := clblack;
+  SE_GridSkill.Cells [1,CellY].BackColor := clblack;
   SE_GridSkill.Cells [0, CellY ].FontColor := $0041BEFF;
   SE_GridSkill.Cells [1, CellY ].FontColor := $0041BEFF;
+
+
   SE_GridSkill.CellsEngine.ProcessSprites(2000);
   SE_GridSkill.refreshSurface ( SE_GridSkill );
 
@@ -5461,6 +5474,7 @@ begin
 
           AnimationScript.Tsadd ('cl_player.move,'      +  tsCmd[2] + ',' + tsCmd[3] + ','+tsCmd[4]  +',' + tsCmd[5] + ','+tsCmd[6] );
           AnimationScript.Tsadd ('cl_wait.moving.players'); // Attende che tutti i movimenti dei player siano terminati prima di procedere
+          AnimationScript.Tsadd ('cl_sound,soundishot');
           AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[7] + ','+tsCmd[8]+',0,0'  );
         end
         else if tsCmd[0] = 'sc_pos.back.swap.bounce' then begin
@@ -5479,7 +5493,8 @@ begin
 
           AnimationScript.Tsadd ('cl_player.move,'      +  tsCmd[1] + ',' + tsCmd[3] + ','+tsCmd[4]  +',' + tsCmd[5] + ','+tsCmd[6] );
           AnimationScript.Tsadd ('cl_wait.moving.players'); // Attende che tutti i movimenti dei player siano terminati prima di procedere
-          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[7] + ','+tsCmd[8]+',0,0'  );
+          AnimationScript.Tsadd ('cl_sound,soundishot');
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[7] + ','+tsCmd[8]+',0,0'  );
         end
 
         else if tsCmd[0] = 'sc_pos.bounce' then begin
@@ -8701,8 +8716,8 @@ begin
         btnXP0.Visible := false;
         btnSell0.Visible := false;
         aPlayer:= MyBrain.GetSoccerPlayer2( lstSprite[i].guid );
-        if LastSpriteMouseMoveGuid = lstSprite[i].guid then continue;
-        LastSpriteMouseMoveGuid := lstSprite[i].guid;
+      //  if LastSpriteMouseMoveGuid = lstSprite[i].guid then continue;  // verificare se è tutto ok ora
+      //  LastSpriteMouseMoveGuid := lstSprite[i].guid;
 
       end;
 
@@ -9743,6 +9758,7 @@ begin
   //    dal server arriva una prima parte stringa e poi uno stream compresso:
   //    Cli.SendStr( 'GUID,' + IntToStr(Cli.GuidTeam ) + ',' + Cli.teamName  + ',' + intToStr(Cli.nextHA) +',' + intToStr(Cli.mi) + ',' +
   //    'BEGINBRAIN' +  chr ( abrain.incMove )   +  brainManager.GetBrainStream ( abrain ) + EndofLine);
+
       MemoC.Lines.Add( 'Compressed size: ' + IntToStr(Len) );
       viewMatch := false;
       LiveMatch := true;

@@ -967,7 +967,7 @@ object Form1: TForm1
         MousePan = True
         MouseScroll = False
         BackColor = 8081721
-        AnimationInterval = 20
+        AnimationInterval = 1000
         GridInfoCell = False
         GridVisible = False
         GridColor = clSilver
@@ -1781,7 +1781,7 @@ object Form1: TForm1
         MousePan = True
         MouseScroll = False
         BackColor = 8081721
-        AnimationInterval = 20
+        AnimationInterval = 1000
         GridInfoCell = False
         GridVisible = False
         GridColor = clSilver
