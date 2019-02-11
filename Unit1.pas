@@ -2,12 +2,17 @@
 {$DEFINE TOOLS}
 
 
-      { TODO  : gestire archivio e classifiche }
       { TODO  : verificare suoni, sul rigore è mancata l'esultanza}
       { TODO : finire traduzioni DATA/EN}
       { TODO : bug grafico probabile dopo espulsione non trova sprite perchè passato di lista. occorre accettare nil }
       { TODO : bug grafico dopo gol }
 
+      { TODO : standings. snapshot db distinct worldteam e invio come icsSendfile, dinamyc selfposition, snapshot primi 100. stesso per guild }
+      { TODO : standings. snapshot classifica nazionali }
+      { TODO : mi valida solo dopo 20 gare e activity account }
+      { TODO : chat. altro server in futuro come per gli account. utilizzo CnnAtext + edit1.text }
+      { TODO : pressing e protection descrittivi in combatlog es.pressing ballcontrol 0 }
+      { TODO : guilds: poi chat solo con propria squadra e gilda }
 
       // procedure importanti:
       //    procedure SE_GridSkillGridCellMouseDown  click sulla skill ---> input verso il server
@@ -6275,10 +6280,11 @@ begin
 
 
    else if tsCmd[0]= 'SERVER_PRE' then begin
-      // il player è già posizionato
+// server   TsScript.add ('SERVER_PRE,' + aPlayer.ids + ',' + IntToStr(aPlayer.CellX) + ',' + IntToStr(aPlayer.CellY) + ',' + IntToStr(Ball.Player.CellX) + ',' + IntToStr(Ball.Player.CellY) ) ;
 
       PrepareAnim;
       AnimationScript.Tsadd ( 'cl_mainskillused,Pressing,' + tsCmd[1] + ',' + tsCmd[2] + ',' + tsCmd[3] + ',' + tsCmd[4] + ',' + tsCmd[5]) ;
+      AnimationScript.Tsadd ('cl_pressing,' + tsCmd[1] );
       i:=1;
       while tsCmd[0] <> 'E' do begin
           tsCmd.CommaText := Mybrain.tsScript [i];
@@ -6289,8 +6295,9 @@ begin
           i := i+1;
       end;
 
+
       AnimationScript.Tsadd ('cl_wait.moving.players'); // Attende che tutti i movimenti dei player siano terminati prima di procedere
-      AnimationScript.Tsadd ('cl_wait,1500');
+      AnimationScript.Tsadd ('cl_wait,2500');
       AnimationScript.Index := 0;
 
 
@@ -6298,8 +6305,10 @@ begin
    end
 
    else if tsCmd[0]= 'SERVER_PRO' then begin
+// server    TsScript.add ('SERVER_PRO,' + aPlayer.ids + ',' + IntToStr(aPlayer.cellX) + ',' + IntToStr(aPlayer.cellY)+ ',' + IntToStr(aPlayer.cellX) + ',' + IntToStr(aPlayer.cellY) ) ;
       PrepareAnim;
       AnimationScript.Tsadd ( 'cl_mainskillused,Protection,' + tsCmd[1] + ',' + tsCmd[2] + ',' + tsCmd[3] + ',' + tsCmd[4] + ',' + tsCmd[5]) ;
+      AnimationScript.Tsadd ('cl_protection' );
       i:=1;
 
 
@@ -6311,7 +6320,7 @@ begin
       end;
 
       AnimationScript.Tsadd ('cl_wait.moving.players'); // Attende che tutti i movimenti dei player siano terminati prima di procedere
-      AnimationScript.Tsadd ('cl_wait,1500');
+      AnimationScript.Tsadd ('cl_wait,2500');
       AnimationScript.Index := 0;
 
 
@@ -6595,6 +6604,17 @@ begin
     sebmp.Free;
 
   end
+  else if ts[0] = 'cl_pressing' then begin
+    //1 aPlayer.ids chi fa il pressing
+    aPlayer := MyBrain.GetSoccerPlayer(ts[1]);
+    SE_GridDicewriterow ( aplayer.Team,  UpperCase( Translate ( 'skill_Pressing')),  aplayer.surname,  aPlayer.ids , ''  , '' );
+    SE_GridDicewriterow ( MyBrain.ball.player.Team,  UpperCase( Translate ( 'attribute_Ball.Control')),  MyBrain.ball.player.surname,  MyBrain.ball.player.ids , '-2'  , '' );
+
+  end
+  else if ts[0] = 'cl_protection' then begin
+    SE_GridDicewriterow ( MyBrain.ball.player.Team,  UpperCase( Translate ( 'skill_Protection')),  MyBrain.ball.player.surname,  MyBrain.ball.player.ids , ''  , '' );
+    SE_GridDicewriterow ( MyBrain.ball.player.Team,  UpperCase( Translate ( 'attribute_Ball.Control')),  MyBrain.ball.player.surname,  MyBrain.ball.player.ids , '+2'  , '' );
+  end
   else if ts[0] = 'cl_mtbshowroll' then begin
     //1 aPlayer.ids
     //2 Roll Totale
@@ -6673,10 +6693,8 @@ begin
      // sono veramente già swappati quindi la sefield è di aplayer2 , quello che verrà sostituito
 
      SE_GridDicewriterow ( aplayer.Team, Translate('lbl_Substitution'),  aplayer.surname,  aplayer2.surname , 'FAULT','');
-     InOutBitmap:= SE_Bitmap.Create ( InOutBitmap );
      aSeField := SE_field.FindSprite( IntToStr(aPlayer2.CellX )+ '.' + IntToStr(aPlayer2.CellY ) );
      seSprite:= SE_interface.CreateSprite(InOutBitmap.BITMAP ,'inout',1,1,10,aSEField.Position.X, aSEField.Position.Y,true  );
-     InOutBitmap.Free;
      seSprite.LifeSpan := ShowFaultLifeSpan;
 
 

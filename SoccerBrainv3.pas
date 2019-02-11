@@ -4,13 +4,13 @@
 //{$DEFINE  SetCornergol}
 //{$DEFINE  SetAlwaysGol}
 //{$DEFINE  Setposprscorner}
-//{$DEFINE ADDITIONAL_MATCHINFO}
+{$DEFINE ADDITIONAL_MATCHINFO}
 unit SoccerBrainv3;
 
 // bug importanti
    { TODO  : testare offside su crossing e lastman }
     { TODO : ischeatingball è  da rifare }
-    { TODO : bug abs4, qualche volta va a vuot oe scade il tempo }
+    { TODO : bug abs4, qualche volta va a vuoto e scade il tempo }
 // bug minori
    { TODO creare più formazioni , forse bug nella fatigue }
    { TODO  : cmd_login = 0 cmd_plm=101. tutti i validate semplificati. da valutare. ordinrali per performance }
@@ -19,8 +19,8 @@ unit SoccerBrainv3;
 // futuro
 
    { TODO  : Gameplay: Valutare se Pos (tiro potente) può innescare autogol }
-   { TODO valutare aggiiunta talento agression e talento buff reparto }
-   { TODO  : espandere gameplaye con nazionali }
+   { TODO valutare aggiunta talento aggression e talento buff reparto }
+   { TODO  : espandere gameplay con nazionali }
 
 interface
 uses DSE_theater, DSE_Random, DSE_PathPlanner, DSE_list, DSE_MISC,
@@ -251,7 +251,6 @@ TSoccerPlayer = class
     brain: TSoccerBrain;
     fAttributes: Shortstring;
     fDefaultAttributes: Shortstring;
-    fDefaultTalents: Shortstring;
     fGameOver: boolean;
     function GetCells : TPoint ;
     procedure SetCells ( v: TPoint );
@@ -635,9 +634,7 @@ end;
           procedure GetGoAheadCells ( aList:TList<TAimidChance> );
           function Tv2AiField ( Team, tvX,tvY: integer ): TPoint;
           function AiField2TV ( Team, aiX,aiY: integer ): TPoint;
-      function ai_check_shpCell ( Team: Integer ): TAIMidChance;
-          procedure GetShpCells ( aList:TList<TAimidChance>; backLimit: integer );
-
+      
 
 
       procedure CalculateChance  ( A, B: integer; var chanceA, chanceB: integer);
@@ -680,7 +677,6 @@ end;
     // CROSS
     function GetFriendInCrossingArea ( const aPlayer: TSoccerPlayer ) : boolean;
     function GetCrossOpponent ( aPlayer:TSoccerPlayer ): TSoccerPlayer;
-    function GetCrossBounceCell ( StartX, StartY: integer ): TPoint;
 
 
     function GetSoccerPlayer (X,Y: integer): TSoccerPlayer;overload;
@@ -1588,6 +1584,11 @@ begin
   // check se 1dir
   if aPath.Count > 1 then begin   // la partenza c'è ancora
 
+    MoveModeX := Xnone;
+    MoveModeY := Ynone;
+    MoveModeX2 := Xnone;
+    MoveModeY2 := Ynone;
+
     // se ho la prima direzione
     if aPath[0].X < aPath[1].X then
       MoveModeX := LeftToRight
@@ -1958,6 +1959,10 @@ begin
         end;
 
 
+        MoveModeX := Xnone;
+        MoveModeY := Ynone;
+        MoveModeX2 := Xnone;
+        MoveModeY2 := Ynone;
 
         if (OneDir <> EveryDirection ) and (AStar.Path.Count > 1) then begin   // la partenza c'è ancora
 
@@ -2129,7 +2134,7 @@ begin
 end;
 procedure TSoccerBrain.SwapDefaultPlayers (PlayerA, PlayerB: TsoccerPlayer);
 var
-  tmp,aPoint: TPoint;
+  tmp: TPoint;
 begin
   //ricavo anche le formation_x e Y e role
   tmp := Point (PlayerA.DefaultCellX, PlayerA.DefaultCellY);
@@ -3450,6 +3455,8 @@ var
   aPlayer: TSoccerPlayer;
 begin
   aPath.Clear ;
+  MoveModeX := xNone;
+  MoveModeY := yNone;
 
   if StartX < Tox then
     MoveModeX := LeftToRight
@@ -3642,93 +3649,6 @@ NoCorner1:
       end;
   end;
 end;
-function TSoccerBrain.GetCrossBounceCell ( StartX, StartY: integer ): TPoint;
-var
-  acellList: Tlist<TPoint>;
-  aPoint: Tpoint;
-
-begin
-  // in base a dove si trova ottiene una cella random tra quelle previste. Le celle sono fisse
-  // StartX e StartY sono le coords dell'Opponent che ha respinto la palla
-   { OLDTODO : fixare cross solo in certe celle }
-    case StartY of
-      1..2: begin
-          if StartX = 1 then begin  // ha crossato da X,Y =1,0
-
-            aPoint.X := 1; aPoint.Y := StartY-1;  // torna a chi crossa
-            aCellList.add(aPoint);
-            aPoint.X := 2; aPoint.Y := StartY-1; // a destra di chi crossa
-            aCellList.add(aPoint);
-            aPoint.X := 2; aPoint.Y := StartY; // a destra di chi crossa in diagonale
-            aCellList.add(aPoint);
-            aPoint.X := 1; aPoint.Y := StartY; // rimane al difensore
-            aCellList.add(aPoint);
-            aPoint.X := 0; aPoint.Y := StartY-1; // corner
-            aCellList.add(aPoint);
-            aPoint.X := 0; aPoint.Y := StartY; // corner
-            aCellList.add(aPoint);
-
-            Result := aCellList [RndGenerate0 ( AcellList.Count )];
-
-          end
-          else if StartX = 10 then begin  // ha crossato da X,Y =10,0
-
-            aPoint.X := 10; aPoint.Y := StartY;  // torna a chi crossa
-            aCellList.add(aPoint);
-            aPoint.X := 9; aPoint.Y := StartY; // a sinistra di chi crossa
-            aCellList.add(aPoint);
-            aPoint.X := 9; aPoint.Y := StartY-1; // a sinistra di chi crossa in diagonale
-            aCellList.add(aPoint);
-            aPoint.X := 10; aPoint.Y := StartY-1; // rimane al difensore
-            aCellList.add(aPoint);
-            aPoint.X := 11; aPoint.Y := StartY-1; // corner
-            aCellList.add(aPoint);
-            aPoint.X := 11; aPoint.Y := StartY; // corner
-            aCellList.add(aPoint);
-
-            Result := aCellList [RndGenerate0 ( AcellList.Count )];
-          end;
-         end;
-      5..6: begin
-          if StartX = 1 then begin // ha crossato da X,Y = 1,6 o 2,6
-
-            aPoint.X := 1; aPoint.Y := StartY;  // torna a chi crossa
-            aCellList.add(aPoint);
-            aPoint.X := 2; aPoint.Y := StartY; // a destra di chi crossa
-            aCellList.add(aPoint);
-            aPoint.X := 2; aPoint.Y := StartY-1; // a destra di chi crossa in diagonale
-            aCellList.add(aPoint);
-            aPoint.X := 1; aPoint.Y := StartY-1; // rimane al difensore
-            aCellList.add(aPoint);
-            aPoint.X := 0; aPoint.Y := StartY-1; // corner
-            aCellList.add(aPoint);
-            aPoint.X := 0; aPoint.Y := StartY; // corner
-            aCellList.add(aPoint);
-
-            Result := aCellList [RndGenerate0 ( AcellList.Count )];
-
-          end
-          else if StartX = 10 then begin  // ha crossato da X,Y = 10,6 o 19,5
-
-            aPoint.X := 10; aPoint.Y := StartY;  // torna a chi crossa
-            aCellList.add(aPoint);
-            aPoint.X := 9; aPoint.Y := StartY; // a sinistra di chi crossa
-            aCellList.add(aPoint);
-            aPoint.X := 9; aPoint.Y := StartY-1; // a sinistra di chi crossa in diagonale
-            aCellList.add(aPoint);
-            aPoint.X := 10; aPoint.Y := StartY-1; // rimane al difensore
-            aCellList.add(aPoint);
-            aPoint.X := 11; aPoint.Y := StartY; // corner
-            aCellList.add(aPoint);
-            aPoint.X := 11; aPoint.Y := StartY-1; // corner
-            aCellList.add(aPoint);
-
-            Result := aCellList [RndGenerate0 ( AcellList.Count )];
-          end;
-         end;
-    end;
-
-end;
 function TSoccerBrain.GetBounceCell ( StartX, StartY, ToX, ToY, Speed: integer; favourTeam : integer): TPoint;
 var
   MoveModeX: TMoveModeX;
@@ -3910,7 +3830,7 @@ function TSoccerBrain.GetRandomCellNO06 ( CellX, CellY, Speed: integer  ): Tpoin
 var
   acellList: Tlist<TPoint>;
   aPoint: Tpoint;
-  i,x,y,aRnd: integer;
+  x,y,aRnd: integer;
 begin
 
   result.x := -1;
@@ -4052,7 +3972,6 @@ begin
 end;
 procedure TSoccerBrain.GetFavourCellPath ( aSoccerPlayer: TSoccerPlayer; X2, Y2: integer );
 var
-  aSearchMap : TSearchableMap;
   acellList: Tlist<TPoint>;
   aPoint: Tpoint;
   label exitpath;
@@ -5112,8 +5031,6 @@ begin
 
 end;
 procedure TSoccerbrain.SetMinute ( const Value: byte );
-var
-  P: integer;
 begin
 
    FMinute := value;
@@ -9212,7 +9129,7 @@ begin
                   PutInReserveSlot ( aPlayer );
                   MatchInfo.Add( IntToStr(fminute) + '.redcard.' + aPlayer.ids);
               end
-              else begin   // cartellino giallo
+              else  begin   // cartellino giallo
               // calcolo doppia ammonizione
                   TsScript.add ('sc_yellow,' + aPlayer.ids ) ;
                   aPlayer.YellowCard :=  aPlayer.YellowCard + 1;
@@ -10722,7 +10639,7 @@ function TSoccerbrain.AI_Think_sub ( team: Integer; anOutPlayer:TSoccerPlayer; S
 var
   ids: string;
 begin
-  result := None;
+
   if CanDoSub ( Team ) then begin  //not gk
 
     if( AbsDistance(anOutPlayer.CellX, anOutPlayer.CellY,Ball.CellX ,Ball.celly) < 4) then begin
@@ -11036,7 +10953,6 @@ var
   aRnd,Cks:integer;
 begin
   // ci deve sempre essere EXIT.
-  result := None;
 
   if CanDoSub ( Team ) then begin  //not gk
     // check injured player
@@ -11364,7 +11280,7 @@ lopfkf1:
 end;
 procedure TSoccerbrain.AI_Think_myball_iDefend ( Team: integer );
 var
-  ShpOrLopOrPlm,MoveValue: Integer;
+  ShpOrLopOrPlm: Integer;
 //  aList: TList<TAimidChance>;
   dstCell: TPoint;
   aDoor,aPlmCell: TPoint;
@@ -11411,8 +11327,8 @@ begin
             aDoor:= GetOpponentDoor(ball.Player);
             if aDoor.X = 0 then aDoor.X:= 1 else // il fondo
             if aDoor.X = 11 then aDoor.X:= 10; // il fondo
-                 MoveValue := ball.player.speed-1;
-                 if MoveValue <=0 then MoveValue := 1;
+                // MoveValue := ball.player.speed-1;
+                // if MoveValue <=0 then MoveValue := 1;
             aplmCell:= GetDummyMaxAcceleration (AccSelfY );
             if aplmCell.X <> -1 then begin
                 BrainInput  ( IntTostr(score.TeamGuid [team]) + ',' +'PLM,' + ball.Player.Ids +',' + IntToStr(aplmCell.X) +','+ IntToStr(aplmCell.Y));
@@ -11525,7 +11441,7 @@ end;
 procedure TSoccerbrain.AI_Think_myball_middle ( Team: integer  );
 var
   dstCell: TPoint;
-  ShpOrLopOrPlm,ShotCellsOrBottom,MoveValue,aRnd: Integer;
+  ShpOrLopOrPlm,ShotCellsOrBottom,aRnd: Integer;
   aDoor,aPlmCell,aplmCell2: TPoint;
   aSol: TBetterSolution;
   label lopdef,lopatt,plmmoveatt,normalversion;
@@ -11571,7 +11487,7 @@ begin
 
     if  ShotCellsOrBottom = 50 then begin
      aRnd :=rndgenerate (100);
-     case ShotCellsOrBottom of
+     case aRnd of
           1..50: begin
             BrainInput  ( IntTostr(score.TeamGuid [team]) + ',' +'PLM,' + ball.Player.Ids +',' + IntToStr(aplmCell.X) +','+ IntToStr(aplmCell.Y));
             exit;
@@ -11609,8 +11525,8 @@ normalversion:
             if aDoor.X = 0 then aDoor.X:= 1 else // il fondo
             if aDoor.X = 11 then aDoor.X:= 10; // il fondo
 
-                 MoveValue := ball.player.speed-1;
-                 if MoveValue <=0 then MoveValue := 1;
+//                 MoveValue := ball.player.speed-1;
+//                 if MoveValue <=0 then MoveValue := 1;
             // cerco una massima accelerazione. se non la trovo cerco un path verso la porta
             aplmCell:= GetDummyMaxAcceleration (AccSelfY );
             if aplmCell.X <> -1 then begin
@@ -11680,8 +11596,8 @@ plmmoveatt:
             aDoor:= GetOpponentDoor(ball.Player);
             if aDoor.X = 0 then aDoor.X:= 1 else // il fondo
             if aDoor.X = 11 then aDoor.X:= 10; // il fondo
-                 MoveValue := ball.player.speed-1;
-                 if MoveValue <=0 then MoveValue := 1;
+              //   MoveValue := ball.player.speed-1;
+              //   if MoveValue <=0 then MoveValue := 1;
 
             // cerco una massima accelerazione. se non la trovo cerco un path verso la porta
             aplmCell:= GetDummyMaxAcceleration(AccSelfY );
@@ -12287,235 +12203,6 @@ begin
 end;
 
 
-function TSoccerbrain.ai_check_shpCell ( Team: Integer ): TAIMidChance;
-var
-  aList: TList<TAimidChance>;
-  pick : TAimidChance;
-begin
-  Result.Chance := -1;
-  Result.inputAI := 'PASS,' + IntTostr (Team);
-  // non è posibile muoversi di 2 o più celle
-  if (Ball.Player.Speed -1 <=1) or ( not ball.Player.CanMove ) then begin
-    Exit;
-  end;
-
-  // cerco i possibili shp su cell vuote con compagni a -1 distanza
-  // ritorno una lista di celle a distanza short.passsing + tal_longpass . cerco player al massimo -1 da me fino davanti
-  // per ognuna calcolo il rischio in base alla speed degli avversari. -1 se perdo per forza
-  aList:= TList<TAimidChance>.Create;
-  GetShpCells ( aList, -1 ); // al massimo 1 dietro
- // sort
-//  aList.Sort
-    if aList.Count > 0 then begin
-      aList.sort(TComparer<TAimidChance>.Construct(
-      function (const L, R: TAimidChance): integer
-      begin
-        Result := R.Chance  - L.chance;
-      end
-     ));
-    end;
- // chance maggiore o rnd a parità o rnd tra le prime (2 o più) se il divario non è enorme
- // qui entra in gioco la mentalità del trainer
-  // scelgo
-  if aList.count > 0 then begin
-   pick := aList[0];
-    Result.X := pick.X;
-    Result.Y := pick.Y;
-    Result.Chance := pick.Chance;
-    Result.inputAI := pick.inputAI ;
-  end;
-  aList.Free;
-
-end;
-// cerca possibili shp a seguire cercando un compagno che la possa raggiungere
-procedure TSoccerbrain.GetShpCells ( aList:TList<TAimidChance>; backLimit: integer );
-var
-  i,NewX,NewY,P,t,chanceA,chanceB,lastChance: Integer;
-  AICell,TvCell: TPoint;
-  aMidChance: TAimidChance;
-  LstAutoTackle: TList<TInteractivePlayer>;
-begin
-
-  i:=2;
-  while i <= (Ball.player.speed -1) do begin
-
-    AICell := Tv2AiField (Ball.player.Team, Ball.player.CellX,Ball.player.CellY ) ;
-    // cerco ogni compagno dietro di me -1 (backlimit) fino al massimo di shp+talpassing e ottengo una lista
-    newX:= AICell.X -i;
-    newY:= AICell.Y -i;
-    if (NewX > 0) and (NewY > 0) then begin
-
-     // recupero la nuova TvCell
-      TvCell := AiField [ Ball.player.Team, NewX, NewY ];
-      // cerco nel path TV
-      GetPath (Ball.Player.Team , Ball.Player.CellX , Ball.Player.CellY, TvCell.X, TvCell.Y,I{Limit},false{useFlank},true{FriendlyWall},
-                         true{OpponentWall},true{FinalWall},TruncOneDir{OneDir}, Ball.Player.MovePath );
-
-      // se il path esiste aggiungo la cella alle possibilità in cui spostarsi di 2+
-      if Ball.Player.MovePath.Count = I then begin
-        // Ball.Player.MovePath è in TVmode
-        aMidChance.X := newX;
-        aMidChance.Y := newY;
-        ball.Player.tmp := 0;
-        if ball.Player.TalentId = TALENT_ID_TOUGHNESS then
-          ball.Player.tmp :=  1 ;
-
-        //per ognuna delle celle ottengo la chance sugli autotackle, per esempio a distanza 2 chance 70, a distanza 3 chance 30
-        LstAutoTackle:= TList<TInteractivePlayer>.create;
-        { OLTODO: da rifare tutta la routine, cerco non autotackle ma intercept }
-        CompileAutoTackleList(Ball.player.Team, 1, Ball.Player.MovePath, lstAutoTackle);
-          for P:= 0 to Ball.Player.MovePath.Count - 1 do begin
-
-            if P < Ball.Player.MovePath.Count -1 then begin         // <-- autotackle non si aziona sulla FinalCell
-            lastChance:= 100;
-            for t := 0 to LstAutoTackle.Count -1 do begin
-
-                if (LstAutoTackle[t].Cell.X = Ball.Player.MovePath[p].X) and (LstAutoTackle[t].Cell.Y = Ball.Player.MovePath[p].Y) then begin // se la cella lo riguarda. questo fa la giusta animazione
-                  LstAutoTackle[t].Player.tmp := 0;
-                  if LstAutoTackle[t].Player.TalentId = TALENT_ID_CHALLENGE then
-                  LstAutoTackle[t].Player.tmp :=  1 ;
-
-
-                    CalculateChance  (Ball.player.Defense  + ball.Player.tmp  , LstAutoTackle[t].Player.Defense
-                    + LstAutoTackle[t].Player.tmp + Modifier_autotackle , chanceA,chanceB);
-                    // esempio chanceA 37, poi chanceA 65. prendo il valore più basso di chance di riuscita
-                    if chanceA < lastChance  then lastChance:= chanceA;    { QUI bug, forse devo prende il valore più alto di chance }
-                end;                         // la chance di riuscita di me , non del difensore
-              end;
-            end;
-          end;
-
-          LstAutoTackle.Free;
-
-        // ottengo una media e la storo
-        aMidChance.Chance := lastChance;
-        aMidChance.inputAI := 'PLM,' + ball.Player.Ids +',' + IntToStr(Ball.Player.MovePath[I-1].X) +','+ IntToStr(Ball.Player.MovePath[I-1].Y);
-        aList.Add(aMidChance);
-
-      end;
-
-    end;
-
-
-    newX:= AICell.X;
-    newY:= AICell.Y -i;
-    // ragiono in aifield cerco le celle in linea con me che porto palla
-    if (NewY > 0) then begin
-
-     // recupero la nuova TvCell
-      TvCell := AiField [ Ball.player.Team, NewX, NewY ];
-      // cerco nel path TV
-      GetPath (Ball.Player.Team , Ball.Player.CellX , Ball.Player.CellY, TvCell.X, TvCell.Y,I{Limit},false{useFlank},true{FriendlyWall},
-                         true{OpponentWall},true{FinalWall},TruncOneDir{OneDir}, Ball.Player.MovePath );
-
-      // se il path esiste aggiungo la cella alle possibilità in cui spostarsi di 2+
-      if Ball.Player.MovePath.Count = I then begin
-        // Ball.Player.MovePath è in TVmode
-        aMidChance.X := newX;
-        aMidChance.Y := newY;
-        ball.Player.tmp := 0;
-        if ball.Player.TalentId = TALENT_ID_TOUGHNESS then
-          ball.Player.tmp :=  1 ;
-
-        //per ognuna delle celle ottengo la chance sugli autotackle, per esempio a distanza 2 chance 70, a distanza 3 chance 30
-        LstAutoTackle:= TList<TInteractivePlayer>.create;
-
-        CompileAutoTackleList(Ball.player.Team, 1, Ball.Player.MovePath, lstAutoTackle);
-          for P:= 0 to Ball.Player.MovePath.Count - 1 do begin
-
-            if P < Ball.Player.MovePath.Count -1 then begin         // <-- autotackle non si aziona sulla FinalCell
-            lastChance:= 100;
-            for t := 0 to LstAutoTackle.Count -1 do begin
-
-                if (LstAutoTackle[t].Cell.X = Ball.Player.MovePath[p].X) and (LstAutoTackle[t].Cell.Y = Ball.Player.MovePath[p].Y) then begin // se la cella lo riguarda. questo fa la giusta animazione
-                  LstAutoTackle[t].Player.tmp := 0;
-                  if LstAutoTackle[t].Player.TalentId = TALENT_ID_CHALLENGE then
-                  LstAutoTackle[t].Player.tmp :=  1 ;
-
-                    CalculateChance  (Ball.player.Defense  +Ball.player.tmp  , LstAutoTackle[t].Player.Defense
-                    + LstAutoTackle[t].Player.tmp + Modifier_autotackle , chanceA,chanceB);
-                    // esempio chanceA 37, poi chanceA 65. prendo il valore più basso di chance di riuscita
-                    if chanceA < lastChance  then lastChance:= chanceA;
-                end;
-              end;
-            end;
-          end;
-
-          LstAutoTackle.Free;
-
-        // ottengo una media e la storo
-        aMidChance.Chance := lastChance;
-        aMidChance.inputAI := 'PLM,' + ball.Player.Ids +',' + IntToStr(Ball.Player.MovePath[I-1].X) +','+ IntToStr(Ball.Player.MovePath[I-1].Y);
-        aList.Add(aMidChance);
-
-      end;
-
-    end;
-
-
-
-    newX:= AICell.X +i;
-    newY:= AICell.Y -i;
-    // ragiono in aifield
-    if (NewX < 7) and (NewY > 0) then begin
-
-     // recupero la nuova TvCell
-      TvCell := AiField [ Ball.player.Team, NewX, NewY ];
-      // cerco nel path TV
-      GetPath (Ball.Player.Team , Ball.Player.CellX , Ball.Player.CellY, TvCell.X, TvCell.Y,I{Limit},false{useFlank},true{FriendlyWall},
-                         true{OpponentWall},true{FinalWall},TruncOneDir{OneDir}, Ball.Player.MovePath );
-
-      // se il path esiste aggiungo la cella alle possibilità in cui spostarsi di 2+
-      if Ball.Player.MovePath.Count = I then begin
-        // Ball.Player.MovePath è in TVmode
-        aMidChance.X := newX;
-        aMidChance.Y := newY;
-        ball.Player.tmp := 0;
-        if ball.Player.TalentId = TALENT_ID_TOUGHNESS then
-          ball.Player.tmp :=  1 ;
-
-        //per ognuna delle celle ottengo la chance sugli autotackle, per esempio a distanza 2 chance 70, a distanza 3 chance 30
-        LstAutoTackle:= TList<TInteractivePlayer>.create;
-
-        CompileAutoTackleList(Ball.player.Team, 1, Ball.Player.MovePath, lstAutoTackle);
-          for P:= 0 to Ball.Player.MovePath.Count - 1 do begin
-
-            if P < Ball.Player.MovePath.Count -1 then begin         // <-- autotackle non si aziona sulla FinalCell
-            lastChance:= 100;
-            for t := 0 to LstAutoTackle.Count -1 do begin
-
-                if (LstAutoTackle[t].Cell.X = Ball.Player.MovePath[p].X) and (LstAutoTackle[t].Cell.Y = Ball.Player.MovePath[p].Y) then begin // se la cella lo riguarda. questo fa la giusta animazione
-                  LstAutoTackle[t].Player.tmp := 0;
-                  if LstAutoTackle[t].Player.TalentId = TALENT_ID_CHALLENGE then
-                  LstAutoTackle[t].Player.tmp :=  1 ;
-
-                    CalculateChance  (Ball.player.Defense  + Ball.player.tmp  , LstAutoTackle[t].Player.Defense
-                    + LstAutoTackle[t].Player.tmp + Modifier_autotackle , chanceA,chanceB);
-                    // esempio chanceA 37, poi chanceA 65. prendo il valore più basso di chance di riuscita
-                    if chanceA < lastChance  then lastChance:= chanceA;
-                end;
-              end;
-            end;
-          end;
-
-          LstAutoTackle.Free;
-
-        // ottengo una media e la storo
-        aMidChance.Chance := lastChance;
-        aMidChance.inputAI := 'PLM,' + ball.Player.Ids +',' + IntToStr(Ball.Player.MovePath[I-1].X) +','+ IntToStr(Ball.Player.MovePath[I-1].Y);
-        aList.Add(aMidChance);
-
-      end;
-
-    end;
-
-
-
-    Inc(i);
-
-  end;
-
-end;
 
 
 function TSoccerbrain.GetDummyLopCellXY : Tpoint;
@@ -12665,7 +12352,6 @@ function TSoccerbrain.GetDummyCrossFriend ( aPlayer: TSoccerPlayer ): TSoccerPla
 var
   p,MaxDistance: integer;
   aFriend: TSoccerPlayer;
-  AICell,TvCell,dstCell: TPoint;
   aList: TObjectList<TSoccerPlayer>;
 
 begin
@@ -12882,10 +12568,9 @@ begin
           //prima provo un path alla massima speed che possa raggiungere effettivamente la palla o almeno una distanza 1
       for I := lstSoccerPlayer.Count -1 downto 0 do begin
         aPlayer :=  lstSoccerPlayer[i];
-        if not aPlayer.canSkill then continue;
-        if not aPlayer.canMove then continue;
+        if ( not aPlayer.canSkill ) or ( not aPlayer.canMove ) or (aPlayer.TalentId = 1) then continue;
 
-        if (aPlayer.CanMove ) and (aPlayer.Role <> 'G') and ( not aPlayer.HasBall) and ( aPlayer.Team = team ) then begin
+        if ( not aPlayer.HasBall) and ( aPlayer.Team = team ) then begin
 
 
             // se la palla è libera FinalWall è false quindi uso la massima speed  .
@@ -12914,14 +12599,14 @@ begin
 
             if aPlayer.MovePath.Count > 0 then begin
                 aListToBalldist1.Add(aPlayer);
-              end;
             end;
           end;
+        end;
       end;
 
       if aListToBall.Count > 0  then begin   // ogni player ha il suo MovePath
         aRnd := RndGenerate0(aListToBall.Count -1);
-        BrainInput( IntTostr(score.TeamGuid [ aPlayer.team]) + ',' + 'PLM,' + aListToBall[aRnd].ids + ',' + IntToStr(aListToBall[aRnd].MovePath[aListToBall[aRnd].MovePath.Count-1].X) +
+        BrainInput( IntTostr(score.TeamGuid [ team ]) + ',' + 'PLM,' + aListToBall[aRnd].ids + ',' + IntToStr(aListToBall[aRnd].MovePath[aListToBall[aRnd].MovePath.Count-1].X) +
          ',' + IntToStr(aListToBall[aRnd].MovePath[aListToBall[aRnd].MovePath.Count-1].Y  ) );
       end
       else if aListToBalldist1.Count > 0 then begin
@@ -13036,11 +12721,12 @@ begin
         //per ognuna delle celle ottengo la chance sugli autotackle, per esempio a distanza 2 chance 70, a distanza 3 chance 30
         LstAutoTackle:= TList<TInteractivePlayer>.create;
 
+        lastChance:= 100;
         CompileAutoTackleList(Ball.player.Team, 1, Ball.Player.MovePath, lstAutoTackle);
           for P:= 0 to Ball.Player.MovePath.Count - 1 do begin
 
             if P < Ball.Player.MovePath.Count -1 then begin         // <-- autotackle non si aziona sulla FinalCell
-            lastChance:= 100;
+//            lastChance:= 100;
             for t := 0 to LstAutoTackle.Count -1 do begin
 
                 if (LstAutoTackle[t].Cell.X = Ball.Player.MovePath[p].X) and (LstAutoTackle[t].Cell.Y = Ball.Player.MovePath[p].Y) then begin // se la cella lo riguarda. questo fa la giusta animazione
@@ -13092,11 +12778,12 @@ begin
         //per ognuna delle celle ottengo la chance sugli autotackle, per esempio a distanza 2 chance 70, a distanza 3 chance 30
         LstAutoTackle:= TList<TInteractivePlayer>.create;
 
+        lastChance:= 100;
         CompileAutoTackleList(Ball.player.Team, 1, Ball.Player.MovePath, lstAutoTackle);
           for P:= 0 to Ball.Player.MovePath.Count - 1 do begin
 
             if P < Ball.Player.MovePath.Count -1 then begin         // <-- autotackle non si aziona sulla FinalCell
-            lastChance:= 100;
+//            lastChance:= 100;
             for t := 0 to LstAutoTackle.Count -1 do begin
 
                 if (LstAutoTackle[t].Cell.X = Ball.Player.MovePath[p].X) and (LstAutoTackle[t].Cell.Y = Ball.Player.MovePath[p].Y) then begin // se la cella lo riguarda. questo fa la giusta animazione
@@ -13149,11 +12836,12 @@ begin
         //per ognuna delle celle ottengo la chance sugli autotackle, per esempio a distanza 2 chance 70, a distanza 3 chance 30
         LstAutoTackle:= TList<TInteractivePlayer>.create;
 
+        lastChance:= 100;
         CompileAutoTackleList(Ball.player.Team, 1, Ball.Player.MovePath, lstAutoTackle);
           for P:= 0 to Ball.Player.MovePath.Count - 1 do begin
 
             if P < Ball.Player.MovePath.Count -1 then begin         // <-- autotackle non si aziona sulla FinalCell
-            lastChance:= 100;
+//            lastChance:= 100;
             for t := 0 to LstAutoTackle.Count -1 do begin
 
                 if (LstAutoTackle[t].Cell.X = Ball.Player.MovePath[p].X) and (LstAutoTackle[t].Cell.Y = Ball.Player.MovePath[p].Y) then begin // se la cella lo riguarda. questo fa la giusta animazione
@@ -13306,7 +12994,6 @@ begin
 end;
 function TSoccerbrain.GetDummyMaxAccelerationShotCells ( OnlyBuffed: boolean ): TPoint;
 var
-  P: Integer;
   aList: TList<TPoint>;
   aRnd,iSpeed:Integer;
   i,dist: Integer;
@@ -13369,7 +13056,6 @@ begin
 end;
 function TSoccerbrain.GetDummyGoAheadCell : Tpoint; // il player con la palla cerca di avanzare
 var
-  i: Integer;
   aList: TList<TAICells>;
   aRnd,iSpeed:Integer;
   x,y: Integer;
@@ -15259,6 +14945,7 @@ begin
 end;
 function TSoccerbrain.GetCrossDefenseBonus (aPlayer: TsoccerPlayer; CellX, CellY: integer ): integer;
 begin
+
   if aPlayer.cellX = CellX then begin
     Result := -1;  {  era 0 }
     exit;
@@ -15409,7 +15096,327 @@ begin
 
   end;
 
-end;   }
+end;
+function TSoccerBrain.GetCrossBounceCell ( StartX, StartY: integer ): TPoint;
+var
+  acellList: Tlist<TPoint>;
+  aPoint: Tpoint;
+
+begin
+  // in base a dove si trova ottiene una cella random tra quelle previste. Le celle sono fisse
+  // StartX e StartY sono le coords dell'Opponent che ha respinto la palla
+    case StartY of
+      1..2: begin
+          if StartX = 1 then begin  // ha crossato da X,Y =1,0
+
+            aPoint.X := 1; aPoint.Y := StartY-1;  // torna a chi crossa
+            aCellList.add(aPoint);
+            aPoint.X := 2; aPoint.Y := StartY-1; // a destra di chi crossa
+            aCellList.add(aPoint);
+            aPoint.X := 2; aPoint.Y := StartY; // a destra di chi crossa in diagonale
+            aCellList.add(aPoint);
+            aPoint.X := 1; aPoint.Y := StartY; // rimane al difensore
+            aCellList.add(aPoint);
+            aPoint.X := 0; aPoint.Y := StartY-1; // corner
+            aCellList.add(aPoint);
+            aPoint.X := 0; aPoint.Y := StartY; // corner
+            aCellList.add(aPoint);
+
+            Result := aCellList [RndGenerate0 ( AcellList.Count )];
+
+          end
+          else if StartX = 10 then begin  // ha crossato da X,Y =10,0
+
+            aPoint.X := 10; aPoint.Y := StartY;  // torna a chi crossa
+            aCellList.add(aPoint);
+            aPoint.X := 9; aPoint.Y := StartY; // a sinistra di chi crossa
+            aCellList.add(aPoint);
+            aPoint.X := 9; aPoint.Y := StartY-1; // a sinistra di chi crossa in diagonale
+            aCellList.add(aPoint);
+            aPoint.X := 10; aPoint.Y := StartY-1; // rimane al difensore
+            aCellList.add(aPoint);
+            aPoint.X := 11; aPoint.Y := StartY-1; // corner
+            aCellList.add(aPoint);
+            aPoint.X := 11; aPoint.Y := StartY; // corner
+            aCellList.add(aPoint);
+
+            Result := aCellList [RndGenerate0 ( AcellList.Count )];
+          end;
+         end;
+      5..6: begin
+          if StartX = 1 then begin // ha crossato da X,Y = 1,6 o 2,6
+
+            aPoint.X := 1; aPoint.Y := StartY;  // torna a chi crossa
+            aCellList.add(aPoint);
+            aPoint.X := 2; aPoint.Y := StartY; // a destra di chi crossa
+            aCellList.add(aPoint);
+            aPoint.X := 2; aPoint.Y := StartY-1; // a destra di chi crossa in diagonale
+            aCellList.add(aPoint);
+            aPoint.X := 1; aPoint.Y := StartY-1; // rimane al difensore
+            aCellList.add(aPoint);
+            aPoint.X := 0; aPoint.Y := StartY-1; // corner
+            aCellList.add(aPoint);
+            aPoint.X := 0; aPoint.Y := StartY; // corner
+            aCellList.add(aPoint);
+
+            Result := aCellList [RndGenerate0 ( AcellList.Count )];
+
+          end
+          else if StartX = 10 then begin  // ha crossato da X,Y = 10,6 o 19,5
+
+            aPoint.X := 10; aPoint.Y := StartY;  // torna a chi crossa
+            aCellList.add(aPoint);
+            aPoint.X := 9; aPoint.Y := StartY; // a sinistra di chi crossa
+            aCellList.add(aPoint);
+            aPoint.X := 9; aPoint.Y := StartY-1; // a sinistra di chi crossa in diagonale
+            aCellList.add(aPoint);
+            aPoint.X := 10; aPoint.Y := StartY-1; // rimane al difensore
+            aCellList.add(aPoint);
+            aPoint.X := 11; aPoint.Y := StartY; // corner
+            aCellList.add(aPoint);
+            aPoint.X := 11; aPoint.Y := StartY-1; // corner
+            aCellList.add(aPoint);
+
+            Result := aCellList [RndGenerate0 ( AcellList.Count )];
+          end;
+         end;
+    end;
+
+end;
+function TSoccerbrain.ai_check_shpCell ( Team: Integer ): TAIMidChance;
+var
+  aList: TList<TAimidChance>;
+  pick : TAimidChance;
+begin
+  Result.Chance := -1;
+  Result.inputAI := 'PASS,' + IntTostr (Team);
+  // non è posibile muoversi di 2 o più celle
+  if (Ball.Player.Speed -1 <=1) or ( not ball.Player.CanMove ) then begin
+    Exit;
+  end;
+
+  // cerco i possibili shp su cell vuote con compagni a -1 distanza
+  // ritorno una lista di celle a distanza short.passsing + tal_longpass . cerco player al massimo -1 da me fino davanti
+  // per ognuna calcolo il rischio in base alla speed degli avversari. -1 se perdo per forza
+  aList:= TList<TAimidChance>.Create;
+  GetShpCells ( aList, -1 ); // al massimo 1 dietro
+ // sort
+//  aList.Sort
+    if aList.Count > 0 then begin
+      aList.sort(TComparer<TAimidChance>.Construct(
+      function (const L, R: TAimidChance): integer
+      begin
+        Result := R.Chance  - L.chance;
+      end
+     ));
+    end;
+ // chance maggiore o rnd a parità o rnd tra le prime (2 o più) se il divario non è enorme
+ // qui entra in gioco la mentalità del trainer
+  // scelgo
+  if aList.count > 0 then begin
+   pick := aList[0];
+    Result.X := pick.X;
+    Result.Y := pick.Y;
+    Result.Chance := pick.Chance;
+    Result.inputAI := pick.inputAI ;
+  end;
+  aList.Free;
+
+end;
+// cerca possibili shp a seguire cercando un compagno che la possa raggiungere
+procedure TSoccerbrain.GetShpCells ( aList:TList<TAimidChance>; backLimit: integer );
+var
+  i,NewX,NewY,P,t,chanceA,chanceB,lastChance: Integer;
+  AICell,TvCell: TPoint;
+  aMidChance: TAimidChance;
+  LstAutoTackle: TList<TInteractivePlayer>;
+begin
+
+  i:=2;
+  while i <= (Ball.player.speed -1) do begin
+
+    AICell := Tv2AiField (Ball.player.Team, Ball.player.CellX,Ball.player.CellY ) ;
+    // cerco ogni compagno dietro di me -1 (backlimit) fino al massimo di shp+talpassing e ottengo una lista
+    newX:= AICell.X -i;
+    newY:= AICell.Y -i;
+    if (NewX > 0) and (NewY > 0) then begin
+
+     // recupero la nuova TvCell
+      TvCell := AiField [ Ball.player.Team, NewX, NewY ];
+      // cerco nel path TV
+      GetPath (Ball.Player.Team , Ball.Player.CellX , Ball.Player.CellY, TvCell.X, TvCell.Y,I,false,true,
+                         true,true,TruncOneDir, Ball.Player.MovePath );
+
+      // se il path esiste aggiungo la cella alle possibilità in cui spostarsi di 2+
+      if Ball.Player.MovePath.Count = I then begin
+        // Ball.Player.MovePath è in TVmode
+        aMidChance.X := newX;
+        aMidChance.Y := newY;
+        ball.Player.tmp := 0;
+        if ball.Player.TalentId = TALENT_ID_TOUGHNESS then
+          ball.Player.tmp :=  1 ;
+
+        //per ognuna delle celle ottengo la chance sugli autotackle, per esempio a distanza 2 chance 70, a distanza 3 chance 30
+        LstAutoTackle:= TList<TInteractivePlayer>.create;
+        // OLTODO: da rifare tutta la routine, cerco non autotackle ma intercept
+        lastChance:= 100;
+        CompileAutoTackleList(Ball.player.Team, 1, Ball.Player.MovePath, lstAutoTackle);
+          for P:= 0 to Ball.Player.MovePath.Count - 1 do begin
+
+            if P < Ball.Player.MovePath.Count -1 then begin         // <-- autotackle non si aziona sulla FinalCell
+//            lastChance:= 100;
+            for t := 0 to LstAutoTackle.Count -1 do begin
+
+                if (LstAutoTackle[t].Cell.X = Ball.Player.MovePath[p].X) and (LstAutoTackle[t].Cell.Y = Ball.Player.MovePath[p].Y) then begin // se la cella lo riguarda. questo fa la giusta animazione
+                  LstAutoTackle[t].Player.tmp := 0;
+                  if LstAutoTackle[t].Player.TalentId = TALENT_ID_CHALLENGE then
+                  LstAutoTackle[t].Player.tmp :=  1 ;
+
+
+                    CalculateChance  (Ball.player.Defense  + ball.Player.tmp  , LstAutoTackle[t].Player.Defense
+                    + LstAutoTackle[t].Player.tmp + Modifier_autotackle , chanceA,chanceB);
+                    // esempio chanceA 37, poi chanceA 65. prendo il valore più basso di chance di riuscita
+                    if chanceA < lastChance  then lastChance:= chanceA;    // QUI bug, forse devo prende il valore più alto di chance
+                end;                         // la chance di riuscita di me , non del difensore
+              end;
+            end;
+          end;
+
+          LstAutoTackle.Free;
+
+        // ottengo una media e la storo
+        aMidChance.Chance := lastChance;
+        aMidChance.inputAI := 'PLM,' + ball.Player.Ids +',' + IntToStr(Ball.Player.MovePath[I-1].X) +','+ IntToStr(Ball.Player.MovePath[I-1].Y);
+        aList.Add(aMidChance);
+
+      end;
+
+    end;
+
+
+    newX:= AICell.X;
+    newY:= AICell.Y -i;
+    // ragiono in aifield cerco le celle in linea con me che porto palla
+    if (NewY > 0) then begin
+
+     // recupero la nuova TvCell
+      TvCell := AiField [ Ball.player.Team, NewX, NewY ];
+      // cerco nel path TV
+      GetPath (Ball.Player.Team , Ball.Player.CellX , Ball.Player.CellY, TvCell.X, TvCell.Y,I,false,true,
+                         true,true,TruncOneDir, Ball.Player.MovePath );
+
+      // se il path esiste aggiungo la cella alle possibilità in cui spostarsi di 2+
+      if Ball.Player.MovePath.Count = I then begin
+        // Ball.Player.MovePath è in TVmode
+        aMidChance.X := newX;
+        aMidChance.Y := newY;
+        ball.Player.tmp := 0;
+        if ball.Player.TalentId = TALENT_ID_TOUGHNESS then
+          ball.Player.tmp :=  1 ;
+
+        //per ognuna delle celle ottengo la chance sugli autotackle, per esempio a distanza 2 chance 70, a distanza 3 chance 30
+        LstAutoTackle:= TList<TInteractivePlayer>.create;
+
+        lastChance:= 100;
+        CompileAutoTackleList(Ball.player.Team, 1, Ball.Player.MovePath, lstAutoTackle);
+          for P:= 0 to Ball.Player.MovePath.Count - 1 do begin
+
+            if P < Ball.Player.MovePath.Count -1 then begin         // <-- autotackle non si aziona sulla FinalCell
+//            lastChance:= 100;
+            for t := 0 to LstAutoTackle.Count -1 do begin
+
+                if (LstAutoTackle[t].Cell.X = Ball.Player.MovePath[p].X) and (LstAutoTackle[t].Cell.Y = Ball.Player.MovePath[p].Y) then begin // se la cella lo riguarda. questo fa la giusta animazione
+                  LstAutoTackle[t].Player.tmp := 0;
+                  if LstAutoTackle[t].Player.TalentId = TALENT_ID_CHALLENGE then
+                  LstAutoTackle[t].Player.tmp :=  1 ;
+
+                    CalculateChance  (Ball.player.Defense  +Ball.player.tmp  , LstAutoTackle[t].Player.Defense
+                    + LstAutoTackle[t].Player.tmp + Modifier_autotackle , chanceA,chanceB);
+                    // esempio chanceA 37, poi chanceA 65. prendo il valore più basso di chance di riuscita
+                    if chanceA < lastChance  then lastChance:= chanceA;
+                end;
+              end;
+            end;
+          end;
+
+          LstAutoTackle.Free;
+
+        // ottengo una media e la storo
+        aMidChance.Chance := lastChance;
+        aMidChance.inputAI := 'PLM,' + ball.Player.Ids +',' + IntToStr(Ball.Player.MovePath[I-1].X) +','+ IntToStr(Ball.Player.MovePath[I-1].Y);
+        aList.Add(aMidChance);
+
+      end;
+
+    end;
+
+
+
+    newX:= AICell.X +i;
+    newY:= AICell.Y -i;
+    // ragiono in aifield
+    if (NewX < 7) and (NewY > 0) then begin
+
+     // recupero la nuova TvCell
+      TvCell := AiField [ Ball.player.Team, NewX, NewY ];
+      // cerco nel path TV
+      GetPath (Ball.Player.Team , Ball.Player.CellX , Ball.Player.CellY, TvCell.X, TvCell.Y,I,false,true,
+                         true,true,TruncOneDir, Ball.Player.MovePath );
+
+      // se il path esiste aggiungo la cella alle possibilità in cui spostarsi di 2+
+      if Ball.Player.MovePath.Count = I then begin
+        // Ball.Player.MovePath è in TVmode
+        aMidChance.X := newX;
+        aMidChance.Y := newY;
+        ball.Player.tmp := 0;
+        if ball.Player.TalentId = TALENT_ID_TOUGHNESS then
+          ball.Player.tmp :=  1 ;
+
+        //per ognuna delle celle ottengo la chance sugli autotackle, per esempio a distanza 2 chance 70, a distanza 3 chance 30
+        LstAutoTackle:= TList<TInteractivePlayer>.create;
+
+        CompileAutoTackleList(Ball.player.Team, 1, Ball.Player.MovePath, lstAutoTackle);
+          for P:= 0 to Ball.Player.MovePath.Count - 1 do begin
+
+            if P < Ball.Player.MovePath.Count -1 then begin         // <-- autotackle non si aziona sulla FinalCell
+            lastChance:= 100;
+            for t := 0 to LstAutoTackle.Count -1 do begin
+
+                if (LstAutoTackle[t].Cell.X = Ball.Player.MovePath[p].X) and (LstAutoTackle[t].Cell.Y = Ball.Player.MovePath[p].Y) then begin // se la cella lo riguarda. questo fa la giusta animazione
+                  LstAutoTackle[t].Player.tmp := 0;
+                  if LstAutoTackle[t].Player.TalentId = TALENT_ID_CHALLENGE then
+                  LstAutoTackle[t].Player.tmp :=  1 ;
+
+                    CalculateChance  (Ball.player.Defense  + Ball.player.tmp  , LstAutoTackle[t].Player.Defense
+                    + LstAutoTackle[t].Player.tmp + Modifier_autotackle , chanceA,chanceB);
+                    // esempio chanceA 37, poi chanceA 65. prendo il valore più basso di chance di riuscita
+                    if chanceA < lastChance  then lastChance:= chanceA;
+                end;
+              end;
+            end;
+          end;
+
+          LstAutoTackle.Free;
+
+        // ottengo una media e la storo
+        aMidChance.Chance := lastChance;
+        aMidChance.inputAI := 'PLM,' + ball.Player.Ids +',' + IntToStr(Ball.Player.MovePath[I-1].X) +','+ IntToStr(Ball.Player.MovePath[I-1].Y);
+        aList.Add(aMidChance);
+
+      end;
+
+    end;
+
+
+
+    Inc(i);
+
+  end;
+
+end;
+
+
+   }
 
 end.
 

@@ -274,7 +274,7 @@ type
     function GetListActiveBrainStream: string;
     function GetMarketPlayers ( Myteam, Maxvalue: Integer): string;
     function TrylevelUpAttribute  ( Guid, Attribute : integer; aValidPlayer: TValidPlayer ): TLevelUp;
-      function can6 (aPlayer: TSoccerPlayer; at : TAttributeName): boolean;
+      function can6 (  const at : TAttributeName; var aPlayer: TSoccerPlayer ): boolean;
     function TrylevelUpTalent  ( Guid, Talent : integer; aValidPlayer: TValidPlayer ): TLevelUp;
 
       function isReserveSlot (CellX, CellY: integer): boolean;
@@ -977,6 +977,7 @@ begin
                                                       ', matches_left = ' + IntTostr(matches_Left) +
                                                       ', team = ' + IntTostr(aGuidTeam) +             // 0 se a fine carriera ma non è stato calcolato sopra nem valore market
                                                       ', disqualified = ' + IntTostr(disqualified) +
+                                                      ', totyellowcard = ' + IntTostr(TotYellowCard) +
                                                       ', injured = ' + IntTostr(injured) +
                                                       ', Speed = ' + IntTostr(aPlayer.DefaultSpeed ) +
                                                       ', Defense = ' + IntTostr(aPlayer.DefaultDefense) +
@@ -1243,6 +1244,7 @@ procedure TBrainManager.calc_injured (aPlayer: TSoccerPlayer);
 var
   aRnd,percA: Integer;
 begin
+  PercA := 0;
   case aPlayer.Age of
     18..24: begin
       percA := aPlayer.Injured_Penalty [0];
@@ -1350,7 +1352,7 @@ function TBrainManager.Findbrain ( ids: string ): TSoccerbrain;
 var
   i: Integer;
 begin
-
+  result := nil;
   WaitForSingleObject(Mutex,INFINITE);
   for I := 0 to lstbrain.count -1 do begin
     if lstbrain[i].BrainIDS  = ids then begin // esiste già una partita con quel client
@@ -1366,7 +1368,7 @@ function TBrainManager.Findbrain ( CliId: integer ): TSoccerbrain;
 var
   i,s: Integer;
 begin
-
+  Result := nil;
   WaitForSingleObject(Mutex,INFINITE);
   for I := lstbrain.count -1 downto 0 do begin
     for S := lstbrain[i].lstSpectator.count -1 downto 0 do begin
@@ -1621,12 +1623,11 @@ end;
 
 procedure TFormServer.TcpserverDataAvailable(Sender: TObject; ErrCode: Word);
 var
-    astring: string;
     Cli: TWSocketThrdClient;
-    RcvdLine,NewData,history,xp: string;
+    RcvdLine,NewData,history: string;
     aBrain: TSoccerBrain;
     ts: TStringList;
-    i,Start,aValue: Integer;
+    i,aValue: Integer;
     anAuth: TAuthInfo;
     tsNationTeam: TStringList;
     aValidPlayer: TValidPlayer;
@@ -2231,7 +2232,7 @@ begin
 end;
 function TFormServer.TrylevelUpAttribute ( Guid, Attribute : integer; aValidPlayer: TValidPlayer ): TLevelUp;
 var
-  i, aRnd: Integer;
+  aRnd: Integer;
   aPlayer: TSoccerPlayer;
   tsXP,tsXPHistory: TStringList;
   ConnGame : {$IFDEF MYDAC}TMyConnection{$ELSE}TFDConnection{$ENDIF};
@@ -2314,7 +2315,7 @@ o o o o o o
         if aPlayer.DefaultShot >= 3 then goto MyExit; // difesa / shot        . esce con result.value = false
         if aRnd <= aValidPlayer.chancelvlUp then begin
           if aPlayer.DefaultDefense < 6 then begin
-            if aPlayer.DefaultDefense +1 = 6 then Result.value := Can6 ( aPlayer, atDefense )
+            if aPlayer.DefaultDefense +1 = 6 then Result.value :=   Can6 ( atDefense, aPlayer )
             else begin
               aPlayer.DefaultDefense := aPlayer.DefaultDefense + 1;
               aPlayer.History_Defense := aPlayer.History_Defense + 1;
@@ -2332,7 +2333,7 @@ o o o o o o
         tsXP[2]:= IntToStr(aPlayer.xp_Passing );
         if aRnd <= aValidPlayer.chancelvlUp then begin
           if aPlayer.DefaultPassing < 6 then begin
-            if aPlayer.DefaultPassing +1 = 6 then Result.value := Can6 ( aPlayer, atPassing )
+            if aPlayer.DefaultPassing +1 = 6 then Result.value := Can6 ( atPassing,aPlayer )
             else begin
               aPlayer.DefaultPassing := aPlayer.DefaultPassing + 1;
               aPlayer.History_Passing := aPlayer.History_Passing + 1;
@@ -2351,7 +2352,7 @@ o o o o o o
         tsXP[3]:= IntToStr(aPlayer.xp_BallControl );
         if aRnd <= aValidPlayer.chancelvlUp then begin
           if aPlayer.DefaultBallControl < 6 then begin
-            if aPlayer.DefaultBallControl +1 = 6 then Result.value := Can6 ( aPlayer, atBallControl )
+            if aPlayer.DefaultBallControl +1 = 6 then Result.value := Can6 ( atBallControl, aPlayer )
             else begin
               aPlayer.DefaultBallControl := aPlayer.DefaultBallControl + 1;
               aPlayer.History_BallControl := aPlayer.History_BallControl + 1;
@@ -2371,7 +2372,7 @@ o o o o o o
           if aPlayer.DefaultDefense >= 3 then goto MyExit;; // difesa / shot
         if aRnd <= aValidPlayer.chancelvlUp then begin
           if aPlayer.DefaultShot < 6 then begin
-            if aPlayer.DefaultShot +1 = 6 then Result.value :=Can6 ( aPlayer, atShot )
+            if aPlayer.DefaultShot +1 = 6 then Result.value :=Can6 ( atShot , aPlayer)
             else begin
               aPlayer.DefaultShot := aPlayer.DefaultShot + 1;
               aPlayer.History_Shot := aPlayer.History_Shot + 1;
@@ -2392,7 +2393,7 @@ o o o o o o
         if aRnd <= aValidPlayer.chancelvlUp then begin
           if aPlayer.History_Heading = 0  then begin // Heading incrementa solo una volta
             if aPlayer.DefaultHeading < 6 then begin
-              if aPlayer.DefaultHeading + 1 = 6 then Result.value :=Can6 ( aPlayer, atHeading )
+              if aPlayer.DefaultHeading + 1 = 6 then Result.value :=Can6 ( atHeading, aPlayer )
               else begin
                 aPlayer.DefaultHeading := aPlayer.DefaultHeading + 1;
                 aPlayer.History_Heading := aPlayer.History_Heading + 1;
@@ -2591,15 +2592,16 @@ begin
     result := True;
 end;
 
-function TFormServer.can6 (aPlayer: TSoccerPlayer; at : TAttributeName): boolean;
+function TFormServer.can6 (  const at : TAttributeName; var aPlayer: TSoccerPlayer ): boolean;
 var
   aRnd: Integer;
 begin
+  Result := False;
   // qui è già passato dal normale percA... 1 su 1000 ce la fa....
   aRnd := RndGenerate(1000);
   if aPlayer.TalentId = TALENT_ID_GOALKEEPER then aRnd := 2;  // porieri a 6 non esistono per ora
   if aRnd = 1 then begin
-
+    Result := True;
     if at = AtDefense then begin
       aPlayer.DefaultDefense := 6;
       aPlayer.History_Defense := aPlayer.History_Defense + 1;
@@ -2865,7 +2867,6 @@ var
   SS: TStringStream;
   i: Integer;
   MM,MM2: TMemoryStream;
-  mValue : Integer;
   name : Shortstring;
   guidplayer, sellprice ,  speed ,  defense,  passing, ballcontrol, shot, heading, talent,matches_played,matches_left : Integer;
   Count: Integer;
@@ -3589,11 +3590,10 @@ end;
 procedure TFormServer.CreateAndLoadMatch (  brain: TSoccerBrain; GuidTeam0, GuidTeam1: integer; Username0, UserName1: string );
 var
   TT: Integer;
-  i,pcount,nMatchesplayed,nMatchesLeft,aTeam,aTalentId: integer;
+  i,pcount,nMatchesplayed,nMatchesLeft,aTeam: integer;
   TvCell,TvReserveCell,aPoint: TPoint;
   GuidTeam: array[0..1] of Integer;
   UserName: array[0..1] of string;
-  Dummy: word;
   Sp: TSoccerPlayer;
   aName, aSurname, Attributes,aIds: string;
   ConnGame :{$IFDEF  MYDAC} TMyConnection{$ELSE}TFDConnection{$ENDIF};
@@ -6118,16 +6118,13 @@ begin
 end;
 procedure TFormServer.validate_setformation ( CommaText: string; Cli:TWSocketThrdClient  );
 var
-  i,i2,guid,disqualified,chanceA,chanceT: Integer;
+  i,i2,guid,disqualified: Integer;
   ts: TStringList;
   strCells: string;
   tscells: TStringList;
   PositionCellX,PositionCellY: Integer;
   CellPoint : TPoint;
   lstCellPoint: TList<TPoint>;
-  s,d,p,b,sh,h: Integer;
-  talentID,age,aValue: Integer;
-  history,xp: string;
   aValidPlayer: TValidPlayer;
 begin
 
