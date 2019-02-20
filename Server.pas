@@ -15,6 +15,7 @@ interface
  { TODO : youngqueue fine stagioen da finire con anche passaggio di rank in base ai punti. promozioni e retrocessioni. money a reward fissi   }
 // futuro
  { TODO : allenamento punti xp a fine stagione su un player }
+ { TODO : bug limite 50 record elenco team wordl }
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics, System.Hash , DateUtils,
@@ -3265,6 +3266,8 @@ begin
   MyQueryWT.Connection := ConnWorld;   // world
   MyQueryWT.Open ( 'SELECT guid, name FROM world.teams where country = ' + IntToStr(CountryID) + ' order by name');
   {$ENDIF}
+   { TODO : bug limite 50 record elenco team wordl se non uso Mydac}
+
 
   for I := 0 to MyQueryWT.RecordCount -1 do begin
     TsWorldTeams[CountryId].Add( MyQueryWT.FieldByName ('guid').AsString + '=' + MyQueryWT.FieldByName ('name').AsString );

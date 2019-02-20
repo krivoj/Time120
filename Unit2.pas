@@ -202,9 +202,6 @@ begin
   Form1.PanelSkill.Visible := false;
 
 
-  Form1.SE_GridTime.Active := False;
-  //Form1.SE_GridTime.Visible:= False;
-
 end;
 procedure ShowCornerFreeKickGrid;
 begin

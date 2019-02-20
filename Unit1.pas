@@ -7,14 +7,14 @@
       { TODO : bug grafico probabile dopo espulsione non trova sprite perchè passato di lista. occorre accettare nil }
       { TODO : bug grafico dopo gol }
       { TODO : suono palo con 12 }
-      { TODO : vedere tattiche durante viewmatch si può usare un altro theater passivo visible false }
+      { TODO : tattiche deve mostrare solo i propri player. non si possono conoscere la tattiche avversarie }
 
-      { TODO : verificare animationinterval se_gridxp vedere tplowest }
       { TODO : standings. mutex request/snapshot db distinct worldteam e invio come icsSendfile, dinamyc selfposition, snapshot primi 100. stesso per guild }
       { TODO : standings. snapshot classifica nazionali }
       { TODO : mi valida solo dopo 20 gare e activity account }
       { TODO : chat. altro server in futuro come per gli account. utilizzo CnnAtext + edit1.text }
       { TODO : guilds: poi chat solo con propria squadra e gilda }
+      { TODO : fare conferma nazione e squadra }
 
       // procedure importanti:
       //    procedure SE_GridSkillGridCellMouseDown  click sulla skill ---> input verso il server
@@ -1133,7 +1133,7 @@ begin
 
   MutexAnimation:=CreateMutex(nil,false,'tsscript');
 
-  SE_GridCountryTeam.Active := false;
+  //SE_GridCountryTeam.Active := false;
 
   {$ifdef tools}
   btnReplay.Visible := True;
@@ -1302,9 +1302,9 @@ begin
   ShowPanelBack;
   ShowLogin;
 
-  SE_GridTime.thrdAnimate.Priority := tplowest;
+//  SE_GridTime.thrdAnimate.Priority := tplowest;
   SE_GridXP0.thrdAnimate.Priority := tplowest;
-
+//  SE_Gridcountryteam.thrdAnimate.Priority := tplowest;
 
 
 end;
@@ -9865,7 +9865,7 @@ begin
           Exit;
     end
     else if MidStr(tmpStr,1,9 )= 'BEGINTEAM' then begin
-      SE_GridCountryTeam.Active := false;
+
       ThreadCurMove.Enabled := false; // parte solo in beginbrain
       MemoC.Lines.Add( 'Compressed size: ' + IntToStr(Len) );
 
@@ -10177,7 +10177,12 @@ begin
     SE_GridTime.Active := False;
     SE_GridMarket.Active := False;
     viewMatch := False;
+
+    SE_Theater1.Active := False;
+    SE_GridTime.Active := False;
     SE_GridXP0.Active := False;
+    SE_GridCountryTeam.Active := false;
+
     ShowLogin;
 
   end
@@ -10200,6 +10205,11 @@ begin
       lbl_Nick0.Active := False;
       lbl_Nick1.Active := False;
 
+    SE_Theater1.Active := False;
+    SE_GridXP0.Active := False;
+    SE_GridTime.Active := False;
+    SE_GridCountryTeam.Active := false;
+
     ShowMain;
     //ClientLoadFormation ;
     btnMainPlay.Enabled := CheckFormationTeamMemory;
@@ -10208,8 +10218,12 @@ begin
   else if (fGameScreen = ScreenSelectCountry) or (fGameScreen = ScreenSelectTeam )then begin
     //AudioCrowd.Stop;
     SE_Theater1.Visible := false;
+
+    SE_Theater1.Active := False;
     SE_GridTime.Active := False;
     SE_GridXP0.Active := False;
+    SE_GridCountryTeam.Active := true;
+
     PanelMain.Visible := false;
     PanelLogin.Visible := false;
 
@@ -10246,12 +10260,18 @@ begin
     end;
 
     PanelCountryTeam.Visible := True;
-  //  SE_GridCountryTeam.CellsEngine.ProcessSprites(20);
-  //  SE_GridCountryTeam.refreshSurface ( SE_GridCountryTeam );
 
   end
   else if fGameScreen = ScreenWaitingFormation then begin // si accede cliccando back - settcpformation, in attesa
     //AudioCrowd.Stop;
+
+    SE_Theater1.Visible := true;
+
+    SE_Theater1.Active := true;
+    SE_GridTime.Active := False;
+    SE_GridXP0.Active := false;
+    SE_GridCountryTeam.Active := false;
+
     SetTheaterMatchSize;
     PanelInfoPlayer0.Visible := False;
     PanelMarket.Visible:= False;
@@ -10263,10 +10283,15 @@ begin
   end
   else if fGameScreen = ScreenFormation then begin    // diversa da ScreenLiveFormations che prende i dati dal brain
 
+    SE_Theater1.Active := True;
+    SE_GridXP0.Active := True;
+    SE_GridTime.Active := False;
+    SE_GridCountryTeam.Active := false;
+
     //AudioCrowd.Stop;
     PanelCombatLog.Visible := False;
-    SE_Theater1.Visible := false;
-    SE_GridTime.Active := False;
+   // SE_Theater1.Visible := false;
+  //  SE_GridTime.Active := False;
 
     PanelMain.Visible := false;
     PanelLogin.Visible := false;
@@ -10359,8 +10384,13 @@ begin
   else if fGameScreen = ScreenWaitingLiveMatch then begin // si accede cliccando queue
     //AudioCrowd.Stop;
     SE_Theater1.Visible := True;
-    SE_GridTime.Active := False;
+
+    SE_Theater1.Active := True;
+    SE_GridTime.Active := True;
     SE_GridXP0.Active := False;
+    SE_GridCountryTeam.Active := false;
+
+
     PanelMain.Visible := false;
     PanelLogin.Visible := false;
     PanelListMatches.Visible := false;
@@ -10371,8 +10401,13 @@ begin
   else if (fGameScreen = ScreenLivematch) or (fGameScreen = ScreenWatchLive) then begin
 //    SetTheaterMatchSizeSE;
     SE_Theater1.Visible := True;
+
+    SE_Theater1.Active := True;
     SE_GridTime.Active := True;
     SE_GridXP0.Active := False;
+    SE_GridCountryTeam.Active := false;
+
+
     PanelMain.Visible := false;
     PanelLogin.Visible := false;
     PanelListMatches.Visible := false;
@@ -10411,8 +10446,12 @@ begin
   else if fGameScreen = ScreenWaitingWatchLive then begin // si accede cliccando l'icona TV
     //AudioCrowd.Stop;
     SE_Theater1.Visible := True;
-    SE_GridTime.Active := False;
+
+    SE_Theater1.Active := True;
+    SE_GridTime.Active := True;
     SE_GridXP0.Active := False;
+    SE_GridCountryTeam.Active := false;
+
     PanelMain.Visible := false;
     PanelLogin.Visible := false;
     PanelListMatches.Visible := false;
@@ -10422,8 +10461,12 @@ begin
   end
   else if fGameScreen = ScreenSelectLiveMatch then begin
     //AudioCrowd.Stop;
+    SE_Theater1.Active := False;
     SE_GridTime.Active := False;
     SE_GridXP0.Active := False;
+    SE_GridCountryTeam.Active := False;
+
+
     btnWatchLiveExit.Visible := false;
     PanelLogin.Visible := false;
     PanelMain.Visible := false;
@@ -10434,8 +10477,11 @@ begin
   end
   else if fGameScreen = ScreenMarket then begin
     //AudioCrowd.Stop;
+    SE_Theater1.Active := False;
     SE_GridTime.Active := False;
     SE_GridXP0.Active := False;
+    SE_GridCountryTeam.Active := False;
+
     btnWatchLiveExit.Visible := false;
     PanelLogin.Visible := false;
     PanelMain.Visible := false;
