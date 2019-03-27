@@ -5,7 +5,7 @@ unit Server;
 // procedure MatchThreadTimer <-- in caso di bot o disconessione, esegue l'intelligenza artificiale TSoccerBrain.AI_think
 // procedure CreateAndLoadMatch <-- crea una partita (brain)
 
-//{$DEFINE MYDAC}    //  uso devart Mydac.
+{$DEFINE MYDAC}    //  uso devart Mydac.
 {$DEFINE BOTS}     // se uso i bot o solo partite di player reali
 {$DEFINE useMemo}  // se uso il debug a video delle informazioni importanti
 //{$DEFINE allPlayerSpeed3}  // cheat: setta la speed di tutti i player a 3
@@ -110,7 +110,6 @@ type TBrainManager = class
       function RndGenerate( Upper: integer ): integer;
       function RndGenerate0( Upper: integer ): integer;
       function RndGenerateRange( Lower, Upper: integer ): integer;
-        procedure can6 (aPlayer: TSoccerPlayer; at : TAttributeName);
 
 
   function FindBrain ( ids: string  ): TSoccerbrain;  overload;
@@ -189,6 +188,7 @@ type
     procedure Button4Click(Sender: TObject);
     procedure Button5Click(Sender: TObject);
     procedure Button6Click(Sender: TObject);
+    procedure CheckBoxActiveMacthesClick(Sender: TObject);
   private
     { Private declarations }
     procedure Display(Msg : String);
@@ -626,6 +626,11 @@ begin
   ConnGame.Connected:= False;
   ConnGame.Free;
 
+end;
+
+procedure TFormServer.CheckBoxActiveMacthesClick(Sender: TObject);
+begin
+  SE_GridLiveMatches.Active := CheckBoxActiveMacthes.Checked;
 end;
 
 constructor TBrainManager.Create( Server: TWSocketThrdServer );
@@ -1303,38 +1308,6 @@ begin
 
 
 end;
-procedure TBrainManager.can6 (aPlayer: TSoccerPlayer; at : TAttributeName);
-var
-  aRnd: Integer;
-begin
-  // qui è già passato dal normale percA... 1 su 1000 ce la fa....
-  aRnd := RndGenerate(1000);
-  if aPlayer.TalentId = TALENT_ID_GOALKEEPER then aRnd := 2;  // porieri a 6 non esistono per ora
-  if aRnd = 1 then begin
-
-    if at = AtDefense then begin
-      aPlayer.DefaultDefense := 6;
-      aPlayer.History_Defense := aPlayer.History_Defense + 1;
-    end
-    else if at = atBallControl then begin
-      aPlayer.DefaultBallControl := 6;
-      aPlayer.History_BallControl := aPlayer.History_BallControl + 1;
-    end
-    else if at = atPassing then begin
-      aPlayer.DefaultPassing := 6;
-      aPlayer.History_Passing := aPlayer.History_Passing + 1;
-    end
-    else if at = atShot then begin
-      aPlayer.DefaultShot := 6;
-      aPlayer.History_Shot := aPlayer.History_Shot + 1;
-    end
-    else if at = atHeading then begin
-      aPlayer.DefaultHeading := 6;
-      aPlayer.History_Heading := aPlayer.History_Heading + 1;
-    end
-  end;
-
-end;
 
 function TBrainManager.RndGenerate( Upper: integer ): integer;
 begin
@@ -1475,7 +1448,10 @@ begin
   xpNeedTal[TALENT_ID_POSITIONING] := 50;
   xpNeedTal[TALENT_ID_FREEKICKS] := 40;
   xpNeedTal[TALENT_ID_AGILITY] := 50;
-
+  xpNeedTal[TALENT_ID_RAPIDPASSING] := 50;
+  xpNeedTal[TALENT_ID_AGGRESSION] := 50;
+  xpNeedTal[TALENT_ID_ACE] := 50;
+  // modificare anche client formcreate
 
   TsWorldCountries:= TStringList.Create ;
   PrepareWorldCountries;
@@ -1503,7 +1479,7 @@ begin
   TcpServer.Listen ;
 
   SE_GridLiveMatches.thrdAnimate.Priority := tpLowest;
-
+  SE_GridLiveMatches.Active := True;
 //  CreateRewards;
 end;
 
@@ -2521,6 +2497,7 @@ MyExit:
 
 //   le commatext sono già pronte per storarle
 //  devo aggiornare anche in caso di false perchè ho speso i punti XP
+// Genero il talentID2
     {$IFDEF MYDAC}
     ConnGame := TMyConnection.Create(nil);
     ConnGame.Server := MySqlServerGame;
@@ -7733,6 +7710,46 @@ begin
 
 
 end;
+ // Possibili combinazioni talenti
+//  TALENT_ID_GOALKEEPER     = 1;  // può giocare in porta
 
+//  TALENT_ID_CHALLENGE      = 2;  // lottatore + 1 autotackle     TALENT_ID_TOUGHNESS      = 3;  // +1 tackle          --> ruba sempre palla
+//  TALENT_ID_CHALLENGE      = 2;  // lottatore + 1 autotackle     TALENT_ID_POWER          = 4;  // +1 resist tackle   --> da centrocampo puro
+//  TALENT_ID_CHALLENGE      = 2;  // lottatore + 1 autotackle     TALENT_ID_MARKING        = 15; // ottima combo  DIF=Marca l'attaccante con il Tiro piu' alto. Cen=Marca il Centrocampista con il passaggio piu' alto. ATT=Marca il difensore con il Controllo piu' basso.
+// + mastino  e ralativi mirror
+
+//  TALENT_ID_TOUGHNESS      = 3;  // +1 tackle
+//  TALENT_ID_POWER          = 4;  // +1 resist tackle
+//  TALENT_ID_CROSSING       = 5;  // +1 crossing
+
+
+//  TALENT_ID_LONGPASS       = 6;  // +1 distanza passaggi        TALENT_ID_PLAYMAKER      = 13; // vero playmaker per lanci lunghi
+//  TALENT_ID_EXPERIENCE     = 7;  // pressing non costa mosse
+
+//  TALENT_ID_DRIBBLING      = 8;  // +1 dribbling                  TALENT_ID_BOMB           = 12;  // cpmbo dribbling+tiro!
+
+
+//  TALENT_ID_BULLDOG        = 9;  // mastino +1 intercept
+
+//  TALENT_ID_OFFENSIVE      = 10; // durante ai_moveall tende ad attaccare  TALENT_ID_POSITIONING    = 16; si allarga o stringe
+      // incompatibile con  TALENT_ID_DEFENSIVE  TALENT_ID_MARKING  TALENT_ID_PLAYMAKER
+
+//  TALENT_ID_DEFENSIVE      = 11; // durante ai_moveall tende ad attaccare  TALENT_ID_POSITIONING    = 16; si allarga o stringe
+      // incompatibile con  TALENT_ID_OFFENSIVE  TALENT_ID_MARKING  TALENT_ID_PLAYMAKER
+
+//  TALENT_ID_PLAYMAKER      = 13; // Cerca di avvicinarsi al proprio portatore di palla. Inoltre i suoi passaggi corti terminanti in area avversaria conferiscono un bonus al ricevente.
+      // incompatibile con  TALENT_ID_OFFENSIVE  TALENT_ID_MARKING  TALENT_ID_DEFENSIVE  TALENT_ID_POSITIONING
+
+//  TALENT_ID_MARKING        = 15; // DIF=Marca l'attaccante con il Tiro piu' alto. Cen=Marca il Centrocampista con il passaggio piu' alto. ATT=Marca il difensore con il Controllo piu' basso.
+      // incompatibile con  TALENT_ID_OFFENSIVE  TALENT_ID_PLAYMAKER  TALENT_ID_DEFENSIVE  TALENT_ID_POSITIONING
+
+//   TALENT_ID_POSITIONING    = 16; // Cerca di tornare verso la propria zona di campo. talent2 offensive=ala o centravanti talent2 defensive=chiude le fascie o il centro
+      // incompatibile con    TALENT_ID_PLAYMAKER
+
+//  TALENT_ID_BOMB           = 12; // tal_bomb è un +1 quando si buffa con corsa o riceve shp o vince tackle o vince dribbling
+//   TALENT_ID_FAUL           = 14; // +15% chance di commettere un fallo
+//   TALENT_ID_POSITIONING    = 16; // Cerca di tornare verso la propria zona di campo. talent2 offensive=ala o centravanti talent2 defensive=chiude le fascie o il centro
+//   TALENT_ID_FREEKICKS      = 17; // +1 Tiro sui Calci di punizione.
+//   TALENT_ID_AGILITY        = 18; // Quando riceve un passaggio corto distante almeno 2 celle, non costa mosse. }
 
 end.

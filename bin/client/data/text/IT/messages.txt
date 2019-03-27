@@ -48,6 +48,9 @@ talent_Marking=Marcatura a uomo
 talent_Positioning=Posizionamento
 talent_FreeKicks=Punizioni
 talent_Agility=Agilita'
+talent_Rapidpassing=Passaggio rapido
+talent_Aggression=Aggressione
+talent_Ace=Asso
 
 role_G=Por
 role_D=Dif
@@ -94,6 +97,9 @@ descr_talent_Marking=DIF=Marca l'attaccante con il Tiro piu' alto. Cen=Marca il 
 descr_talent_positioning=Cerca di tornare verso la propria zona di campo.
 descr_talent_FreeKicks=+1 Tiro sui Calci di punizione.
 descr_talent_Agility=Quando riceve un passaggio corto distante almeno 2 celle, guadagna 1 turno.
+descr_talent_Rapidpassing=Quando riceve un passaggio corto, ha una chance del 33% di effettuare un passaggio filtrante che non puo' essere intercettato.
+descr_talent_Aggression=Si muove verso il portatore di palla.
+descr_talent_Ace=Quando subisce Pressing, ha una chance del 33% di effettuare un dribbling vincente.
 
 lbl_Talent=Talento
 lbl_Role=Ruolo

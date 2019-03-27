@@ -4,7 +4,7 @@
 //{$DEFINE  SetCornergol}
 //{$DEFINE  SetAlwaysGol}
 //{$DEFINE  Setposprscorner}
-{$DEFINE ADDITIONAL_MATCHINFO}
+//{$DEFINE ADDITIONAL_MATCHINFO}
 unit SoccerBrainv3;
 
 // bug importanti
@@ -19,20 +19,46 @@ unit SoccerBrainv3;
 // futuro
 
    { TODO  : Gameplay: Valutare se Pos (tiro potente) può innescare autogol }
-   { TODO valutare aggiunta talento aggression e talento buff reparto }
+
+
+   // talenti oltre 6
+   // quando 1 player genera 1 talento, con l stessa chance compare un talento aggiuntivo. Tale talento è generato dal sistema e non è scelto dall'utente.
+   // il talento 2 o è un altro talento (esclusi gli incompatibili) o un talento 2.0 ( marking+1 sul player che si marca, dribbling+2)
+   // o 1 set di talenti che aggiungono skill qui sotto elencato
+   // nella generazione tenere conto dei paradossi: marking con offensive e defensive per esempio
+   // quindi non esiste alcun sistema di xp. con il goalkeeper bene cosi' anche.
+
+
+   // V 3.0
+    // dribbling 2.0-->(+2 dribbling) }
+    // marking 2.0-->(anche pressing sul portatore di palla) } limitarne l'uso a 1 carica
+
+    // buff reparto, buffa gli ALTRI non sè stesso
+   { TODO in futuro  prereq almeno 3 passing, 1 talento qualsiasi --> skill 2x buff reparto (20% chance) cen  25 turni +1}
+   { TODO in futuro  prereq almeno 3 Defense, 1 talento qualsiasi --> skill 2x buff reparto (20% chance) dif 25 turni +1}
+   { TODO in futuro  prereq almeno 3 Shot , 1 talento qualsiasi --> skill 2x buff reparto (20% chance) att 25 turni +1}
+
+   // buff singolo
+   { TODO in futuro  prereq tiro 3 talent bomb --> skill 2xsupertiro +2 tiro (20% chance) }
+   { TODO in futuro  prereq difesa 3 talent quello del tackle --> skill 2xsupertackle +2 tackle (20% chance) }
+   { TODO in futuro  prereq passing 3 talent quello del passing --> skill 2xsuperpassaggio +2 passing (20% chance) }
+   { TODO in futuro  prereq almeno 3 ball.control, talent dribbling --> skill 2x dribbling +2dribbling (20% chance) }
+
+   { TODO in futuro  talento rank 2 specialista rigori. specialista uscite aeree(si, 20% esce dalla porta di 1 cella ma ci torna subito) }
+
    { TODO  : espandere gameplay con nazionali }
 
 interface
 uses DSE_theater, DSE_Random, DSE_PathPlanner, DSE_list, DSE_MISC,
   generics.collections, generics.defaults, system.classes, ZLIBEX,
   System.SysUtils, System.Types, strutils, Inifiles, IOUtils, winapi.windows ;
-const DICE = 4;
+const DICE = 4;                   // Roll random da 1 a 4. le stat dei player vanno da 1 a 6.
 const MAX_LEVEL = 16;
 const modifier_defenseShot = -1;
 const modifier_autotackle = 0;
 const modifier_penalty = 2;
-const TurnMoves = 4;
-const TurnMovesStart = 2;
+const TurnMoves = 4;              // Numero di mosse per turno
+const TurnMovesStart = 2;         // il calcio d'inizio ha solo 2 mosse
 const SEASON_MATCHES = 38;        // numero di partite a stagione
 const REGEN_STAMINA = 10;         // rigenerazione stamina dopo 1 partita
 const YELLOW_DISQUALIFIED = 3;
@@ -45,7 +71,7 @@ const xp_SHOT_POINTS = 80;
 const xp_HEADING_POINTS = 80;
 
 // Queste costanti sono uguali al DB game.talents . Gli ID devono corrispondere
-const NUM_TALENT               = 18; // uguale a game.talents
+const NUM_TALENT               = 21; // uguale a game.talents
 const TALENT_ID_GOALKEEPER     = 1;  // può giocare in porta
 const TALENT_ID_CHALLENGE      = 2;  // lottatore + 1 autotackle
 const TALENT_ID_TOUGHNESS      = 3;  // +1 tackle
@@ -58,14 +84,17 @@ const TALENT_ID_BULLDOG        = 9;  // mastino +1 intercept
 const TALENT_ID_OFFENSIVE      = 10; // durante ai_moveall tende ad attaccare
 const TALENT_ID_DEFENSIVE      = 11; // durante ai_moveall tende a difendere
 const TALENT_ID_BOMB           = 12; // tal_bomb è un +1 quando si buffa con corsa o riceve shp o vince tackle o vince dribbling
-const TALENT_ID_PLAYMAKER      = 13;
+const TALENT_ID_PLAYMAKER      = 13; // Cerca di avvicinarsi al proprio portatore di palla. Inoltre i suoi passaggi corti terminanti in area avversaria conferiscono un bonus al ricevente.
 const TALENT_ID_FAUL           = 14; // +15% chance di commettere un fallo
-const TALENT_ID_MARKING        = 15;
-const TALENT_ID_POSITIONING    = 16;
-const TALENT_ID_FREEKICKS      = 17;
+const TALENT_ID_MARKING        = 15; // DIF=Marca l'attaccante con il Tiro piu' alto. Cen=Marca il Centrocampista con il passaggio piu' alto. ATT=Marca il difensore con il Controllo piu' basso.
+const TALENT_ID_POSITIONING    = 16; // Cerca di tornare verso la propria zona di campo. talent2 offensive=ala o centravanti talent2 defensive=chiude le fascie o il centro
+const TALENT_ID_FREEKICKS      = 17; // +1 Tiro sui Calci di punizione.
 const TALENT_ID_AGILITY        = 18; // Quando riceve un passaggio corto distante almeno 2 celle, non costa mosse.
+const TALENT_ID_RAPIDPASSING   = 19; // Ha il 33% chance di effettuare un passaggio verso un compagno. non può essere intercettato
+const TALENT_ID_AGGRESSION     = 20; // cerca il portatore di palla
+const TALENT_ID_ACE            = 21; // Ha il 33% chance di effettuare un dribbling vincente quando subisce pressing
 //------------------------------------------------------------------
- { nel server c'è array xpNeedTAL[I] e si puntano così xpTAL[TALENT_ID_EXPERIENCE]}
+ { nel server c'è array xpNeedTAL[I] e si puntano così xpTAL[TALENT_ID_EXPERIENCE]. da modificare se sei modifica qui}
 
 const Turnmilliseconds = 120 * 1000;// 120 secondi per turno giocatore;
 
@@ -120,7 +149,6 @@ type TAccelerationMode = ( AccBestDistance, AccSelfY, AccDoor );
 type TMoveModeX = ( LeftToRight, RightToLeft, Xnone);
 type TMoveModeY= ( UpToDown, DownToUp, Ynone);
 type TOneDir= ( TruncOneDir, AbortMultipleDirection, EveryDirection);
-
 type TTrueFalse = array[Boolean] of String;
 type TSoccerParam = ( withPlayer, withoutPlayer, withBall, withoutBall );
 type TCornerMode = ( OpponentCorner, FriendlyCorner );
@@ -664,6 +692,8 @@ end;
 
     function GetBounceCell ( StartX, StartY, ToX, ToY, Speed: integer; favourTeam: integer): TPoint;
 
+
+    function GetFriendAhead ( const aPlayer: TSoccerPlayer ) : TSoccerPlayer;
     // SHP intercepts
     procedure CompileInterceptList (ShpTeam, MaxDistance: integer; aPath : dse_pathplanner.TPath; var lstIntercepts: TList<TInteractivePlayer> );
     // LOP heading
@@ -726,6 +756,8 @@ end;
     // intercept
     // respinte portiere
     function GetGKBounceCell ( GoalKeeper: TsoccerPlayer; GKX, GKY, Speed: integer; AllowCorner: boolean ): Tpoint;
+
+    Procedure CopyPath ( Path1, Path2 : dse_pathplanner.TPath );
 
     procedure GetMarkingPath ( aPlayer: TSoccerPlayer );
     procedure GetAggressionCellPath ( aSoccerPlayer: TSoccerPlayer;  X2, Y2: integer );
@@ -3176,12 +3208,64 @@ begin
       continue;
     end;
 
+    if ( aFriend.ids = aPlayer.Ids )  then begin  // non sè stesso
+      Continue;
+    end;
+
     if  ( aFriend.Team = aPlayer.Team ) and (aFriend.InCrossingArea) then begin
       Result := true;
       exit;
     end;
 
   end;
+end;
+function TSoccerBrain.GetFriendAhead ( const aPlayer: TSoccerPlayer ) : TSoccerPlayer;
+var
+  p: integer;
+  aFriend: TSoccerPlayer;
+  tmp: Integer;
+  lstFriendAhead: TObjectList<TSoccerPlayer>;
+begin
+  Result := nil;
+  lstFriendAhead:= TObjectList<TSoccerPlayer>.Create(False);
+
+  tmp := ShortPassRange;
+  if aPlayer.TalentId = TALENT_ID_LONGPASS then
+    tmp := tmp +1;
+
+  // riempe una lista di friend a cui passare il pallone
+
+  for P := lstSoccerPlayer.Count -1 downto 0 do begin
+    aFriend := lstSoccerPlayer[p];
+    if (absDistance( aPlayer.CellX ,aPlayer.CellY,  aFriend.CellX, aFriend.CellY ) > ( tmp )) then begin
+      continue;
+    end;
+    if ( aFriend.ids = aPlayer.Ids )  then begin  // non sè stesso
+      Continue;
+    end;
+
+    if  ( aFriend.Team = aPlayer.Team ) then begin
+
+      if aPlayer.Team = 0 then begin
+        if aFriend.CellX > aPlayer.CellX then begin  // solo davanti
+          lstFriendAhead.Add( aFriend);
+        end;
+      end
+      else if aPlayer.Team = 1 then begin
+        if aFriend.CellX < aPlayer.CellX then begin  // solo davanti
+          lstFriendAhead.Add( aFriend);
+        end;
+      end
+
+    end;
+
+  end;
+
+  // in alcuni casi passo una string ( getbestcrossing eccc...) . verificare leperformance. qui uso il player
+  if lstFriendAhead.count > 0 then
+    result := GetSoccerPlayer( lstFriendAhead[ RndGenerate0(lstFriendAhead.Count-1)].Ids ) ;
+
+  lstFriendAhead.Free;
 end;
 procedure TSoccerBrain.CompileInterceptList (ShpTeam, MaxDistance: integer; aPath : dse_pathplanner.TPath; var lstIntercepts: TList<TInteractivePlayer> );
 var
@@ -4064,17 +4148,20 @@ begin
 
 end;
 
+procedure TSoccerbrain.CopyPath ( Path1, Path2 : dse_pathplanner.TPath );
+var
+  i: Integer;
+  aStep : dse_pathplanner.TPathStep;
+begin
+  Path2.Clear;
+  for I := 0 to Path1.Count -1 do begin
+    aStep := TPathStep.Create( Path1.Step[i].X, Path1.Step[i].Y );
+    Path2.Add( aStep );
+  end;
+
+end;
 
 
-{--------------------------------------------------------------------------------------------------------------------------------------------------
-
-███████╗ ██████╗  ██████╗ ██████╗███████╗██████╗     ██████╗ ██████╗  █████╗ ██╗███╗   ██╗
-██╔════╝██╔═══██╗██╔════╝██╔════╝██╔════╝██╔══██╗    ██╔══██╗██╔══██╗██╔══██╗██║████╗  ██║
-███████╗██║   ██║██║     ██║     █████╗  ██████╔╝    ██████╔╝██████╔╝███████║██║██╔██╗ ██║
-╚════██║██║   ██║██║     ██║     ██╔══╝  ██╔══██╗    ██╔══██╗██╔══██╗██╔══██║██║██║╚██╗██║
-███████║╚██████╔╝╚██████╗╚██████╗███████╗██║  ██║    ██████╔╝██║  ██║██║  ██║██║██║ ╚████║
-╚══════╝ ╚═════╝  ╚═════╝ ╚═════╝╚══════╝╚═╝  ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝
----------------------------------------------------------------------------------------------------------------------------------------------------}
 constructor TSoccerbrain.Create (ids: string);
 begin
    //FormationCells := TList<TFormationCell>.create;
@@ -5230,7 +5317,7 @@ var
   i,y,ii,c,MoveValue,P,tmpX,tmpY,ToEmptyCell,Diff: integer;
   anIntercept: TSoccerPlayer; // un avversario che intercetta un short.passing (passaggio corto)
   aPlayer: TSoccerPlayer;     // il player attuale che inizia questa azione
-  aFriend, aHeadingFriend, aPlayer2: TSoccerPlayer; // un compagno che riceve la palla
+  aFriend, aHeadingFriend, aPlayer2,aFriend2: TSoccerPlayer; // un compagno che riceve la palla
   anOpponent, aSoccerPlayer,oldPlayerBall,aPlayerHeading, aPossiblePlayer2,aPossibleoffside: TSoccerPlayer; // altri puntatori ai player
   SwapPlayer, aHeading,  aGhost, aGK: TSoccerPlayer;
 
@@ -5249,6 +5336,7 @@ var
   FriendlyWall,OpponentWall,FinalWall: boolean;
   aDoor : Tpoint;        // una delle due porte a cui fare riferimento in caso di tiro ( PRS, POS  ecc...)
   aPoint : PPointL;
+  tmp : TPoint;
   Modifier: Integer;
   OldCell: TPoint;
   found: boolean;
@@ -5261,6 +5349,7 @@ var
   label palo;
   label POSvsGK, PRSvsGK;
   label GK;
+  label Normalpressing;
 begin
   // in linea di massima:
   //
@@ -5527,41 +5616,70 @@ begin
 
 
          { Playmaker if aplyaer.tal_playmaker shp in area avversaria +N lunghezza passaggio al shot }
-//           aPath.count è la lunghezza del passaggio che qui non +è stato intercettato perchè sopra exit
+//           aPath.count è la lunghezza del passaggio che qui non +è stato intercettato perchè sopra c'è exit sicura
            aFriend := GetSoccerPlayer(ball.CellX, ball.celly);
            if aFriend <> nil then begin
+              aFriend.XpTal [TALENT_ID_RAPIDPASSING] := aFriend.XpTal [TALENT_ID_RAPIDPASSING] + 1;
+
               if aPath.Count >= 2 then
                 aFriend.XpTal [TALENT_ID_AGILITY] := aFriend.XpTal [TALENT_ID_AGILITY] + 1;
 
              if (aPlayer.TalentID = TALENT_ID_PLAYMAKER ) then begin
-               aFriend := GetSoccerPlayer(ball.CellX, ball.celly);
-               if aFriend <> nil then begin
+             //  aFriend := GetSoccerPlayer(ball.CellX, ball.celly);
+             //  if aFriend <> nil then begin
                  if (aFriend.Team = aPlayer.team) and (aFriend.InCrossingArea) then begin
 
                    aFriend.BonusSHPAREAturn := 1;
                    aFriend.Shot   := aPlayer.Defaultshot + aPath.count + Abs(Integer( aFriend.TalentId = TALENT_ID_BOMB));
                  end;
 
-               end;
+             //  end;
              end
+             { TODO : in caso di doppio talento qui da fare bene. non va in except con rapid pass }
              else if (aFriend.TalentID = TALENT_ID_AGILITY ) then begin
                  Inc(fteamMovesleft);
-             end;
-           end;
-           //aPlayer.resetALL;
+             end
+             else if (aFriend.TalentID = TALENT_ID_RAPIDPASSING ) then begin
+               // cerca un compagno che sia più avanti di lui (aFriend). Se lo trova gli passa la palla. non può essere intercettata
+               if RndGenerate(100) <=33 then begin
+                 aFriend2 :=  GetFriendAhead( aFriend ) ;
+                 if aFriend2 <> nil then begin
+                   Ball.Cells  := Point ( aFriend2.cellX,aFriend2.CellY) ;  // posiziona la palla
+                   TsScript.add ('sc_ball.move.toball,'+ IntTostr(aFriend.CellX)+','+ IntTostr(aFriend.CellY)+','+  IntTostr(Ball.CellX)+','+ IntTostr(Ball.CellY) + ',0,0') ;
+
+                    if isOffside ( aFriend2 )   then begin
+                    //come fallo freekick1
+                          TsScript.add ('sc_fault,' + aFriend2.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
+                          if aFriend2.team = 0 then
+                            FreeKickSetup1( 1 ) // aspetta short.passing o lofted.pass
+                          else
+                            FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
+                          reason := '';
+                          TsScript.add ('E');
+                          goto MyExit;
+
+                    end;
+
+                 end;
+               end;
+             end;
+           end;
+           //aPlayer.resetALL;
 
 
-            if aPlayer.Role <> 'G' then Dec(ShpFree);
-            if (ShpFree < 0) and (aPlayer.Role <> 'G')then TeamMovesLeft := TeamMovesLeft - 1; //<--- esaurische shpfree se minore di 0, non uguale
+            if aPlayer.TalentId <> TALENT_ID_GOALKEEPER then
+              Dec(ShpFree);
+            if (ShpFree < 0) and (aPlayer.TalentId <> TALENT_ID_GOALKEEPER) then
+              TeamMovesLeft := TeamMovesLeft - 1; //<--- esaurische shpfree se minore di 0, non uguale
+
               if (AbsDistance(aPlayer.CellX,aPlayer.CellY, Ball.cellx, Ball.celly ) <= 1) then // se la muove di 2 o più la può raggiungere e buffarsi
+                ExceptPlayers.Add(aPlayer);
 
-            ExceptPlayers.Add(aPlayer);
             shpBuff := true;  // chi raggiunge la palla ottiene il buff    { TODO : forse se afreind = nil. aggiustare tutto con nuovo talento }
             AI_moveAll;
             if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
             TsScript.add ('E');
-        end;
-
+         end;
 
     end; // for  aPath ball
   end // 'SHP'
@@ -6871,6 +6989,13 @@ cro_crossbar:
           Ball.Cells := aPlayer.Cells;
           tsSpeaker.Add( aPlayer.Surname +' (Dribbling) vince il dribbling su ' + anOpponent.Surname );
         end;
+
+        if aPlayer.TalentId = TALENT_ID_BOMB then
+         aPlayer.tmp := 1;
+
+         aPlayer.Shot   := aPlayer.Defaultshot + 1 + aPlayer.tmp; // se vince dribbling +1 shot
+         aPlayer.Passing   := aPlayer.DefaultPassing + 2 ;
+
       end
 
       else begin
@@ -7499,6 +7624,10 @@ reason:='';
      reason := 'PRE,Ball.Player not found';
      goto myexit; // hack
     end;
+    if Ball.Player.team = aPlayer.Team then Begin
+     reason := 'PRE,Ball.Player same team';
+     goto myexit; // hack
+    End;
     if Ball.Player.TalentId = 1 then begin
      reason := 'PRE,Ball.Player is GK';
      goto myexit; // hack
@@ -7508,25 +7637,48 @@ reason:='';
     TsScript.add ('ST,' + aPlayer.ids +',' + IntToStr(cost_pre) ) ; // pressing costa come tackle. molto.
     aPlayer.Stamina := aPlayer.Stamina - cost_pre;
     aPlayer.xpTal[TALENT_ID_EXPERIENCE] :=  aPlayer.xpTal[TALENT_ID_EXPERIENCE] + 1;
+    aPlayer.xpTal[TALENT_ID_AGGRESSION] :=  aPlayer.xpTal[TALENT_ID_AGGRESSION] + 1;
+    Ball.Player.xpTal[TALENT_ID_ACE] :=  aPlayer.xpTal[TALENT_ID_ACE] + 1;
     ExceptPlayers.Add(aPlayer);
 
-    if (absDistance (aPlayer.CellX , aPlayer.CellY, Ball.Cellx, Ball.Celly  ) = 1) and
-    (Ball.Player.team <> aPlayer.Team ) then begin
+    if (absDistance (aPlayer.CellX , aPlayer.CellY, Ball.Cellx, Ball.Celly  ) = 1) then begin
       aPlayer.canSkill := false;
       aPlayer.canMove := false;
       aPlayer.PressingDone:= True;
-      Ball.Player.UnderPressureTurn := 2;
-      Ball.Player.CanMove := False;  // NON PUO' MUOVERE , ma può dribblare con -2
-      Ball.Player.BallControl  := Ball.Player.BallControl - 2;  //  MINIMO 0, mai in negativo
-      Ball.Player.Passing  := Ball.Player.passing - 2;
-      Ball.Player.Shot := Ball.Player.Shot - 2;
 
-      //Ball.Player.Defense := Ball.Player.Defense Ball.Player.BonusProtection
-      //Ball.Player.BonusProtection:=  Ball.Player.BonusProtection - aPlayer.Pressing ;
-      tsSpeaker.Add( aPlayer.Surname +' (Pressing) fa pressing su ' + Ball.Player.ids {cella}  ) ;
-      if aPlayer.TalentId <> TALENT_ID_EXPERIENCE then begin // se non ga il talento Experience
-        TeamMovesLeft := TeamMovesLeft - 1;
-      end else Minute := Minute + 1; // il minuto passa anche se non ha costo la skill
+
+      if Ball.Player.TalentId = TALENT_ID_ACE then begin
+        aRnd  :=  RndGenerate(100);
+        if aRnd <= 33 then begin
+
+            TsScript.add ('sc_dribbling.ok,' +  Ball.Player.ids{sfidante} +',' + aPlayer.ids {cella}
+                                              + ',' + IntTostr(Ball.Player.CellX)+',' + IntTostr(Ball.Player.CellY)
+                                              + ',' + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.cellY)
+                                              + ',' + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.cellY)  ) ;
+          // un po' diverso, non posso setballcell ball.player perchè è un getplayer
+          aPlayer2 := Ball.Player;
+          SwapPlayers ( aPlayer2 , aPlayer );
+          Ball.Cells := aPlayer2.Cells;
+
+          tsSpeaker.Add( Ball.Player.Surname +' (ACE Dribbling) vince il dribbling su ' + aPlayer.Surname );
+
+        end
+        else goto Normalpressing;
+      end
+      else begin
+Normalpressing:
+        Ball.Player.UnderPressureTurn := 2;
+        Ball.Player.CanMove := False;  // NON PUO' MUOVERE , ma può dribblare con -2
+        Ball.Player.BallControl  := Ball.Player.BallControl - 2;  //  MINIMO 0, mai in negativo
+        Ball.Player.Passing  := Ball.Player.passing - 2;
+        Ball.Player.Shot := Ball.Player.Shot - 2;
+
+        tsSpeaker.Add( aPlayer.Surname +' (Pressing) fa pressing su ' + Ball.Player.ids {cella}  ) ;
+      end;
+
+        if aPlayer.TalentId <> TALENT_ID_EXPERIENCE then begin // se non ga il talento Experience
+          TeamMovesLeft := TeamMovesLeft - 1;
+        end else Minute := Minute + 1; // il minuto passa anche se non ha costo la skill
 
       if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
       TsScript.add ('E');
@@ -8027,7 +8179,7 @@ reason:='';
      aPlayer.tmp:=0;
      if aPlayer.TalentId = TALENT_ID_BOMB then
       aPlayer.tmp:=1;
-     aPlayer.Shot   := aPlayer.Defaultshot + 2 + aPlayer.tmp;
+     aPlayer.Shot   := aPlayer.Defaultshot + 2 + aPlayer.tmp;   // sono differenti buff tra tackle, dribbling e movetoball
      aPlayer.Passing   := aPlayer.DefaultPassing + 2 ;
     end;
     TeamMovesLeft := TeamMovesLeft - 1;
@@ -9042,7 +9194,7 @@ begin
           aPlayer.tmp:=0;
           if aPlayer.TalentId = TALENT_ID_BOMB then
             aPlayer.tmp := 1;
-          aPLayer.Shot := aPlayer.DefaultShot + 2 + aPlayer.tmp;
+          aPLayer.Shot := aPlayer.DefaultShot + 1 + aPlayer.tmp;  // con tackle vinto prende solo +1, con movetoball +2 e dribbling +1
           aPLayer.Passing  := aPlayer.Defaultpassing + 2;
           tsSpeaker.Add( aPlayer.Surname +' (Tackle) vince il contrasto pefettamente su ' + oldPlayerBall.Surname );
 
@@ -13349,7 +13501,10 @@ var
   preRoll, aRnd: integer;
   Roll:TRoll;
   MaxSpeed: integer;
+  OriginalPath : dse_pathplanner.TPath;
   label dopo;
+  label DoOriginalPath0, DoOriginalPath1;
+
 begin
 
   TsScript.add ('sc_ai.movetoball');
@@ -13429,11 +13584,13 @@ begin
       aPlayer.MovePath.Clear ;
     end;
 
-  // Pulisco comunque tutti i player.movepath . Chi non chiama i gepathplanner.TPath ha path vuoto.
+  // Pulisco comunque tutti i player.movepath . Chi non chiama i gepathplanner.TPath ha path vuoto e passa ai talenti comunque.
+  OriginalPath := dse_pathplanner.TPath.Create; // decide tra originalPath e Talent che attivano altri path
 
   // meglio tenerla divisa, non è vera AI
   TsScript.add ('sc_ai.endmovetoball');
   TsScript.add ('sc_ai.moveall');
+
 
   case Ball.cellX of
       1..5: begin                           // team 0 defend team 1 attack
@@ -14100,11 +14257,11 @@ begin
                 end;
 
 
+             CopyPath ( aPlayer.MovePath , OriginalPath ); // i path devono esistere
              if (aPlayer.MovePath.Count > 0 ) {and not (aPlayer.grouped )} then begin
 //             if (aCell.X <> -1) and not (aPlayer.grouped )then begin
                // se c'è spazio per rientrare
-               // TsScript.add ('sc_ST,' + aPlayer.ids +',' + '1' ) ;
-
+              ExceptPlayers.Add(aPlayer); // o me lo ritrovo più avanti nel ciclo
                 // controllo la presenza della palla libera sul percorso
                 dstCell :=  Point (aPlayer.MovePath[aPlayer.MovePath.Count-1].X,aPlayer.MovePath[aPlayer.MovePath.Count-1].Y) ;
                 for I := 0 to aPlayer.MovePath.Count -1 do begin
@@ -14122,21 +14279,20 @@ begin
                   end;
                 end;
 
+             end;
 
-                if toball then
+                // se con il semplice aimoveall trovo la palla lo faccia, altrimenti valuto i talenti.
+             if toball then
 
-                  TsScript.add ('sc_player.move.toball,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
-                                                             IntTostr(dstCell.X   )+','+ IntTostr( dstCell.Y)  )
-                else
-                TsScript.add ('sc_pa,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
-                                IntTostr(dstCell.X   )+','+ IntTostr( dstCell.Y)  ) ;
-                aPlayer.CellS :=  dstCell;
-                aPlayer.MovePath.Clear ;
+              TsScript.add ('sc_player.move.toball,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
+                                                         IntTostr(dstCell.X   )+','+ IntTostr( dstCell.Y)  )
+             else begin
 
+//                aPlayer.MovePath.Clear ;
 //      in ai_moveall prima fa aimoveall poi cerca la cella Y precisa defaultcellY ,  . spende di più a correr . utile per chi deve stare sulle fascie
                 if ( aPlayer.TalentId = TALENT_ID_POSITIONING )  and ( not toball)  then begin  // o not aPlayer.hasball
                   AI_MovePlayer_DefaultY ( aPlayer ) ;
-                  if aPlayer.MovePath.Count > 0 then begin
+                  if aPlayer.MovePath.Count > 0 then begin   // se trova il path per marking
                     aPlayer.Stamina := aPlayer.Stamina - cost_plm;
                     TsScript.add ('sc_ST,' + aPlayer.ids +',' + IntToStr(cost_plm) ) ;
 
@@ -14144,6 +14300,10 @@ begin
                     TsScript.add ('sc_pa,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
                                   IntTostr(dstCell.X   )+','+ IntTostr( dstCell.Y)  ) ;
                     aPlayer.CellS :=  dstCell;
+                    ExceptPlayers.Add(aPlayer); // o me lo ritrovo più avanti nel ciclo
+                  end
+                  else if OriginalPath.Count > 0 then begin  // se NON trova il path per marking ma ha un OriginalPath
+                    goto DoOriginalPath0;
                   end;
                 end
 
@@ -14161,6 +14321,7 @@ begin
                           TsScript.add ('sc_pa,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
                                         IntTostr(dstCell.X   )+','+ IntTostr( dstCell.Y)  ) ;
                           aPlayer.CellS :=  dstCell;
+                          ExceptPlayers.Add(aPlayer); // o me lo ritrovo più avanti nel ciclo
                         end;
 
                     end;
@@ -14168,19 +14329,57 @@ begin
                 end
 
                 else if ( aPlayer.TalentId = TALENT_ID_MARKING )  and ( not toball)  then begin  // o not aPlayer.hasball
-                        GetMarkingPath ( aPlayer );
-                        if aPlayer.MovePath.Count > 0 then begin
-                          aPlayer.Stamina := aPlayer.Stamina - cost_plm;
-                          TsScript.add ('sc_ST,' + aPlayer.ids +',' + IntToStr(cost_plm) ) ;
+                  GetMarkingPath ( aPlayer );
+                  if aPlayer.MovePath.Count > 0 then begin
+                    aPlayer.Stamina := aPlayer.Stamina - cost_plm;
+                    TsScript.add ('sc_ST,' + aPlayer.ids +',' + IntToStr(cost_plm) ) ;
 
-                          dstCell := Point (aPlayer.MovePath[aPlayer.MovePath.Count -1].X,aPlayer.MovePath[aPlayer.MovePath.Count -1].Y) ;
-                          TsScript.add ('sc_pa,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
-                                        IntTostr(dstCell.X   )+','+ IntTostr( dstCell.Y)  ) ;
-                          aPlayer.CellS :=  dstCell;
-                        end;
+                    dstCell := Point (aPlayer.MovePath[aPlayer.MovePath.Count -1].X,aPlayer.MovePath[aPlayer.MovePath.Count -1].Y) ;
+                    TsScript.add ('sc_pa,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
+                                  IntTostr(dstCell.X   )+','+ IntTostr( dstCell.Y)  ) ;
+                    aPlayer.CellS :=  dstCell;
+                    ExceptPlayers.Add(aPlayer); // o me lo ritrovo più avanti nel ciclo
+                  end
+                  else if OriginalPath.Count > 0 then begin  // se NON trova il path per marking ma ha un OriginalPath
+                    goto DoOriginalPath0;
+                  end;
+                end
+                else if ( aPlayer.TalentId = TALENT_ID_AGGRESSION )  and ( not toball)  then begin  // o not aPlayer.hasball
+                  if Ball.Player <> nil then begin
+                    if Ball.Player.Team <> aPlayer.Team then begin
+                      GetAggressionCellPath( aPlayer, Ball.CellX, Ball.CellY ); // cerco la cella del portatore di palla
+                      if aPlayer.MovePath.Count > 0 then begin
+                        aPlayer.Stamina := aPlayer.Stamina - cost_plm;
+                        TsScript.add ('sc_ST,' + aPlayer.ids +',' + IntToStr(cost_plm) ) ;
+
+                        dstCell := Point (aPlayer.MovePath[aPlayer.MovePath.Count -1].X,aPlayer.MovePath[aPlayer.MovePath.Count -1].Y) ;
+                        TsScript.add ('sc_pa,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
+                                      IntTostr(dstCell.X   )+','+ IntTostr( dstCell.Y)  ) ;
+                        aPlayer.CellS :=  dstCell;
+                        ExceptPlayers.Add(aPlayer); // o me lo ritrovo più avanti nel ciclo
+                      end
+                      else if OriginalPath.Count > 0 then begin  // se NON trova il path per marking ma ha un OriginalPath
+                          goto DoOriginalPath0;
+                      end;
+                    end;
+                  end
+                  else if OriginalPath.Count > 0 then begin  // se NON trova il path per marking ma ha un OriginalPath
+                    goto DoOriginalPath0;
+                  end;
+                end
+                else begin  // no toball e nessun talento ma un path normale(original), movimento off dif neutral
+                  if aPlayer.MovePath.Count > 0 then begin
+DoOriginalPath0:
+                    CopyPath ( OriginalPath, aPlayer.MovePath   );
+                    dstCell := Point (aPlayer.MovePath[aPlayer.MovePath.Count -1].X,aPlayer.MovePath[aPlayer.MovePath.Count -1].Y) ;
+                    TsScript.add ('sc_pa,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
+                                    IntTostr(dstCell.X   )+','+ IntTostr( dstCell.Y)  ) ;
+                    aPlayer.CellS :=  dstCell;
+                  end;
                 end;
-                ExceptPlayers.Add(aPlayer); // o me lo ritrovo più avanti nel ciclo
-           end;
+
+             end;
+
          end; // Y
         end; // X
       end;   // metacampo 0 1..5
@@ -14831,42 +15030,42 @@ begin
                 end;
 
 
-              if (aPlayer.MovePath.Count > 0 ) {and not (aPlayer.grouped )}then begin
+             CopyPath ( aPlayer.MovePath , OriginalPath ); // i path devono esistere
+             if (aPlayer.MovePath.Count > 0 ) {and not (aPlayer.grouped )} then begin
 //             if (aCell.X <> -1) and not (aPlayer.grouped )then begin
                // se c'è spazio per rientrare
-               // TsScript.add ('sc_ST,' + aPlayer.ids +',' + '1' ) ;
-
-                  // controllo la presenza della palla libera sul percorso
-                  dstCell :=  Point (aPlayer.MovePath[aPlayer.MovePath.Count-1].X,aPlayer.MovePath[aPlayer.MovePath.Count-1].Y) ;
-                  for I := 0 to aPlayer.MovePath.Count -1 do begin
-                    if  ( Ball.CellX = aPlayer.MovePath[i].X ) and ( Ball.CellY = aPlayer.MovePath[i].Y ) and (Ball.Player = nil) then begin
-                       dstCell := Point (aPlayer.MovePath[i].X,aPlayer.MovePath[i].Y) ;
-                       Toball := True;
+              ExceptPlayers.Add(aPlayer); // o me lo ritrovo più avanti nel ciclo
+                // controllo la presenza della palla libera sul percorso
+                dstCell :=  Point (aPlayer.MovePath[aPlayer.MovePath.Count-1].X,aPlayer.MovePath[aPlayer.MovePath.Count-1].Y) ;
+                for I := 0 to aPlayer.MovePath.Count -1 do begin
+                  if  ( Ball.CellX = aPlayer.MovePath[i].X ) and ( Ball.CellY = aPlayer.MovePath[i].Y ) and (Ball.Player = nil) then begin
+                     dstCell := Point (aPlayer.MovePath[i].X,aPlayer.MovePath[i].Y) ;
+                     Toball := True;
                         // bonus al tiro anche per ai:moveALL
                         if (aPlayer.MovePath.Count >= 2) and ( aPlayer.HasBall )  then begin
                          aPlayer.BonusPLMTurn := 1;
                          aPlayer.Shot   := aPlayer.DefaultShot + 2 ;
                          aPlayer.Passing   := aPlayer.DefaultPassing + 2 ;
                         end;
-                       break;
+                     break;
 
-                    end;
                   end;
+                end;
 
+             end;
 
-                  if toball then
+                // se con il semplice aimoveall trovo la palla lo faccia, altrimenti valuto i talenti.
+             if toball then
 
-                    TsScript.add ('sc_player.move.toball,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
-                                                               IntTostr(dstCell.X   )+','+ IntTostr( dstCell.Y)  )
-                  else
-                  TsScript.add ('sc_pa,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
-                                  IntTostr(dstCell.X   )+','+ IntTostr( dstCell.Y)  ) ;
-                  aPlayer.CellS :=  dstCell;
-                  aPlayer.MovePath.Clear ;
+              TsScript.add ('sc_player.move.toball,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
+                                                         IntTostr(dstCell.X   )+','+ IntTostr( dstCell.Y)  )
+             else begin
+
+//                aPlayer.MovePath.Clear ;
 //      in ai_moveall prima fa aimoveall poi cerca la cella Y precisa defaultcellY ,  . spende di più a correr . utile per chi deve stare sulle fascie
                 if ( aPlayer.TalentId = TALENT_ID_POSITIONING )  and ( not toball)  then begin  // o not aPlayer.hasball
                   AI_MovePlayer_DefaultY ( aPlayer ) ;
-                  if aPlayer.MovePath.Count > 0 then begin
+                  if aPlayer.MovePath.Count > 0 then begin   // se trova il path per marking
                     aPlayer.Stamina := aPlayer.Stamina - cost_plm;
                     TsScript.add ('sc_ST,' + aPlayer.ids +',' + IntToStr(cost_plm) ) ;
 
@@ -14874,6 +15073,10 @@ begin
                     TsScript.add ('sc_pa,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
                                   IntTostr(dstCell.X   )+','+ IntTostr( dstCell.Y)  ) ;
                     aPlayer.CellS :=  dstCell;
+                    ExceptPlayers.Add(aPlayer); // o me lo ritrovo più avanti nel ciclo
+                  end
+                  else if OriginalPath.Count > 0 then begin  // se NON trova il path per marking ma ha un OriginalPath
+                    goto DoOriginalPath1;
                   end;
                 end
 
@@ -14891,6 +15094,10 @@ begin
                           TsScript.add ('sc_pa,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
                                         IntTostr(dstCell.X   )+','+ IntTostr( dstCell.Y)  ) ;
                           aPlayer.CellS :=  dstCell;
+                          ExceptPlayers.Add(aPlayer); // o me lo ritrovo più avanti nel ciclo
+                        end
+                        else if OriginalPath.Count > 0 then begin  // se NON trova il path per marking ma ha un OriginalPath
+                          goto DoOriginalPath1;
                         end;
 
                     end;
@@ -14898,25 +15105,69 @@ begin
                 end
 
                 else if ( aPlayer.TalentId = TALENT_ID_MARKING )  and ( not toball)  then begin  // o not aPlayer.hasball
-                        GetMarkingPath ( aPlayer );
-                        if aPlayer.MovePath.Count > 0 then begin
-                          aPlayer.Stamina := aPlayer.Stamina - cost_plm;
-                          TsScript.add ('sc_ST,' + aPlayer.ids +',' + IntToStr(cost_plm) ) ;
+                  GetMarkingPath ( aPlayer );
+                  if aPlayer.MovePath.Count > 0 then begin
+                    aPlayer.Stamina := aPlayer.Stamina - cost_plm;
+                    TsScript.add ('sc_ST,' + aPlayer.ids +',' + IntToStr(cost_plm) ) ;
 
-                          dstCell := Point (aPlayer.MovePath[aPlayer.MovePath.Count -1].X,aPlayer.MovePath[aPlayer.MovePath.Count -1].Y) ;
-                          TsScript.add ('sc_pa,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
-                                        IntTostr(dstCell.X   )+','+ IntTostr( dstCell.Y)  ) ;
-                          aPlayer.CellS :=  dstCell;
-                        end;
+                    dstCell := Point (aPlayer.MovePath[aPlayer.MovePath.Count -1].X,aPlayer.MovePath[aPlayer.MovePath.Count -1].Y) ;
+                    TsScript.add ('sc_pa,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
+                                  IntTostr(dstCell.X   )+','+ IntTostr( dstCell.Y)  ) ;
+                    aPlayer.CellS :=  dstCell;
+                    ExceptPlayers.Add(aPlayer); // o me lo ritrovo più avanti nel ciclo
+                  end
+                  else if OriginalPath.Count > 0 then begin  // se NON trova il path per marking ma ha un OriginalPath
+                    goto DoOriginalPath1;
+                  end;
+                end
+                else if ( aPlayer.TalentId = TALENT_ID_AGGRESSION )  and ( not toball)  then begin  // o not aPlayer.hasball
+                  if Ball.Player <> nil then begin
+                    if Ball.Player.Team <> aPlayer.Team then begin
+                      GetAggressionCellPath( aPlayer, Ball.CellX, Ball.CellY ); // cerco la cella del portatore di palla
+                      if aPlayer.MovePath.Count > 0 then begin
+                        aPlayer.Stamina := aPlayer.Stamina - cost_plm;
+                        TsScript.add ('sc_ST,' + aPlayer.ids +',' + IntToStr(cost_plm) ) ;
+
+                        dstCell := Point (aPlayer.MovePath[aPlayer.MovePath.Count -1].X,aPlayer.MovePath[aPlayer.MovePath.Count -1].Y) ;
+                        TsScript.add ('sc_pa,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
+                                      IntTostr(dstCell.X   )+','+ IntTostr( dstCell.Y)  ) ;
+                        aPlayer.CellS :=  dstCell;
+                        ExceptPlayers.Add(aPlayer); // o me lo ritrovo più avanti nel ciclo
+                      end;
+                    end;
+                  end
+                  else if OriginalPath.Count > 0 then begin  // se NON trova il path per marking ma ha un OriginalPath
+                    goto DoOriginalPath1;
+                  end;
+                end
+                else begin  // no toball e nessun talento ma un path normale(original), movimento off dif neutral
+                  if aPlayer.MovePath.Count > 0 then begin
+DoOriginalPath1:
+                    CopyPath ( OriginalPath, aPlayer.MovePath   );
+                    dstCell := Point (aPlayer.MovePath[aPlayer.MovePath.Count -1].X,aPlayer.MovePath[aPlayer.MovePath.Count -1].Y) ;
+                    TsScript.add ('sc_pa,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
+                                    IntTostr(dstCell.X   )+','+ IntTostr( dstCell.Y)  ) ;
+                    aPlayer.CellS :=  dstCell;
+                  end;
                 end;
 
-                  ExceptPlayers.Add(aPlayer); // o me lo ritrovo più avanti nel ciclo
-              end;
+             end;
+
          end; // Y
         end; // X
       end;
   end;
 
+
+
+
+
+
+
+
+
+
+ OriginalPath.Free;
 
  ExceptPlayers.Clear ;
  TsScript.add ('sc_ai.endmoveall');

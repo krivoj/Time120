@@ -2,6 +2,7 @@
 {$DEFINE TOOLS}
 
 
+      { TODO  : BUG su fault doppia animazione dovuto forse a waitingmovingplayers. proverò a mettere sotto sc_freekick1. prima sposto gli avversari}
       { TODO  : verificare suoni, sul rigore è mancata l'esultanza}
       { TODO : finire traduzioni DATA/EN}
       { TODO : bug grafico probabile dopo espulsione non trova sprite perchè passato di lista. occorre accettare nil }
@@ -1130,6 +1131,9 @@ begin
   xpNeedTal[TALENT_ID_POSITIONING] := 50;
   xpNeedTal[TALENT_ID_FREEKICKS] := 40;
   xpNeedTal[TALENT_ID_AGILITY] := 50;
+  xpNeedTal[TALENT_ID_RAPIDPASSING] := 50;
+  xpNeedTal[TALENT_ID_AGGRESSION] := 50;
+  xpNeedTal[TALENT_ID_ACE] := 50;
 
   MutexAnimation:=CreateMutex(nil,false,'tsscript');
 
@@ -1202,7 +1206,7 @@ begin
 
   Application.ProcessMessages ;
 
-  // rispetto l'esatto ordine dei talenti sul DB
+  // rispetto l'esatto ordine dei talenti sul server
   StringTalents[1]:= 'goalkeeper';
   StringTalents[2] := 'challenge'; // lottatore
   StringTalents[3] := 'toughness'; // durezza
@@ -1221,6 +1225,9 @@ begin
   StringTalents[16] :=  'positioning';
   StringTalents[17] :=  'freekicks';
   StringTalents[18] :=  'agility';
+  StringTalents[19] :=  'rapidpassing';
+  StringTalents[20] :=  'aggression';
+  StringTalents[21] :=  'ace';
 
   LstSkill[0]:= 'Move';
   LstSkill[1]:= 'Short.Passing';
@@ -1233,6 +1240,7 @@ begin
   LstSkill[8]:= 'Tackle';
   LstSkill[9]:= 'Pressing';
   LstSkill[10]:= 'Corner.Kick';
+  { TODO : aggiungere skill }
 
   btnFormation.Caption := Translate('lbl_Formation');
   btnMainPlay.Caption := Translate('lbl_Play');
@@ -1589,7 +1597,7 @@ begin
   end
   else if se_gridskill.Cells [0,CellY].Ids = 'Pressing' then begin
     if GCD <= 0 then begin
-            WaitForXY_Move := false;
+          WaitForXY_Move := false;
           WaitForXY_ShortPass:= false;
           WaitForXY_LoftedPass:= false;
           WaitForXY_Crossing:= false;
@@ -1613,8 +1621,8 @@ begin
           WaitForXY_Dribbling:= false;
           // sul brain iscof batterà il corner
             if  ( LiveMatch ) and  (Mybrain.Score.TeamGuid  [ Mybrain.TeamTurn ] = MyGuidTeam) then tcp.SendStr( 'COR' + EndofLine);
-                  GCD := GCD_DEFAULT;
-                  hidechances;
+            GCD := GCD_DEFAULT;
+            hidechances;
     end;
   end
   else if se_gridskill.Cells [0,CellY].Ids = 'Pass' then begin
@@ -6278,6 +6286,7 @@ begin
       while tsCmd[0] <> 'E' do begin
         tsCmd.CommaText := Mybrain.tsScript [i];
         LogMemo ( tsCmd.CommaText );
+
           AnimCommon ( tsCmd.commatext );
           i := i+1;
       end;
@@ -6304,8 +6313,31 @@ begin
       while tsCmd[0] <> 'E' do begin
           tsCmd.CommaText := Mybrain.tsScript [i];
           LogMemo ( tsCmd.CommaText );
-          AnimCommon ( tsCmd.commatext );
+        if tsCmd[0]= 'sc_dribbling.ok' then begin
+          // 1 ids dribbling
+          // 2 ids defender
+          // 3 cellx provenienza tentativo dribbling
+          // 4 celly provenienza tentativo dribbling
+          // 5 cellX contrasto intermedio
+          // 6 cellY contrasto intermedio
+          // 7 cellx finale
+          // 8 cellx finale
 
+          BallPlayer := Mybrain.GetSoccerPlayer(tsCmd[1]);
+          aTackle := Mybrain.GetSoccerPlayer(tsCmd[2]);
+
+          AnimationScript.Tsadd ('cl_player.move.toball,'      +  BallPlayer.ids + ',' + tsCmd[3] + ','+tsCmd[4]  +',' + tsCmd[5] + ','+tsCmd[6] );
+          AnimationScript.Tsadd ('cl_ball.move.toball,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[1]+ ',0' );
+          AnimationScript.Tsadd ('cl_player.move,'      +  aTackle.ids + ','  + tsCmd[5] + ','+tsCmd[6] +',' + tsCmd[3] + ','+tsCmd[4]  );
+          AnimationScript.Tsadd ('cl_wait,' + IntTostr(( sprite1cell)));
+          AnimationScript.Tsadd ('cl_sound,soundtackle');
+          AnimationScript.Tsadd ('cl_ball.move.toball,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[5] + ','+tsCmd[6] + ',' + tsCmd[7] + ','+tsCmd[8] + ',' + tsCmd[1]+ ',0' );
+          AnimationScript.Tsadd ('cl_player.move.toball,'      +  BallPlayer.ids + ','  + tsCmd[5] + ','+tsCmd[6] +','+tsCmd[7] + ','+tsCmd[8]  );
+//          AnimationScript.Tsadd ('cl_wait,' + IntTostr(( 1200)));
+        end
+        else begin
+          AnimCommon ( tsCmd.commatext );
+        end;
 
           i := i+1;
       end;
@@ -9408,11 +9440,16 @@ begin
   GridXp.DefaultColWidth := 16;
   GridXp.DefaultRowHeight := 16;
   GridXp.ColCount :=3;
-  GridXp.RowCount :=25;
+  GridXp.RowCount := 6 + 21 + 1; // stat num_talent 1 vuota
   GridXp.Columns[0].Width := 120;
   GridXp.Columns[1].Width := 60;
   GridXp.Columns[2].Width := 40;
   GridXp.Width := GridXp.VirtualWidth;
+
+  GridXP.ScrollBarColor := clWhite;
+  GridXP.ScrollBarWidth := 10;
+  GridXP.ScrollBarHeight := 20;
+  GridXP.ScrollBars := SBVertical;
 
   for y := 0 to gridXP.RowCount -1 do begin
     GridXp.Rows[y].Height := 16;
@@ -10232,6 +10269,10 @@ begin
     SE_GridCountryTeam.DefaultRowHeight := 16;
     SE_GridCountryTeam.ColCount :=1; // nazione o team
     SE_GridCountryTeam.Columns [0].Width := SE_GridCountryTeam.Width;
+    SE_GridCountryTeam.ScrollBarColor := clWhite;
+    SE_GridCountryTeam.ScrollBarWidth := 10;
+    SE_GridCountryTeam.ScrollBarHeight := 20;
+    SE_GridCountryTeam.ScrollBars := SBVertical;
 
 
     if fGameScreen = ScreenSelectCountry then begin
@@ -10714,6 +10755,11 @@ begin
   SE_GridMarket.Columns [11].Width :=120;  // matches left
   SE_GridMarket.Columns [12].Width :=60;  // BUY
   SE_GridMarket.Width := SE_GridMarket.TotalCellsWidth;
+
+  SE_GridMarket.ScrollBarColor := clWhite;
+  SE_GridMarket.ScrollBarWidth := 10;
+  SE_GridMarket.ScrollBarHeight := 20;
+  SE_GridMarket.ScrollBars := SBVertical;
 
   SE_GridMarket.Cells[0,0].Text := '';
   SE_GridMarket.Cells[1,0].Text := Translate('lbl_Surname');

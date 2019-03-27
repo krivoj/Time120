@@ -164,6 +164,7 @@ object FormServer: TFormServer
     Checked = True
     State = cbChecked
     TabOrder = 11
+    OnClick = CheckBoxActiveMacthesClick
   end
   object CheckBox1: TCheckBox
     Left = 8
