@@ -1,7 +1,7 @@
 ﻿unit Unit1;
 {$DEFINE TOOLS}
 
-
+       { TODO : set of waitingfor ecc... }
       { TODO  : BUG su fault doppia animazione dovuto forse a waitingmovingplayers. proverò a mettere sotto sc_freekick1. prima sposto gli avversari}
       { TODO  : verificare suoni, sul rigore è mancata l'esultanza}
       { TODO : finire traduzioni DATA/EN}
@@ -502,6 +502,8 @@ end;
 
 var
   Form1: TForm1;
+  aScript, OldScript : string;
+
   xpNeedTal: array [1..NUM_TALENT] of integer;  // come i talenti sul db game.talents. xp necessaria per trylevelup del talento
   SelCountryTeam: string;
   Language: string;
@@ -587,7 +589,8 @@ var
   MM3 : array [0..255] of TMemoryStream;  // copia di cui sopra ma in formato stream, per un accesso rapido a certe informazioni
 
   LastTcpincMove,CurrentIncMove: byte;
-  incMove : array [0..255] of boolean;
+  incMoveAllProcessed : array [0..255] of boolean;
+  incMoveReadTcp : array [0..255] of boolean;
 
   TSUniforms: array [0..1] of Tstringlist;
   UniformBitmapBW,FaultBitmapBW,InOutBitmap : SE_Bitmap;
@@ -3018,23 +3021,6 @@ begin
      exit;
     end;
 
-    if ( SE_ball.IsAnySpriteMoving  ) then begin   // la palla si sta muovendo
-      se_Theater1.thrdAnimate.OnTimer (se_Theater1.thrdAnimate);
-      Application.ProcessMessages ;
-      ReleaseMutex ( MutexAnimation );
-      exit;
-    end;
-
-    if (AnimationScript.waitMovingPlayers) then begin // se devo apsettare i players
-
-       if se_players.IsAnySpriteMoving  then  begin
-          se_Theater1.thrdAnimate.OnTimer (se_Theater1.thrdAnimate);
-          Application.ProcessMessages ;
-          ReleaseMutex ( MutexAnimation );
-          exit;
-       end;
-    end;
-
     if AnimationScript.wait > -1 then begin
       AnimationScript.wait := AnimationScript.wait - MainThread.Interval ;
       if AnimationScript.wait <=0 then begin
@@ -3047,8 +3033,29 @@ begin
       end;
     end;
 
+    if ( SE_ball.IsAnySpriteMoving  ) then begin   // la palla si sta muovendo
+      se_Theater1.thrdAnimate.OnTimer (se_Theater1.thrdAnimate);
+      Application.ProcessMessages ;
+      ReleaseMutex ( MutexAnimation );
+      exit;
+    end;
+
+
+    if (AnimationScript.waitMovingPlayers) then begin // se devo apsettare i players
+
+       if se_players.IsAnySpriteMoving  then  begin
+          se_Theater1.thrdAnimate.OnTimer (se_Theater1.thrdAnimate);
+          Application.ProcessMessages ;
+          ReleaseMutex ( MutexAnimation );
+          exit;
+       end;
+    end;
+
 
     if AnimationScript.Index <= AnimationScript.Ts.Count -1  then begin
+
+      if AnimationScript.Index = 0  then
+        PanelCorner.Visible := False;  // SC_FREEKICK mai per prima istruzione
       if se_ball.IsAnySpriteMoving then begin
        ReleaseMutex ( MutexAnimation );
        exit;
@@ -3061,10 +3068,14 @@ begin
       Animating:= True;
       anim (AnimationScript.Ts[ AnimationScript.Index ]); // muove gli sprite
       AnimationScript.Index := AnimationScript.Index + 1;
+
+//      if AnimationScript.Index >=  AnimationScript.Ts.Count -1 then
+//        AnimationScript.Reset;
+
     end
     else begin
       AnimationScript.Index := -1;
-
+    //  AnimationScript.Reset;
     // qui ho terminato l'animazione ma alcuni sprite potrebbero ancora muoversi in questo momento
 
       while ( SE_ball.IsAnySpriteMoving  ) or (SE_players.IsAnySpriteMoving ) do begin
@@ -3087,7 +3098,7 @@ begin
       ClientLoadBrainMM ( CurrentIncMove, false ) ; // <-- false, gli sprite e le liste non saranno mai svuotate
       SpriteReset;
       UpdateSubSprites;
-      IncMove [CurrentIncMove] := True; // caricato e completamente eseguito
+      incMoveAllProcessed [CurrentIncMove] := True; // caricato e completamente eseguito
   //    inc ( CurrentIncMove );
     end;
 
@@ -3606,7 +3617,7 @@ begin
     Mybrain.tsScript.CommaText := midStr ( SS.DataString , StartScript +1+2, lentsscript ); //+1 ragiona in base 1  +2 per len della stringa
 
   SS.Free;
-
+  incMoveReadTcp [incMove ] := True; // Letto e caricato
   result := Mybrain.tsScript.Count;
 end;
 
@@ -4699,13 +4710,13 @@ begin
       bmp.Free;
       SE_GridMatchInfo.Cells[2,y].Text := MyBrain.GetSoccerPlayer2( tmp[2] ).SurName ;
     end
-    else if ( pos ('yellowcard', tmp[1], 1 ) <> 0) then begin
+    else if ( pos ('yc', tmp[1], 1 ) <> 0) then begin
       bmp:= SE_Bitmap.Create ( dir_interface + 'infoyellow.bmp');
       SE_GridMatchInfo.AddSE_Bitmap (1,y,1,bmp,true );
       bmp.Free;
       SE_GridMatchInfo.Cells[2,y].Text := MyBrain.GetSoccerPlayer2( tmp[2] ).SurName ;
     end
-    else if ( pos ('redcard', tmp[1], 1 ) <> 0) then begin
+    else if ( pos ('rc', tmp[1], 1 ) <> 0) then begin
       bmp:= SE_Bitmap.Create ( dir_interface + 'infored.bmp');
       SE_GridMatchInfo.AddSE_Bitmap (1,y,1,bmp,true );
       bmp.Free;
@@ -9834,10 +9845,12 @@ begin
 
         if ViewReplay then ToolSpin.Visible := True;
         for I := 0 to 255 do begin
-         IncMove [i] := false;
+         incMoveAllProcessed [i] := false;
+         incMoveReadTcp [i] := false;
         end;
         for I := 0 to CurrentIncMove do begin
-         IncMove [i] := true; // caricato e completamente eseguito
+         incMoveAllProcessed [i] := true; // caricato e completamente eseguito
+         incMoveReadTcp [i] := true;
         end;
 
 
@@ -9885,10 +9898,13 @@ begin
             ClientLoadBrainMM (CurrentIncMove, true) ;   // (incmove)
             FirstLoadOK := True;
             for I := 0 to 255 do begin
-             IncMove [i] := false;
+             incMoveAllProcessed [i] := false;
+             incMoveReadTcp [i] := false;
             end;
             for I := 0 to CurrentIncMove do begin
-             IncMove [i] := true; // caricato e completamente eseguito
+             // caricato e completamente eseguito
+             incMoveAllProcessed [i] := true;
+             incMoveReadTcp [i] := true;
             end;
 
 
@@ -10085,22 +10101,31 @@ begin
 
     if CurrentIncMove <= LastTcpIncMove  then begin
 
-      if IncMove [CurrentIncMove] = false then begin   // se non è stato ancora caricato nella tsScript
+    //  if incMoveAllProcessed [CurrentIncMove] = false then begin   // se non è stato ancora caricato ed eseguito nella tsScript
 
-        ClientLoadScript ( CurrentIncMove ); // ( MM3, buf3 ); // punta direttamente dove comincia tsScript
-        if Mybrain.tsScript.Count = 0 then begin
-          ClientLoadBrainMM ( CurrentIncMove, false);
-          IncMove [CurrentIncMove] := True; // caricato e completamente eseguito
+      if incMoveReadTcp [CurrentIncMove] = false then begin   // se non è stato ancora caricato letto in Tcp
+
+        ClientLoadScript ( CurrentIncMove ); // ( MM3, buf3 ); // punta direttamente dove comincia tsScript . riempe mybrain.tscript.commatext
+
+        if Mybrain.tsScript.Count = 0 then begin           // se animationScript ha finito di processare tutte le commatext di Mybrain.tsscript
+          ClientLoadBrainMM ( CurrentIncMove, false);      // oppure se non c'è stringa commatext
+          incMoveReadTcp [CurrentIncMove] := True; // caricato e completamente eseguito
+          incMoveAllProcessed [CurrentIncMove] := True; // caricato e completamente eseguito
          // Inc(CurrentIncMove); // se maggiore al giro dopo aspetta
         end
-        else
-          LoadAnimationScript; // if ts[0] = server_Plm CL_ ecc..... il vecchio ClientLoadbrain . alla fine il thread chiama  ClientLoadBrainMM
+        else begin
+          if AScript <> Mybrain.tsScript.CommaText then begin  // solo script diversi.
+            AScript := Mybrain.tsScript.CommaText ;
+            LoadAnimationScript; // fa mybrain.tscript.clear ma prima riempe animationScript.  alla fine il thread chiama  ClientLoadBrainMM
+          end;
       // per questro motivo MM3 e buf3 devono essere globali
-
+        end;
 //          Inc(CurrentIncMove); // se maggiore al giro dopo aspetta
       end
-      else Inc(CurrentIncMove); // se maggiore al giro dopo aspetta
-
+      else begin  // // se è già stato letto in Tcp.  se maggiore al giro dopo aspetta
+        if incMoveAllProcessed [CurrentIncMove] = True then // se AnimationScript è terminata
+          Inc(CurrentIncMove);
+      end;
     end;
 
     ReleaseMutex(MutexAnimation);

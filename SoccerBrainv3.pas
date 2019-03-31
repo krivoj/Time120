@@ -15,7 +15,6 @@ unit SoccerBrainv3;
    { TODO creare più formazioni , forse bug nella fatigue }
    { TODO  : cmd_login = 0 cmd_plm=101. tutti i validate semplificati. da valutare. ordinrali per performance }
     { TODO : utility flag market 0 o 1 e delete player in market da lanciare ogni 24 ore.PULIZIA MARKET e game.players team=0 }
-    { TODO : sostituire yellowcard con yc in matchinfo}
 // futuro
 
    { TODO  : Gameplay: Valutare se Pos (tiro potente) può innescare autogol }
@@ -4970,9 +4969,6 @@ begin
   // allontano di 2 celle gli avversari
   ResetPassiveSkills;
   // prendo tutti i player avversari a distanza < 2 dalla palla, quindi quelli che devono spostarsi
-  {$IFDEF ADDITIONAL_MATCHINFO}  MatchInfo.Add( IntToStr(fminute) + '.freekick1.' + IntToStr(team));{$ENDIF}
-
-  TsScript.add ('sc_FREEKICK1.FKA1,' + IntTostr(Team) + ',' +  IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client che si può proseguire
 
   for p := lstSoccerPlayer.Count -1 downto 0 do begin
   // per ogni calciatore avversario che si trovano a distanza < 2 dalla palla, prendo tutte le celle libere in cui può andare
@@ -5033,6 +5029,8 @@ begin
   fTeamMovesLeft := TurnMoves;
   fmilliseconds := Turnmilliseconds;
 //  TurnChange(TurnMoves); // 4
+  {$IFDEF ADDITIONAL_MATCHINFO}  MatchInfo.Add( IntToStr(fminute) + '.freekick1.' + IntToStr(team));{$ENDIF}
+  TsScript.add ('sc_FREEKICK1.FKA1,' + IntTostr(Team) + ',' +  IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client che si può proseguire
   TsScript.add ('E') ;
 
   // da settemamovesleft. qui deve essere piazzato chi calcia il corner
@@ -5042,7 +5040,6 @@ begin
 end;
 procedure TSoccerbrain.FreeKickSetup2 ( team : Integer  );
 begin
-  {$IFDEF ADDITIONAL_MATCHINFO}  MatchInfo.Add( IntToStr(fminute) + '.freekick2.' + IntToStr( team));{$ENDIF}
 
   ResetPassiveSkills;
   TeamTurn := Team ;
@@ -5052,6 +5049,7 @@ begin
   fmilliseconds := Turnmilliseconds;
 
 //  TsScript.add ('sc_TUC,' + intTostr(TeamTurn) ) ;
+  {$IFDEF ADDITIONAL_MATCHINFO}  MatchInfo.Add( IntToStr(fminute) + '.freekick2.' + IntToStr( team));{$ENDIF}
   TsScript.add ('sc_FREEKICK2.FKA2,' + IntTostr(Team) + ',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // richiesta al client corner free kick
   TsScript.add ('E') ;
 
@@ -5065,7 +5063,6 @@ begin
   // il prs o pos che seguirà mantiene le shotcell. il malus è minore. il difensore può mettere fino a 4 in barriera. esiste una cella
   // specifica di barriera per ogni shotCell. l'animazione prevede che dopo il pos o prs con flag freekick3 veda gli uomini in barriera
   // raggiungere celle libere. Qui nel setup non devo liberare nulla, ma devo farlo dopo.
-  {$IFDEF ADDITIONAL_MATCHINFO}  MatchInfo.Add( IntToStr(fminute) + '.freekick3.' + IntToStr( team));{$ENDIF}
   ResetPassiveSkills;
   TeamTurn := Team ;
   TeamFreeKick := TeamTurn ;
@@ -5074,6 +5071,7 @@ begin
 
 //  TsScript.add ('sc_TUC,' + intTostr(TeamTurn) ) ;
   fTeamMovesLeft := 2; // il pos o prs utilizza teammovesleft
+  {$IFDEF ADDITIONAL_MATCHINFO}  MatchInfo.Add( IntToStr(fminute) + '.freekick3.' + IntToStr( team));{$ENDIF}
   TsScript.add ('sc_FREEKICK3.FKA3,'  + IntTostr(Team) + ',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // richiesta al client corner free kick
   TsScript.add ('E') ;
 
@@ -5085,7 +5083,6 @@ end;
 procedure TSoccerbrain.FreeKickSetup4 ( team : Integer  );
 begin
   { devo mettere tutti fuori dall'area e dietro la palla }
-  {$IFDEF ADDITIONAL_MATCHINFO}  MatchInfo.Add( IntToStr(fminute) + '.freekick4.' + IntToStr( team));{$ENDIF}
   ResetPassiveSkills;
   FreePenaltyArea ( team );
 
@@ -5095,6 +5092,7 @@ begin
   TsScript.add ('sc_TUC,' + intTostr(TeamTurn) ) ;
 //  TsScript.add ('sc_TUC,' + intTostr(TeamTurn) ) ;
   fTeamMovesLeft := 2; // il pos o prs non utilizza teammovesleft
+  {$IFDEF ADDITIONAL_MATCHINFO}  MatchInfo.Add( IntToStr(fminute) + '.freekick4.' + IntToStr( team));{$ENDIF}
   TsScript.add ('sc_FREEKICK4.FKA4,'  + IntTostr(Team) + ',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // richiesta al client corner free kick
   TsScript.add ('E') ;
 
@@ -5269,7 +5267,7 @@ begin
   if fmilliseconds < 0 then begin
     if  w_Coa or w_Cod or w_CornerKick or w_Fka1 or w_FreeKick1 or w_Fka2 or w_Fkd2  or w_FreeKick2 or w_Fka3 or w_Fkd3 or w_FreeKick3 or
      w_Fka4 or w_FreeKick4 then
-      AI_Think( score.TeamGuid [teamTurn] )
+      AI_Think( teamTurn )
     else
       BrainInput ( IntTostr(score.TeamGuid [teamTurn]) + ',' + 'PASS'  ) ;
       SaveData ( incMove );
@@ -9291,20 +9289,20 @@ begin
                   aPlayer.Gameover := true;
                   aPlayer.CanMove := False;
                   PutInReserveSlot ( aPlayer );
-                  MatchInfo.Add( IntToStr(fminute) + '.redcard.' + aPlayer.ids);
+                  MatchInfo.Add( IntToStr(fminute) + '.rc.' + aPlayer.ids);
               end
               else  begin   // cartellino giallo
               // calcolo doppia ammonizione
                   TsScript.add ('sc_yellow,' + aPlayer.ids ) ;
                   aPlayer.YellowCard :=  aPlayer.YellowCard + 1;
-                  MatchInfo.Add( IntToStr(fminute) + '.yellowcard.' + aPlayer.ids);
+                  MatchInfo.Add( IntToStr(fminute) + '.yc.' + aPlayer.ids);
                   if aPlayer.YellowCard = 2 then begin
                     TsScript.add ('sc_red,' + aPlayer.ids ) ;
                     aPlayer.Gameover := true;
                     //layer.RedCard :=  1;  no redcard diretto
                     aPlayer.CanMove := False;
                     PutInReserveSlot(aPlayer);
-                    MatchInfo.Add( IntToStr(fminute) + '.redcard.' + aPlayer.ids);
+                    MatchInfo.Add( IntToStr(fminute) + '.rc.' + aPlayer.ids);
                   end;
               end;
             end;
@@ -11305,7 +11303,7 @@ lopfkf1:
     BrainInput( IntTostr(score.TeamGuid [team]) + ',' +'FREEKICK2_DEFENSE.SETUP' + ',' +  tmp[0] + ',' + tmp[1] + ',' + tmp[2]  );
     tmp.free;
     Exit;
-    end
+  end
   else if w_FreeKick2 then begin
     CornerMap := GetCorner ( TeamTurn , Ball.CellY, OpponentCorner );
 

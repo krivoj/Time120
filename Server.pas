@@ -6664,9 +6664,9 @@ begin
 
     if BrainManager.lstBrain [i].paused or BrainManager.lstBrain[i].Finished then Continue;
 
-    BrainManager.lstBrain [i].milliseconds := BrainManager.lstBrain [i].milliseconds - MatchThread.Interval;
+    BrainManager.lstBrain [i].milliseconds := BrainManager.lstBrain [i].milliseconds - MatchThread.Interval; // viene eseguita AI freekick
 
-    // aistart
+    // aistart   se un player si disconnette o se è una ver AI
      if (BrainManager.lstBrain [i].milliseconds <= 0) or (BrainManager.lstBrain [i].Score.AI [BrainManager.lstBrain [i].TeamTurn]) then Begin
         BrainManager.lstBrain [i].AI_GCD := BrainManager.lstBrain [i].AI_GCD - MatchThread.Interval  ;
       if BrainManager.lstBrain [i].AI_GCD <= 0 then begin

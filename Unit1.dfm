@@ -2327,7 +2327,7 @@ object Form1: TForm1
     Interval = 30
     KeepAlive = True
     OnTimer = mainThreadTimer
-    Left = 768
+    Left = 760
     Top = 1016
   end
   object ThreadCurMove: SE_ThreadTimer
