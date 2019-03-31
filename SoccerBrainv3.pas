@@ -484,8 +484,8 @@ end;
       Score: TScore;
       incMove : Byte;
 
-      MalusPowerShot: array [0..11] of integer;           // pos modificatori al tiro in porta
-      MalusPrecisionShot: array [0..11] of integer;       // prs modificatori al tiro in porta
+      MalusPowerShot: array [1..10] of integer;           // pos modificatori al tiro in porta
+      MalusPrecisionShot: array [1..10] of integer;       // prs modificatori al tiro in porta
 
       ShotCells : TObjectList<TShotCell>;                 // cella dalle quali è possibile tirare in porta con pos o prs
       AICrossingAreaCells: TList<TAICrossAreaCell>;
@@ -4191,34 +4191,27 @@ begin
 //  BonusDefenseShots := -1;
   ToEmptyCellMalus := 1;
 
-  MalusPowerShot[0]:= -1;
-  MalusPowerShot[1]:= -2;
-  MalusPowerShot[2]:= -3;
-  MalusPowerShot[3]:= -4;
+  MalusPowerShot[1]:= -1;
+  MalusPowerShot[2]:= -2;
+  MalusPowerShot[3]:= -3;
   MalusPowerShot[4]:= -4;
   MalusPowerShot[5]:= -4;
   MalusPowerShot[6]:= -4;
   MalusPowerShot[7]:= -4;
-  MalusPowerShot[8]:= -4;
-  MalusPowerShot[9]:= -3;
-  MalusPowerShot[10]:= -2;
-  MalusPowerShot[11]:= -1;
+  MalusPowerShot[8]:= -3;
+  MalusPowerShot[9]:= -2;
+  MalusPowerShot[10]:= -1;
 
-  MalusPrecisionShot[0]:= 0;
-  MalusPrecisionShot[1]:= -1;
-  MalusPrecisionShot[2]:= -2;
-  MalusPrecisionShot[3]:= -3;
+  MalusPrecisionShot[1]:= 0;
+  MalusPrecisionShot[2]:= -1;
+  MalusPrecisionShot[3]:= -2;
   MalusPrecisionShot[4]:= -3;
   MalusPrecisionShot[5]:= -3;
   MalusPrecisionShot[6]:= -3;
   MalusPrecisionShot[7]:= -3;
-  MalusPrecisionShot[8]:= -3;
-  MalusPrecisionShot[9]:= -2;
-  MalusPrecisionShot[10]:= -1;
-  MalusPrecisionShot[11]:= 0;
-
-
-
+  MalusPrecisionShot[8]:= -2;
+  MalusPrecisionShot[9]:= -1;
+  MalusPrecisionShot[10]:= 0;
 
   inherited Create;
  // if not (csDesigning in ComponentState) then begin

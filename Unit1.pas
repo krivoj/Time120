@@ -1,8 +1,6 @@
 ﻿unit Unit1;
 {$DEFINE TOOLS}
 
-       { TODO : set of waitingfor ecc... }
-      { TODO  : BUG su fault doppia animazione dovuto forse a waitingmovingplayers. proverò a mettere sotto sc_freekick1. prima sposto gli avversari}
       { TODO  : verificare suoni, sul rigore è mancata l'esultanza}
       { TODO : finire traduzioni DATA/EN}
       { TODO : bug grafico probabile dopo espulsione non trova sprite perchè passato di lista. occorre accettare nil }
@@ -80,6 +78,20 @@ type TGameScreen =(ScreenLogin, ScreenSelectCountry, ScreenSelectTeam, ScreenMai
                   ScreenWaitingLiveMatch, ScreenLiveMatch, ScreenTactics, ScreenSubs,
                   ScreenSelectLiveMatch, ScreenWaitingWatchLive, ScreenWatchLive,
                   ScreenMarket );
+
+  type TMouseWaitFor = (WaitForNone, WaitForAuth, // in attesa di autenticazione login
+  WaitForXY_ShortPass, WaitForXY_LoftedPass, WaitForXY_Crossing,
+  WaitForXY_Move,WaitForXY_PowerShot , WaitForXY_PrecisionShot, WaitForXY_Dribbling,WaitFor_Corner, // in attesa di input di gioco
+  WaitForXY_FKF1,  // chi batte la short.passing o lofted.pass
+  WaitForXY_FKF2,  // chi batte il cross
+  WaitForXY_FKA2,  // i 3 saltatori
+  WaitForXY_FKD2,  // i 3 saltatori in difesa
+  WaitForXY_FKF3,  // chi batte la punizione
+  WaitForXY_FKD3,  // la barriera
+  WaitForXY_FKF4,  // chi batte il rigore
+  WaitForXY_CornerCOF ,  // chi batte il corner
+  WaitForXY_CornerCOA ,  // i 3 coa ( attaccanti sul corner )
+  WaitForXY_CornerCOD );  // i 3 coa ( difensori sul corner )
 
 Type TAnimationScript = class // letta dal TForm1.mainThreadTimer. Produce l'animazione degli sprite.
   Ts: TstringList;              // contiene tsScript del server. è l'animazione già accaduta sul server e ora il client deve mostrarla con gli sprite
@@ -486,6 +498,7 @@ type
     { Public declarations }
     aInfoPlayer: TSoccerPlayer;
     fGameScreen: TGameScreen;
+    MouseWaitFor : TMouseWaitFor;
 //    function InvertFormationCell (FormationCellX , FormationCellY : integer): Tpoint;
 
 
@@ -520,20 +533,7 @@ var
   WAITING_GETFORMATION, WAITING_STOREFORMATION: boolean;
 
   // il client si mette in attesa di una rispoosta dal server:
-  WaitForAuth: boolean;       // in attesa di autenticazione login
 
-  WaitForXY_ShortPass, WaitForXY_LoftedPass, WaitForXY_Crossing,
-  WaitForXY_Move,WaitForXY_PowerShot , WaitForXY_PrecisionShot, WaitForXY_Dribbling,WaitFor_Corner : boolean; // in attesa di input di gioco
-  WaitForXY_FKF1: Boolean;  // chi batte la short.passing o lofted.pass
-  WaitForXY_FKF2: Boolean;  // chi batte il cross
-  WaitForXY_FKA2: Boolean;  // i 3 saltatori
-  WaitForXY_FKD2: Boolean;  // i 3 saltatori in difesa
-  WaitForXY_FKF3: Boolean;  // chi batte la punizione
-  WaitForXY_FKD3: Boolean;  // la barriera
-  WaitForXY_FKF4: Boolean;  // chi batte il rigore
-  WaitForXY_CornerCOF : boolean;  // chi batte il corner
-  WaitForXY_CornerCOA : boolean;  // i 3 coa ( attaccanti sul corner )
-  WaitForXY_CornerCOD : boolean;  // i 3 coa ( difensori sul corner )
 
 
   DontDoPlayers: Boolean; // non accetta click sui player
@@ -1500,36 +1500,21 @@ begin
   panelSkill.Visible := False;
 
   if se_gridskill.Cells [0,CellY].Ids = 'Move' then begin
-          WaitForXY_Move := true;
-          WaitForXY_ShortPass:= false;
-          WaitForXY_LoftedPass:= false;
-          WaitForXY_Crossing:= false;
-          WaitForXY_Dribbling:= false;
+          MouseWaitFor  :=  WaitForXY_Move;
   end
   else if se_gridskill.Cells [0,CellY].Ids = 'Short.Passing' then begin
-          WaitForXY_Move := false;
-          WaitForXY_ShortPass:= true;
-          WaitForXY_LoftedPass:= false;
-          WaitForXY_Crossing:= false;
-          WaitForXY_Dribbling:= false;
+          MouseWaitFor  :=  WaitForXY_ShortPass;
   end
   else if se_gridskill.Cells [0,CellY].Ids = 'Lofted.Pass' then begin
-          WaitForXY_Move := false;
-          WaitForXY_ShortPass:= false;
-          WaitForXY_LoftedPass:= true;
-          WaitForXY_Crossing:= false;
-          WaitForXY_Dribbling:= false;
+          MouseWaitFor  :=  WaitForXY_LoftedPass;
   end
   else if se_gridskill.Cells [0,CellY].Ids = 'Crossing' then begin
+
     if GCD <= 0 then begin
-          WaitForXY_Move := false;
-          WaitForXY_ShortPass:= false;
-          WaitForXY_LoftedPass:= false;
-          WaitForXY_Crossing:= true;
-          WaitForXY_Dribbling:= false;
+          MouseWaitFor  :=  WaitForXY_Crossing;
 
           if MyBrain.w_FreeKick2 then begin   // in caso di freeKick2 il cross è automatico
-            WaitForXY_Crossing:= false;
+            MouseWaitFor := WaitForNone;
             if  ( LiveMatch ) and  (Mybrain.Score.TeamGuid  [ Mybrain.TeamTurn ] = MyGuidTeam) then tcp.SendStr( 'CRO2' + EndofLine);
             hidechances;
           end;
@@ -1538,11 +1523,7 @@ begin
   end
   else if se_gridskill.Cells [0,CellY].Ids = 'Precision.Shot' then begin
     if GCD <= 0 then begin
-          WaitForXY_Move := false;
-          WaitForXY_ShortPass:= false;
-          WaitForXY_LoftedPass:= false;
-          WaitForXY_Crossing:= false;
-          WaitForXY_Dribbling:= false;
+          MouseWaitFor := WaitForNone;
           aDoor:= MyBrain.GetOpponentDoor (SelectedPlayer );
             if  ( LiveMatch ) and  (Mybrain.Score.TeamGuid  [ Mybrain.TeamTurn ] = MyGuidTeam) then tcp.SendStr( 'PRS'  + EndofLine);
             hidechances;
@@ -1551,11 +1532,7 @@ begin
   end
   else if se_gridskill.Cells [0,CellY].Ids = 'Power.Shot' then begin
     if GCD <= 0 then begin
-          WaitForXY_Move := false;
-          WaitForXY_ShortPass:= false;
-          WaitForXY_LoftedPass:= false;
-          WaitForXY_Crossing:= false;
-          WaitForXY_Dribbling:= false;
+          MouseWaitFor := WaitForNone;
           aDoor:= MyBrain.GetOpponentDoor (SelectedPlayer );
             if  ( LiveMatch ) and  (Mybrain.Score.TeamGuid  [ Mybrain.TeamTurn ] = MyGuidTeam) then tcp.SendStr( 'POS' + EndofLine);
           hidechances;
@@ -1563,19 +1540,12 @@ begin
     end;
   end
   else if se_gridskill.Cells [0,CellY].Ids = 'Dribbling' then begin
-          WaitForXY_Move := false;
-          WaitForXY_ShortPass:= false;
-          WaitForXY_LoftedPass:= false;
-          WaitForXY_Crossing:= false;
-          WaitForXY_Dribbling:= true;
+          MouseWaitFor := WaitForNone;
+          MouseWaitFor := WaitForXY_Dribbling;
   end
   else if se_gridskill.Cells [0,CellY].Ids = 'Protection' then begin
     if GCD <= 0 then begin
-          WaitForXY_Move := false;
-          WaitForXY_ShortPass:= false;
-          WaitForXY_LoftedPass:= false;
-          WaitForXY_Crossing:= false;
-          WaitForXY_Dribbling:= false;
+          MouseWaitFor := WaitForNone;
           if  ( LiveMatch ) and  (Mybrain.Score.TeamGuid  [ Mybrain.TeamTurn ] = MyGuidTeam) then tcp.SendStr( 'PRO'  + EndofLine);
           GCD := GCD_DEFAULT;
           hidechances;
@@ -1583,11 +1553,7 @@ begin
   end
   else if se_gridskill.Cells [0,CellY].Ids = 'Tackle' then begin
     if GCD <= 0 then begin
-          WaitForXY_Move := false;
-          WaitForXY_ShortPass:= false;
-          WaitForXY_LoftedPass:= false;
-          WaitForXY_Crossing:= false;
-          WaitForXY_Dribbling:= false;
+          MouseWaitFor := WaitForNone;
           if Mybrain.Ball.Player <> nil then begin
             if  AbsDistance (Mybrain.Ball.Player.CellX ,Mybrain.Ball.Player.CellY, SelectedPlayer.CellX, SelectedPlayer.CellY ) = 1 then begin
               // Tackle può portare anche ai falli e relativi infortuni e cartellini. Un tackle da dietro ha alte possibilità di generare un fallo
@@ -1600,11 +1566,7 @@ begin
   end
   else if se_gridskill.Cells [0,CellY].Ids = 'Pressing' then begin
     if GCD <= 0 then begin
-          WaitForXY_Move := false;
-          WaitForXY_ShortPass:= false;
-          WaitForXY_LoftedPass:= false;
-          WaitForXY_Crossing:= false;
-          WaitForXY_Dribbling:= false;
+          MouseWaitFor := WaitForNone;
           if Mybrain.Ball.Player <> nil then begin
             if  AbsDistance (Mybrain.Ball.Player.CellX ,Mybrain.Ball.Player.CellY, SelectedPlayer.CellX, SelectedPlayer.CellY ) = 1 then begin
             if  ( LiveMatch ) and  (Mybrain.Score.TeamGuid  [ Mybrain.TeamTurn ] = MyGuidTeam) then tcp.SendStr( 'PRE,' + SelectedPlayer.Ids  + EndofLine);
@@ -1617,11 +1579,7 @@ begin
   else if se_gridskill.Cells [0,CellY].Ids = 'Corner.Kick' then begin
          // non più usata
     if GCD <= 0 then begin
-          WaitForXY_Move := false;
-          WaitForXY_ShortPass:= false;
-          WaitForXY_LoftedPass:= false;
-          WaitForXY_Crossing:= false;
-          WaitForXY_Dribbling:= false;
+          MouseWaitFor := WaitForNone;
           // sul brain iscof batterà il corner
             if  ( LiveMatch ) and  (Mybrain.Score.TeamGuid  [ Mybrain.TeamTurn ] = MyGuidTeam) then tcp.SendStr( 'COR' + EndofLine);
             GCD := GCD_DEFAULT;
@@ -1661,8 +1619,27 @@ var
   y: integer;
 begin
   // se ho già cliccato sulla skill passando sul mouse sopra ad un'altyra skill non creo i circle
-  if WaitForXY_Move or  WaitForXY_ShortPass or WaitForXY_LoftedPass or WaitForXY_Crossing or  WaitForXY_Dribbling  then begin
-    Exit;
+  case MousewaitFor of
+    WaitForXY_ShortPass: exit ;
+    WaitForXY_LoftedPass: exit;
+    WaitForXY_Crossing: exit;
+    WaitForXY_Move: exit;
+    WaitForXY_Dribbling: exit;
+{    WaitFor_Corner: ;
+    WaitForNone: ;
+    WaitForAuth: ;
+    WaitForXY_PowerShot: ;
+    WaitForXY_PrecisionShot: ;
+    WaitForXY_FKF1: ;
+    WaitForXY_FKF2: ;
+    WaitForXY_FKA2: ;
+    WaitForXY_FKD2: ;
+    WaitForXY_FKF3: ;
+    WaitForXY_FKD3: ;
+    WaitForXY_FKF4: ;
+    WaitForXY_CornerCOF: ;
+    WaitForXY_CornerCOA: ;
+    WaitForXY_CornerCOD: ;  }
   end;
 
   if (CellX = se_gridskilloldCol) and (CellY = se_gridskilloldRow) then Exit;
@@ -4300,7 +4277,7 @@ begin
     if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
         CornerMap := MyBrain.GetCorner (MyBrain.TeamTurn , Mybrain.Ball.CellY, OpponentCorner );
         HighLightField ( MyBrain.ball.cellx,MyBrain.ball.cellY  ,0 );
-        WaitForXY_FKF1 := true; //'Scegli chi batterà il fk1';
+        MouseWaitFor :=  WaitForXY_FKF1; //'Scegli chi batterà il fk1';
         LoadGridFreeKick (MyBrain.TeamTurn, 'Passing',true);
         ShowCornerFreeKickGrid;   //
     end
@@ -4323,7 +4300,7 @@ begin
   else if MyBrain.w_Fka2 then begin
     if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
         HighLightField ( MyBrain.ball.cellx,MyBrain.ball.cellY  ,0 );
-        WaitForXY_FKF2 := true; //'Scegli chi batterà il fk2';
+        MouseWaitFor := WaitForXY_FKF2; //'Scegli chi batterà il fk2';
         LoadGridFreeKick (MyBrain.TeamTurn, 'Crossing',true);
         ShowCornerFreeKickGrid;   //
     end
@@ -4355,7 +4332,7 @@ begin
   else if MyBrain.w_Fka3 then begin
     if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
         HighLightField ( MyBrain.ball.cellx,MyBrain.ball.cellY  ,0 );
-        WaitForXY_FKF3 := true; //'Scegli chi batterà il fk3';
+        MouseWaitFor := WaitForXY_FKF3; //'Scegli chi batterà il fk3';
         LoadGridFreeKick (MyBrain.TeamTurn, 'Shot',true);
         ShowCornerFreeKickGrid;   //
     end
@@ -4388,7 +4365,7 @@ begin
     if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
         PenaltyCell := MyBrain.GetPenaltyCell ( MyBrain.TeamTurn );
         HighLightField ( PenaltyCell.x,PenaltyCell.Y  ,0 );
-        WaitForXY_FKF4 := true; //'Scegli chi batterà il fk4';
+        MouseWaitFor := WaitForXY_FKF4; //'Scegli chi batterà il fk4';
         LoadGridFreeKick (MyBrain.TeamTurn, 'Shot',true);
         ShowCornerFreeKickGrid;   //
     end
@@ -4408,7 +4385,7 @@ begin
     CornerSetBall;
     if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
         HighLightField ( MyBrain.ball.cellx,MyBrain.ball.cellY  ,0 );
-        WaitForXY_CornerCOF := true;
+        MouseWaitFor := WaitForXY_CornerCOF;
         LoadGridFreeKick (MyBrain.TeamTurn, 'Crossing',true);
         ShowCornerFreeKickGrid;   //
     end
@@ -4797,11 +4774,11 @@ begin
     AnimationScript.TsAdd  ( 'cl_tuc,' + tsCmd[1]);
   end
   else if tsCmd[0]= 'sc_fault.cheatballgk' then begin
-   AnimationScript.TsAdd  ( 'cl_fault.cheatballgk,' + tsCmd[1]);
+   AnimationScript.TsAdd  ( 'cl_fault.cheatballgk,' + tsCmd[1] + ',' + tsCmd[2] +',' +tsCmd[3] ); // teamFavour Cellx, celly
     AnimationScript.Tsadd ('cl_wait,1500');
   end
   else if tsCmd[0]= 'sc_fault.cheatball' then begin
-   AnimationScript.TsAdd  ( 'cl_fault.cheatball,' + tsCmd[1]);
+   AnimationScript.TsAdd  ( 'cl_fault.cheatball,' + tsCmd[1] + ',' + tsCmd[2] +',' + tsCmd[3] ); // teamFavour Cellx, celly
     AnimationScript.Tsadd ('cl_wait,1500');
   end
   else if tsCmd[0]= 'sc_GAMEOVER' then begin
@@ -6061,16 +6038,14 @@ begin
       end;
 
       AnimationScript.Index := 0;
-      WaitForXY_CornerCOF := false;
-      WaitForXY_CornerCOA := false;
-      WaitForXY_CornerCOD := true;
+      MouseWaitFor := WaitForXY_CornerCOD;
 
       Mybrain.tsScript.Clear ;
    end
    else if tsCmd[0] = 'SERVER_COD.IS' then begin
 
       PrepareAnim;
-      WaitForXY_CornerCOD := false;
+      MouseWaitFor :=  WaitForNone; //WaitForXY_CornerCOD := false;
 
       i:=1;
       while tsCmd[0] <> 'E' do begin
@@ -6108,9 +6083,7 @@ begin
       end;
 
       AnimationScript.Index := 0;
-      WaitForXY_FKF1 := false;
-      WaitForXY_FKA2 := false;
-//      WaitForXY_FKD2 := true;
+      MouseWaitFor := WaitForNone;
 
       Mybrain.tsScript.Clear ;
    end
@@ -6131,9 +6104,7 @@ begin
       end;
 
       AnimationScript.Index := 0;
-      WaitForXY_FKF2 := false;
-      WaitForXY_FKA2 := false;
-      WaitForXY_FKD2 := true;
+      MouseWaitFor := WaitForXY_FKD2;
 
       Mybrain.tsScript.Clear ;
    end
@@ -6157,7 +6128,7 @@ begin
       end;
 
       AnimationScript.Index := 0;
-      WaitForXY_FKD2 := false;
+      MouseWaitFor := WaitForNone;
 
 
       Mybrain.tsScript.Clear ;
@@ -6178,9 +6149,7 @@ begin
       end;
 
       AnimationScript.Index := 0;
-      WaitForXY_FKF3 := false;
-     // WaitForXY_FKA3 := false;
-      WaitForXY_FKD3 := true;
+      MouseWaitFor := WaitForXY_FKD3;
 
       Mybrain.tsScript.Clear ;
    end
@@ -6207,7 +6176,7 @@ begin
           i := i+1;
       end;
 
-      WaitForXY_FKD3 := false;
+      MouseWaitFor := WaitForNone;
       AnimationScript.Index := 0;
 
 
@@ -6231,7 +6200,7 @@ begin
       end;
 
       AnimationScript.Index := 0;
-      WaitForXY_FKF4 := false;
+      MouseWaitFor := WaitForNone;
 
       Mybrain.tsScript.Clear ;
    end
@@ -7289,7 +7258,7 @@ begin
      SE_GridDicewriterow ( aplayer.Team, Translate('lbl_Fault'),  aplayer.surname,  aPlayer.ids , 'FAULT','');
 
   end
-  else if ts[0]= 'cl_fault.cheatballgk' then begin
+  else if ts[0]= 'cl_fault.cheatballgk' then begin   // TeamFavour, cerco il portiere avversario
      FaultBitmap:= SE_Bitmap.Create ( FaultBitmapBW );
      ColorizeFault(  StrToInt(ts[1]) , FaultBitmap );
      aSeField := SE_field.FindSprite(  ts[2] + '.' + ts[3] );
@@ -7303,7 +7272,7 @@ begin
 
      SE_GridDicewriterow ( StrToInt(ts[1]), Translate('lbl_Fault'),  '',  '' , 'FAULT','');
   end
-  else if ts[0]= 'cl_fault.cheatball' then begin
+  else if ts[0]= 'cl_fault.cheatball' then begin  // TeamFavour, cerco la cella della palla
      FaultBitmap:= SE_Bitmap.Create ( FaultBitmapBW );
      ColorizeFault(  StrToInt(ts[1]) , FaultBitmap );
      aSeField := SE_field.FindSprite(  ts[2] + '.' + ts[3] );
@@ -7709,11 +7678,28 @@ begin
 end;
 begin
 
-    if (WaitForXY_cornerCOF ) or (WaitForXY_cornerCOA ) or (WaitForXY_cornerCOD ) or ( WaitForXY_FKF1 )
-      or ( WaitForXY_FKF2 ) or ( WaitForXY_FKA2 ) or ( WaitForXY_FKD2 )
-      or ( WaitForXY_FKF3 ) or ( WaitForXY_FKD3 ) or ( WaitForXY_FKF4 ) then begin
-      exit;    // input solo da SE_GridFreeKick
-    end;
+  case MousewaitFor of
+{    WaitForXY_ShortPass:  ;
+    WaitForXY_LoftedPass: ;
+    WaitForXY_Crossing: ;
+    WaitForXY_Move: ;
+    WaitForXY_Dribbling: ;
+    WaitFor_Corner: ;
+    WaitForNone: ;
+    WaitForAuth: ;
+    WaitForXY_PowerShot: ;
+    WaitForXY_PrecisionShot: ; }
+    WaitForXY_FKF1: exit ;
+    WaitForXY_FKF2: exit;
+    WaitForXY_FKA2: exit;
+    WaitForXY_FKD2: exit;
+    WaitForXY_FKF3: exit;
+    WaitForXY_FKD3: exit;
+    WaitForXY_FKF4: exit;
+    WaitForXY_CornerCOF: exit;
+    WaitForXY_CornerCOA: exit;
+    WaitForXY_CornerCOD: exit;
+  end;
 
     if PanelCorner.Visible  then   // input solo da SE_GridFreeKick
       Exit;
@@ -7954,34 +7940,33 @@ begin
     SE_GridFreeKick.Cells [0,CellY].FontColor := clSilver;
     SE_GridFreeKick.Cells [1,CellY].FontColor := clSilver;
     SE_GridFreeKick.Cells [2,CellY].FontColor := clSilver;
-    if  (WaitForXY_FKF1)  then begin    // sto aspettando chi batterà una punizione freekick1
+    if  MouseWaitFor = WaitForXY_FKF1 then begin    // sto aspettando chi batterà una punizione freekick1
 
       SelectedPlayer:= MyBrain.GetSoccerPlayer(SE_GridFreeKick.Cells [0,CellY].ids  ) ; // ids
       TsCoa.add (SelectedPlayer.Ids);
       if  ( LiveMatch ) and  (MyBrain.Score.TeamGuid  [ MyBrain.TeamTurn ] = MyGuidTeam) then
         tcp.SendStr( 'FREEKICK1_ATTACK.SETUP,' + tsCoa.commatext + EndofLine);
       GCD := GCD_DEFAULT;
-      WaitForXY_FKF1:= False;
+      MouseWaitFor := WaitForNone;
       PanelCorner.Visible := False;
     end
-    else if (WaitForXY_FKF4) and (MyBrain.w_Fka4 ) then begin   // sto aspettando chi batterà un rigore
+    else if (MouseWaitFor = WaitForXY_FKF4) and (MyBrain.w_Fka4 ) then begin   // sto aspettando chi batterà un rigore
       SelectedPlayer:= MyBrain.GetSoccerPlayer(SE_GridFreeKick.Cells [0,CellY].ids  ) ; // ids
       TsCoa.add (SelectedPlayer.Ids);
 
       if  ( LiveMatch ) and  (MyBrain.Score.TeamGuid  [ MyBrain.TeamTurn ] = MyGuidTeam) then
         tcp.SendStr( 'FREEKICK4_ATTACK.SETUP,' + tsCoa.commatext + EndofLine);
       GCD := GCD_DEFAULT;
-      WaitForXY_FKF4:= False;
+      MouseWaitFor := WaitForNone;
       PanelCorner.Visible := False;
     end
-    else if (WaitForXY_CornerCOF) or (WaitForXY_FKF2)  then begin // sto aspettando chi batterà il corner
+    else if (MouseWaitFor = WaitForXY_CornerCOF) or (MouseWaitFor = WaitForXY_FKF2)  then begin // sto aspettando chi batterà il corner
 
       SelectedPlayer:= MyBrain.GetSoccerPlayer(SE_GridFreeKick.Cells [0,CellY].ids  ) ; // ids
       tscoa.Add ( SelectedPlayer.Ids );
 
-      if ((WaitForXY_CornerCOF) and (MyBrain.w_Coa)) then begin
-        WaitForXY_CornerCOF := false;
-        WaitForXY_CornerCOA := true;
+      if ((MouseWaitFor = WaitForXY_CornerCOF) and (MyBrain.w_Coa)) then begin
+        MouseWaitFor := WaitForXY_CornerCOA;
         TeamCornerOrfreeKick :=  MyBrain.TeamCorner;
         CornerMap := MyBrain.GetCorner ( TeamCornerOrfreeKick , Mybrain.Ball.CellY,OpponentCorner) ;
         aSeField := SE_field.FindSprite( IntToStr(CornerMap.CornerCell.X) +'.' + IntToStr(CornerMap.CornerCell.Y) );
@@ -7996,11 +7981,10 @@ begin
         CornerSetPlayer(SelectedPlayer);
        // SelectedPlayer.SE_Sprite.Position := aSeField.Position;
       end
-      else if ((WaitForXY_FKF2) and (MyBrain.w_Fka2 )) then begin   // sto aspettando chi batterà una punizione freekick2
+      else if ((MouseWaitFor = WaitForXY_FKF2) and (MyBrain.w_Fka2 )) then begin   // sto aspettando chi batterà una punizione freekick2
         aSeField := SE_field.FindSprite( IntToStr(MyBrain.Ball.cellX) +'.' + IntToStr(MyBrain.Ball.cellY) );
         SwapPlayer := MyBrain.GetSoccerPlayer( MyBrain.Ball.cellX,MyBrain.Ball.CellY);
-        WaitForXY_FKF2:= False;
-        WaitForXY_FKA2:= true;
+        MouseWaitFor := WaitForXY_FKA2;
         TeamCornerOrfreeKick :=  MyBrain.TeamFreeKick;
         CornerMap := MyBrain.GetCorner ( TeamCornerOrfreeKick , Mybrain.Ball.CellY,OpponentCorner) ;
         SelectedPlayer.SE_Sprite.MoverData.Destination :=  aSeField.Position;
@@ -8036,13 +8020,13 @@ begin
       SE_GridFreeKick.cells [2,CellY].FontColor := clSilver;
 
     end
-    else if ((WaitForXY_CornerCOA) and (MyBrain.w_Coa)) or ((WaitForXY_FKA2) and (MyBrain.w_Fka2 ))  then begin
+    else if ((MouseWaitFor = WaitForXY_CornerCOA) and (MyBrain.w_Coa)) or ((MouseWaitFor = WaitForXY_FKA2) and (MyBrain.w_Fka2 ))  then begin
 
         SelectedPlayer:= MyBrain.GetSoccerPlayer(SE_GridFreeKick.Cells [0,CellY].ids  ) ; // ids
         // la posizione degli sprite deve essere eseguita adesso. Dal server arriverà la conferma (e quindi Spritereset)
-        if ((WaitForXY_CornerCOA) and (MyBrain.w_Coa)) then
+        if ((MouseWaitFor = WaitForXY_CornerCOA) and (MyBrain.w_Coa)) then
           TeamCornerOrfreeKick :=  MyBrain.TeamCorner
-          else if ((WaitForXY_FKA2) and (MyBrain.w_Fka2 )) then
+          else if ((MouseWaitFor = WaitForXY_FKA2) and (MyBrain.w_Fka2 )) then
            TeamCornerOrfreeKick :=  MyBrain.TeamFreeKick;
 
         CornerMap := MyBrain.GetCorner ( TeamCornerOrfreeKick , Mybrain.Ball.CellY,OpponentCorner) ;
@@ -8066,16 +8050,16 @@ begin
         end;
 
         if tsCoa.Count = 4 then begin   // cof + 3 coa
-          if ((WaitForXY_CornerCOA) and (MyBrain.w_Coa)) then begin
+          if ((MouseWaitFor = WaitForXY_CornerCOA) and (MyBrain.w_Coa)) then begin
             if  ( LiveMatch ) and  (MyBrain.Score.TeamGuid  [ MyBrain.TeamTurn ] = MyGuidTeam) then
               tcp.SendStr(  'CORNER_ATTACK.SETUP,' + tsCoa.commatext + EndofLine);
-            WaitForXY_CornerCOA:= false;
+            MouseWaitFor := WaitForNone;
             PanelCorner.Visible := False;
           end
-          else if ((WaitForXY_FKA2) and (MyBrain.w_Fka2 )) then begin
+          else if ((MouseWaitFor = WaitForXY_FKA2) and (MyBrain.w_Fka2 )) then begin
             if  ( LiveMatch ) and  (MyBrain.Score.TeamGuid  [ MyBrain.TeamTurn ] = MyGuidTeam) then
               tcp.SendStr( 'FREEKICK2_ATTACK.SETUP,' + tsCoa.commatext + EndofLine);
-            WaitForXY_FKA2:= false;
+            MouseWaitFor := WaitForNone;
             PanelCorner.Visible := False;
           end;
 //            tsCoa.Clear ;  non svuotare
@@ -8087,13 +8071,13 @@ begin
           HighLightField( CornerMap.HeadingCellA [TsCoa.count-1].X,CornerMap.HeadingCellA [TsCoa.count-1].Y,0 );
 
     end
-    else if ((WaitForXY_CornerCOD) and (MyBrain.w_Cod)) or ((WaitForXY_FKD2) and (MyBrain.w_Fkd2 )) then begin
+    else if ((MouseWaitFor = WaitForXY_CornerCOD) and (MyBrain.w_Cod)) or ((MouseWaitFor = WaitForXY_FKD2) and (MyBrain.w_Fkd2 )) then begin
       SelectedPlayer:= MyBrain.GetSoccerPlayer(SE_GridFreeKick.Cells [0,CellY].ids ) ; // ids
 
       // la posizione degli sprite deve essere eseguita adesso. Dal server arriverà la conferma (e quindi Spritereset)
-      if ((WaitForXY_CornerCOD) and (MyBrain.w_CoD)) then
+      if ((MouseWaitFor = WaitForXY_CornerCOD) and (MyBrain.w_CoD)) then
         TeamCornerOrfreeKick :=  MyBrain.TeamCorner
-        else if ((WaitForXY_FKD2) and (MyBrain.w_Fkd2 )) then
+        else if ((MouseWaitFor = WaitForXY_FKD2) and (MyBrain.w_Fkd2 )) then
          TeamCornerOrfreeKick :=  MyBrain.TeamFreeKick;
       CornerMap := MyBrain.GetCorner ( TeamCornerOrfreeKick , Mybrain.Ball.CellY,OpponentCorner) ;
 
@@ -8115,16 +8099,16 @@ begin
       end;
 
       if tsCod.Count = 3 then begin  // 3 cod
-        if ((WaitForXY_CornerCOD) and (MyBrain.w_Cod)) then begin
+        if ((MouseWaitFor = WaitForXY_CornerCOD) and (MyBrain.w_Cod)) then begin
           if  ( LiveMatch ) and  (MyBrain.Score.TeamGuid  [ MyBrain.TeamTurn ] = MyGuidTeam) then
             tcp.SendStr( 'CORNER_DEFENSE.SETUP,' + tsCod.commatext + EndofLine);
-          WaitForXY_CornerCOD:= False;
+          MouseWaitFor := WaitForNone;
           PanelCorner.Visible := False;
         end
-        else if ((WaitForXY_FKD2) and (MyBrain.w_Fkd2 )) then begin
+        else if ((MouseWaitFor = WaitForXY_FKD2) and (MyBrain.w_Fkd2 )) then begin
           if  ( LiveMatch ) and  (MyBrain.Score.TeamGuid  [ MyBrain.TeamTurn ] = MyGuidTeam) then
             tcp.SendStr( 'FREEKICK2_DEFENSE.SETUP,' + tsCod.commatext + EndofLine);
-          WaitForXY_FKD2 := False;
+          MouseWaitFor := WaitForNone;
           GCD := GCD_DEFAULT;
           PanelCorner.Visible := False;
         end;
@@ -8142,14 +8126,13 @@ begin
 
 
     end
-    else if (WaitForXY_FKF3) and (MyBrain.w_Fka3 ) then begin // punizione dal limite
+    else if (MouseWaitFor = WaitForXY_FKF3) and (MyBrain.w_Fka3 ) then begin // punizione dal limite
       SelectedPlayer:= MyBrain.GetSoccerPlayer(SE_GridFreeKick.Cells [0,CellY].ids  ) ; // ids
       TsCoa.add (SelectedPlayer.Ids);
 
       aSeField := SE_field.FindSprite( IntToStr(MyBrain.Ball.CellX) +'.' + IntToStr(MyBrain.Ball.CellY) );
 //          SwapPlayer := MyBrain.GetSoccerPlayer( MyBrain.Ball.cellX,MyBrain.Ball.CellY);
-      WaitForXY_FKF3:= False;
-      WaitForXY_FKD3:= true;
+      MouseWaitFor := WaitForXY_FKD3;
 //          CornerMap := MyBrain.GetCorner ( MyBrain.TeamFreeKick , Mybrain.Ball.CellY,OpponentCorner) ;
       // la posizione degli sprite deve essere eseguita adesso. Dal server arriverà la conferma (e quindi Spritereset)
 
@@ -8171,7 +8154,7 @@ begin
         GCD := GCD_DEFAULT;
 
     end
-    else if ((WaitForXY_FKD3) and (MyBrain.w_Fkd3 )) then begin // BARRIERA
+    else if ((MouseWaitFor = WaitForXY_FKD3) and (MyBrain.w_Fkd3 )) then begin // BARRIERA
       SelectedPlayer:= MyBrain.GetSoccerPlayer(SE_GridFreeKick.Cells [0,CellY].ids  ) ; // ids
 
       // la posizione degli sprite deve essere eseguita adesso. Dal server arriverà la conferma (e quindi Spritereset)
@@ -8203,7 +8186,7 @@ begin
           tcp.SendStr( 'FREEKICK3_DEFENSE.SETUP,' + tsCod.commatext + EndofLine);
         PanelCorner.Visible := False;
         GCD := GCD_DEFAULT;
-        WaitForXY_FKD3:= False;
+        MouseWaitFor := WaitForNone;
         exit;
       end;
 
@@ -8486,13 +8469,7 @@ begin
       if PanelCorner.Visible then Exit;
 
 
-      WaitForXY_Loftedpass := false;
-      WaitForXY_Shortpass := false;
-      WaitForXY_Move:= false;
-      WaitForXY_Crossing := false;
-      WaitForXY_Dribbling := false;
-      WaitForXY_PrecisionShot:= false;
-      WaitForXY_PowerShot:= false;
+      MouseWaitFor := WaitForNone;
   //    hideinterface('sks');
       hidechances;
       PanelSkill.Visible := False;
@@ -8511,9 +8488,30 @@ begin
 
         if lstSprite[i].Engine = se_Players then begin   // sposto solo players , non altri sprites
 
+          case MouseWaitFor of
 
-          if (not WaitForXY_Shortpass) and (not WaitForXY_LoftedPass) and (not WaitForXY_Crossing)
-          and  not (WaitForXY_Move) and not (WaitForXY_Dribbling) then begin //and not (WaitFor_Corner)
+            WaitForXY_ShortPass: exit ;
+            WaitForXY_LoftedPass: exit;
+            WaitForXY_Crossing: exit;
+            WaitForXY_Move: exit;
+            WaitForXY_Dribbling: exit;
+            WaitFor_Corner: exit;
+            WaitForXY_FKF1: exit;
+            WaitForXY_FKF2: exit;
+            WaitForXY_FKA2: exit;
+            WaitForXY_FKD2: exit;
+            WaitForXY_FKF3: exit;
+            WaitForXY_FKD3: exit;
+            WaitForXY_FKF4: exit;
+            WaitForXY_CornerCOF: exit;
+            WaitForXY_CornerCOA: exit;
+            WaitForXY_CornerCOD: exit;
+
+{            WaitForNone: ;
+            WaitForAuth: ;
+            WaitForXY_PowerShot: ;
+            WaitForXY_PrecisionShot: ; }
+          end;
             // lo faccio qui perchè se gli engine cambiano priorità rimane corretto
             if DontDoPlayers then Exit;
             fSelectedPlayer := MyBrain.GetSoccerPlayer2 (lstSprite[i].guid); // trova tutti  comunque
@@ -8524,7 +8522,6 @@ begin
                 Exit;
               end;
             end;
-          end;
         end;
 
         // qui sopra SelectedPlayerPopupSkill compare solo se può comparire. se cìè un waitfor non agisce
@@ -8536,7 +8533,7 @@ begin
            CellX := aPoint.X;
            CellY := aPoint.Y;
 
-          if WaitForXY_Move  then begin
+          if MouseWaitFor = WaitForXY_Move  then begin
             if  SelectedPlayer = nil then Exit;
             if  not SelectedPlayer.CanSkill  then Exit;
             if  not SelectedPlayer.CanMove then Exit;
@@ -8569,7 +8566,7 @@ begin
 
             if (SelectedPlayer.MovePath.Count > 0) then begin
 
-              WaitForXY_Move:= false;
+              MouseWaitFor := WaitForNone;
               DontDoPlayers := true;
               if (not viewMatch) and  (MyBrain.Score.TeamGuid  [ MyBrain.TeamTurn ] = MyGuidTeam) then
                 tcp.SendStr( 'PLM' + ',' + SelectedPlayer.Ids   + ',' +
@@ -8579,7 +8576,7 @@ begin
               hidechances;
             end;
           end
-          else if (SelectedPlayer = Mybrain.Ball.Player) and (WaitForXY_Shortpass) then begin
+          else if (SelectedPlayer = Mybrain.Ball.Player) and (MouseWaitFor = WaitForXY_Shortpass) then begin
 
             if absDistance (SelectedPlayer.CellX , SelectedPlayer.CellY, Cellx, Celly  ) > (ShortPassRange +  Abs(Integer(SelectedPlayer.TalentId = TALENT_ID_LONGPASS))) then exit;
 
@@ -8602,11 +8599,11 @@ begin
               hidechances;
             end;
 
-            WaitForXY_Shortpass := false;
+            MouseWaitFor := WaitForNone;
             DontDoPlayers := true;
             aPath.Free;
           end
-          else if (SelectedPlayer = Mybrain.Ball.Player) and (WaitForXY_Loftedpass)  then begin
+          else if (SelectedPlayer = Mybrain.Ball.Player) and (MouseWaitFor = WaitForXY_Loftedpass)  then begin
             // controllo lato client. il server lo ripete
             if ( SelectedPlayer.Role <> 'G' ) and
             ( (absDistance (SelectedPlayer.CellX , SelectedPlayer.CellY, Cellx, Celly  ) >( LoftedPassRangeMax +  Abs(Integer(SelectedPlayer.TalentId = TALENT_ID_LONGPASS))))
@@ -8635,11 +8632,11 @@ begin
               hidechances;
             end;
 
-            WaitForXY_Loftedpass := false;
+            MouseWaitFor := WaitForNone;
             DontDoPlayers := true;
 
           end
-          else if (SelectedPlayer = Mybrain.Ball.Player) and (WaitForXY_Crossing)  then begin
+          else if (SelectedPlayer = Mybrain.Ball.Player) and (MouseWaitFor = WaitForXY_Crossing)  then begin
             // controllo lato client. il server lo ripete
             if (absDistance (SelectedPlayer.CellX , SelectedPlayer.CellY, Cellx, Celly  ) > (CrossingRangeMax +  Abs(Integer(SelectedPlayer.TalentId = TALENT_ID_LONGPASS))))
              or (absDistance (SelectedPlayer.CellX , SelectedPlayer.CellY, Cellx, Celly  )   < CrossingRangeMin )
@@ -8656,11 +8653,11 @@ begin
             GCD := GCD_DEFAULT;
             hidechances;
 
-            WaitForXY_Crossing := false;
+            MouseWaitFor := WaitForNone;
             DontDoPlayers := true;
 
           end
-          else if (SelectedPlayer = Mybrain.Ball.Player) and (WaitForXY_Dribbling)  then begin
+          else if (SelectedPlayer = Mybrain.Ball.Player) and (MouseWaitFor =WaitForXY_Dribbling)  then begin
             // controllo lato client. il server lo ripete
 
             if (absDistance (SelectedPlayer.CellX , SelectedPlayer.CellY, Cellx, Celly  ) = 1) and (SelectedPlayer.CanDribbling ) then begin
@@ -8672,7 +8669,7 @@ begin
               GCD := GCD_DEFAULT;
               hidechances;
 
-              WaitForXY_Dribbling := false;
+              MouseWaitFor := WaitForNone;
               DontDoPlayers := true;
             end;
           end;
@@ -8818,7 +8815,7 @@ begin
       if GameScreen = ScreenLiveMatch then begin
 
 
-        if WaitForXY_Shortpass then begin       // shp su friend o cella vuota
+        if MouseWaitFor = WaitForXY_Shortpass then begin       // shp su friend o cella vuota
           ClearInterface;
           ToEmptyCell := true;
           if (absDistance (MyBrain.Ball.Player.CellX , MyBrain.Ball.Player.CellY, Cellx, Celly  ) > (ShortPassRange +  Abs(Integer(MyBrain.Ball.Player.TalentId = TALENT_ID_LONGPASS))))
@@ -8833,7 +8830,7 @@ begin
           ArrowShowShpIntercept ( CellX, CellY, ToEmptyCell) ;
           HighLightField( CellX, CellY, 0);
         end
-        else if WaitForXY_Move then begin       // di 2 o più mostro intercept autocontrasto
+        else if MouseWaitFor = WaitForXY_Move then begin       // di 2 o più mostro intercept autocontrasto
 
           ClearInterface;
           if  SelectedPlayer.HasBall then begin
@@ -8864,7 +8861,7 @@ begin
             end;
           end;
         end
-        else if WaitForXY_LoftedPass then begin  // mostro i colpi di testa difensivi o chi arriva sulla palla
+        else if MouseWaitFor = WaitForXY_LoftedPass then begin  // mostro i colpi di testa difensivi o chi arriva sulla palla
           ClearInterface;
           ToEmptyCell := true;
           if ( MyBrain.Ball.Player.Role <> 'G' ) and
@@ -8895,7 +8892,7 @@ begin
               CreateBaseAttribute (  CellX, CellY, aFriend.Shot );
           end;
         end
-        else if WaitForXY_Crossing then begin   // mostro i colpi di testa difensivi o chi arriva sulla palla
+        else if MouseWaitFor = WaitForXY_Crossing then begin   // mostro i colpi di testa difensivi o chi arriva sulla palla
           ClearInterface;
           if (absDistance ( MyBrain.ball.Player.CellX ,  MyBrain.ball.Player.CellY, CellX, CellY  ) > (CrossingRangeMax +  Abs(Integer(MyBrain.Ball.Player.TalentId = TALENT_ID_LONGPASS))))
             or (absDistance ( MyBrain.ball.Player.CellX ,  MyBrain.ball.Player.CellY, CellX, CellY  ) < CrossingRangeMin)  then begin
@@ -8914,7 +8911,7 @@ begin
           else continue;
 
         end
-        else if WaitForXY_Dribbling then begin  // mostro freccia su opponent da dribblare
+        else if MouseWaitFor = WaitForXY_Dribbling then begin  // mostro freccia su opponent da dribblare
           ClearInterface;
           anOpponent := MyBrain.GetSoccerPlayer(CellX,CellY);
           if anOpponent = nil then continue;
@@ -8928,15 +8925,15 @@ begin
 
   //          CalculateChance  (SelectedPlayer.BallControl + SelectedPlayer.tal_Dribbling -2, anOpponent.Defense , chanceA,chanceB,chanceColorA,chanceColorB);
         end
-        else if WaitForXY_PowerShot then begin // mostro opponent, intercept, e portiere
+        else if MouseWaitFor = WaitForXY_PowerShot then begin // mostro opponent, intercept, e portiere
           ClearInterface;
 //          SE_interface.removeallSprites;
         end
-        else if WaitForXY_PrecisionShot then begin // mostro opponent, intercept, e portiere
+        else if MouseWaitFor = WaitForXY_PrecisionShot then begin // mostro opponent, intercept, e portiere
           ClearInterface;
 //          SE_interface.removeallSprites;
         end
-        else if WaitFor_Corner then begin   // mostro opponent, e frecce contrarie
+        else if MouseWaitFor = WaitFor_Corner then begin   // mostro opponent, e frecce contrarie
           ClearInterface;
 //          SE_interface.removeallSprites;
         end;
@@ -10067,7 +10064,7 @@ begin
       Timer1.Enabled := true;
       MemoC.Lines.add('Can''t connect, error #' + IntToStr(ErrCode));
       GameScreen := ScreenLogin;
-      WaitForAuth := True;
+      MouseWaitFor := WaitForAuth;
       lbl_ConnectionStatus.Color := clRed;
       lbl_ConnectionStatus.Caption := 'connecting';
       ThreadCurMove.Enabled := False;
@@ -10079,7 +10076,7 @@ begin
       se_Theater1.Active := true;
       MemoC.Lines.add('Session Connected.');
       //GameScreen := ScreenLogin;
-      WaitForAuth := True;
+      MouseWaitFor := WaitForAuth;
       lbl_ConnectionStatus.Color := clGreen;
       lbl_ConnectionStatus.Caption := 'connected';
       viewMatch := false;
