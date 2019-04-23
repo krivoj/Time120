@@ -8,6 +8,8 @@ procedure ShowMain;
 procedure ShowFormations;
 procedure ShowCornerFreeKickGrid;
 procedure ShowError ( AString: string);
+procedure ShowLevelUpA ( Guid,value: string );
+procedure ShowLevelUpT ( Guid,value: string );
 procedure ShowStandings;
 procedure ShowLogin;
 procedure ShowScore;
@@ -23,8 +25,6 @@ end;
 
 
 procedure ShowPanelBack;
-var
-  y: Integer;
 begin
   Form1.PanelBack.Left:=0;
   Form1.PanelBack.Top := 0;
@@ -68,10 +68,6 @@ begin
   Form1.SE_grid0.Top := Form1.Portrait0.Top;
 
 
-  Form1.btnTalentBmp0.Left :=  (Form1.Portrait0.Width div 2) - Form1.Portrait0.Left - 16;
-  Form1.btnTalentBmp0.top := 200;
-
-
   Form1.PanelInfoPlayer0.Left := Form1.SE_Theater1.Left - Form1.PanelInfoPlayer0.Width - 2   ;
   Form1.PanelInfoPlayer0.top := Form1.SE_Theater1.top;
  // Form1.PanelInfoPlayer0.Height := Form1.SE_Theater1.Height ;
@@ -97,8 +93,8 @@ begin
 
 
   Form1.lbl_Surname0.Caption := '';
-  Form1.lbl_Talent0.Caption := '';
-  Form1.lbl_descrtalent0.Caption :='';
+  Form1.lbl_Talent01.Caption := '';
+  Form1.lbl_descrtalent01.Caption :='';
 
 
   Form1.btn_uniformHome.Top := 3;
@@ -178,6 +174,50 @@ begin
 //  ShowPanelBack;
 
 end;
+procedure ShowLevelUpA ( Guid,value: string );
+var
+  aPlayer: TSoccerPlayer;
+begin
+  Form1.GameScreen := ScreenMain;
+  aPlayer := MyBrainFormation.GetSoccerPlayer2 ( Guid );
+
+  if value <> '0' then begin
+    Form1.lbl_Error.Caption := aPlayer.SurName + ' è appena migliorato!';
+    form1.lbl_error.color := clGreen;
+    form1.PanelError.Color := clGreen;
+  end
+  else begin
+    Form1.lbl_Error.Caption := 'Purtroppo ' + aPlayer.SurName + ' non è riuscito a migliorare.';
+    form1.lbl_error.color := clRed;
+    form1.PanelError.Color := clRed;
+  end;
+  Form1.PanelError.Visible:= true;
+  Form1.PanelError.BringToFront;
+
+end;
+procedure ShowLevelUpT ( Guid,value: string);
+var
+  aPlayer: TSoccerPlayer;
+begin
+  Form1.GameScreen := ScreenMain;
+  aPlayer := MyBrainFormation.GetSoccerPlayer2 ( Guid );
+
+  if value <> '0' then begin
+    Form1.lbl_Error.Caption := aPlayer.SurName + ' ha nuovi talenti!';
+    form1.lbl_error.color := clGreen;
+    form1.PanelError.Color := clGreen;
+  end
+  else begin
+    Form1.lbl_Error.Caption := 'Purtroppo ' + aPlayer.SurName + ' non è riuscito a sviluppare il talento.';
+    form1.lbl_error.color := clRed;
+    form1.PanelError.Color := clRed;
+  end;
+
+  Form1.PanelError.Visible:= true;
+  Form1.PanelError.BringToFront;
+
+end;
+
 procedure ShowMain;
 begin
   FirstLoadOK := False;

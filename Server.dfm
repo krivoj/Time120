@@ -2,7 +2,7 @@ object FormServer: TFormServer
   Left = 0
   Top = 0
   Caption = 'Time120 Server'
-  ClientHeight = 573
+  ClientHeight = 626
   ClientWidth = 1110
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -120,6 +120,7 @@ object FormServer: TFormServer
     Height = 17
     Caption = 'Log all in'
     TabOrder = 9
+    OnClick = CheckBox2Click
   end
   object SE_GridLiveMatches: SE_Grid
     Left = 8
@@ -263,6 +264,24 @@ object FormServer: TFormServer
     Caption = 'load from replay(lastmove)'
     TabOrder = 19
     OnClick = Button6Click
+  end
+  object Button7: TButton
+    Left = 424
+    Top = 555
+    Width = 121
+    Height = 25
+    Caption = 'LevelUp Talent(FORCETALENT)'
+    TabOrder = 20
+    OnClick = Button7Click
+  end
+  object Button8: TButton
+    Left = 424
+    Top = 586
+    Width = 121
+    Height = 25
+    Caption = 'LevelUp Talent 2 (FORCETALENT)'
+    TabOrder = 21
+    OnClick = Button8Click
   end
   object Tcpserver: TWSocketThrdServer
     LineLimit = 1024

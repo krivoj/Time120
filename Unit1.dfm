@@ -3,7 +3,7 @@ object Form1: TForm1
   Top = 0
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
-  Caption = 'Soccer'
+  Caption = 'Time120'
   ClientHeight = 1112
   ClientWidth = 1823
   Color = 8081721
@@ -237,7 +237,7 @@ object Form1: TForm1
     object PanelCombatLog: SE_Panel
       Left = 953
       Top = 10
-      Width = 411
+      Width = 800
       Height = 172
       Color = 8081721
       TabOrder = 0
@@ -926,8 +926,8 @@ object Form1: TForm1
       end
     end
     object PanelCountryTeam: SE_Panel
-      Left = 1031
-      Top = 367
+      Left = 926
+      Top = 81
       Width = 281
       Height = 293
       BevelOuter = bvNone
@@ -935,10 +935,10 @@ object Form1: TForm1
       TabOrder = 4
       Visible = False
       object btnSelCountryTeam: TCnSpeedButton
-        Left = 3
-        Top = 253
-        Width = 275
-        Height = 32
+        Left = 91
+        Top = 271
+        Width = 182
+        Height = 22
         Cursor = crHandPoint
         Color = clGray
         DownBold = False
@@ -954,10 +954,30 @@ object Form1: TForm1
         ParentFont = False
         OnClick = btnSelCountryTeamClick
       end
+      object btnSelCountryTeamBack: TCnSpeedButton
+        Left = 0
+        Top = 271
+        Width = 47
+        Height = 22
+        Cursor = crHandPoint
+        Color = clGray
+        DownBold = False
+        FlatBorder = False
+        HotTrackBold = False
+        Caption = 'Cancel'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = 4308735
+        Font.Height = -16
+        Font.Name = 'Calibri'
+        Font.Style = [fsBold]
+        Margin = 4
+        ParentFont = False
+        OnClick = btnSelCountryTeamBackClick
+      end
       object SE_GridCountryTeam: SE_Grid
         Left = 3
         Top = 3
-        Width = 273
+        Width = 254
         Height = 244
         Cursor = crHandPoint
         MouseScrollRate = 1.000000000000000000
@@ -1251,7 +1271,7 @@ object Form1: TForm1
         Height = 66
         Alignment = taCenter
         AutoSize = False
-        Caption = 'lbl_MoneyF'
+        Caption = 'lbl_Error'
         Color = clRed
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWhite
@@ -1320,7 +1340,7 @@ object Form1: TForm1
       Left = 25
       Top = 298
       Width = 317
-      Height = 294
+      Height = 394
       BevelOuter = bvNone
       Color = 8081721
       TabOrder = 10
@@ -1339,12 +1359,12 @@ object Form1: TForm1
         ParentFont = False
         Transparent = True
       end
-      object lbl_talent0: TLabel
+      object lbl_talent01: TLabel
         Left = 3
         Top = 201
-        Width = 59
+        Width = 66
         Height = 13
-        Caption = 'lbl_talent0'
+        Caption = 'lbl_talent01'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clYellow
         Font.Height = -11
@@ -1353,13 +1373,13 @@ object Form1: TForm1
         ParentFont = False
         Transparent = True
       end
-      object lbl_descrTalent0: TLabel
+      object lbl_descrTalent01: TLabel
         Left = 7
         Top = 220
         Width = 75
         Height = 13
         AutoSize = False
-        Caption = 'lbl_descrTalent0'
+        Caption = 'lbl_descrTalent01'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWhite
         Font.Height = -11
@@ -1386,7 +1406,7 @@ object Form1: TForm1
         Margin = 4
         Spacing = 0
       end
-      object btnTalentBmp0: TCnSpeedButton
+      object btnTalentBmp01: TCnSpeedButton
         Left = 16
         Top = 137
         Width = 32
@@ -1465,6 +1485,53 @@ object Form1: TForm1
         ParentFont = False
         Visible = False
         OnClick = btnDismiss0Click
+      end
+      object btnTalentBmp02: TCnSpeedButton
+        Left = 3
+        Top = 163
+        Width = 32
+        Height = 32
+        ShadowColor = 8081721
+        Color = 8081721
+        DownColor = 8081721
+        DownBold = False
+        FlatBorder = True
+        HotTrackBold = False
+        HotTrackColor = 8081721
+        LightColor = 8081721
+        ModernBtnStyle = bsFlat
+        Margin = 4
+        Spacing = 0
+      end
+      object lbl_talent02: TLabel
+        Left = 11
+        Top = 209
+        Width = 66
+        Height = 13
+        Caption = 'lbl_talent01'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clYellow
+        Font.Height = -11
+        Font.Name = 'Verdana'
+        Font.Style = []
+        ParentFont = False
+        Transparent = True
+      end
+      object lbl_descrTalent02: TLabel
+        Left = 15
+        Top = 228
+        Width = 75
+        Height = 13
+        AutoSize = False
+        Caption = 'lbl_descrTalent01'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWhite
+        Font.Height = -11
+        Font.Name = 'Verdana'
+        Font.Style = []
+        ParentFont = False
+        Transparent = True
+        WordWrap = True
       end
       object SE_Grid0: SE_Grid
         Left = 88
@@ -2049,8 +2116,8 @@ object Form1: TForm1
       end
     end
     object PanelMarket: SE_Panel
-      Left = 616
-      Top = 448
+      Left = 576
+      Top = 587
       Width = 1200
       Height = 292
       BevelOuter = bvNone

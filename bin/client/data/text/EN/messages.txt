@@ -27,6 +27,9 @@ skill_Stay=Stay.
 skill_Free=free.
 skill_Corner.Kick=Corner Kick
 skill_Volley=Volley
+skill_BuffD=Buff reparto Difesa
+skill_BuffM=Buff reparto Centrocampo
+skill_BuffF=Buff reparto Attacco
 
 skill_Intercept=Intercept
 
@@ -51,6 +54,26 @@ talent_Agility=Agility
 talent_Rapidpassing=Rapid Passing
 talent_Aggression=Aggression
 talent_Ace=Ace
+talent_advanced_challenge=Challenge 2
+talent_advanced_toughness=Toughness 2
+talent_advanced_power=Power 2
+talent_advanced_crossing=Crossing 2
+talent_advanced_experience=Pressing 2
+talent_advanced_dribbling=Dribbling 2 
+talent_advanced_bulldog=Bulldogg 2
+talent_advanced_aggression=Aggression 2
+talent_advanced_bomb=Bomb 2
+talent_precise_crossing=Precise Crossing
+talent_super_dribbling=Super Dribbling
+talent_buff_defense=Buff Defense
+talent_buff_middle=Buff Middle
+talent_buff_forward=Buff Forward
+talent_heading=Colpi di testa
+talent_finishing=Finalizzazione
+talent_diving=Cascatore
+
+talent_gkmiracle=Miracolo.
+talent_gkpenalty=Specialista rigori.
 
 role_G=Gk
 role_D=Def
@@ -78,6 +101,10 @@ descr_skill_Tackle=Tackle
 descr_skill_Pressing=Pressing
 descr_skill_Corner.Kick=Corner Kick
 descr_skill_Volley=Volley
+descr_skill_BuffD=Buff Difesa
+descr_skill_BuffM=Buff Centrocampo
+descr_skill_BuffF=Buff Attacco
+
 
 descr_talent_Goalkeeper=Can be a Goal Keeper!
 descr_talent_Challenge=+1 Tackle passivo durante gli spostamenti dell'avversario con la palla.
@@ -92,15 +119,37 @@ descr_talent_Offensive=Tende a muoversi verso l'area avversaria.
 descr_talent_Defensive=Tende a muoversi verso la propria area.
 descr_talent_Bomb=+1 a tutti i bonus di Tiro.
 descr_talent_Playmaker=Cerca di avvicinarsi al proprio portatore di palla. Inoltre i suoi passaggi corti terminanti in area avversaria conferiscono un bonus al ricevente.
-descr_talent_Faul=+15% chance di commettere un fallo.
+descr_talent_Faul=+15% chance di commettere un fallo. -30% chance di subire sanzioni.
 descr_talent_Marking=DIF=Marca l'attaccante con il Tiro piu' alto. Cen=Marca il Centrocampista con il passaggio piu' alto. ATT=Marca il difensore con il Controllo piu' basso.
 descr_talent_positioning=Cerca di tornare verso la propria zona di campo.
-descr_talent_FreeKicks=+1 Tiro sui Calci di punizione.
+descr_talent_FreeKicks=+1 Tiro sui Calci di punizione e rigori.
 descr_talent_Agility=Quando riceve un passaggio corto distante almeno 2 celle, guadagna 1 turno.
 descr_talent_Rapidpassing=Quando riceve un passaggio corto, ha una chance del 33% di effettuare un passaggio filtrante che non puo' essere intercettato.
 descr_talent_Aggression=Si muove verso il portatore di palla.
 descr_talent_Ace=Quando subisce Pressing, ha una chance del 33% di effettuare un dribbling vincente.
+descr_talent_advanced_challenge=Ha una chance del 5% di ottenere +1 durante i contrasti passivi.
+descr_talent_advanced_toughness=Ha una chance del 5% di ottenere +1 durante i contrasti.
+descr_talent_advanced_power=Ha una chance del 5% di ottenere +1 di resistenza ai contrasti.
+descr_talent_advanced_crossing=Ha una chance del 5% di ottenere +1 Cross.
+descr_talent_advanced_experience=Pressing costa -1.
+descr_talent_advanced_dribbling=+1 dribbling. 
+descr_talent_advanced_bulldog=+2 intercept.
+descr_talent_advanced_aggression=Ha una chance del 25% di fare pressing automatico sul portatore di palla se lo raggiunge. 
+descr_talent_advanced_bomb=Ha una chance del 5% di ottenere +2 durante un Tiro potente.
+descr_talent_precise_crossing=+1 Cross da fondo campo.
+descr_talent_super_dribbling=Ha una chance del 15% di ottenere dribbling +3.
+descr_talent_buff_defense=Abilita il buff al reparto Difesa (5% chance di ottenere +1 Difesa, Controllo di Palla e Passaggio a tutti i difensori per 20 turni).
+descr_talent_buff_middle=Abilita il buff al reparto Centrocampo (5% chance di ottenere +1 Velocita', Difesa, Controllo di Palla e Passaggio a tutti i centrocampisti per 20 turni).
+descr_talent_buff_forward=Abilita il buff al reparto Attacco (5% chance di ottenere +1 Tiro, Controllo di Palla e Passaggio a tutti gli attaccanti per 20 turni).
+descr_talent_talent_heading=Ha una chance del 5% di ottenere +1 colpi di testa durante sui cross e corner.
+descr_talent_talent_finishing=Se gli cade la palla addosso dopo un rimbalzo ha +1 Tiro. Valido solo nel proprio turno.
+descr_talent_talent_diving=+10% chance di subire un fallo durante i tackle.
 
+descr_talent_gkmiracle=Ha una chance del 5% di ottenere +1 Difesa sui tiri precisi a distanza 1. Non valido sui rigori.
+descr_talent_gkpenalty=Ha una chance del 10% di ottenere +1 Difesa sui rigori. 
+
+
+lbl_Talent=Talento
 
 lbl_Talent=Talent
 lbl_Role=Role
@@ -121,7 +170,7 @@ lbl_GameOver=Game Over
 lbl_AudioStadium=Audio Stadium
 
 lbl_Tactics=Tactics
-lbl_Tactic=Tatctic
+lbl_Tactic=Tactic
 lbl_Substitution=Substitution
 lbl_Substitutions=Substitutions
 
@@ -180,3 +229,7 @@ lbl_MaxValue=max value
 warning_nosellgk=Non puoi vendere l'unico portiere che hai.
 warning_max18=Non puoi avere piu' di 18 giocatori.
 warning_nosell_lowprice=Non puoi vendere un giocatore ad un costo inferiore al suo valore di mercato.
+
+lbl_ConfirmTeam=Confirm your Team.
+
+
