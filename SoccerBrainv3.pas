@@ -9,7 +9,7 @@
 unit SoccerBrainv3;
 
 // bug importanti
-   { TODO  : canskill collide con buffD,M,F }
+   { TODO  : canskill collide con buffD,M,F.fixed }
    { TODO  : testare offside su crossing e lastman }
     { TODO : ischeatingball è  da rifare }
     { TODO : bug abs4, qualche volta va a vuoto e scade il tempo }
@@ -9271,10 +9271,10 @@ Normalpressing:
      reason := 'BUFFD,Player not found';
      goto myexit; // hack
     end;
-    if not aPlayer.CanSkill then begin
-     reason := 'BUFFD,Player unable to use skill';
-     goto myexit; // hack
-    end;
+//    if not aPlayer.CanSkill then begin
+//     reason := 'BUFFD,Player unable to use skill';
+//     goto myexit; // hack
+//    end;
 
     if aPlayer.TalentId2 <> TALENT_ID_BUFF_DEFENSE then begin // non ha quel talento e quindi la skill
      reason := 'BUFFD, Missing Talent';
@@ -9335,10 +9335,10 @@ Normalpressing:
      reason := 'BUFFM,Player not found';
      goto myexit; // hack
     end;
-    if not aPlayer.CanSkill then begin
-     reason := 'BUFFM,Player unable to use skill';
-     goto myexit; // hack
-    end;
+//    if not aPlayer.CanSkill then begin
+//     reason := 'BUFFM,Player unable to use skill';
+//     goto myexit; // hack
+//    end;
 
     if aPlayer.TalentId2 <> TALENT_ID_BUFF_MIDDLE then begin // non ha quel talento e quindi la skill
      reason := 'BUFFM, Missing Talent';
@@ -9395,10 +9395,10 @@ Normalpressing:
      reason := 'BUFFF,Player not found';
      goto myexit; // hack
     end;
-    if not aPlayer.CanSkill then begin
-     reason := 'BUFFF,Player unable to use skill';
-     goto myexit; // hack
-    end;
+//    if not aPlayer.CanSkill then begin
+//     reason := 'BUFFF,Player unable to use skill';
+ //    goto myexit; // hack
+ //   end;
 
     if aPlayer.TalentId2 <> TALENT_ID_BUFF_FORWARD then begin // non ha quel talento e quindi la skill
      reason := 'BUFFF, Missing Talent';

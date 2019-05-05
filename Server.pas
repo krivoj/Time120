@@ -1814,7 +1814,7 @@ begin
         // Creo il team, creo i players, mando al client il team
             Cli.GuidTeam := CreateGameTeam ( Cli, ts[1]);  // ts[1] è guid world.teams, non la Guidteam
             if cli.sReason <> ''  then goto cheat;
-            // Preparo il file da venire a prendere in Ftp
+            // Preparo il file
           reset_formation (cli);
           Cli.SendStr ( 'BEGINTEAM' + GetTeamStream ( Cli.GuidTeam ) + EndofLine);
       end
