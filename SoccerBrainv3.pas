@@ -493,6 +493,7 @@ end;
       RandGen: TtdBasePRNG;
       AI_GCD, LastTickCount: Integer;
 
+      utime: Boolean;
       fmilliseconds: integer;
       lstSpectator : TList<Integer>;
       brainManager: TObject;
@@ -4363,6 +4364,7 @@ begin
   RandGen := TtdCombinedPRNG.Create(0, 0);
   MatchInfo:= TStringList.Create; // minuto, tipo evento (gol,card,subs), ids1, ids2 , opzional(freeKick,penalty)
   AI_GCD := 5000;// tanto per partire
+  utime := False;
   LastTickCount := GetTickCount;
   lstSpectator:= TList<Integer>.Create ;
   //GetModuleFileName(HInstance, szDllName, SizeOf(szDllName)-1);

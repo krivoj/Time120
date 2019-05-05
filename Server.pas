@@ -1540,6 +1540,9 @@ begin
   xpNeedTal[TALENT_ID_RAPIDPASSING] := 50;
   xpNeedTal[TALENT_ID_AGGRESSION] := 50;
   xpNeedTal[TALENT_ID_ACE] := 50;
+  xpNeedTal[TALENT_ID_HEADING] := 50;
+  xpNeedTal[TALENT_ID_FINISHING] := 50;
+  xpNeedTal[TALENT_ID_DIVING] := 50;
   // modificare anche client formcreate
 
   TsWorldCountries:= TStringList.Create ;
@@ -2133,7 +2136,18 @@ begin
   (* GM COMMANDS *)
 
       else if ts[0] ='setball'  then begin
-            validate_CMD3 (ts.CommaText, cli);
+            validate_CMD1 (ts.CommaText, cli);
+            if cli.sReason <> '' then  goto cheat;
+            if Cli.GmLevel > 0 then begin
+              TSoccerBrain(Cli.Brain).utime := true;
+            end
+            else begin
+              cli.sReason := 'no GmLevel';
+              goto cheat;
+            end;
+      end
+      else if ts[0] ='utime'  then begin
+            validate_CMD1 (ts.CommaText, cli);
             if cli.sReason <> '' then  goto cheat;
             if Cli.GmLevel > 0 then begin
               TSoccerBrain(Cli.Brain).BrainInput ( IntToStr(Cli.GuidTeam) + ',' + ts[0] + ',' + ts[1] + ',' + ts[2]  )
@@ -6849,25 +6863,29 @@ begin
 
     if BrainManager.lstBrain [i].paused or BrainManager.lstBrain[i].Finished then Continue;
 
-    BrainManager.lstBrain [i].milliseconds := BrainManager.lstBrain [i].milliseconds - MatchThread.Interval; // viene eseguita AI freekick
+    if not BrainManager.lstBrain [i].utime then begin
 
-    // aistart   se un player si disconnette o se è una ver AI
-     if (BrainManager.lstBrain [i].milliseconds <= 0) or (BrainManager.lstBrain [i].Score.AI [BrainManager.lstBrain [i].TeamTurn]) then Begin
-        BrainManager.lstBrain [i].AI_GCD := BrainManager.lstBrain [i].AI_GCD - MatchThread.Interval  ;
-      if BrainManager.lstBrain [i].AI_GCD <= 0 then begin
-        BrainManager.lstBrain [i].AI_Think(BrainManager.lstBrain [i].TeamTurn);
-        if BrainManager.lstBrain [i].milliseconds > 4000 then begin
-          if RadioButton1.Checked then
-            BrainManager.lstBrain [i].AI_GCD := StrToInt(Edit2.Text) // {8000} BrainManager.RndGenerateRange( 3000, 12000 )
+       BrainManager.lstBrain [i].milliseconds := BrainManager.lstBrain [i].milliseconds - MatchThread.Interval; // viene eseguita AI freekick
+
+      // aistart   se un player si disconnette o se è una ver AI
+       if (BrainManager.lstBrain [i].milliseconds <= 0) or (BrainManager.lstBrain [i].Score.AI [BrainManager.lstBrain [i].TeamTurn]) then Begin
+          BrainManager.lstBrain [i].AI_GCD := BrainManager.lstBrain [i].AI_GCD - MatchThread.Interval  ;
+        if BrainManager.lstBrain [i].AI_GCD <= 0 then begin
+          BrainManager.lstBrain [i].AI_Think(BrainManager.lstBrain [i].TeamTurn);
+          if BrainManager.lstBrain [i].milliseconds > 4000 then begin
+            if RadioButton1.Checked then
+              BrainManager.lstBrain [i].AI_GCD := StrToInt(Edit2.Text) // {8000} BrainManager.RndGenerateRange( 3000, 12000 )
+            else
+              BrainManager.lstBrain [i].AI_GCD := BrainManager.RndGenerateRange( StrToInt(Edit2.Text), StrToInt(Edit3.Text) );
+          end
           else
-            BrainManager.lstBrain [i].AI_GCD := BrainManager.RndGenerateRange( StrToInt(Edit2.Text), StrToInt(Edit3.Text) );
-        end
-        else
-        BrainManager.lstBrain [i].AI_GCD := StrToInt(Edit2.Text) ;
+          BrainManager.lstBrain [i].AI_GCD := StrToInt(Edit2.Text) ;
 
-        Application.ProcessMessages;
-      end;
-     end;
+          Application.ProcessMessages;
+        end;
+       end;
+
+    end;
   end;
 
 

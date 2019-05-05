@@ -275,6 +275,7 @@ type
     btnLogout: TCnSpeedButton;
     btnOverrideUniformBlack: TCnSpeedButton;
     btnSelCountryTeamBack: TCnSpeedButton;
+    Button5: TButton;
 
 // General
     procedure FormCreate(Sender: TObject);
@@ -395,6 +396,7 @@ type
     procedure btnOverrideUniformWhiteClick(Sender: TObject);
     procedure btnOverrideUniformBlackClick(Sender: TObject);
     procedure btnSelCountryTeamBackClick(Sender: TObject);
+    procedure Button5Click(Sender: TObject);
 
   private
     { Private declarations }
@@ -1069,6 +1071,16 @@ begin
   MyBrain.AI_Think(MyBrain.TeamTurn);
 end;
 
+procedure TForm1.Button5Click(Sender: TObject);
+begin
+{$ifdef tools}
+  if GCD <= 0 then begin
+    tcp.SendStr( 'utime' + EndOfLine ) ;
+    GCD := GCD_DEFAULT;
+  end;
+ {$endif tools}
+end;
+
 procedure TForm1.Button6Click(Sender: TObject);
 begin
 {$ifdef tools}
@@ -1166,6 +1178,9 @@ begin
   xpNeedTal[TALENT_ID_RAPIDPASSING] := 50;
   xpNeedTal[TALENT_ID_AGGRESSION] := 50;
   xpNeedTal[TALENT_ID_ACE] := 50;
+  xpNeedTal[TALENT_ID_HEADING] := 50;
+  xpNeedTal[TALENT_ID_FINISHING] := 50;
+  xpNeedTal[TALENT_ID_DIVING] := 50;
 
   MutexAnimation:=CreateMutex(nil,false,'tsscript');
 
@@ -9732,7 +9747,7 @@ begin
   GridXp.DefaultColWidth := 16;
   GridXp.DefaultRowHeight := 16;
   GridXp.ColCount := 2;
-  GridXp.RowCount := 6 + 21 + 1; // stat num_talent 1 vuota
+  GridXp.RowCount := 6 + NUM_TALENT + 1; // stat num_talent 1 vuota
   GridXp.Columns[0].Width := 120;
   GridXp.Columns[1].Width := 60;
 //  GridXp.Columns[2].Width := 40;

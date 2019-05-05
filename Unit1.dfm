@@ -227,6 +227,15 @@ object Form1: TForm1
       TabOrder = 20
       Text = '0'
     end
+    object Button5: TButton
+      Left = 0
+      Top = 699
+      Width = 75
+      Height = 25
+      Caption = 'unlimited time'
+      TabOrder = 21
+      OnClick = Button5Click
+    end
   end
   object PanelBack: SE_Panel
     Left = 8
