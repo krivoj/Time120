@@ -9,7 +9,6 @@
 unit SoccerBrainv3;
 
 // bug importanti
-   { TODO  : canskill collide con buffD,M,F.fixed }
    { TODO  : testare offside su crossing e lastman }
     { TODO : ischeatingball è  da rifare }
     { TODO : bug abs4, qualche volta va a vuoto e scade il tempo }
@@ -19,6 +18,7 @@ unit SoccerBrainv3;
     { TODO : utility flag market 0 o 1 e delete player in market da lanciare ogni 24 ore.PULIZIA MARKET e game.players team=0 }
 // futuro
 
+   { TODO  : talento Volley+2 prereq: bomb. volley si attiva anche con roll 9. il talento falloso diventerà con egoista e edonista un debuff. eliminare da talenti base }
    { TODO  : Gameplay: Valutare se Pos (tiro potente) può innescare autogol }
    { TODO  : espandere gameplay con nazionali }
 
@@ -71,9 +71,9 @@ const TALENT_ID_HEADING        = 22; // Ha una chance del 5% di ottenere +1 dura
 const TALENT_ID_FINISHING      = 23; // Quando ottiene la palla dopo un rimbalzo ha +1 Tiro.
 const TALENT_ID_DIVING         = 24; // +10% chance di subire un fallo durante i tackle.
 //------------------------------------------------------------------
- { nel server c'è array xpNeedTAL[I] e si puntano così xpTAL[TALENT_ID_EXPERIENCE]. da modificare se sei modifica qui}
+ { nel server c'è array xpNeedTAL[I] e si puntano così xpTAL[TALENT_ID_EXPERIENCE]. da modificare se si modifica qui}
 const LOW_TALENT2              = 128; // id basso talenti di livelo 2
-const HIGH_TALENT2             = 138; // id alto talenti di livelo 2
+const HIGH_TALENT2             = 141; // id alto talenti di livelo 2
 const LOW_TALENT2_GK           = 250; // id basso talenti di livelo 2 solo del portiere (GK)
 const HIGH_TALENT2_GK          = 251; // id alto talenti di livelo 2 solo del portiere (GK)
 
@@ -94,7 +94,7 @@ const TALENT_ID_BUFF_DEFENSE = 139; //prereq almeno 3 Defense, 1 talento qualsia
 const  TALENT_ID_BUFF_MIDDLE = 140; //prereq almeno 3 passing, 1 talento qualsiasi --> skill 2x buff reparto (20% chance) cen  25 turni + tutti attr 1 (speed e heading max 4)
 const  TALENT_ID_BUFF_FORWARD = 141; //prereq almeno 3 Shot , 1 talento qualsiasi --> skill 2x buff reparto (20% chance) att 25 turni + tutti attr 1 (speed e heading max 4)
 
-const TALENT_ID_GKMIRACLE = 250; //solo GK  Ha una chance del 5% di fare un miracolo.
+const TALENT_ID_GKMIRACLE = 250; //solo GK  Ha una chance del 10% di ottenere +1 Difesa sui tiri precisi a distanza 1. Non valido sui rigori.
 const TALENT_ID_GKPENALTY = 251; //specialista para rigori. ottiene +1 10% chance .
 
 
@@ -4499,7 +4499,7 @@ var
   aCell: TTVCrossAreaCell;
 begin
 
-    (*serve anche per rientrare in difesa avend la doorteam *)
+    (*serve anche per rientrare in difesa avendo la doorteam *)
     // ragiono in AIfield
     TVCrossingAreaCells:= TList<TTVCrossAreaCell>.create;
     aCell.cellX := 1;
@@ -5218,7 +5218,6 @@ begin
 
   // da settemamovesleft. qui deve essere piazzato chi calcia il corner
   w_FreeKickSetup1:= true;
-//  w_FreeKick1 := false;
   w_Fka1 :=true;
 end;
 procedure TSoccerbrain.FreeKickSetup2 ( team : Integer  );
@@ -5231,7 +5230,6 @@ begin
   fTeamMovesLeft := TurnMoves;
   fmilliseconds := Turnmilliseconds;
 
-//  TsScript.add ('sc_TUC,' + intTostr(TeamTurn) ) ;
   {$IFDEF ADDITIONAL_MATCHINFO}  MatchInfo.Add( IntToStr(fminute) + '.freekick2.' + IntToStr( team));{$ENDIF}
   TsScript.add ('sc_FREEKICK2.FKA2,' + IntTostr(Team) + ',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // richiesta al client corner free kick
   TsScript.add ('E') ;
@@ -5252,7 +5250,6 @@ begin
   TsScript.add ('sc_TUC,' + intTostr(TeamTurn) ) ;
   fmilliseconds := Turnmilliseconds;
 
-//  TsScript.add ('sc_TUC,' + intTostr(TeamTurn) ) ;
   fTeamMovesLeft := 2; // il pos o prs utilizza teammovesleft
   {$IFDEF ADDITIONAL_MATCHINFO}  MatchInfo.Add( IntToStr(fminute) + '.freekick3.' + IntToStr( team));{$ENDIF}
   TsScript.add ('sc_FREEKICK3.FKA3,'  + IntTostr(Team) + ',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // richiesta al client corner free kick
@@ -5273,7 +5270,6 @@ begin
   TeamTurn := Team ;
   TeamFreeKick := TeamTurn ;
   TsScript.add ('sc_TUC,' + intTostr(TeamTurn) ) ;
-//  TsScript.add ('sc_TUC,' + intTostr(TeamTurn) ) ;
   fTeamMovesLeft := 2; // il pos o prs non utilizza teammovesleft
   {$IFDEF ADDITIONAL_MATCHINFO}  MatchInfo.Add( IntToStr(fminute) + '.freekick4.' + IntToStr( team));{$ENDIF}
   TsScript.add ('sc_FREEKICK4.FKA4,'  + IntTostr(Team) + ',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // richiesta al client corner free kick
@@ -7021,20 +7017,20 @@ GK:
               aCell.X := CellX;
               aCell.Y := CellY;
               Ball.Cells := aCell;
-                     aPossibleOffside := GetSoccerPlayer(aCell.X ,acell.Y );
-                     if aPossibleoffside <> nil then begin
-                      if isOffside ( aPossibleoffside )   then begin
-                        //come fallo freekick1
-                        TsScript.add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
-                        if aPossibleoffside.team = 0 then
-                          FreeKickSetup1( 1 ) // aspetta short.passing o lofted.pass
-                        else
-                          FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
-                        reason := '';
-                        TsScript.add ('E');
-                        goto MyExit;
-                      end;
-                     end;
+             aPossibleOffside := GetSoccerPlayer(aCell.X ,acell.Y );
+             if aPossibleoffside <> nil then begin
+              if isOffside ( aPossibleoffside )   then begin
+                //come fallo freekick1
+                TsScript.add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
+                if aPossibleoffside.team = 0 then
+                  FreeKickSetup1( 1 ) // aspetta short.passing o lofted.pass
+                else
+                  FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
+                reason := '';
+                TsScript.add ('E');
+                goto MyExit;
+              end;
+             end;
 
               //2              TsScript.add ('sc_ball,'+ IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+  IntTostr(CellX )+','+ IntTostr(CellY) +',1' ) ;
               aHeadingFriend := GetSoccerPlayer(CellX, CellY);

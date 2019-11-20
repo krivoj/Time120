@@ -276,6 +276,7 @@ type
     btnOverrideUniformBlack: TCnSpeedButton;
     btnSelCountryTeamBack: TCnSpeedButton;
     Button5: TButton;
+    Button9: TButton;
 
 // General
     procedure FormCreate(Sender: TObject);
@@ -397,6 +398,7 @@ type
     procedure btnOverrideUniformBlackClick(Sender: TObject);
     procedure btnSelCountryTeamBackClick(Sender: TObject);
     procedure Button5Click(Sender: TObject);
+    procedure Button9Click(Sender: TObject);
 
   private
     { Private declarations }
@@ -1144,6 +1146,44 @@ begin
     GCD := GCD_DEFAULT;
   end;
 {$endif tools}
+end;
+
+procedure TForm1.Button9Click(Sender: TObject);
+var
+  i,c: Integer;
+  aPoint : PPointL;
+  bmp: SE_Bitmap;
+  aSprite,aSEField: SE_Sprite;
+begin
+  {$ifdef tools}
+
+  if GameScreen <> ScreenLiveMatch  then Exit;
+
+
+    for i:= 0 to 30 do begin
+      aSprite := se_field.FindSprite('shotcell'+inttostr(i));
+      if aSprite <> nil then
+        se_field.RemoveSprite (aSprite);
+    end;
+
+    bmp:= SE_Bitmap.Create (20,12);
+    bmp.Bitmap.Canvas.Brush.Color := clRed;
+    bmp.Bitmap.Canvas.Ellipse(2,2,19,7);
+    for i:= 0 to Mybrain.ShotCells.Count -1 do begin
+          // sono sopra questa shotcell
+          // tra le celle adiacenti, solo la X attuale e ciclo per le Y
+           //   aShotCell := brain.ShotCells[I];
+
+            aSEField := SE_field.FindSprite(IntToStr (Mybrain.ShotCells[i].CellX ) + '.' + IntToStr (Mybrain.ShotCells[i].CellY ));
+
+            aSprite := se_field.CreateSprite  ( bmp.Bitmap , 'shotcell'+inttostr(c),1,1,100, aSEField.Position.X ,aSEField.Position.Y,true);
+            aSprite.Priority := 30;
+
+    end;
+    bmp.Free;
+  {$endif tools}
+
+
 end;
 
 procedure TForm1.FormCloseQuery(Sender: TObject; var CanClose: Boolean);

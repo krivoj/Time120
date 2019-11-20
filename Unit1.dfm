@@ -83,7 +83,7 @@ object Form1: TForm1
       Top = 577
       Width = 75
       Height = 25
-      Caption = 'Show ShotCells'
+      Caption = 'Show SubCells'
       TabOrder = 4
       OnClick = Button7Click
     end
@@ -235,6 +235,15 @@ object Form1: TForm1
       Caption = 'unlimited time'
       TabOrder = 21
       OnClick = Button5Click
+    end
+    object Button9: TButton
+      Left = 81
+      Top = 600
+      Width = 75
+      Height = 25
+      Caption = 'ShowShotcells'
+      TabOrder = 22
+      OnClick = Button9Click
     end
   end
   object PanelBack: SE_Panel

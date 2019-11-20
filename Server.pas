@@ -5,7 +5,7 @@ unit Server;
 // procedure MatchThreadTimer <-- in caso di bot o disconessione, esegue l'intelligenza artificiale TSoccerBrain.AI_think
 // procedure CreateAndLoadMatch <-- crea una partita (brain)
 
-//{$DEFINE MYDAC}    //  uso devart Mydac.
+{$DEFINE MYDAC}    //  uso devart Mydac.
 {$DEFINE BOTS}     // se uso i bot o solo partite di player reali
 {$DEFINE useMemo}  // se uso il debug a video delle informazioni importanti
 //{$DEFINE FORCETALENT}
@@ -6557,7 +6557,7 @@ begin
   {$ELSE}
   MyQueryGamePlayers := TFDQuery.Create(nil);
   MyQueryGamePlayers.Connection := ConnGame;   // game
-  MyQueryGamePlayers.Open ('SELECT guid, disqualified, Matches_Played,growth1,deva1,deva2,deva3,devt1,devt2,devt3,history,xp,' +
+  MyQueryGamePlayers.Open ('SELECT guid, disqualified, Matches_Played,deva1,deva2,deva3,devt1,devt2,devt3,history,xp,' +
                                   'speed,defense,passing,ballcontrol,shot,heading,talentid1,talentid2 '+
                                   'from game.players WHERE team =' + IntToStr(Cli.GuidTeam) + ' and guid = ' + IntToStr(guid));
   {$ENDIF}
@@ -8295,6 +8295,8 @@ begin
 
      Add_Common_Buffs;                            // i buff comuni a tutti
      aList.Add (TALENT_ID_ADVANCED_BOMB);     // 136   prereq tiro 3 talent bomb --> 5% chance che si attivi da solo tiro +2 su powershot, non precision.shot
+  //   if aBasePlayer.DefaultShot >= 3 then
+  //     aList.Add (TALENT_ID_VOLLEY);            // id falloso   prereq tiro 3 talent bomb -->
 
     end;
     TALENT_ID_FAUL: begin

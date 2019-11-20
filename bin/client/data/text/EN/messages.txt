@@ -141,11 +141,11 @@ descr_talent_super_dribbling=Ha una chance del 15% di ottenere dribbling +3.
 descr_talent_buff_defense=Abilita il buff al reparto Difesa (5% chance di ottenere +1 Difesa, Controllo di Palla e Passaggio a tutti i difensori per 20 turni).
 descr_talent_buff_middle=Abilita il buff al reparto Centrocampo (5% chance di ottenere +1 Velocita', Difesa, Controllo di Palla e Passaggio a tutti i centrocampisti per 20 turni).
 descr_talent_buff_forward=Abilita il buff al reparto Attacco (5% chance di ottenere +1 Tiro, Controllo di Palla e Passaggio a tutti gli attaccanti per 20 turni).
-descr_talent_talent_heading=Ha una chance del 5% di ottenere +1 colpi di testa durante sui cross e corner.
-descr_talent_talent_finishing=Se gli cade la palla addosso dopo un rimbalzo ha +1 Tiro. Valido solo nel proprio turno.
-descr_talent_talent_diving=+10% chance di subire un fallo durante i tackle.
+descr_talent_heading=Ha una chance del 5% di ottenere +1 colpi di testa durante sui cross e corner.
+descr_talent_finishing=Se gli cade la palla addosso dopo un rimbalzo ha +1 Tiro. Valido solo nel proprio turno.
+descr_talent_diving=+10% chance di subire un fallo durante i tackle.
 
-descr_talent_gkmiracle=Ha una chance del 5% di ottenere +1 Difesa sui tiri precisi a distanza 1. Non valido sui rigori.
+descr_talent_gkmiracle=Ha una chance del 10% di ottenere +1 Difesa sui tiri precisi a distanza 1. Non valido sui rigori.
 descr_talent_gkpenalty=Ha una chance del 10% di ottenere +1 Difesa sui rigori. 
 
 
