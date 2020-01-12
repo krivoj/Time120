@@ -1892,8 +1892,8 @@ object Form1: TForm1
       end
     end
     object PanelUniform: SE_Panel
-      Left = 661
-      Top = 555
+      Left = 606
+      Top = 334
       Width = 317
       Height = 223
       BevelOuter = bvNone
@@ -1919,29 +1919,6 @@ object Form1: TForm1
         Margin = 4
         ParentFont = False
         OnClick = btnUniformBackClick
-      end
-      object UniformPortrait: TCnSpeedButton
-        Left = 113
-        Top = 53
-        Width = 74
-        Height = 92
-        Cursor = crHandPoint
-        AllowAllUp = True
-        ShadowColor = 8081721
-        Color = 8081721
-        DownBold = False
-        FlatBorder = True
-        HotTrackBold = False
-        LightColor = 8081721
-        ModernBtnStyle = bsFlat
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = 4308735
-        Font.Height = -19
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        Margin = 4
-        ParentFont = False
-        OnClick = Btn_UniformHomeClick
       end
       object btn_UniformHome: TCnSpeedButton
         Left = 113
@@ -1986,30 +1963,8 @@ object Form1: TForm1
         ParentFont = False
         OnClick = Btn_UniformAwayClick
       end
-      object ck_Jersey1: TCnSpeedButton
-        Left = 220
-        Top = 140
-        Width = 49
-        Height = 15
-        Cursor = crHandPoint
-        Color = 8081721
-        DownColor = clBlue
-        DownBold = True
-        FlatBorder = False
-        HotTrackBold = False
-        GroupIndex = 2
-        Down = True
-        Caption = 'maglia'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWhite
-        Font.Height = -11
-        Font.Name = 'Tahoma'
-        Font.Style = []
-        Margin = 4
-        ParentFont = False
-      end
       object ck_Shorts: TCnSpeedButton
-        Left = 121
+        Left = 225
         Top = 157
         Width = 76
         Height = 15
@@ -2029,19 +1984,18 @@ object Form1: TForm1
         Margin = 4
         ParentFont = False
       end
-      object ck_Socks1: TCnSpeedButton
-        Left = 20
-        Top = 119
-        Width = 65
-        Height = 15
+      object Schema0: TCnSpeedButton
+        Left = 111
+        Top = 57
+        Width = 45
+        Height = 42
         Cursor = crHandPoint
         Color = 8081721
         DownColor = clBlue
         DownBold = True
         FlatBorder = False
         HotTrackBold = False
-        GroupIndex = 2
-        Caption = 'calzettoni'
+        GroupIndex = 3
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWhite
         Font.Height = -11
@@ -2049,10 +2003,11 @@ object Form1: TForm1
         Font.Style = []
         Margin = 4
         ParentFont = False
+        OnClick = Schema0Click
       end
       object ck_Jersey2: TCnSpeedButton
-        Left = 156
-        Top = 140
+        Left = 78
+        Top = 157
         Width = 49
         Height = 15
         Cursor = crHandPoint
@@ -2071,10 +2026,10 @@ object Form1: TForm1
         Margin = 4
         ParentFont = False
       end
-      object ck_Socks2: TCnSpeedButton
-        Left = 73
-        Top = 140
-        Width = 65
+      object ck_Jersey1: TCnSpeedButton
+        Left = 23
+        Top = 157
+        Width = 49
         Height = 15
         Cursor = crHandPoint
         Color = 8081721
@@ -2083,7 +2038,8 @@ object Form1: TForm1
         FlatBorder = False
         HotTrackBold = False
         GroupIndex = 2
-        Caption = 'calzettoni'
+        Down = True
+        Caption = 'maglia'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWhite
         Font.Height = -11
@@ -2091,6 +2047,72 @@ object Form1: TForm1
         Font.Style = []
         Margin = 4
         ParentFont = False
+      end
+      object Schema2: TCnSpeedButton
+        Tag = 2
+        Left = 111
+        Top = 105
+        Width = 45
+        Height = 42
+        Cursor = crHandPoint
+        Color = 8081721
+        DownColor = clBlue
+        DownBold = True
+        FlatBorder = False
+        HotTrackBold = False
+        GroupIndex = 3
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWhite
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        Margin = 4
+        ParentFont = False
+        OnClick = Schema0Click
+      end
+      object Schema1: TCnSpeedButton
+        Tag = 1
+        Left = 158
+        Top = 57
+        Width = 45
+        Height = 42
+        Cursor = crHandPoint
+        Color = 8081721
+        DownColor = clBlue
+        DownBold = True
+        FlatBorder = False
+        HotTrackBold = False
+        GroupIndex = 3
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWhite
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        Margin = 4
+        ParentFont = False
+        OnClick = Schema0Click
+      end
+      object Schema3: TCnSpeedButton
+        Tag = 3
+        Left = 158
+        Top = 105
+        Width = 45
+        Height = 42
+        Cursor = crHandPoint
+        Color = 8081721
+        DownColor = clBlue
+        DownBold = True
+        FlatBorder = False
+        HotTrackBold = False
+        GroupIndex = 3
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWhite
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        Margin = 4
+        ParentFont = False
+        OnClick = Schema0Click
       end
       object CnColorGrid1: TCnColorGrid
         Left = 16
@@ -2115,16 +2137,16 @@ object Form1: TForm1
         AutoSizeBy = asSameWidth
         ColorSet = csCustomColors
         CustomColors.Strings = (
-          '16777215'
-          '0'
-          '8421504'
-          '255'
-          '4227327'
+          '16777214'
+          '1'
+          '8421503'
+          '254'
+          '4227325'
           '65535'
           '32768'
-          '65280'
+          '65281'
           '16776960'
-          '16711680'
+          '16711681'
           '16711808'
           '16744703'
           '128')

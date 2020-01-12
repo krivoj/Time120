@@ -6,6 +6,8 @@
 //{$DEFINE  Setposprscorner}
 //{$DEFINE ADDITIONAL_MATCHINFO}
 //{$DEFINE BUFF100}
+//{$DEFINE USEDICE6}
+//{$DEFINE USEDICE10}
 unit SoccerBrainv3;
 
 // bug importanti
@@ -26,6 +28,16 @@ interface
 uses DSE_theater, DSE_Random, DSE_PathPlanner, DSE_list, DSE_MISC,
   generics.collections, generics.defaults, system.classes, ZLIBEX,
   System.SysUtils, System.Types, strutils, Inifiles, IOUtils, winapi.windows ;
+{$IFDEF USEDICE6}
+const DICE = 4;                   // Roll random da 1 a 4. le stat dei player vanno da 1 a 6.
+{$ENDIF USEDICE6}
+
+{$IFDEF USEDICE10}
+const DICE = 6;                   // Roll random da 1 a 6. le stat dei player vanno da 1 a 10. max 4 speed
+{$ENDIF USEDICE10}
+
+const Schemas = 4;           // numero di schema delle uniformi
+
 const DICE = 4;                   // Roll random da 1 a 4. le stat dei player vanno da 1 a 6.
 const MAX_LEVEL = 16;
 const modifier_defenseShot = -1;

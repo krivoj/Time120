@@ -98,25 +98,14 @@ begin
 
 
   Form1.btn_uniformHome.Top := 3;
-  Form1.Btn_uniformHome.Left := (Form1.PanelUniform.Width div 2) - (Form1.UniformPortrait.Width div 2 );
+  Form1.Btn_uniformHome.Left := (Form1.PanelUniform.Width div 2) - (Form1.btn_UniformHome.Width div 2 );
   Form1.Btn_uniformAway.Top := Form1.Btn_uniformHome.Top + Form1.Btn_uniformHome.Height;
-  Form1.Btn_uniformAway.Left := (Form1.PanelUniform.Width div 2) - (Form1.UniformPortrait.Width div 2 );
-  Form1.UniformPortrait.Top := Form1.Btn_uniformAway.Top + Form1.Btn_uniformAway.Height + 8 ;
-  Form1.UniformPortrait.Left := (Form1.PanelUniform.Width div 2) - (Form1.UniformPortrait.Width div 2 );
-  Form1.ck_Jersey1.Left :=  Form1.UniformPortrait.Left - 100;
-  Form1.ck_Jersey2.Left :=  Form1.UniformPortrait.Left + Form1.UniformPortrait.Width + 100 - Form1.ck_Jersey2.width;
+  Form1.Btn_uniformAway.Left := (Form1.PanelUniform.Width div 2) - (Form1.btn_UniformAway.Width div 2 );
   Form1.ck_Shorts.Left :=  (Form1.PanelUniform.Width div 2) - (Form1.ck_Shorts.Width div 2 );
-  Form1.ck_Socks1.Left := Form1.UniformPortrait.Left - 100;
-  Form1.ck_Socks2.Left := Form1.UniformPortrait.Left + Form1.UniformPortrait.Width  + 100 - Form1.ck_Socks2.width;
 
 
   Form1.CnColorGrid1.Left := (Form1.PanelUniform.Width div 2) - (Form1.CnColorGrid1.Width div 2 );
-  Form1.ck_Jersey1.Top := Form1.UniformPortrait.Top + Form1.UniformPortrait.Height;
-  Form1.ck_Jersey2.Top := Form1.ck_Jersey1.Top;
-  Form1.ck_Shorts.Top := Form1.ck_Jersey1.Top + Form1.ck_Jersey1.Height;
-  Form1.ck_Socks1.Top := Form1.ck_Shorts.Top + Form1.ck_Shorts.Height;
-  Form1.ck_Socks2.Top := Form1.ck_Socks1.Top;
-  Form1.CnColorGrid1.top := Form1.ck_Socks1.Top +  Form1.ck_Socks1.Height + 20;
+//  Form1.CnColorGrid1.top := Form1.ck_Socks1.Top +  Form1.ck_Socks1.Height + 20;
 
 
   if Form1.PanelBack.Background = nil  then Form1.PanelBack.Background := SE_Bitmap.create ( dir_stadium + 'background.bmp');

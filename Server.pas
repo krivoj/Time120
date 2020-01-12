@@ -846,7 +846,7 @@ begin
   // prima aggiorno i disqualified e gli injured ( tutti i giocatori delle due squadre ). anche Mathcheslayed riguarda tutti.
 
   // Singoli players
-
+//fine partita
   WaitforSingleObject ( MutexMarket, INFINITE ); // devo bloccare il mercato
 
     {$IFDEF MYDAC}
@@ -3991,6 +3991,8 @@ var
   aBasePlayer: TBasePlayer;
   GuidGameTeam,MarketValue: integer;
   UniformA,UniformH,TeamName: string;
+  aStrColor : string;
+  ts : TStringList;
   ConnWorld,ConnGame :{$IFDEF MYDAC} TMyConnection{$ELSE}TFDConnection {$ENDIF};
   MyQueryGamePlayers,MyQueryGameTeams,MyQueryWT:{$IFDEF MYDAC} TMyQuery{$ELSE} TFDQuery{$ENDIF};
   label retry;
@@ -4078,6 +4080,50 @@ begin
     ConnGame.Free;
     Exit;
   end;
+
+  // genero colori uniformi casuali Home e Away,schema e colori
+
+{  ts := TStringList.Create;
+    ts.Add('0');
+    ts.Add('0');
+    ts.Add('0');
+    ts.Add('0');
+
+  if RndGenerate(100) <= 50 then begin //1 o 2 colori
+    aStrColor :=  IntToStr( rndGenerate0 ( 12 ) ); // 12 sono i colori
+    ts[0] := aStrColor;
+    ts[1] := aStrColor;
+    ts[2] := aStrColor;
+  end
+  else begin
+    aStrColor :=  IntToStr( rndGenerate0 ( 12 ) ); // 12 sono i colori
+    ts[0] := aStrColor;
+    aStrColor :=  IntToStr( rndGenerate0 ( 12 ) ); // 12 sono i colori
+    ts[1] := aStrColor;
+    ts[2] := aStrColor;
+
+  end;
+  ts[3]  := IntTostr (RndGenerate0(schemas));
+  Uniformh := ts.CommaText;
+
+  if RndGenerate(100) <= 50 then begin //1 o 2 colori
+    aStrColor :=  IntToStr( rndGenerate0 ( 12 ) ); // 12 sono i colori
+    ts[0] := aStrColor;
+    ts[1] := aStrColor;
+    ts[2] := aStrColor;
+  end
+  else begin
+    aStrColor :=  IntToStr( rndGenerate0 ( 12 ) ); // 12 sono i colori
+    ts[0] := aStrColor;
+    aStrColor :=  IntToStr( rndGenerate0 ( 12 ) ); // 12 sono i colori
+    ts[1] := aStrColor;
+    ts[2] := aStrColor;
+
+  end;
+  ts[3]  := IntTostr (RndGenerate0(schemas));
+  UniformA := ts.CommaText;
+
+  ts.Free;  }
 
   MyQueryGameTeams.SQL.clear;
   MyQueryGameTeams.SQL.text := 'INSERT into game.teams (account,WorldTeam,teamname, nextha,uniformh,uniforma)'+
@@ -4269,6 +4315,17 @@ var
 
   Ts := TStringList.Create ;
 
+  {$IFDEF  USEDICE10}
+  Speed2 := rndGenerate ( 100  ); // 50% giocatori speed 2, 20% speed 4
+  if Speed2 <= 50 then begin
+    Ts.commatext := '2,1,1,1,1,1'
+  else if Speed2 <= 20 then
+    Ts.commatext := '4,1,1,1,1,1'
+  end
+  else  Ts.commatext := '1,1,1,1,1,1';
+
+  // distribuisco 3 punti nella versione dice4, qui ne distribuisco 7
+  {$ENDIF  USEDICE10}
   Speed2 := rndGenerate ( 100  ); // 50% giocatori speed 2, se i 3 random vanno li' diventa 5, quindi massimo 4
   if Speed2 <= 50 then begin
     Ts.commatext := '2,1,1,1,1,1'
@@ -6021,10 +6078,10 @@ begin
   UniformH:= TStringList.Create ;
   UniformA:= TStringList.Create ;
 
-  for I := 0 to 4 do begin
+  for I := 0 to 3 do begin
     UniformH.Add(ts[i]);
   end;
-  for I := 5 to 9 do begin
+  for I := 4 to 7 do begin
     UniformA.Add(ts[i]);
   end;
 
@@ -6267,13 +6324,13 @@ begin
   ts.CommaText := CommaText;
   ts.Delete(0); //setformation
 
-  if ts.Count < 10 then begin
+  if ts.Count <> 8 then begin        // 2 jersey, 1 shorts , 1 schema
       cli.sReason := 'validate_setuniform Invalid ts count ' ;
       ts.Free;
       Exit;
   end;
 
-  for I := 0 to 9 do begin
+  for I := 0 to 7 do begin
     if not TryDecimalStrToInt(ts[i], aValue) then begin
       cli.sReason := 'validate_setuniform Invalid uniform  ' ;
       ts.Free;
@@ -6281,7 +6338,7 @@ begin
 
     end
     else begin
-      if (aValue < 0) or (aValue > 12) then begin
+      if (aValue < 0) or (aValue > 11) then begin
         cli.sReason := 'validate_setuniform uniform Invalid color index  ' ;
         ts.Free;
         Exit;

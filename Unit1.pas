@@ -51,8 +51,8 @@ uses
 
 
 const GCD_DEFAULT = 200;        // global cooldown, minimo 200 ms tra un input verso il server e l'altro ( anti-cheating )
-const ScaleSprites = 64;        // riduzione generica di tutto gli sprite player
-const ScaleSpritesFace = 42;        // riduzione face
+const ScaleSprites = 40;        // riduzione generica di tutto gli sprite player
+const ScaleSpritesFace = 40;        // riduzione face
 const FieldCellW = 64;
 const FieldCellH = 64;
 const DEFAULT_SPEED_BALL = 4;
@@ -222,7 +222,6 @@ type
       lbl_TeamName: TLabel;
       BtnFormationBack: TcnSpeedButton;
       btnUniformBack: TcnSpeedButton;
-      UniformPortrait: TcnSpeedButton;
       BtnFormationReset: TcnSpeedButton;
       lbl_MoneyF: TLabel;
       lbl_RankF: TLabel;
@@ -235,11 +234,8 @@ type
       SE_GridSkill: SE_Grid;
 
     PanelUniform: SE_panel;
-      ck_Jersey1: TCnSpeedButton;
       ck_Shorts: TCnSpeedButton;
-      ck_Socks1: TCnSpeedButton;
-      ck_Jersey2: TCnSpeedButton;
-      ck_Socks2: TCnSpeedButton;
+    Schema0: TCnSpeedButton;
       btn_UniformHome: TCnSpeedButton;
       btn_UniformAway: TCnSpeedButton;
       CnColorGrid1: TCnColorGrid;
@@ -277,6 +273,11 @@ type
     btnSelCountryTeamBack: TCnSpeedButton;
     Button5: TButton;
     Button9: TButton;
+    ck_Jersey2: TCnSpeedButton;
+    ck_Jersey1: TCnSpeedButton;
+    Schema2: TCnSpeedButton;
+    Schema1: TCnSpeedButton;
+    Schema3: TCnSpeedButton;
 
 // General
     procedure FormCreate(Sender: TObject);
@@ -399,11 +400,13 @@ type
     procedure btnSelCountryTeamBackClick(Sender: TObject);
     procedure Button5Click(Sender: TObject);
     procedure Button9Click(Sender: TObject);
+    procedure Schema0Click(Sender: TObject);
 
   private
     { Private declarations }
     fSelectedPlayer : TSoccerPlayer;
     procedure ShowFace ( aPlayer: TSoccerPlayer );
+    procedure AddFace ( aPlayer: TSoccerPlayer );
     procedure  SetSelectedPlayer ( aPlayer: TSoccerPlayer);
     function FieldGuid2Cell (guid:string): Tpoint;
 
@@ -471,8 +474,8 @@ type
 
 
     procedure ClientLoadFormation ;
-      procedure PreloadUniform(ha:Byte;  var UniformBitmap: SE_Bitmap);
-      procedure PreloadUniformGK(ha:Byte;  var UniformBitmapGK: SE_Bitmap);
+      procedure PreloadUniform(ha:Byte;   UniformSchemaIndex: integer);
+      procedure PreloadUniformGK(ha:Byte;  UniformSchemaIndex: integer);
       function DarkColor(aColor: TColor): TColor;
       function softlight(aColor: TColor): TColor;
       function i_softlight(ib, ia: integer): integer;
@@ -614,6 +617,9 @@ var
   MatchesPlayedTeam: Integer;   // totale partite giocate
   Money: Integer;               // Denaro
   TotMarket: Integer;           // Valore totale dei player
+
+
+  btn_Schema : array [0..Schemas-1] of TCnSpeedButton;
 
   procedure RoundCornerOf(Control: TWinControl) ;
 implementation
@@ -1226,6 +1232,12 @@ begin
 
   //SE_GridCountryTeam.Active := false;
 
+  for I := 0 to Schemas-1 do begin
+    btn_Schema[i] := FindComponent ( 'Schema' + IntToStr(i)) as TcnSpeedButton;
+  end;
+
+
+
   {$ifdef tools}
   btnReplay.Visible := True;
   //ToolSpin.Visible := True;
@@ -1372,8 +1384,6 @@ begin
   ck_Jersey1.Caption :=   Translate('lbl_Jersey') + ' 1';
   ck_Jersey2.Caption :=   Translate('lbl_Jersey') + ' 2';
   ck_Shorts.Caption :=   Translate('lbl_Shorts');
-  ck_Socks1.Caption :=   Translate('lbl_Socks')+ ' 1';
-  ck_Socks2.Caption :=   Translate('lbl_Socks')+ ' 2';
   btn_UniformHome.Caption := Translate('lbl_Home');
   btn_UniformAway.Caption := Translate('lbl_Away');
 
@@ -2026,129 +2036,72 @@ begin
     r := sqrt(a) * (2 * b - 1) + (2 * a) * (1 - b);
   result := trunc(r * 255);
 end;
-procedure TForm1.PreloadUniform( ha:Byte;  var UniformBitmap: SE_Bitmap);
+procedure TForm1.PreloadUniform( ha:Byte;  UniformSchemaIndex: integer);
 var
-  x,y: Integer;
+  s,x,y: Integer;
+  tmpSchema : SE_Bitmap;
 begin
-    for x := 0 to UniformBitmap.Width-1 do begin
-      for y := 0 to UniformBitmap.height-1 do begin
+  tmpSchema := SE_Bitmap.Create;
 
-        if x > 48 then begin
-
-           if (y > 21) and (y <= 55) then begin // magliette
-
-
-            if UniformBitmapBW.Bitmap.Canvas.Pixels[x,y] = clBlack then
-              UniformBitmap.Bitmap.Canvas.Pixels [x,y] := StringToColor ( CnColorgrid1.CustomColors [  StrToInt(TsUniforms[ha][0])])  //<-- se fuori casa prende la maglia giusta
-            else if UniformBitmapBW.Bitmap.Canvas.Pixels[x,y]= clWhite then
-              UniformBitmap.Bitmap.Canvas.Pixels[x,y]  := StringToColor ( CnColorgrid1.CustomColors [  StrToInt(TsUniforms[ha][1])]);
-
-           end
-
-           else if (y > 55) and (y <= 70) then begin // pantaloncini
-            if UniformBitmapBW.Bitmap.Canvas.Pixels[x,y]= clWhite then
-              UniformBitmap.Bitmap.Canvas.Pixels [x,y] := StringToColor ( CnColorgrid1.CustomColors [  StrToInt(TsUniforms[ha][2])])  //<-- se fuori casa prende la maglia giusta
-           end
-
-           else if (y > 77) then begin // calzettoni
-            if UniformBitmapBW.Bitmap.Canvas.Pixels[x,y]= clBlack then
-              UniformBitmap.Bitmap.Canvas.Pixels[x,y]  := StringToColor ( CnColorgrid1.CustomColors [  StrToInt(TsUniforms[ha][3])])  //<-- se fuori casa prende la maglia giusta
-            else if UniformBitmapBW.Bitmap.Canvas.Pixels[x,y]= clWhite then
-              UniformBitmap.Bitmap.Canvas.Pixels [x,y] := StringToColor ( CnColorgrid1.CustomColors [  StrToInt(TsUniforms[ha][4])]);
-           end;
-
-        end
-
-        else begin  // schiarisco
-
-           if (y > 21) and (y <= 55) then begin // magliette
-
-
-            if UniformBitmapBW.Bitmap.Canvas.Pixels[x,y]= clBlack then
-              UniformBitmap.Bitmap.Canvas.Pixels[x,y]  := DarkColor( StringToColor (  CnColorgrid1.CustomColors [  StrToInt(TsUniforms[ha][0]) ]))  //<-- se fuori casa prende la maglia giusta
-            else if UniformBitmapBW.Bitmap.Canvas.Pixels[x,y]= clWhite then
-              UniformBitmap.Bitmap.Canvas.Pixels [x,y] := DarkColor( StringToColor (  CnColorgrid1.CustomColors [  StrToInt(TsUniforms[ha][1]) ]));
-
-           end
-
-           else if (y > 55) and (y <= 70) then begin // pantaloncini
-            if UniformBitmapBW.Bitmap.Canvas.Pixels[x,y]= clWhite then
-              UniformBitmap.Bitmap.Canvas.Pixels[x,y]  := DarkColor( StringToColor (  CnColorgrid1.CustomColors [  StrToInt(TsUniforms[ha][2]) ]))  //<-- se fuori casa prende la maglia giusta
-           end
-
-           else if (y > 77) then begin // calzettoni
-            if UniformBitmapBW.Bitmap.Canvas.Pixels[x,y]= clBlack then
-              UniformBitmap.Bitmap.Canvas.Pixels[x,y]  := DarkColor( StringToColor (  CnColorgrid1.CustomColors [  StrToInt(TsUniforms[ha][3]) ]))  //<-- se fuori casa prende la maglia giusta
-            else if UniformBitmapBW.Bitmap.Canvas.Pixels[x,y]= clWhite then
-              UniformBitmap.Bitmap.Canvas.Pixels[x,y]  := DarkColor( StringToColor ( CnColorgrid1.CustomColors [  StrToInt(TsUniforms[ha][4]) ]));
-           end;
+    for s := 0 to Schemas -1 do begin
+      tmpSchema.LoadFromFileBMP( dir_player + 'schema' + IntToStr(s) + '.bmp' );
+      for x := 0 to tmpSchema.Width-1 do begin
+        for y := 0 to tmpSchema.height-1 do begin
+          if tmpSchema.Bitmap.Canvas.Pixels[x,y] = clRed then
+            tmpSchema.Bitmap.Canvas.Pixels [x,y] := StringToColor ( CnColorgrid1.CustomColors [  StrToInt(TsUniforms[ha][0])])  //<-- se fuori casa prende la maglia giusta
+          else if tmpSchema.Bitmap.Canvas.Pixels[x,y] = clBlue then
+            tmpSchema.Bitmap.Canvas.Pixels [x,y] := StringToColor ( CnColorgrid1.CustomColors [  StrToInt(TsUniforms[ha][1])])  //<-- se fuori casa prende la maglia giusta
+          else if tmpSchema.Bitmap.Canvas.Pixels[x,y] = clBlack then
+            tmpSchema.Bitmap.Canvas.Pixels [x,y] := StringToColor ( CnColorgrid1.CustomColors [  StrToInt(TsUniforms[ha][2])]);  //<-- se fuori casa prende la maglia giusta
         end;
-
-
       end;
+
+      // se è lo schema selezionato lo salvo come color0 o color1 prima dello stretch
+      if s = UniformSchemaIndex then
+        tmpSchema.Bitmap.SaveToFile(dir_tmp + 'color' + IntToStr(ha) + '.bmp');
+
+      // stretch in base a ScaleSprites e width e Height del TcnButton
+      tmpSchema.Stretch (    (ScaleSprites * btn_Schema[s].Width ) div 100, (ScaleSprites * btn_Schema[s].Height ) div 100);
+      tmpSchema.Bitmap.SaveToFile(dir_tmp + 'schema' + IntToStr(s) + '.bmp'); // salvo i 4 o più schemi
+      btn_Schema[s].Glyph.LoadFromFile( dir_tmp + 'schema' + IntToStr(s) + '.bmp');
+
     end;
 
-    UniformBitmap.Bitmap.SaveToFile(dir_tmp + 'color' + IntToStr(ha) + '.bmp');
+    tmpSchema.Free;
 end;
-procedure TForm1.PreloadUniformGK( ha:Byte;  var UniformBitmapGK: SE_Bitmap);
+procedure TForm1.PreloadUniformGK( ha:Byte;   UniformSchemaIndex: Integer);
 var
-  x,y: Integer;
+  s,x,y: Integer;
+  tmpSchema : SE_Bitmap;
 begin
-    for x := 0 to UniformBitmapGK.Width-1 do begin
-      for y := 0 to UniformBitmapGK.height-1 do begin
+  tmpSchema := SE_Bitmap.Create;
 
-        if x > 48 then begin
+    for s := 0 to Schemas -1 do begin
 
-           if (y > 21) and (y <= 55) then begin // magliette
-
-
-            if (UniformBitmapBW.Bitmap.Canvas.Pixels[x,y] = clBlack) or (UniformBitmapBW.Bitmap.Canvas.Pixels[x,y]= clWhite)  then
-              UniformBitmapGK.Bitmap.Canvas.Pixels [x,y] := clGray;
-
-           end
-
-           else if (y > 55) and (y <= 70) then begin // pantaloncini
-            if UniformBitmapBW.Bitmap.Canvas.Pixels[x,y]= clWhite  then
-              UniformBitmapGK.Bitmap.Canvas.Pixels [x,y] := clBlack;
-           end
-
-           else if (y > 77) then begin // calzettoni
-            if UniformBitmapBW.Bitmap.Canvas.Pixels[x,y]= clBlack then
-              UniformBitmapGK.Bitmap.Canvas.Pixels[x,y]  := clBlack
-            else if UniformBitmapBW.Bitmap.Canvas.Pixels[x,y]= clWhite then
-              UniformBitmapGK.Bitmap.Canvas.Pixels [x,y] := clGray;
-           end;
-
-        end
-
-        else begin  // schiarisco
-
-           if (y > 21) and (y <= 55) then begin // magliette
-
-
-            if (UniformBitmapBW.Bitmap.Canvas.Pixels[x,y]= clBlack) or (UniformBitmapBW.Bitmap.Canvas.Pixels[x,y]= clWhite) then
-              UniformBitmapGK.Bitmap.Canvas.Pixels[x,y]  := DarkColor( clGray );  //<-- se fuori casa prende la maglia giusta
-
-           end
-
-           else if (y > 55) and (y <= 70) then begin // pantaloncini
-            if UniformBitmapBW.Bitmap.Canvas.Pixels[x,y]= clWhite then
-              UniformBitmapGK.Bitmap.Canvas.Pixels[x,y]  := DarkColor( clBlack )  //<-- se fuori casa prende la maglia giusta
-           end
-
-           else if (y > 77) then begin // calzettoni
-            if UniformBitmapBW.Bitmap.Canvas.Pixels[x,y]= clBlack then
-              UniformBitmapGK.Bitmap.Canvas.Pixels[x,y]  := DarkColor( clBlack )  //<-- se fuori casa prende la maglia giusta
-            else if UniformBitmapBW.Bitmap.Canvas.Pixels[x,y]= clWhite then
-              UniformBitmapGK.Bitmap.Canvas.Pixels[x,y]  := DarkColor( clGray );
-           end;
+      tmpSchema.LoadFromFileBMP( dir_player + 'schema' + IntToStr(s) +'.bmp' );
+      for x := 0 to tmpSchema.Width-1 do begin
+        for y := 0 to tmpSchema.height-1 do begin
+          if tmpSchema.Bitmap.Canvas.Pixels[x,y] = clRed then
+            tmpSchema.Bitmap.Canvas.Pixels [x,y] := ClGray
+          else if tmpSchema.Bitmap.Canvas.Pixels[x,y] = clBlue then
+            tmpSchema.Bitmap.Canvas.Pixels [x,y] := clGray
+          else if tmpSchema.Bitmap.Canvas.Pixels[x,y] = clBlack then
+            tmpSchema.Bitmap.Canvas.Pixels [x,y] := clBlack ;
         end;
-
-
       end;
-    end;
 
-    UniformBitmapGK.Bitmap.SaveToFile(dir_tmp + 'colorgk.bmp');
+      // se è lo schema selezionato lo salvo come colorGK prima dello stretch
+      if s = UniformSchemaIndex then
+        tmpSchema.Bitmap.SaveToFile(dir_tmp + 'colorgk.bmp');
+
+      // stretch in base a ScaleSprites e width e Height del TcnButton
+      tmpSchema.Stretch (    (ScaleSprites * btn_Schema[s].Width ) div 100, (ScaleSprites * btn_Schema[s].Height ) div 100);
+      tmpSchema.Bitmap.SaveToFile(dir_tmp +  'schemagk' + IntToStr(s) + '.bmp'); // salvo i 4 o più schemi
+      btn_Schema[s].Glyph.LoadFromFile( dir_tmp  + 'schemagk' + IntToStr(s) + '.bmp');
+
+    end;
+    tmpSchema.Free;
+
 end;
 procedure TForm1.ColorizeFault( Team:Byte;  var FaultBitmap: SE_Bitmap);
 var
@@ -2316,22 +2269,23 @@ begin
   lbl_TurnF.Caption := Translate('lbl_NextTurn') + ' ' + IntToStr(MatchesPlayedTeam+1) + '/38' ;
   lbl_MoneyF.Caption := Translate('lbl_Money') + ' ' + IntToStr(Money)  ;
 
-  // viene sempre caricato il default BW , poi modificato da uniforms TS
+
   if GraphicSE then begin
-    // preload UniformH. metto il colore vero a sinistra. il destro lo schiarisco
-    // in caso di nero e bianco ho i preset grigi.
-    UniformBitmap := SE_Bitmap.Create (dir_player + 'bw.bmp');
-    PreLoadUniform(NextHa, UniformBitmap);  // usa tsuniforms e  UniformBitmapBW
-    UniformPortrait.Glyph.LoadFromFile(dir_tmp + 'color' + IntToStr(NextHa) +'.bmp');
+    //UniformBitmap := SE_Bitmap.Create (dir_player + 'schema' + tsUniforms[NextHa][3]+ '.bmp'); // carico la base red-blue-black
+    PreLoadUniform(NextHa, StrToInt( tsUniforms[NextHa][3] ));  // crea 4 schemas bmp ma salva come color quello selezionato
+   // UniformPortrait.Glyph.LoadFromFile(dir_tmp + 'color' + IntToStr(NextHa) +'.bmp');
+    UniformBitmap := SE_Bitmap.Create (dir_tmp + 'color' + IntToStr(NextHa) + '.bmp'); // carico la base red-blue-black
+
     Portrait0.Glyph.LoadFromFile(dir_tmp + 'color' + IntToStr(NextHa) +'.bmp');
 
     if NextHa = 0 then
       btn_UniformHome.Down:= True
       else
         btn_UniformAway.Down:= True;
+    btn_Schema [ StrToint (tsUniforms[NextHa][3]) ].Down := True;
 
-    UniformBitmapGK := SE_Bitmap.Create (dir_player + 'bw.bmp');
-    PreLoadUniformGK(NextHa, UniformBitmapGK);
+    PreLoadUniformGK(NextHa,  StrToInt( tsUniforms[NextHa][3]));
+    UniformBitmapGK := SE_Bitmap.Create (dir_tmp + 'colorgk.bmp');
   end;
 
   MyBrain.Score.DominantColor[0]:= StrToInt( TsUniforms[0][0] );
@@ -2422,6 +2376,7 @@ begin
           aPlayer.SE_Sprite := se_Players.CreateSprite(UniformBitmapGK.Bitmap , aPlayer.Ids,1,1,1000,0,0,true);
 
         aPlayer.SE_Sprite.Scale := ScaleSprites;
+        AddFace ( aPlayer );
         aPlayer.se_sprite.ModPriority := i+2;
       end;
 
@@ -3090,16 +3045,16 @@ end;
 procedure TForm1.Btn_UniformAwayClick(Sender: TObject);
 var
   ha : Byte;
-  UniformBitmap: SE_Bitmap;
+//  UniformBitmap: SE_Bitmap;
 begin
     if Btn_UniformAway.Down then
      ha := 1
      else ha :=0;
 
-    UniformBitmap := SE_Bitmap.Create (dir_player + 'bw.bmp');
-    PreLoadUniform( ha, UniformBitmap );  // usa tsuniforms e  UniformBitmapBW
-    UniformBitmap.free;
-    UniformPortrait.Glyph.LoadFromFile(dir_tmp + 'color' + IntToStr(ha) +'.bmp');
+   // UniformBitmap := SE_Bitmap.Create (dir_player + 'bw.bmp');
+    PreLoadUniform( ha, StrToInt(tsUniforms[1][3]) );  // usa tsuniforms e  UniformBitmapBW
+  //  UniformBitmap.free;
+
 
 end;
 
@@ -3112,10 +3067,10 @@ begin
      ha := 0
      else ha :=1;
 
-    UniformBitmap := SE_Bitmap.Create (dir_player + 'bw.bmp');
-    PreLoadUniform( ha, UniformBitmap );  // usa tsuniforms e  UniformBitmapBW
-    UniformBitmap.free;
-    UniformPortrait.Glyph.LoadFromFile(dir_tmp + 'color' + IntToStr(ha) +'.bmp');
+  //  UniformBitmap := SE_Bitmap.Create (dir_player + 'bw.bmp');
+    PreLoadUniform( ha,  StrToInt( tsUniforms[0][3]) );  // usa tsuniforms e  UniformBitmapBW
+  //  UniformBitmap.free;
+
 end;
 
 procedure TForm1.mainThreadTimer(Sender: TObject);
@@ -3633,6 +3588,7 @@ begin
   for I := 0 to Mybrain.lstSoccerPlayer.Count -1 do begin
     Mybrain.lstSoccerPlayer[i].Se_Sprite.Labels.Clear ;;
     Mybrain.lstSoccerPlayer[i].Se_Sprite.SubSprites.Clear;
+    AddFace (Mybrain.lstSoccerPlayer[i]);
   end;
 
 end;
@@ -3745,21 +3701,25 @@ begin
     if btn_UniformHome.Down then
      ha := 0
      else ha :=1;
+
     if ck_Jersey1.Down then
       TSUniforms[ha][0] := IntToStr( aCol )
-      else if ck_Jersey2.Down then
+    else if ck_Jersey2.Down then
       TSUniforms[ha][1] := IntToStr( aCol )
-      else if ck_Shorts.Down then
-      TSUniforms[ha][2] := IntToStr( aCol )
-      else if ck_Socks1.Down then
+    else if ck_Shorts.Down then
+      TSUniforms[ha][2] := IntToStr( aCol );
+
+//    TSUniforms[ha][3] := schema;
+
+{      else if ck_Socks1.Down then           // vecchia versione con socks
       TSUniforms[ha][3] := IntToStr( aCol )
       else if ck_Socks2.Down then
-      TSUniforms[ha][4] := IntToStr( aCol );
+      TSUniforms[ha][4] := IntToStr( aCol );   }
 
-    UniformBitmap := SE_Bitmap.Create (dir_player + 'bw.bmp');
-    PreLoadUniform( ha, UniformBitmap   );  // usa tsuniforms e  UniformBitmapBW
-    UniformBitmap.free;
-    UniformPortrait.Glyph.LoadFromFile(dir_tmp + 'color' + IntToStr(ha)+ '.bmp');
+   // UniformBitmap := SE_Bitmap.Create (dir_player + 'bw.bmp');
+    PreLoadUniform( ha, StrToInt( TSUniforms[ha][3] )   );  // usa tsuniforms
+ //   UniformBitmap.free;
+ //   UniformPortrait.Glyph.LoadFromFile(dir_tmp + 'color' + IntToStr(ha)+ '.bmp');
 
 end;
 
@@ -3794,6 +3754,16 @@ begin
   PanelSkill.Visible:= False;
   if FirstTime then begin
     se_players.RemoveAllSprites ;
+{        aPlayer.SE_Sprite.DeleteSubSprite('star' );
+        aPlayer.SE_Sprite.DeleteSubSprite('disqualified' );
+        aPlayer.SE_Sprite.DeleteSubSprite('injured' );
+        aPlayer.SE_Sprite.DeleteSubSprite('yellow' );
+        aPlayer.SE_Sprite.DeleteSubSprite('inout' );
+        aPlayer.SE_Sprite.DeleteSubSprite('buffd' );
+        aPlayer.SE_Sprite.DeleteSubSprite('buffm' );
+        aPlayer.SE_Sprite.DeleteSubSprite('bufff' );
+        aPlayer.SE_Sprite.DeleteSubSprite('stay' );}    // lascio FACE
+        AddFace ( aPlayer );
     SE_players.ProcessSprites(2000);
     MyBrain.lstSoccerPlayer.Clear ;
     MyBrain.lstSoccerReserve.Clear;
@@ -3852,13 +3822,14 @@ begin
   TsUniforms[0].CommaText := MyBrain.Score.Uniform [0] ; // in formazione casa/trasferta
   TsUniforms[1].CommaText := MyBrain.Score.Uniform [1] ;
 
-  UniformBitmap[0] := SE_Bitmap.Create (dir_player + 'bw.bmp');
-  PreLoadUniform (0, UniformBitmap[0] );  // usa tsuniforms e  UniformBitmapBW
+//  UniformBitmap[0] := SE_Bitmap.Create (dir_player + 'bw.bmp');
+  PreLoadUniform (0, StrToInt( TsUniforms[0][3]));
 //  Portrait0.Glyph.LoadFromFile(dir_tmp + 'color0.bmp');
-  UniformBitmap[1] := SE_Bitmap.Create (dir_player + 'bw.bmp');
-  PreLoadUniform (1, UniformBitmap[1] );  // usa tsuniforms e  UniformBitmapBW
-  UniformBitmapGK := SE_Bitmap.Create (dir_player + 'bw.bmp');
-  PreLoadUniformGK (1, UniformBitmapGK );
+//  UniformBitmap[1] := SE_Bitmap.Create (dir_player + 'bw.bmp');
+  PreLoadUniform (1, StrToInt( TsUniforms[1][3]));
+//  UniformBitmapGK := SE_Bitmap.Create (dir_player + 'bw.bmp');
+  PreLoadUniformGK (0, StrToInt( TsUniforms[0][3] ));
+  PreLoadUniformGK (1, StrToInt( TsUniforms[1][3] ));
   MyBrain.Score.DominantColor[0]:=  StringToColor( CnColorgrid1.CustomColors [ StrToInt( TsUniforms[0][0] )]);
   if TsUniforms[0][0] = TsUniforms[0][1] then
     MyBrain.Score.FontColor[0]:= GetContrastColor( StringToColor( CnColorgrid1.CustomColors [ StrToInt(TsUniforms[0][0])]) )
@@ -4219,6 +4190,7 @@ begin
       else
         aPlayer.Se_Sprite := se_Players.CreateSprite(UniformBitmapGK.Bitmap , aPlayer.Ids,1,1,1000,0,0,true);
       aPlayer.Se_Sprite.Scale:= ScaleSprites;
+      AddFace ( aPlayer );
       aPlayer.Se_Sprite.ModPriority := i+2;
       aPlayer.Se_Sprite.MoverData.Speed := DEFAULT_SPEED_PLAYER;
 
@@ -4400,6 +4372,7 @@ begin
       else
         aPlayer.SE_sprite := se_Players.CreateSprite(UniformBitmapGK.Bitmap , aPlayer.Ids,1,1,1000,0,0,true);
       aPlayer.SE_sprite.Scale:= ScaleSprites;
+      AddFace ( aPlayer );
       aPlayer.SE_sprite.ModPriority := i+2;
       aPlayer.SE_sprite.MoverData.Speed := DEFAULT_SPEED_PLAYER;
     end;
@@ -6645,6 +6618,7 @@ begin
         aPlayer.SE_Sprite.DeleteSubSprite('buffm' );
         aPlayer.SE_Sprite.DeleteSubSprite('bufff' );
         aPlayer.SE_Sprite.DeleteSubSprite('stay' ); }   // lascio FACE
+        AddFace ( aPlayer );
 
          if (aPlayer.BonusSHPturn > 0) or (aPlayer.BonusPLMTurn > 0)
          or (aPlayer.BonusTackleTurn > 0) or (aPlayer.BonusLopBallControlTurn > 0)
@@ -6708,8 +6682,8 @@ begin
 
         aPlayer:= MyBrain.lstSoccerReserve [P];
         aPlayer.SE_Sprite.Labels.Clear ;
-        aPlayer.SE_Sprite.RemoveAllSubSprites;
-{        aPlayer.SE_Sprite.DeleteSubSprite('star' );
+//        aPlayer.SE_Sprite.RemoveAllSubSprites;
+        aPlayer.SE_Sprite.DeleteSubSprite('star' );
         aPlayer.SE_Sprite.DeleteSubSprite('disqualified' );
         aPlayer.SE_Sprite.DeleteSubSprite('injured' );
         aPlayer.SE_Sprite.DeleteSubSprite('yellow' );
@@ -6718,7 +6692,7 @@ begin
         aPlayer.SE_Sprite.DeleteSubSprite('buffm' );
         aPlayer.SE_Sprite.DeleteSubSprite('bufff' );
         aPlayer.SE_Sprite.DeleteSubSprite('stay' );    // lascio FACE
-        aPlayer.SE_Sprite.DeleteSubSprite('face' );}    // lascio FACE
+//        aPlayer.SE_Sprite.DeleteSubSprite('face' );    // lascio FACE
 
        if (aPlayer.RedCard > 0) or (aPlayer.Yellowcard = 2)
        or (aPlayer.disqualified > 0)
@@ -7899,6 +7873,20 @@ begin
 
 
 end;
+procedure TForm1.Schema0Click(Sender: TObject);
+var
+  Ha: byte;
+begin
+    if Btn_UniformHome.Down then
+     ha := 0
+     else ha :=1;
+
+  //  UniformBitmap := SE_Bitmap.Create (dir_player + 'bw.bmp');
+    tsUniforms[ha][3] := IntToStr( TCnSpeedButton(Sender).TAG ) ;
+    PreLoadUniform( ha,  TCnSpeedButton(Sender).TAG );  // usa tsuniforms
+
+end;
+
 procedure Tform1.SelectedPlayerPopupSkill ( CellX, CellY: integer);
 var
   i,y: integer;
@@ -8960,6 +8948,30 @@ begin
   end;
 
 end;
+procedure TForm1.AddFace ( aPlayer: TSoccerPlayer );
+var
+  aSubSprite: SE_SubSprite;
+  i: integer;
+begin
+  WaitForSingleObject ( MutexAnimation, INFINITE ); // il mousemove che genera questa procedura può avvenire durante il clear della lstsoccerplayer
+  for I := se_Players.SpriteCount -1 downto 0 do begin  // rimuovo tutti i face e solo i face ( stay e cartellini rimangono)
+    aSubSprite:= aPlayer.se_sprite.FindSubSprite('face');
+    if aSubSprite <> nil then
+       aPlayer.se_sprite.SubSprites.Remove(aSubSprite);
+  end;
+  // aggiungo la faccia come subsprite
+  aSubSprite := SE_SubSprite.create( dir_player + IntTostr(aPlayer.face) +'.bmp' , 'face', 0  ,0, true, true );
+  aSubSprite.lBmp.Stretch (trunc (( aSubSprite.lBmp.Width * ScaleSpritesFace ) / 100), trunc (( aSubSprite.lBmp.Height * ScaleSpritesFace ) / 100)  );
+  // qui non viene calcolato lo scale dello sprite.
+  aPlayer.se_sprite.DrawFrame; // forza lo scale
+  aSubSprite.lX := (aPlayer.se_sprite.BMPCurrentFrame.Width div 2) - (aSubSprite.lBmp.Width div 2);  // center
+  aSubSprite.ly := 0;  // center
+  aPlayer.se_sprite.AddSubSprite(aSubSprite);
+  //aSubSprite.Free;
+  ReleaseMutex(MutexAnimation);
+  //aSprite.ChangeBitmap( IntTostr(aPlayer.face) +'.bmp',1,1,1000 );
+
+end;
 
 procedure TForm1.ShowFace ( aPlayer: TSoccerPlayer );
 var
@@ -9045,7 +9057,7 @@ begin
       // sia in caso di screenformation o in caso di partita live
 
 
-        ShowFace ( aPlayer );
+        //ShowFace ( aPlayer );
         portrait0.Glyph.LoadFromFile(dir_player + IntTostr(aPlayer.face) + '.bmp');
 
         if not (ssShift in Shift) then begin
