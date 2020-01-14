@@ -6393,7 +6393,7 @@ begin
 
 
       if (PositionCellX < -2 ) or (PositionCellX > 6 ) then begin  // coincidenza 6    -2 -1
-        cli.sReason := 'Invalid Cell formation <-2 or >6' + IntToStr( guid) + ' ' + strCells;
+        cli.sReason := 'Invalid Cell formation <-2 or >6 ' + IntToStr( guid) + ' ' + strCells;
         tscells.Free;
         ts.Free;
         lstCellPoint.Free;

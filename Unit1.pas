@@ -52,7 +52,7 @@ uses
 
 const GCD_DEFAULT = 200;        // global cooldown, minimo 200 ms tra un input verso il server e l'altro ( anti-cheating )
 const ScaleSprites = 40;        // riduzione generica di tutto gli sprite player
-const ScaleSpritesFace = 40;        // riduzione face
+const ScaleSpritesFace = 30;        // riduzione face
 const FieldCellW = 64;
 const FieldCellH = 64;
 const DEFAULT_SPEED_BALL = 4;
@@ -470,6 +470,7 @@ type
     procedure InitializeTheaterMatch;
     procedure InitializeTheaterFormations;
     procedure Createfield;
+    procedure CreateHiddenfield;
     procedure createNoiseTV;
 
 
@@ -1594,6 +1595,10 @@ begin
   PanelUniform.Top := (PanelBack.height div 2) - (PanelUniform.height div 2);
   PanelUniform.Visible:= True;
 
+  // mostro subito in casa lo schema scelto
+  btn_UniformHome.Down := True;
+  btn_Schema [ StrToInt ( TSUniforms[0][3] ) ].Down := True;
+  Btn_UniformHomeClick(Btn_UniformHome);
 end;
 
 procedure TForm1.SE_GridSkillGridCellMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; CellX, CellY: Integer;
@@ -1891,7 +1896,7 @@ begin
   end;
   SetTheaterMatchSize;
   createField;
-
+//  CreateHiddenField;
   se_Theater1.Visible := True;
   se_Theater1.Active := True;
   SE_GridTime.Active := True;
@@ -1909,6 +1914,7 @@ begin
   end;
   SetTheaterMatchSize;
   createField;
+//  CreateHiddenField;
   se_Theater1.sceneName := 'tactics';
   se_theater1.Active := true;
   se_Theater1.Visible := True;
@@ -2057,9 +2063,10 @@ begin
       end;
 
       // se è lo schema selezionato lo salvo come color0 o color1 prima dello stretch
-      if s = UniformSchemaIndex then
+      if s = UniformSchemaIndex then begin
+        btn_Schema[s].Down := True;
         tmpSchema.Bitmap.SaveToFile(dir_tmp + 'color' + IntToStr(ha) + '.bmp');
-
+      end;
       // stretch in base a ScaleSprites e width e Height del TcnButton
       tmpSchema.Stretch (    (ScaleSprites * btn_Schema[s].Width ) div 100, (ScaleSprites * btn_Schema[s].Height ) div 100);
       tmpSchema.Bitmap.SaveToFile(dir_tmp + 'schema' + IntToStr(s) + '.bmp'); // salvo i 4 o più schemi
@@ -2091,9 +2098,10 @@ begin
       end;
 
       // se è lo schema selezionato lo salvo come colorGK prima dello stretch
-      if s = UniformSchemaIndex then
+      if s = UniformSchemaIndex then begin
+        btn_Schema[s].Down := True;
         tmpSchema.Bitmap.SaveToFile(dir_tmp + 'colorgk.bmp');
-
+      end;
       // stretch in base a ScaleSprites e width e Height del TcnButton
       tmpSchema.Stretch (    (ScaleSprites * btn_Schema[s].Width ) div 100, (ScaleSprites * btn_Schema[s].Height ) div 100);
       tmpSchema.Bitmap.SaveToFile(dir_tmp +  'schemagk' + IntToStr(s) + '.bmp'); // salvo i 4 o più schemi
@@ -2197,6 +2205,7 @@ var
   UniformBitmap,UniformBitmapGK:SE_Bitmap;
   aColor: TColor;
   IndexTal: Integer;
+  LocalHA : string;
 procedure setupBMp (bmp:TBitmap; aColor: Tcolor);
 begin
   BMP.Canvas.Font.Size := 8;
@@ -2271,20 +2280,24 @@ begin
 
 
   if GraphicSE then begin
-    //UniformBitmap := SE_Bitmap.Create (dir_player + 'schema' + tsUniforms[NextHa][3]+ '.bmp'); // carico la base red-blue-black
+
     PreLoadUniform(NextHa, StrToInt( tsUniforms[NextHa][3] ));  // crea 4 schemas bmp ma salva come color quello selezionato
-   // UniformPortrait.Glyph.LoadFromFile(dir_tmp + 'color' + IntToStr(NextHa) +'.bmp');
-    UniformBitmap := SE_Bitmap.Create (dir_tmp + 'color' + IntToStr(NextHa) + '.bmp'); // carico la base red-blue-black
 
-    Portrait0.Glyph.LoadFromFile(dir_tmp + 'color' + IntToStr(NextHa) +'.bmp');
+    if btn_UniformHome.down then  // IntToStr(NextHa)
+      localHA := '0'
+    else
+      localHA := '1';
+    UniformBitmap := SE_Bitmap.Create (dir_tmp + 'color' + localHA + '.bmp'); // carico la base red-blue-black
 
-    if NextHa = 0 then
-      btn_UniformHome.Down:= True
-      else
-        btn_UniformAway.Down:= True;
-    btn_Schema [ StrToint (tsUniforms[NextHa][3]) ].Down := True;
+    Portrait0.Glyph.LoadFromFile(dir_tmp + 'color' + localHA +'.bmp');
 
-    PreLoadUniformGK(NextHa,  StrToInt( tsUniforms[NextHa][3]));
+//    if NextHa = 0 then
+ //     btn_UniformHome.Down:= True
+ //     else
+ //       btn_UniformAway.Down:= True;
+ //   btn_Schema [ StrToint (tsUniforms[NextHa][3]) ].Down := True;
+
+    PreLoadUniformGK(StrToInt (LocalHA),  StrToInt( tsUniforms[ StrToInt(LocalHa)  ][3]));
     UniformBitmapGK := SE_Bitmap.Create (dir_tmp + 'colorgk.bmp');
   end;
 
@@ -2621,6 +2634,47 @@ begin
 
       // aggiungo il subsprite
       bmp:= se_bitmap.Create(FieldCellW-4,FieldCellH-4);      // disegno le righe
+      bmp.Bitmap.Canvas.Brush.Color :=  $48A881;//$3E906E;
+      bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
+      aSubSprite := SE_SubSprite.create(bmp,'highlight', 2, 2, false, false );
+      aSEField.SubSprites.Add(aSubSprite);
+      bmp.Free;
+
+    end;
+  end;
+
+
+end;
+procedure TForm1.CreateHiddenField;
+var
+  x,y: Integer;
+  bmp: se_BITMAP;
+  aSEField: SE_Sprite;
+  aSubSprite: SE_subSprite;
+begin
+  // le 2 porte devono essere oggetti a parte. il gk deve stare sotto la traversa. Oppure il gk davanti alla porta
+  // effetti speciali: i guanti del portiere. il calcio dei cerchi
+  SE_field.RemoveAllSprites;
+  for x := -2 to 13 do begin
+    for y := 0 to 6 do begin
+      if IsOutSide(X,Y) then begin
+        bmp:= se_bitmap.Create(FieldCellW,FieldCellH);
+        bmp.Bitmap.Canvas.Brush.Color :=  $7B5139;
+        bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
+        aSEField:= SE_field.CreateSprite( bmp.Bitmap, IntToStr(x)+'.'+IntToStr(y) ,1,1,1000, ((x+2)*bmp.Width)+(bmp.Width div 2) ,((y)*bmp.Height)+(bmp.height div 2),false );
+        bmp.Free;
+      end
+      else begin
+        bmp:= se_bitmap.Create(FieldCellW,FieldCellH);
+        bmp.Bitmap.Canvas.Brush.Color :=  $328362;
+        bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
+        RoundBorder (bmp.Bitmap , bmp.Width , bmp.Height);
+       aSEField := SE_field.CreateSprite( bmp.Bitmap, IntToStr(x)+'.'+IntToStr(y) ,1,1,1000, ((x+2)*bmp.Width)+(bmp.Width div 2) ,((y)*bmp.Height)+(bmp.height div 2),true  );
+        bmp.Free;
+      end;
+
+      // aggiungo il subsprite
+      bmp:= se_bitmap.Create(FieldCellW-4,FieldCellH-4);
       bmp.Bitmap.Canvas.Brush.Color :=  $48A881;//$3E906E;
       bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
       aSubSprite := SE_SubSprite.create(bmp,'highlight', 2, 2, false, false );
@@ -3041,37 +3095,30 @@ begin
     sebmp.Free;
 
 end;
-
-procedure TForm1.Btn_UniformAwayClick(Sender: TObject);
-var
-  ha : Byte;
-//  UniformBitmap: SE_Bitmap;
-begin
-    if Btn_UniformAway.Down then
-     ha := 1
-     else ha :=0;
-
-   // UniformBitmap := SE_Bitmap.Create (dir_player + 'bw.bmp');
-    PreLoadUniform( ha, StrToInt(tsUniforms[1][3]) );  // usa tsuniforms e  UniformBitmapBW
-  //  UniformBitmap.free;
-
-
-end;
-
 procedure TForm1.Btn_UniformHomeClick(Sender: TObject);
 var
   ha : Byte;
-  UniformBitmap: SE_Bitmap;
 begin
     if Btn_UniformHome.Down then
      ha := 0
      else ha :=1;
 
-  //  UniformBitmap := SE_Bitmap.Create (dir_player + 'bw.bmp');
     PreLoadUniform( ha,  StrToInt( tsUniforms[0][3]) );  // usa tsuniforms e  UniformBitmapBW
-  //  UniformBitmap.free;
 
 end;
+
+procedure TForm1.Btn_UniformAwayClick(Sender: TObject);
+var
+  ha : Byte;
+begin
+    if Btn_UniformAway.Down then
+     ha := 1
+     else ha :=0;
+
+    PreLoadUniform( ha, StrToInt(tsUniforms[1][3]) );  // usa tsuniforms e  UniformBitmapBW
+
+end;
+
 
 procedure TForm1.mainThreadTimer(Sender: TObject);
 var
@@ -3754,7 +3801,9 @@ begin
   PanelSkill.Visible:= False;
   if FirstTime then begin
     se_players.RemoveAllSprites ;
-{        aPlayer.SE_Sprite.DeleteSubSprite('star' );
+{      for I := 0 to SE_players.SpriteCount -1 do begin
+        aPlayer := se_Players.Sprites[i];
+        aPlayer.SE_Sprite.DeleteSubSprite('star' );
         aPlayer.SE_Sprite.DeleteSubSprite('disqualified' );
         aPlayer.SE_Sprite.DeleteSubSprite('injured' );
         aPlayer.SE_Sprite.DeleteSubSprite('yellow' );
@@ -3762,8 +3811,9 @@ begin
         aPlayer.SE_Sprite.DeleteSubSprite('buffd' );
         aPlayer.SE_Sprite.DeleteSubSprite('buffm' );
         aPlayer.SE_Sprite.DeleteSubSprite('bufff' );
-        aPlayer.SE_Sprite.DeleteSubSprite('stay' );}    // lascio FACE
+        aPlayer.SE_Sprite.DeleteSubSprite('stay' );    // lascio FACE
         AddFace ( aPlayer );
+      end;             }
     SE_players.ProcessSprites(2000);
     MyBrain.lstSoccerPlayer.Clear ;
     MyBrain.lstSoccerReserve.Clear;
@@ -3822,14 +3872,14 @@ begin
   TsUniforms[0].CommaText := MyBrain.Score.Uniform [0] ; // in formazione casa/trasferta
   TsUniforms[1].CommaText := MyBrain.Score.Uniform [1] ;
 
-//  UniformBitmap[0] := SE_Bitmap.Create (dir_player + 'bw.bmp');
   PreLoadUniform (0, StrToInt( TsUniforms[0][3]));
+  UniformBitmap[0] := SE_Bitmap.Create (dir_tmp + 'color0.bmp');
 //  Portrait0.Glyph.LoadFromFile(dir_tmp + 'color0.bmp');
-//  UniformBitmap[1] := SE_Bitmap.Create (dir_player + 'bw.bmp');
   PreLoadUniform (1, StrToInt( TsUniforms[1][3]));
-//  UniformBitmapGK := SE_Bitmap.Create (dir_player + 'bw.bmp');
-  PreLoadUniformGK (0, StrToInt( TsUniforms[0][3] ));
+  UniformBitmap[1] := SE_Bitmap.Create (dir_tmp + 'color1.bmp');
+  PreLoadUniformGK (0, StrToInt( TsUniforms[0][3] ));   // i gk sono tuuti uguali
   PreLoadUniformGK (1, StrToInt( TsUniforms[1][3] ));
+  UniformBitmapGK := SE_Bitmap.Create (dir_tmp + 'colorgk.bmp');
   MyBrain.Score.DominantColor[0]:=  StringToColor( CnColorgrid1.CustomColors [ StrToInt( TsUniforms[0][0] )]);
   if TsUniforms[0][0] = TsUniforms[0][1] then
     MyBrain.Score.FontColor[0]:= GetContrastColor( StringToColor( CnColorgrid1.CustomColors [ StrToInt(TsUniforms[0][0])]) )
