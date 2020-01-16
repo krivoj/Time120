@@ -107,17 +107,11 @@ Type TAnimationScript = class // letta dal TForm1.mainThreadTimer. Produce l'ani
 end;
 type  TPointArray4 = array[0..3] of TPoint;
 
-Type TSoccerCell = class
-  CellX, CellY, PixelX, PixelY : integer;
-  Polygon: TPointArray4;
-  OutSide: boolean;
-  Corner: boolean;
-  crossbar: array [0..2] of TPoint;
-  gol: array [0..2] of TPoint;
-  color: TColor;
-  Team: Integer;
+Type TFieldPoint = class
+  Cell : TPoint;
+  Pixel : TPoint;
 end;
-PSoccerCell = ^TSoccerCell;
+
 
 type
   TForm1 = class(TForm)
@@ -470,7 +464,7 @@ type
     procedure InitializeTheaterMatch;
     procedure InitializeTheaterFormations;
     procedure Createfield;
-    procedure CreateHiddenfield;
+    procedure CreateFieldPoints;
     procedure createNoiseTV;
 
 
@@ -621,6 +615,14 @@ var
 
 
   btn_Schema : array [0..Schemas-1] of TCnSpeedButton;
+
+  FieldPoints : TObjectList<TFieldPoint>; // 8 risoluzioni video
+  FieldPointsReserve : TObjectList<TFieldPoint>; // 8 risoluzioni video
+  FieldPointsCorner : TObjectList<TFieldPoint>; // 8 risoluzioni video
+  FieldPointsPenalty : TObjectList<TFieldPoint>; // 8 risoluzioni video
+  FieldPointsCrossBar : TObjectList<TFieldPoint>; // 8 risoluzioni video
+  FieldPointsCrossGol : TObjectList<TFieldPoint>; // 8 risoluzioni video
+  FieldPointsCrossOut : TObjectList<TFieldPoint>; // 8 risoluzioni video
 
   procedure RoundCornerOf(Control: TWinControl) ;
 implementation
@@ -1444,6 +1446,13 @@ procedure TForm1.FormDestroy(Sender: TObject);
 var
   i: integer;
 begin
+  FieldPoints.Free;
+  FieldPointsReserve.Free;
+  FieldPointsCorner.Free;
+  FieldPointsPenalty.Free;
+  FieldPointsCrossBar.Free;
+  FieldPointsCrossGol.Free;
+  FieldPointsCrossOut.Free;
 
   FaultBitmapBW.Free;
   UniformBitmapBW.Free;
@@ -2193,7 +2202,7 @@ var
   aMirror: TPoint;
   FC: TFormationCell;
   TvCell,TvReserveCell: TPoint;
-  aCell: TSoccerCell;
+//  aCell: TSoccerCell;
   bmp: se_BITMAP;
   aSEField: SE_Sprite;
   SS: TStringStream;
@@ -2645,44 +2654,106 @@ begin
 
 
 end;
-procedure TForm1.CreateHiddenField;
+procedure TForm1.CreateFieldPoints;
 var
-  x,y: Integer;
-  bmp: se_BITMAP;
-  aSEField: SE_Sprite;
-  aSubSprite: SE_subSprite;
+  AFieldPoint: TFieldPoint;
 begin
   // le 2 porte devono essere oggetti a parte. il gk deve stare sotto la traversa. Oppure il gk davanti alla porta
   // effetti speciali: i guanti del portiere. il calcio dei cerchi
-  SE_field.RemoveAllSprites;
-  for x := -2 to 13 do begin
-    for y := 0 to 6 do begin
-      if IsOutSide(X,Y) then begin
-        bmp:= se_bitmap.Create(FieldCellW,FieldCellH);
-        bmp.Bitmap.Canvas.Brush.Color :=  $7B5139;
-        bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
-        aSEField:= SE_field.CreateSprite( bmp.Bitmap, IntToStr(x)+'.'+IntToStr(y) ,1,1,1000, ((x+2)*bmp.Width)+(bmp.Width div 2) ,((y)*bmp.Height)+(bmp.height div 2),false );
-        bmp.Free;
-      end
-      else begin
-        bmp:= se_bitmap.Create(FieldCellW,FieldCellH);
-        bmp.Bitmap.Canvas.Brush.Color :=  $328362;
-        bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
-        RoundBorder (bmp.Bitmap , bmp.Width , bmp.Height);
-       aSEField := SE_field.CreateSprite( bmp.Bitmap, IntToStr(x)+'.'+IntToStr(y) ,1,1,1000, ((x+2)*bmp.Width)+(bmp.Width div 2) ,((y)*bmp.Height)+(bmp.height div 2),true  );
-        bmp.Free;
-      end;
 
-      // aggiungo il subsprite
-      bmp:= se_bitmap.Create(FieldCellW-4,FieldCellH-4);
-      bmp.Bitmap.Canvas.Brush.Color :=  $48A881;//$3E906E;
-      bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
-      aSubSprite := SE_SubSprite.create(bmp,'highlight', 2, 2, false, false );
-      aSEField.SubSprites.Add(aSubSprite);
-      bmp.Free;
+  FieldPoints := TObjectList<TFieldPoint>.Create(True);
+  FieldPointsReserve := TObjectList<TFieldPoint>.Create(True);
+  FieldPointsCorner := TObjectList<TFieldPoint>.Create(True);
+  FieldPointsPenalty := TObjectList<TFieldPoint>.Create(True);
+  FieldPointsCrossBar := TObjectList<TFieldPoint>.Create(True);
+  FieldPointsCrossGol := TObjectList<TFieldPoint>.Create(True);
+  FieldPointsCrossOut := TObjectList<TFieldPoint>.Create(True);
 
-    end;
-  end;
+  // 1440x900
+  // i 2 gk
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (0,3);   AFieldPoint.Pixel := Point  (220,454); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (11,3);  AFieldPoint.Pixel := Point  (1216,454); FieldPoints.Add( AFieldPoint);
+
+  // Le celle del campo in gioco normali
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (1,0);  AFieldPoint.Pixel := Point  (306,246); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (2,0);  AFieldPoint.Pixel := Point  (386,246); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (3,0);  AFieldPoint.Pixel := Point  (470,246); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (4,0);  AFieldPoint.Pixel := Point  (570,246); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (5,0);  AFieldPoint.Pixel := Point  (670,246); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (6,0);  AFieldPoint.Pixel := Point  (770,246); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (7,0);  AFieldPoint.Pixel := Point  (870,246); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (8,0);  AFieldPoint.Pixel := Point  (970,246); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (9,0);  AFieldPoint.Pixel := Point  (1062,246); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (10,0);  AFieldPoint.Pixel := Point  (1140,246); FieldPoints.Add( AFieldPoint);
+
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (1,1);  AFieldPoint.Pixel := Point  (290,312); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (2,1);  AFieldPoint.Pixel := Point  (378,312); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (3,1);  AFieldPoint.Pixel := Point  (466,312); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (4,1);  AFieldPoint.Pixel := Point  (564,312); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (5,1);  AFieldPoint.Pixel := Point  (668,312); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (6,1);  AFieldPoint.Pixel := Point  (774,312); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (7,1);  AFieldPoint.Pixel := Point  (870,312); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (8,1);  AFieldPoint.Pixel := Point  (976,312); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (9,1);  AFieldPoint.Pixel := Point  (1075,312); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (10,1);  AFieldPoint.Pixel := Point  (1161,312); FieldPoints.Add( AFieldPoint);
+
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (1,2);  AFieldPoint.Pixel := Point  (275,388); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (2,2);  AFieldPoint.Pixel := Point  (363,388); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (3,2);  AFieldPoint.Pixel := Point  (450,388); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (4,2);  AFieldPoint.Pixel := Point  (600,388); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (5,2);  AFieldPoint.Pixel := Point  (668,388); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (6,2);  AFieldPoint.Pixel := Point  (780,388); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (7,2);  AFieldPoint.Pixel := Point  (880,388); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (8,2);  AFieldPoint.Pixel := Point  (990,388); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (9,2);  AFieldPoint.Pixel := Point  (1086,388); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (10,2);  AFieldPoint.Pixel := Point  (1172,388); FieldPoints.Add( AFieldPoint);
+
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (1,3);  AFieldPoint.Pixel := Point  (255,466); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (2,3);  AFieldPoint.Pixel := Point  (343,466); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (3,3);  AFieldPoint.Pixel := Point  (440,466); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (4,3);  AFieldPoint.Pixel := Point  (550,466); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (5,3);  AFieldPoint.Pixel := Point  (660,466); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (6,3);  AFieldPoint.Pixel := Point  (783,466); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (7,3);  AFieldPoint.Pixel := Point  (888,466); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (8,3);  AFieldPoint.Pixel := Point  (997,466); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (9,3);  AFieldPoint.Pixel := Point  (1100,466); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (10,3);  AFieldPoint.Pixel := Point  (1200,466); FieldPoints.Add( AFieldPoint);
+
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (1,4);  AFieldPoint.Pixel := Point  (237,554); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (2,4);  AFieldPoint.Pixel := Point  (336,554); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (3,4);  AFieldPoint.Pixel := Point  (430,554); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (4,4);  AFieldPoint.Pixel := Point  (544,554); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (5,4);  AFieldPoint.Pixel := Point  (660,554); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (6,4);  AFieldPoint.Pixel := Point  (780,554); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (7,4);  AFieldPoint.Pixel := Point  (890,554); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (8,4);  AFieldPoint.Pixel := Point  (1010,554); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (9,4);  AFieldPoint.Pixel := Point  (1115,554); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (10,4);  AFieldPoint.Pixel := Point  (1210,554); FieldPoints.Add( AFieldPoint);
+
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (1,5);  AFieldPoint.Pixel := Point  (412,656); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (2,5);  AFieldPoint.Pixel := Point  (308,656); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (3,5);  AFieldPoint.Pixel := Point  (420,656); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (4,5);  AFieldPoint.Pixel := Point  (540,656); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (5,5);  AFieldPoint.Pixel := Point  (660,656); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (6,5);  AFieldPoint.Pixel := Point  (780,656); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (7,5);  AFieldPoint.Pixel := Point  (900,656); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (8,5);  AFieldPoint.Pixel := Point  (1010,656); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (9,5);  AFieldPoint.Pixel := Point  (1120,656); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (10,5);  AFieldPoint.Pixel := Point  (1237,656); FieldPoints.Add( AFieldPoint);
+
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (1,6);  AFieldPoint.Pixel := Point  (186,746); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (2,6);  AFieldPoint.Pixel := Point  (290,746); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (3,6);  AFieldPoint.Pixel := Point  (413,746); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (4,6);  AFieldPoint.Pixel := Point  (530,746); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (5,6);  AFieldPoint.Pixel := Point  (650,746); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (6,6);  AFieldPoint.Pixel := Point  (785,746); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (7,6);  AFieldPoint.Pixel := Point  (910,746); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (8,6);  AFieldPoint.Pixel := Point  (1020,746); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (9,6);  AFieldPoint.Pixel := Point  (1133,746); FieldPoints.Add( AFieldPoint);
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (10,6);  AFieldPoint.Pixel := Point  (1260,746); FieldPoints.Add( AFieldPoint);
+
+  // le riserve
+  AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (1,6);  AFieldPoint.Pixel := Point  (186,746); FieldPointsReserve.Add( AFieldPoint);
 
 
 end;
@@ -3785,7 +3856,7 @@ var
   aPlayer: TSoccerPlayer;
   FC: TFormationCell;
   aPoint : TPoint;
-  aCell: TSoccerCell;
+//  aCell: TSoccerCell;
   aName, aSurname,  Attributes,aIds: string;
   bmp: se_Bitmap;
   PenaltyCell: TPoint;
@@ -6818,7 +6889,7 @@ var
   netgol,head: Integer;
   aPath: dse_pathPlanner.Tpath;
   aStep: dse_pathPlanner.TpathStep ;
-  aCell,aCell2: TSoccerCell;
+//  aCell,aCell2: TSoccerCell;
   aPlayer,aPlayer2, aTackle, aGK, aBarrierPlayer : TSoccerPlayer;
   srcCellX, srcCellY, dstCellX, dstCellY,Z : integer; // Source e destination Cells
   Dst, TmpX,tmpY: integer;
@@ -6826,7 +6897,7 @@ var
   aCellBarrier: TPoint;
   sebmp: SE_Bitmap;
   seSprite: SE_Sprite;
-  ASoccerCellFK, ASoccerCell: TSoccerCell;
+//  ASoccerCellFK, ASoccerCell: TSoccerCell;
   modifierX,ModifierY,visX,visY: integer;
   aSEField: SE_Sprite;
   aSize:TSize;
