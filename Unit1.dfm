@@ -1,12 +1,12 @@
 object Form1: TForm1
   Left = 0
   Top = 0
-  BorderIcons = [biSystemMenu, biMinimize]
-  BorderStyle = bsSingle
+  BorderIcons = [biSystemMenu]
+  BorderStyle = bsNone
   Caption = 'Time120'
-  ClientHeight = 1112
-  ClientWidth = 1823
-  Color = 8081721
+  ClientHeight = 1140
+  ClientWidth = 1829
+  Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack
   Font.Height = -11
@@ -19,16 +19,16 @@ object Form1: TForm1
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnKeyDown = FormKeyDown
-  OnKeyUp = FormKeyUp
   PixelsPerInch = 96
   TextHeight = 13
   object Panel1: TPanel
     Left = 1407
     Top = 15
     Width = 258
-    Height = 746
+    Height = 900
     BevelOuter = bvNone
-    TabOrder = 0
+    TabOrder = 3
+    Visible = False
     object Label1: TLabel
       Left = 187
       Top = 676
@@ -127,6 +127,9 @@ object Form1: TForm1
       Top = 658
       Width = 87
       Height = 17
+      Caption = 'AI0'
+      Color = 16744448
+      ParentColor = False
       TabOrder = 8
       OnClick = CheckBoxAI0Click
     end
@@ -135,24 +138,16 @@ object Form1: TForm1
       Top = 676
       Width = 87
       Height = 17
+      Caption = 'AI1'
       TabOrder = 10
       OnClick = CheckBoxAI1Click
-    end
-    object Button1: TButton
-      Left = 0
-      Top = 546
-      Width = 75
-      Height = 25
-      Caption = 'set player'
-      TabOrder = 11
-      OnClick = Button1Click
     end
     object Edit3: TEdit
       Left = 81
       Top = 534
       Width = 49
       Height = 21
-      TabOrder = 12
+      TabOrder = 11
     end
     object Memo2: TMemo
       Left = 0
@@ -161,15 +156,15 @@ object Form1: TForm1
       Height = 134
       Lines.Strings = (
         '')
-      TabOrder = 13
+      TabOrder = 12
     end
     object CheckBox2: TCheckBox
-      Left = 147
-      Top = 653
+      Left = 81
+      Top = 662
       Width = 113
       Height = 17
       Caption = 'Pause'
-      TabOrder = 14
+      TabOrder = 13
       OnClick = CheckBox2Click
     end
     object Button3: TButton
@@ -178,7 +173,7 @@ object Form1: TForm1
       Width = 38
       Height = 25
       Caption = 'load'
-      TabOrder = 15
+      TabOrder = 14
       OnClick = Button3Click
     end
     object CheckBox3: TCheckBox
@@ -187,16 +182,16 @@ object Form1: TForm1
       Width = 94
       Height = 17
       Caption = 'ThreadCurMove'
-      TabOrder = 16
+      TabOrder = 15
       OnClick = CheckBox3Click
     end
     object Button4: TButton
-      Left = 216
-      Top = 515
+      Left = 213
+      Top = 575
       Width = 38
       Height = 25
       Caption = 'think'
-      TabOrder = 17
+      TabOrder = 16
       OnClick = Button4Click
     end
     object CnSpinEdit1: TCnSpinEdit
@@ -206,7 +201,7 @@ object Form1: TForm1
       Height = 22
       MaxValue = 255
       MinValue = 0
-      TabOrder = 18
+      TabOrder = 17
       Value = 0
     end
     object editN1: TEdit
@@ -215,7 +210,7 @@ object Form1: TForm1
       Width = 25
       Height = 21
       NumbersOnly = True
-      TabOrder = 19
+      TabOrder = 18
       Text = '0'
     end
     object EditN2: TEdit
@@ -224,7 +219,7 @@ object Form1: TForm1
       Width = 25
       Height = 21
       NumbersOnly = True
-      TabOrder = 20
+      TabOrder = 19
       Text = '0'
     end
     object Button5: TButton
@@ -233,2134 +228,770 @@ object Form1: TForm1
       Width = 75
       Height = 25
       Caption = 'unlimited time'
-      TabOrder = 21
+      TabOrder = 20
       OnClick = Button5Click
     end
+    object CheckBox4: TCheckBox
+      Left = 9
+      Top = 742
+      Width = 94
+      Height = 17
+      Caption = 'tackle_failed'
+      TabOrder = 21
+      OnClick = CheckBox4Click
+    end
+    object CheckBox5: TCheckBox
+      Left = 9
+      Top = 765
+      Width = 94
+      Height = 17
+      Caption = 'setfault'
+      TabOrder = 22
+      OnClick = CheckBox5Click
+    end
+    object CheckBox6: TCheckBox
+      Left = 9
+      Top = 788
+      Width = 94
+      Height = 17
+      Caption = 'setRed'
+      TabOrder = 23
+      OnClick = CheckBox6Click
+    end
+    object CheckBox7: TCheckBox
+      Left = 9
+      Top = 811
+      Width = 94
+      Height = 17
+      Caption = 'setAlwaysGol'
+      TabOrder = 24
+      OnClick = CheckBox7Click
+    end
+    object CheckBox8: TCheckBox
+      Left = 9
+      Top = 834
+      Width = 104
+      Height = 17
+      Caption = 'setPosCroCorner'
+      TabOrder = 25
+      OnClick = CheckBox8Click
+    end
+    object CheckBox9: TCheckBox
+      Left = 9
+      Top = 857
+      Width = 104
+      Height = 17
+      Caption = 'Buff 100%'
+      TabOrder = 26
+      OnClick = CheckBox9Click
+    end
     object Button9: TButton
-      Left = 81
-      Top = 600
+      Left = 192
+      Top = 532
       Width = 75
       Height = 25
-      Caption = 'ShowShotcells'
-      TabOrder = 22
+      Caption = 'set Turn'
+      TabOrder = 27
       OnClick = Button9Click
     end
   end
-  object PanelBack: SE_Panel
+  object PanelLogin: SE_Panel
     Left = 8
-    Top = 21
-    Width = 1393
-    Height = 788
-    TabOrder = 1
-    object PanelCombatLog: SE_Panel
-      Left = 953
-      Top = 10
-      Width = 800
-      Height = 172
-      Color = 8081721
-      TabOrder = 0
-      Visible = False
-      object SE_GridDice: SE_Grid
-        Left = 3
-        Top = 3
-        Width = 328
-        Height = 158
-        Cursor = crHandPoint
-        MouseScrollRate = 1.000000000000000000
-        MouseWheelInvert = False
-        MouseWheelValue = 10
-        MouseWheelZoom = False
-        MousePan = True
-        MouseScroll = False
-        BackColor = 8081721
-        AnimationInterval = 300
-        GridInfoCell = False
-        GridVisible = False
-        GridColor = clSilver
-        GridCellWidth = 40
-        GridCellHeight = 30
-        GridCellsX = 10
-        GridCellsY = 4
-        GridHexSmallWidth = 10
-        CollisionDelay = 0
-        ShowPerformance = False
-        VirtualWidth = 212
-        Virtualheight = 212
-        Passive = True
-        TabOrder = 0
-        CellBorder = CellBorderNone
-        Font.Charset = ANSI_CHARSET
-        Font.Color = clWhite
-        Font.Height = -11
-        Font.Name = 'Verdana'
-        Font.Style = [fsBold]
-      end
+    Top = 321
+    Width = 169
+    Height = 226
+    BevelOuter = bvNone
+    Color = 8081721
+    DoubleBuffered = True
+    ParentDoubleBuffered = False
+    TabOrder = 0
+    object lbl_username: TLabel
+      Left = 20
+      Top = 21
+      Width = 71
+      Height = 19
+      Caption = 'Username'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWhite
+      Font.Height = -16
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
     end
-    object PanelScore: SE_Panel
-      Left = 26
-      Top = 109
-      Width = 640
-      Height = 51
-      BevelOuter = bvNone
-      Color = 8081721
-      TabOrder = 1
-      Visible = False
-      object lbl_Nick0: TCnAAScrollText
-        Left = 27
-        Top = 3
-        Width = 280
-        Height = 20
-        ParentEffect.ParentColor = False
-        ParentEffect.ParentFont = False
-        Fonts = <
-          item
-            Name = 'Title1'
-            Font.Charset = ANSI_CHARSET
-            Font.Color = clWhite
-            Font.Height = -13
-            Font.Name = 'Verdana'
-            Font.Style = [fsBold]
-            Effect.Shadow.Enabled = True
-          end
-          item
-            Name = 'Title2'
-            Font.Charset = ANSI_CHARSET
-            Font.Color = clWhite
-            Font.Height = -13
-            Font.Name = 'Verdana'
-            Font.Style = [fsBold]
-            Effect.Shadow.Enabled = True
-            Effect.Shadow.OffsetX = 1
-            Effect.Shadow.OffsetY = 1
-          end
-          item
-            Name = 'Title3'
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clBlue
-            Font.Height = -15
-            Font.Name = #191#172#204#229'_GB2312'
-            Font.Style = []
-            Effect.Shadow.Enabled = True
-          end
-          item
-            Name = 'Text1'
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clBlack
-            Font.Height = -12
-            Font.Name = #191#172#204#229'_GB2312'
-            Font.Style = []
-            Effect.Shadow.OffsetX = 1
-            Effect.Shadow.OffsetY = 1
-          end
-          item
-            Name = 'Text2'
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clTeal
-            Font.Height = -11
-            Font.Name = #191#172#204#229'_GB2312'
-            Font.Style = []
-            Effect.Shadow.Enabled = True
-            Effect.Shadow.OffsetX = 1
-            Effect.Shadow.OffsetY = 1
-          end
-          item
-            Name = 'Title4'
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clBlack
-            Font.Height = -29
-            Font.Name = #193#165#202#233
-            Font.Style = [fsBold]
-            Effect.Shadow.Enabled = True
-            Effect.Gradual.Enabled = True
-            Effect.Gradual.StartColor = 16720384
-            Effect.Gradual.EndColor = 2232575
-            Effect.Blur = 50
-            Effect.Outline = True
-          end
-          item
-            Name = 'Text3'
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clBlue
-            Font.Height = -15
-            Font.Name = #193#165#202#233
-            Font.Style = []
-            Effect.Shadow.Enabled = True
-            Effect.Shadow.OffsetX = 1
-            Effect.Shadow.OffsetY = 1
-            Effect.Gradual.Enabled = True
-            Effect.Gradual.Style = gsTopToBottom
-            Effect.Gradual.StartColor = 13382417
-            Effect.Gradual.EndColor = 16720554
-          end>
-        Labels = <
-          item
-            Name = 'Left'
-            Style = lsLeftJustify
-          end
-          item
-            Name = 'Center'
-            Style = lsCenter
-          end
-          item
-            Name = 'Right'
-            Style = lsRightJustify
-          end
-          item
-            Name = 'Owner'
-            Style = lsRegOwner
-          end
-          item
-            Name = 'Organization'
-            Style = lsRegOrganization
-          end
-          item
-            Name = 'AppTitle'
-            Style = lsAppTitle
-          end
-          item
-            Name = 'Date'
-            Style = lsDate
-          end
-          item
-            Name = 'Time'
-            Style = lsTime
-          end>
-        Active = False
-        ScrollDelay = 80
-        Text.Fade = False
-        Text.FadeHeight = 0
-        Text.TailSpace = 0
-        Text.Lines.Strings = (
-          '<Title1>Team'
-          '<Title2>NickName')
-        Text.Font.Charset = DEFAULT_CHARSET
-        Text.Font.Color = clBlack
-        Text.Font.Height = -11
-        Text.Font.Name = 'Tahoma'
-        Text.Font.Style = []
-        Text.BackColor = 8081721
-      end
-      object lbl_Nick1: TCnAAScrollText
-        Left = 336
-        Top = 3
-        Width = 280
-        Height = 20
-        ParentEffect.ParentColor = False
-        ParentEffect.ParentFont = False
-        Fonts = <
-          item
-            Name = 'Title1'
-            Font.Charset = ANSI_CHARSET
-            Font.Color = clWhite
-            Font.Height = -13
-            Font.Name = 'Verdana'
-            Font.Style = [fsBold]
-            Effect.Shadow.Enabled = True
-          end
-          item
-            Name = 'Title2'
-            Font.Charset = ANSI_CHARSET
-            Font.Color = clWhite
-            Font.Height = -13
-            Font.Name = 'Verdana'
-            Font.Style = [fsBold]
-            Effect.Shadow.Enabled = True
-            Effect.Shadow.OffsetX = 1
-            Effect.Shadow.OffsetY = 1
-          end
-          item
-            Name = 'Title3'
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clBlue
-            Font.Height = -15
-            Font.Name = #191#172#204#229'_GB2312'
-            Font.Style = []
-            Effect.Shadow.Enabled = True
-          end
-          item
-            Name = 'Text1'
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clBlack
-            Font.Height = -12
-            Font.Name = #191#172#204#229'_GB2312'
-            Font.Style = []
-            Effect.Shadow.OffsetX = 1
-            Effect.Shadow.OffsetY = 1
-          end
-          item
-            Name = 'Text2'
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clTeal
-            Font.Height = -11
-            Font.Name = #191#172#204#229'_GB2312'
-            Font.Style = []
-            Effect.Shadow.Enabled = True
-            Effect.Shadow.OffsetX = 1
-            Effect.Shadow.OffsetY = 1
-          end
-          item
-            Name = 'Title4'
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clBlack
-            Font.Height = -29
-            Font.Name = #193#165#202#233
-            Font.Style = [fsBold]
-            Effect.Shadow.Enabled = True
-            Effect.Gradual.Enabled = True
-            Effect.Gradual.StartColor = 16720384
-            Effect.Gradual.EndColor = 2232575
-            Effect.Blur = 50
-            Effect.Outline = True
-          end
-          item
-            Name = 'Text3'
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clBlue
-            Font.Height = -15
-            Font.Name = #193#165#202#233
-            Font.Style = []
-            Effect.Shadow.Enabled = True
-            Effect.Shadow.OffsetX = 1
-            Effect.Shadow.OffsetY = 1
-            Effect.Gradual.Enabled = True
-            Effect.Gradual.Style = gsTopToBottom
-            Effect.Gradual.StartColor = 13382417
-            Effect.Gradual.EndColor = 16720554
-          end>
-        Labels = <
-          item
-            Name = 'Left'
-            Style = lsLeftJustify
-          end
-          item
-            Name = 'Center'
-            Style = lsCenter
-          end
-          item
-            Name = 'Right'
-            Style = lsRightJustify
-          end
-          item
-            Name = 'Owner'
-            Style = lsRegOwner
-          end
-          item
-            Name = 'Organization'
-            Style = lsRegOrganization
-          end
-          item
-            Name = 'AppTitle'
-            Style = lsAppTitle
-          end
-          item
-            Name = 'Date'
-            Style = lsDate
-          end
-          item
-            Name = 'Time'
-            Style = lsTime
-          end>
-        Active = False
-        ScrollDelay = 80
-        Text.Fade = False
-        Text.FadeHeight = 0
-        Text.TailSpace = 0
-        Text.Lines.Strings = (
-          '<Title1>Team'
-          '<Title2>NickName')
-        Text.Font.Charset = DEFAULT_CHARSET
-        Text.Font.Color = clBlack
-        Text.Font.Height = -11
-        Text.Font.Name = 'Tahoma'
-        Text.Font.Style = []
-        Text.BackColor = 8081721
-      end
-      object lbl_score: TLabel
-        Left = 307
-        Top = 3
-        Width = 27
-        Height = 20
-        Cursor = crHandPoint
-        Alignment = taCenter
-        AutoSize = False
-        Caption = '2-1'
-        Color = 8081721
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWhite
-        Font.Height = -16
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        ParentColor = False
-        ParentFont = False
-        Transparent = False
-        OnMouseEnter = lbl_scoreMouseEnter
-        OnMouseLeave = lbl_scoreMouseLeave
-      end
-      object lbl_minute: TLabel
-        Left = 3
-        Top = 3
-        Width = 27
-        Height = 20
-        Alignment = taCenter
-        AutoSize = False
-        Color = 8081721
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clLime
-        Font.Height = -16
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        ParentColor = False
-        ParentFont = False
-        Transparent = False
-      end
-      object btnTactics: TCnSpeedButton
-        Tag = 119
-        Left = 53
-        Top = 29
-        Width = 20
-        Height = 20
-        Cursor = crHandPoint
-        AllowAllUp = True
-        Color = clBtnFace
-        DownBold = False
-        FlatBorder = False
-        HotTrackBold = False
-        GroupIndex = 2
-        Caption = 'T'
-        Margin = 4
-        OnClick = btnTacticsClick
-      end
-      object btnSubs: TCnSpeedButton
-        Tag = 119
-        Left = 79
-        Top = 29
-        Width = 20
-        Height = 20
-        Cursor = crHandPoint
-        AllowAllUp = True
-        Color = clBtnFace
-        DownBold = False
-        FlatBorder = False
-        HotTrackBold = False
-        GroupIndex = 2
-        Margin = 4
-        OnClick = btnSubsClick
-      end
-      object btnWatchLiveExit: TCnSpeedButton
-        Left = 259
-        Top = 27
-        Width = 60
-        Height = 21
-        Cursor = crHandPoint
-        Color = clGray
-        DownBold = False
-        FlatBorder = False
-        HotTrackBold = False
-        Caption = 'EXIT'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = 4308735
-        Font.Height = -16
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        Margin = 4
-        ParentFont = False
-        Visible = False
-        OnClick = btnWatchLiveExitClick
-      end
-      object btnOverrideUniformWhite: TCnSpeedButton
-        Tag = 119
-        Left = 618
-        Top = 23
-        Width = 20
-        Height = 20
-        Cursor = crHandPoint
-        AllowAllUp = True
-        Color = 8081721
-        DownBold = False
-        FlatBorder = False
-        HotTrackBold = False
-        GroupIndex = 3
-        Margin = 4
-        OnClick = btnOverrideUniformWhiteClick
-      end
-      object btnOverrideUniformBlack: TCnSpeedButton
-        Tag = 119
-        Left = 618
-        Top = 3
-        Width = 20
-        Height = 20
-        Cursor = crHandPoint
-        AllowAllUp = True
-        Color = 8081721
-        DownBold = False
-        FlatBorder = False
-        HotTrackBold = False
-        GroupIndex = 3
-        Margin = 4
-        OnClick = btnOverrideUniformBlackClick
-      end
-      object ToolSpin: TCnSpinEdit
-        Left = 340
-        Top = 5
-        Width = 49
-        Height = 22
-        AutoSelect = False
-        MaxValue = 255
-        MinValue = 0
-        TabOrder = 0
-        Value = 0
-        Visible = False
-        OnChange = ToolSpinChange
-        OnKeyPress = toolSpinKeyPress
-      end
-      object SE_GridTime: SE_Grid
-        Left = 89
-        Top = 29
-        Width = 230
-        Height = 18
-        MouseScrollRate = 1.000000000000000000
-        MouseWheelInvert = False
-        MouseWheelValue = 10
-        MouseWheelZoom = False
-        MousePan = False
-        MouseScroll = False
-        BackColor = 8081721
-        AnimationInterval = 20
-        GridInfoCell = False
-        GridVisible = False
-        GridColor = clSilver
-        GridCellWidth = 40
-        GridCellHeight = 30
-        GridCellsX = 10
-        GridCellsY = 4
-        GridHexSmallWidth = 10
-        CollisionDelay = 0
-        ShowPerformance = False
-        VirtualWidth = 212
-        Virtualheight = 294
-        TabOrder = 1
-        CellBorder = CellBorderNone
-        CellBorderColor = clGray
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'Verdana'
-        Font.Style = []
-      end
+    object lbl_Password: TLabel
+      Left = 16
+      Top = 83
+      Width = 67
+      Height = 19
+      Caption = 'Password'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWhite
+      Font.Height = -16
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
     end
-    object PanelSell: SE_Panel
-      Left = 189
-      Top = 249
-      Width = 116
-      Height = 58
-      BevelOuter = bvNone
-      Color = 8081721
-      TabOrder = 2
+    object btnReplay: TCnSpeedButton
+      Left = 21
+      Top = 3
+      Width = 70
+      Height = 17
+      Cursor = crHandPoint
+      Color = clGray
+      DownBold = False
+      FlatBorder = False
+      HotTrackBold = False
+      Caption = 'Replay'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clRed
+      Font.Height = -16
+      Font.Name = 'Calibri'
+      Font.Style = [fsBold]
+      Margin = 4
+      ParentFont = False
       Visible = False
-      object btnConfirmSell: TCnSpeedButton
-        Left = 19
-        Top = 33
-        Width = 74
-        Height = 22
-        Cursor = crHandPoint
-        Color = clGray
-        DownBold = False
-        FlatBorder = False
-        HotTrackBold = False
-        Caption = 'confirm'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = 4308735
-        Font.Height = -16
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        Margin = 4
-        ParentFont = False
-        OnClick = btnConfirmSellClick
-      end
-      object edtSell: TEdit
-        Left = 3
-        Top = 3
-        Width = 109
-        Height = 27
-        Alignment = taCenter
-        Color = 8081721
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = 4308735
-        Font.Height = -16
-        Font.Name = 'Tahoma'
-        Font.Style = []
-        ParentFont = False
-        TabOrder = 0
-      end
+      OnClick = btnReplayClick
     end
-    object PanelMain: SE_Panel
-      Left = 1152
-      Top = 12
-      Width = 241
-      Height = 245
-      BevelOuter = bvNone
+    object btnLogin: TCnSpeedButton
+      Left = 16
+      Top = 145
+      Width = 137
+      Height = 32
+      Cursor = crHandPoint
+      Color = clGray
+      DownBold = False
+      FlatBorder = False
+      HotTrackBold = False
+      Caption = 'btnLogin'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWhite
+      Font.Height = -21
+      Font.Name = 'Calibri'
+      Font.Style = [fsBold]
+      Margin = 4
+      ParentFont = False
+      OnClick = BtnLoginClick
+    end
+    object lbl_ConnectionStatus: TLabel
+      Left = 103
+      Top = 6
+      Width = 100
+      Height = 13
+      Caption = 'lbl_ConnectionStatus'
       Color = 8081721
-      TabOrder = 3
-      Visible = False
-      object btnFormation: TCnSpeedButton
-        Left = 3
-        Top = 17
-        Width = 233
-        Height = 32
-        Cursor = crHandPoint
-        Color = clGray
-        DownBold = False
-        FlatBorder = False
-        HotTrackBold = False
-        Caption = 'formazione'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = 4308735
-        Font.Height = -21
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        Margin = 4
-        ParentFont = False
-        OnClick = btnFormationClick
-      end
-      object btnMainPlay: TCnSpeedButton
-        Left = 3
-        Top = 49
-        Width = 233
-        Height = 32
-        Cursor = crHandPoint
-        Color = clGray
-        DownBold = False
-        FlatBorder = False
-        HotTrackBold = False
-        Caption = 'play'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = 4308735
-        Font.Height = -21
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        Margin = 4
-        ParentFont = False
-        OnClick = btnMainPlayClick
-      end
-      object btnWatchLive: TCnSpeedButton
-        Left = 3
-        Top = 81
-        Width = 233
-        Height = 32
-        Cursor = crHandPoint
-        Color = clGray
-        DownBold = False
-        FlatBorder = False
-        HotTrackBold = False
-        Caption = 'btnWatchLive'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = 4308735
-        Font.Height = -21
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        Margin = 4
-        ParentFont = False
-        OnClick = btnWatchLiveClick
-      end
-      object btnMarket: TCnSpeedButton
-        Left = 3
-        Top = 145
-        Width = 233
-        Height = 32
-        Cursor = crHandPoint
-        Color = clGray
-        DownBold = False
-        FlatBorder = False
-        HotTrackBold = False
-        Caption = 'btnMarket'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = 4308735
-        Font.Height = -21
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        Margin = 4
-        ParentFont = False
-        OnClick = btnMarketClick
-      end
-      object btnStandings: TCnSpeedButton
-        Left = 3
-        Top = 113
-        Width = 233
-        Height = 32
-        Cursor = crHandPoint
-        Color = clGray
-        DownBold = False
-        FlatBorder = False
-        HotTrackBold = False
-        Caption = 'btnStandings'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = 4308735
-        Font.Height = -21
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        Margin = 4
-        ParentFont = False
-        OnClick = btnStandingsClick
-      end
-      object btnExit: TCnSpeedButton
-        Left = 3
-        Top = 208
-        Width = 233
-        Height = 32
-        Cursor = crHandPoint
-        Color = clGray
-        DownBold = False
-        FlatBorder = False
-        HotTrackBold = False
-        Caption = 'btnExit'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = 4308735
-        Font.Height = -21
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        Margin = 4
-        ParentFont = False
-        OnClick = btnExitClick
-      end
-      object btnLogout: TCnSpeedButton
-        Left = 3
-        Top = 176
-        Width = 233
-        Height = 32
-        Cursor = crHandPoint
-        Color = clGray
-        DownBold = False
-        FlatBorder = False
-        HotTrackBold = False
-        Caption = 'Logout'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = 4308735
-        Font.Height = -21
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        Margin = 4
-        ParentFont = False
-        OnClick = btnLogoutClick
-      end
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWhite
+      Font.Height = -11
+      Font.Name = 'Calibri'
+      Font.Style = []
+      ParentColor = False
+      ParentFont = False
+      Transparent = False
     end
-    object PanelCountryTeam: SE_Panel
-      Left = 926
-      Top = 81
-      Width = 281
-      Height = 293
-      BevelOuter = bvNone
-      Color = 8081721
-      TabOrder = 4
-      Visible = False
-      object btnSelCountryTeam: TCnSpeedButton
-        Left = 91
-        Top = 271
-        Width = 182
-        Height = 22
-        Cursor = crHandPoint
-        Color = clGray
-        DownBold = False
-        FlatBorder = False
-        HotTrackBold = False
-        Caption = 'btnselcountryteam'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = 4308735
-        Font.Height = -21
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        Margin = 4
-        ParentFont = False
-        OnClick = btnSelCountryTeamClick
-      end
-      object btnSelCountryTeamBack: TCnSpeedButton
-        Left = 0
-        Top = 271
-        Width = 47
-        Height = 22
-        Cursor = crHandPoint
-        Color = clGray
-        DownBold = False
-        FlatBorder = False
-        HotTrackBold = False
-        Caption = 'Cancel'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = 4308735
-        Font.Height = -16
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        Margin = 4
-        ParentFont = False
-        OnClick = btnSelCountryTeamBackClick
-      end
-      object SE_GridCountryTeam: SE_Grid
-        Left = 3
-        Top = 3
-        Width = 254
-        Height = 244
-        Cursor = crHandPoint
-        MouseScrollRate = 1.000000000000000000
-        MouseWheelInvert = False
-        MouseWheelValue = 10
-        MouseWheelZoom = False
-        MousePan = True
-        MouseScroll = False
-        BackColor = 8081721
-        AnimationInterval = 200
-        GridInfoCell = False
-        GridVisible = False
-        GridColor = clSilver
-        GridCellWidth = 40
-        GridCellHeight = 30
-        GridCellsX = 10
-        GridCellsY = 4
-        GridHexSmallWidth = 10
-        CollisionDelay = 0
-        ShowPerformance = False
-        VirtualWidth = 212
-        Virtualheight = 212
-        TabOrder = 0
-        OnGridCellMouseDown = SE_GridCountryTeamGridCellMouseDown
-        CellBorder = CellBorderNone
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'Tahoma'
-        Font.Style = []
-      end
-    end
-    object PanelListMatches: SE_Panel
-      Left = 43
-      Top = 576
-      Width = 685
-      Height = 292
-      BevelOuter = bvNone
-      BorderStyle = bsSingle
-      Color = 8081721
-      TabOrder = 5
-      Visible = False
-      object btnMatchesRefresh: TCnSpeedButton
-        Left = 581
-        Top = 251
-        Width = 88
-        Height = 22
-        Cursor = crHandPoint
-        Color = clGray
-        DownBold = False
-        FlatBorder = False
-        HotTrackBold = False
-        Caption = 'btnMatchesRefresh'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = 4308735
-        Font.Height = -16
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        Margin = 4
-        ParentFont = False
-        OnClick = btnMatchesRefreshClick
-      end
-      object btnMatchesListBack: TCnSpeedButton
-        Left = 15
-        Top = 251
-        Width = 88
-        Height = 22
-        Cursor = crHandPoint
-        Color = clGray
-        DownBold = False
-        FlatBorder = False
-        HotTrackBold = False
-        Caption = 'btnMatchesListBack'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = 4308735
-        Font.Height = -16
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        Margin = 4
-        ParentFont = False
-        OnClick = btnMatchesListBackClick
-      end
-      object SE_GridAllBrain: SE_Grid
-        Left = 3
-        Top = 0
-        Width = 674
-        Height = 245
-        Cursor = crHandPoint
-        MouseScrollRate = 1.000000000000000000
-        MouseWheelInvert = False
-        MouseWheelValue = 10
-        MouseWheelZoom = False
-        MousePan = True
-        MouseScroll = False
-        BackColor = 8081721
-        AnimationInterval = 20
-        GridInfoCell = False
-        GridVisible = False
-        GridColor = clSilver
-        GridCellWidth = 40
-        GridCellHeight = 30
-        GridCellsX = 10
-        GridCellsY = 4
-        GridHexSmallWidth = 10
-        CollisionDelay = 0
-        ShowPerformance = False
-        VirtualWidth = 212
-        Virtualheight = 212
-        Passive = True
-        TabOrder = 0
-        OnGridCellMouseDown = SE_GridAllBrainGridCellMouseDown
-        CellBorder = CellBorderNone
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWhite
-        Font.Height = -11
-        Font.Name = 'Tahoma'
-        Font.Style = []
-      end
-    end
-    object PanelCorner: SE_Panel
-      Left = 1034
-      Top = 548
-      Width = 316
-      Height = 238
-      Color = 8081721
-      TabOrder = 6
-      Visible = False
-      object SE_GridFreeKick: SE_Grid
-        Left = 11
-        Top = 11
-        Width = 286
-        Height = 222
-        MouseScrollRate = 1.000000000000000000
-        MouseWheelInvert = False
-        MouseWheelValue = 10
-        MouseWheelZoom = False
-        MousePan = False
-        MouseScroll = False
-        BackColor = 8081721
-        AnimationInterval = 20
-        GridInfoCell = False
-        GridVisible = False
-        GridColor = clSilver
-        GridCellWidth = 40
-        GridCellHeight = 30
-        GridCellsX = 10
-        GridCellsY = 4
-        GridHexSmallWidth = 10
-        CollisionDelay = 0
-        ShowPerformance = False
-        VirtualWidth = 212
-        Virtualheight = 212
-        Passive = True
-        TabOrder = 0
-        OnGridCellMouseDown = SE_GridFreeKickGridCellMouseDown
-        CellBorder = CellBorderNone
-        CellBorderColor = clGray
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'Verdana'
-        Font.Style = []
-      end
-    end
-    object PanelLogin: SE_Panel
-      Left = 14
+    object BtnExit: TCnSpeedButton
+      Left = 16
       Top = 183
-      Width = 169
-      Height = 195
-      BevelOuter = bvNone
+      Width = 137
+      Height = 32
+      Cursor = crHandPoint
+      Color = clGray
+      DownBold = False
+      FlatBorder = False
+      HotTrackBold = False
+      Caption = 'btnExit'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWhite
+      Font.Height = -21
+      Font.Name = 'Calibri'
+      Font.Style = [fsBold]
+      Margin = 4
+      ParentFont = False
+      OnClick = BtnExitClick
+    end
+    object Edit1: TEdit
+      Left = 16
+      Top = 46
+      Width = 137
+      Height = 21
+      TabOrder = 0
+      Text = 'test2'
+    end
+    object Edit2: TEdit
+      Left = 17
+      Top = 108
+      Width = 137
+      Height = 21
+      PasswordChar = '*'
+      TabOrder = 1
+      Text = 'test2'
+      OnKeyDown = Edit2KeyDown
+    end
+  end
+  object PanelError: SE_Panel
+    Left = 327
+    Top = 15
+    Width = 401
+    Height = 210
+    BevelOuter = bvNone
+    Color = 8081721
+    ParentBackground = False
+    TabOrder = 1
+    Visible = False
+    object lbl_Error: TLabel
+      Left = 13
+      Top = 11
+      Width = 372
+      Height = 154
+      Alignment = taCenter
+      AutoSize = False
+      Caption = 'lbl_Error'
       Color = 8081721
-      DoubleBuffered = True
-      ParentDoubleBuffered = False
-      TabOrder = 7
-      object lbl_username: TLabel
-        Left = 20
-        Top = 21
-        Width = 71
-        Height = 19
-        Caption = 'Username'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWhite
-        Font.Height = -16
-        Font.Name = 'Tahoma'
-        Font.Style = []
-        ParentFont = False
-      end
-      object lbl_Password: TLabel
-        Left = 16
-        Top = 83
-        Width = 67
-        Height = 19
-        Caption = 'Password'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWhite
-        Font.Height = -16
-        Font.Name = 'Tahoma'
-        Font.Style = []
-        ParentFont = False
-      end
-      object btnReplay: TCnSpeedButton
-        Left = 21
-        Top = 3
-        Width = 70
-        Height = 17
-        Cursor = crHandPoint
-        Color = clGray
-        DownBold = False
-        FlatBorder = False
-        HotTrackBold = False
-        Caption = 'Replay'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clRed
-        Font.Height = -16
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        Margin = 4
-        ParentFont = False
-        Visible = False
-        OnClick = btnReplayClick
-      end
-      object btnLogin: TCnSpeedButton
-        Left = 16
-        Top = 145
-        Width = 137
-        Height = 32
-        Cursor = crHandPoint
-        Color = clGray
-        DownBold = False
-        FlatBorder = False
-        HotTrackBold = False
-        Caption = 'btnLogin'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = 4308735
-        Font.Height = -21
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        Margin = 4
-        ParentFont = False
-        OnClick = BtnLoginClick
-      end
-      object lbl_ConnectionStatus: TLabel
-        Left = 103
-        Top = 6
-        Width = 100
-        Height = 13
-        Caption = 'lbl_ConnectionStatus'
-        Color = 8081721
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWhite
-        Font.Height = -11
-        Font.Name = 'Calibri'
-        Font.Style = []
-        ParentColor = False
-        ParentFont = False
-        Transparent = False
-      end
-      object Edit1: TEdit
-        Left = 16
-        Top = 46
-        Width = 137
-        Height = 21
-        TabOrder = 0
-        Text = 'test2'
-      end
-      object Edit2: TEdit
-        Left = 17
-        Top = 108
-        Width = 137
-        Height = 21
-        PasswordChar = '*'
-        TabOrder = 1
-        Text = 'test2'
-        OnKeyDown = Edit2KeyDown
-      end
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWhite
+      Font.Height = -16
+      Font.Name = 'Calibri'
+      Font.Style = [fsBold]
+      ParentColor = False
+      ParentFont = False
+      Transparent = False
+      WordWrap = True
     end
-    object PanelError: SE_Panel
-      Left = 672
-      Top = 140
-      Width = 401
-      Height = 121
-      BevelOuter = bvNone
-      Color = clRed
-      ParentBackground = False
-      TabOrder = 8
-      Visible = False
-      object lbl_Error: TLabel
-        Left = 13
-        Top = 11
-        Width = 372
-        Height = 66
-        Alignment = taCenter
-        AutoSize = False
-        Caption = 'lbl_Error'
-        Color = clRed
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWhite
-        Font.Height = -16
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        ParentColor = False
-        ParentFont = False
-        Transparent = False
-        WordWrap = True
-      end
-      object BtnErrorOK: TCnSpeedButton
-        Left = 158
-        Top = 80
-        Width = 75
-        Height = 28
-        Cursor = crHandPoint
-        Color = clGray
-        DownBold = False
-        FlatBorder = False
-        HotTrackBold = False
-        Caption = 'OK'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = 4308735
-        Font.Height = -16
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        Margin = 4
-        ParentFont = False
-        OnClick = btnErrorOKClick
-      end
+    object BtnErrorOK: TCnSpeedButton
+      Left = 166
+      Top = 171
+      Width = 75
+      Height = 28
+      Cursor = crHandPoint
+      Color = clGray
+      DownBold = False
+      FlatBorder = False
+      HotTrackBold = False
+      Caption = 'OK'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWhite
+      Font.Height = -16
+      Font.Name = 'Calibri'
+      Font.Style = [fsBold]
+      Margin = 4
+      ParentFont = False
+      OnClick = btnErrorOKClick
     end
-    object SE_Theater1: SE_Theater
-      Left = 311
-      Top = 151
-      Width = 288
-      Height = 217
-      MouseScrollRate = 1.000000000000000000
-      MouseWheelInvert = False
-      MouseWheelValue = 10
-      MouseWheelZoom = False
-      MousePan = False
-      MouseScroll = False
-      BackColor = 8347711
-      AnimationInterval = 20
-      GridInfoCell = False
-      GridVisible = False
-      GridColor = clSilver
-      GridCellWidth = 40
-      GridCellHeight = 30
-      GridCellsX = 10
-      GridCellsY = 4
-      GridHexSmallWidth = 10
-      CollisionDelay = 0
-      ShowPerformance = False
-      OnSpriteMouseMove = SE_Theater1SpriteMouseMove
-      OnSpriteMouseDown = SE_Theater1SpriteMouseDown
-      OnSpriteMouseUp = SE_Theater1SpriteMouseUp
-      OnTheaterMouseMove = SE_Theater1TheaterMouseMove
-      VirtualWidth = 212
-      Virtualheight = 212
-      Visible = False
-      TabOrder = 9
-    end
-    object PanelInfoPlayer0: SE_Panel
-      Left = 25
-      Top = 298
-      Width = 317
-      Height = 394
-      BevelOuter = bvNone
-      Color = 8081721
-      TabOrder = 10
-      Visible = False
-      object lbl_Surname0: TLabel
-        Left = 3
-        Top = 8
-        Width = 100
-        Height = 16
-        Caption = 'lbl_Surname0'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clYellow
-        Font.Height = -13
-        Font.Name = 'Verdana'
-        Font.Style = [fsBold]
-        ParentFont = False
-        Transparent = True
-      end
-      object lbl_talent01: TLabel
-        Left = 3
-        Top = 201
-        Width = 66
-        Height = 13
-        Caption = 'lbl_talent01'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clYellow
-        Font.Height = -11
-        Font.Name = 'Verdana'
-        Font.Style = []
-        ParentFont = False
-        Transparent = True
-      end
-      object lbl_descrTalent01: TLabel
-        Left = 7
-        Top = 220
-        Width = 75
-        Height = 13
-        AutoSize = False
-        Caption = 'lbl_descrTalent01'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWhite
-        Font.Height = -11
-        Font.Name = 'Verdana'
-        Font.Style = []
-        ParentFont = False
-        Transparent = True
-        WordWrap = True
-      end
-      object Portrait0: TCnSpeedButton
-        Left = 0
-        Top = 30
-        Width = 74
-        Height = 74
-        ShadowColor = 8081721
-        Color = 8081721
-        DownColor = 8081721
-        DownBold = False
-        FlatBorder = True
-        HotTrackBold = False
-        HotTrackColor = 8081721
-        LightColor = 8081721
-        ModernBtnStyle = bsFlat
-        Margin = 4
-        Spacing = 0
-      end
-      object btnTalentBmp01: TCnSpeedButton
-        Left = 16
-        Top = 137
-        Width = 32
-        Height = 32
-        ShadowColor = 8081721
-        Color = 8081721
-        DownColor = 8081721
-        DownBold = False
-        FlatBorder = True
-        HotTrackBold = False
-        HotTrackColor = 8081721
-        LightColor = 8081721
-        ModernBtnStyle = bsFlat
-        Margin = 4
-        Spacing = 0
-      end
-      object btnxp0: TCnSpeedButton
-        Left = 103
-        Top = 250
-        Width = 47
-        Height = 22
-        Cursor = crHandPoint
-        Color = clGray
-        DownBold = False
-        FlatBorder = False
-        HotTrackBold = False
-        Caption = 'XP'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = 4308735
-        Font.Height = -16
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        Margin = 4
-        ParentFont = False
-        Visible = False
-        OnClick = btnxp0Click
-      end
-      object btnsell0: TCnSpeedButton
-        Left = 3
-        Top = 109
-        Width = 74
-        Height = 22
-        Cursor = crHandPoint
-        Color = clGray
-        DownBold = False
-        FlatBorder = False
-        HotTrackBold = False
-        Caption = 'btnsell'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = 4308735
-        Font.Height = -16
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        Margin = 4
-        ParentFont = False
-        Visible = False
-        OnClick = btnsell0Click
-      end
-      object btnDismiss0: TCnSpeedButton
-        Left = 3
-        Top = 266
-        Width = 74
-        Height = 22
-        Cursor = crHandPoint
-        Color = clGray
-        DownBold = False
-        FlatBorder = False
-        HotTrackBold = False
-        Caption = 'btnDismiss'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = 4308735
-        Font.Height = -16
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        Margin = 4
-        ParentFont = False
-        Visible = False
-        OnClick = btnDismiss0Click
-      end
-      object btnTalentBmp02: TCnSpeedButton
-        Left = 3
-        Top = 163
-        Width = 32
-        Height = 32
-        ShadowColor = 8081721
-        Color = 8081721
-        DownColor = 8081721
-        DownBold = False
-        FlatBorder = True
-        HotTrackBold = False
-        HotTrackColor = 8081721
-        LightColor = 8081721
-        ModernBtnStyle = bsFlat
-        Margin = 4
-        Spacing = 0
-      end
-      object lbl_talent02: TLabel
-        Left = 11
-        Top = 209
-        Width = 66
-        Height = 13
-        Caption = 'lbl_talent01'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clYellow
-        Font.Height = -11
-        Font.Name = 'Verdana'
-        Font.Style = []
-        ParentFont = False
-        Transparent = True
-      end
-      object lbl_descrTalent02: TLabel
-        Left = 15
-        Top = 228
-        Width = 75
-        Height = 13
-        AutoSize = False
-        Caption = 'lbl_descrTalent01'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWhite
-        Font.Height = -11
-        Font.Name = 'Verdana'
-        Font.Style = []
-        ParentFont = False
-        Transparent = True
-        WordWrap = True
-      end
-      object SE_Grid0: SE_Grid
-        Left = 88
-        Top = 29
-        Width = 212
-        Height = 195
-        MouseScrollRate = 1.000000000000000000
-        MouseWheelInvert = False
-        MouseWheelValue = 10
-        MouseWheelZoom = False
-        MousePan = False
-        MouseScroll = False
-        BackColor = 8081721
-        AnimationInterval = 20
-        GridInfoCell = False
-        GridVisible = False
-        GridColor = clSilver
-        GridCellWidth = 40
-        GridCellHeight = 30
-        GridCellsX = 10
-        GridCellsY = 4
-        GridHexSmallWidth = 10
-        CollisionDelay = 0
-        ShowPerformance = False
-        VirtualWidth = 212
-        Virtualheight = 212
-        Passive = True
-        TabOrder = 0
-        CellBorder = CellBorderNone
-        CellBorderColor = clGray
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'Verdana'
-        Font.Style = []
-      end
-    end
-    object Panelformation: SE_Panel
+  end
+  object SE_Theater1: SE_Theater
+    Left = 8
+    Top = 8
+    Width = 288
+    Height = 217
+    MouseScrollRate = 1.000000000000000000
+    MouseWheelInvert = False
+    MouseWheelValue = 10
+    MouseWheelZoom = False
+    MousePan = False
+    MouseScroll = False
+    BackColor = 8347711
+    AnimationInterval = 20
+    GridInfoCell = False
+    GridVisible = False
+    GridColor = clSilver
+    GridCellWidth = 40
+    GridCellHeight = 30
+    GridCellsX = 10
+    GridCellsY = 4
+    GridHexSmallWidth = 10
+    CollisionDelay = 0
+    ShowPerformance = False
+    OnSpriteMouseMove = SE_Theater1SpriteMouseMove
+    OnSpriteMouseDown = SE_Theater1SpriteMouseDown
+    OnSpriteMouseUp = SE_Theater1SpriteMouseUp
+    OnTheaterMouseMove = SE_Theater1TheaterMouseMove
+    OnTheaterMouseDown = SE_Theater1TheaterMouseDown
+    OnTheaterMouseUp = SE_Theater1TheaterMouseUp
+    VirtualWidth = 900
+    Virtualheight = 1440
+    TabOrder = 2
+    OnMouseDown = SE_Theater1MouseDown
+  end
+  object PanelSell: SE_Panel
+    Left = 701
+    Top = 56
+    Width = 164
+    Height = 58
+    BevelOuter = bvNone
+    Color = 8081721
+    TabOrder = 4
+    Visible = False
+    object btnConfirmSell: TCnSpeedButton
       Left = 3
+      Top = 36
+      Width = 74
+      Height = 22
+      Cursor = crHandPoint
+      Color = clGray
+      DownBold = False
+      FlatBorder = False
+      HotTrackBold = False
+      Caption = 'confirm'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWhite
+      Font.Height = -16
+      Font.Name = 'Calibri'
+      Font.Style = [fsBold]
+      Margin = 4
+      ParentFont = False
+      OnClick = btnConfirmSellClick
+    end
+    object BtnBackSell: TCnSpeedButton
+      Left = 83
+      Top = 36
+      Width = 74
+      Height = 22
+      Cursor = crHandPoint
+      Color = clGray
+      DownBold = False
+      FlatBorder = False
+      HotTrackBold = False
+      Caption = 'confirm'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWhite
+      Font.Height = -16
+      Font.Name = 'Calibri'
+      Font.Style = [fsBold]
+      Margin = 4
+      ParentFont = False
+      OnClick = BtnBackSellClick
+    end
+    object edtSell: TEdit
+      Left = 3
+      Top = 3
+      Width = 150
+      Height = 27
+      Alignment = taCenter
+      Color = 8081721
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = 4308735
+      Font.Height = -16
+      Font.Name = 'Calibri'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 0
+    end
+  end
+  object PanelDismiss: SE_Panel
+    Left = 531
+    Top = 56
+    Width = 164
+    Height = 58
+    BevelOuter = bvNone
+    Color = 8081721
+    TabOrder = 6
+    Visible = False
+    object BtnConfirmDismiss: TCnSpeedButton
+      Left = 3
+      Top = 36
+      Width = 74
+      Height = 22
+      Cursor = crHandPoint
+      Color = clGray
+      DownBold = False
+      FlatBorder = False
+      HotTrackBold = False
+      Caption = 'confirm'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWhite
+      Font.Height = -16
+      Font.Name = 'Calibri'
+      Font.Style = [fsBold]
+      Margin = 4
+      ParentFont = False
+      OnClick = BtnConfirmDismissClick
+    end
+    object BtnBackDismiss: TCnSpeedButton
+      Left = 83
+      Top = 36
+      Width = 74
+      Height = 22
+      Cursor = crHandPoint
+      Color = clGray
+      DownBold = False
+      FlatBorder = False
+      HotTrackBold = False
+      Caption = 'confirm'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWhite
+      Font.Height = -16
+      Font.Name = 'Calibri'
+      Font.Style = [fsBold]
+      Margin = 4
+      ParentFont = False
+      OnClick = BtnBackDismissClick
+    end
+    object lbl_Dismiss: TLabel
+      Left = 8
       Top = 0
-      Width = 966
-      Height = 40
-      BevelOuter = bvNone
-      Color = 8081721
-      TabOrder = 11
-      Visible = False
-      object lbl_MoneyF: TLabel
-        Left = 316
-        Top = 20
-        Width = 84
-        Height = 13
-        AutoSize = False
-        Caption = 'lbl_MoneyF'
-        Color = 8081721
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWhite
-        Font.Height = -11
-        Font.Name = 'Calibri'
-        Font.Style = []
-        ParentColor = False
-        ParentFont = False
-        Transparent = False
-      end
-      object lbl_RankF: TLabel
-        Left = 316
-        Top = 6
-        Width = 84
-        Height = 13
-        AutoSize = False
-        Caption = 'lbl_RankF'
-        Color = 8081721
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWhite
-        Font.Height = -11
-        Font.Name = 'Calibri'
-        Font.Style = []
-        ParentColor = False
-        ParentFont = False
-        Transparent = False
-      end
-      object lbl_TurnF: TLabel
-        Left = 399
-        Top = 6
-        Width = 121
-        Height = 13
-        AutoSize = False
-        Caption = 'lbl_TurnF'
-        Color = 8081721
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWhite
-        Font.Height = -11
-        Font.Name = 'Calibri'
-        Font.Style = []
-        ParentColor = False
-        ParentFont = False
-        Transparent = False
-      end
-      object lbl_PointsF: TLabel
-        Left = 398
-        Top = 20
-        Width = 67
-        Height = 13
-        AutoSize = False
-        Caption = 'lbl_PointsF'
-        Color = 8081721
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWhite
-        Font.Height = -11
-        Font.Name = 'Calibri'
-        Font.Style = []
-        ParentColor = False
-        ParentFont = False
-        Transparent = False
-      end
-      object lbl_MIF: TLabel
-        Left = 471
-        Top = 20
-        Width = 49
-        Height = 13
-        AutoSize = False
-        Caption = 'lbl_MIF'
-        Color = 8081721
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWhite
-        Font.Height = -11
-        Font.Name = 'Tahoma'
-        Font.Style = []
-        ParentColor = False
-        ParentFont = False
-        Transparent = False
-      end
-      object lbl_TeamName: TLabel
-        Left = 3
-        Top = 11
-        Width = 302
-        Height = 20
-        AutoSize = False
-        Caption = 'lbl_teamname'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clYellow
-        Font.Height = -16
-        Font.Name = 'Verdana'
-        Font.Style = [fsBold]
-        ParentFont = False
-        Transparent = True
-      end
-      object se_lblPlay: TCnSpeedButton
-        Left = 613
-        Top = 6
-        Width = 115
-        Height = 28
-        Cursor = crHandPoint
-        Color = clBtnFace
-        DownBold = False
-        FlatBorder = False
-        HotTrackBold = False
-        Caption = 'valid formatiom'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = 4308735
-        Font.Height = -13
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        Margin = 4
-        ParentFont = False
-      end
-      object BtnFormationBack: TCnSpeedButton
-        Left = 819
-        Top = 6
-        Width = 75
-        Height = 28
-        Cursor = crHandPoint
-        Color = clGray
-        DownBold = False
-        FlatBorder = False
-        HotTrackBold = False
-        Caption = 'back'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = 4308735
-        Font.Height = -16
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        Margin = 4
-        ParentFont = False
-        OnClick = BtnFormationBackClick
-      end
-      object BtnFormationReset: TCnSpeedButton
-        Left = 738
-        Top = 6
-        Width = 75
-        Height = 28
-        Cursor = crHandPoint
-        Color = clGray
-        DownBold = False
-        FlatBorder = False
-        HotTrackBold = False
-        Caption = 'reset'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = 4308735
-        Font.Height = -16
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        Margin = 4
-        ParentFont = False
-        OnClick = BtnFormationResetClick
-      end
-      object BtnFormationUniform: TCnSpeedButton
-        Left = 533
-        Top = 6
-        Width = 75
-        Height = 28
-        Cursor = crHandPoint
-        Color = clGray
-        DownBold = False
-        FlatBorder = False
-        HotTrackBold = False
-        Caption = 'uniform'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = 4308735
-        Font.Height = -16
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        Margin = 4
-        ParentFont = False
-        OnClick = BtnFormationUniformClick
-      end
+      Width = 145
+      Height = 30
+      AutoSize = False
+      Caption = 'lbl_Dismiss'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = 4308735
+      Font.Height = -13
+      Font.Name = 'Calibri'
+      Font.Style = []
+      ParentFont = False
+      WordWrap = True
     end
-    object PanelSkill: SE_Panel
-      Left = 768
-      Top = 380
-      Width = 260
-      Height = 201
-      BevelOuter = bvNone
-      Color = 16744576
-      ParentBackground = False
-      TabOrder = 12
-      Visible = False
-      object SE_GridSkill: SE_Grid
-        Left = 28
-        Top = 14
-        Width = 212
-        Height = 107
-        Cursor = crHandPoint
-        MouseScrollRate = 1.000000000000000000
-        MouseWheelInvert = False
-        MouseWheelValue = 10
-        MouseWheelZoom = False
-        MousePan = False
-        MouseScroll = False
-        BackColor = 8081721
-        AnimationInterval = 20
-        GridInfoCell = False
-        GridVisible = False
-        GridColor = clSilver
-        GridCellWidth = 40
-        GridCellHeight = 30
-        GridCellsX = 10
-        GridCellsY = 4
-        GridHexSmallWidth = 10
-        CollisionDelay = 0
-        ShowPerformance = False
-        VirtualWidth = 212
-        Virtualheight = 212
-        Passive = True
-        TabOrder = 0
-        OnGridCellMouseDown = SE_GridSkillGridCellMouseDown
-        OnGridCellMouseMove = SE_GridSkillGridCellMouseMove
-        CellBorder = CellBorderNone
-        CellBorderColor = clGray
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'Verdana'
-        Font.Style = []
-      end
+  end
+  object ToolSpin: TCnSpinEdit
+    Left = 531
+    Top = 843
+    Width = 74
+    Height = 29
+    AutoSelect = False
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlack
+    Font.Height = -16
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    MaxValue = 255
+    MinValue = 0
+    ParentFont = False
+    TabOrder = 5
+    Value = 0
+    Visible = False
+    OnChange = ToolSpinChange
+    OnKeyPress = toolSpinKeyPress
+  end
+  object PanelBuy: SE_Panel
+    Left = 383
+    Top = 251
+    Width = 418
+    Height = 102
+    BevelOuter = bvNone
+    Color = 8081721
+    TabOrder = 7
+    Visible = False
+    object btnConfirmBuy: TCnSpeedButton
+      Left = 0
+      Top = 76
+      Width = 74
+      Height = 22
+      Cursor = crHandPoint
+      Color = clGray
+      DownBold = False
+      FlatBorder = False
+      HotTrackBold = False
+      Caption = 'confirm'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWhite
+      Font.Height = -16
+      Font.Name = 'Calibri'
+      Font.Style = [fsBold]
+      Margin = 4
+      ParentFont = False
+      OnClick = btnConfirmBuyClick
     end
-    object PanelXPplayer0: SE_Panel
-      Left = 28
-      Top = 559
-      Width = 317
-      Height = 290
-      BevelOuter = bvNone
-      Color = 8081721
-      TabOrder = 13
-      Visible = False
-      object btnxpBack0: TCnSpeedButton
-        Left = 267
-        Top = 6
-        Width = 47
-        Height = 22
-        Cursor = crHandPoint
-        Color = clGray
-        DownBold = False
-        FlatBorder = False
-        HotTrackBold = False
-        Caption = 'Back'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = 4308735
-        Font.Height = -16
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        Margin = 4
-        ParentFont = False
-        OnClick = btnxpBack0Click
-      end
-      object SE_GridXP0: SE_Grid
-        Left = 43
-        Top = 39
-        Width = 212
-        Height = 195
-        MouseScrollRate = 1.000000000000000000
-        MouseWheelInvert = False
-        MouseWheelValue = 10
-        MouseWheelZoom = False
-        MousePan = True
-        MouseScroll = False
-        BackColor = 8081721
-        AnimationInterval = 200
-        GridInfoCell = False
-        GridVisible = False
-        GridColor = clSilver
-        GridCellWidth = 40
-        GridCellHeight = 30
-        GridCellsX = 10
-        GridCellsY = 4
-        GridHexSmallWidth = 10
-        CollisionDelay = 0
-        ShowPerformance = False
-        VirtualWidth = 212
-        Virtualheight = 212
-        TabOrder = 0
-        OnGridCellMouseDown = SE_GridXP0GridCellMouseDown
-        OnGridCellMouseMove = SE_GridXP0GridCellMouseMove
-        CellBorder = CellBorderNone
-        CellBorderColor = clGray
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'Verdana'
-        Font.Style = []
-      end
+    object BtnBackBuy: TCnSpeedButton
+      Left = 331
+      Top = 76
+      Width = 74
+      Height = 22
+      Cursor = crHandPoint
+      Color = clGray
+      DownBold = False
+      FlatBorder = False
+      HotTrackBold = False
+      Caption = 'confirm'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWhite
+      Font.Height = -16
+      Font.Name = 'Calibri'
+      Font.Style = [fsBold]
+      Margin = 4
+      ParentFont = False
+      OnClick = BtnBackBuyClick
     end
-    object PanelUniform: SE_Panel
-      Left = 606
-      Top = 334
-      Width = 317
-      Height = 223
-      BevelOuter = bvNone
-      Color = 8081721
-      TabOrder = 14
-      Visible = False
-      object btnUniformBack: TCnSpeedButton
-        Left = 265
-        Top = 5
-        Width = 47
-        Height = 22
-        Cursor = crHandPoint
-        Color = clGray
-        DownBold = False
-        FlatBorder = False
-        HotTrackBold = False
-        Caption = 'Back'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = 4308735
-        Font.Height = -16
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        Margin = 4
-        ParentFont = False
-        OnClick = btnUniformBackClick
-      end
-      object btn_UniformHome: TCnSpeedButton
-        Left = 113
-        Top = 15
-        Width = 104
-        Height = 17
-        Color = 8081721
-        DownColor = clBlue
-        DownBold = True
-        FlatBorder = False
-        HotTrackBold = False
-        GroupIndex = 1
-        Down = True
-        Caption = 'btn_UniformHome'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWhite
-        Font.Height = -11
-        Font.Name = 'Tahoma'
-        Font.Style = []
-        Margin = 4
-        ParentFont = False
-        OnClick = Btn_UniformHomeClick
-      end
-      object btn_UniformAway: TCnSpeedButton
-        Left = 113
-        Top = 34
-        Width = 104
-        Height = 17
-        Color = 8081721
-        DownColor = clBlue
-        DownBold = True
-        FlatBorder = False
-        HotTrackBold = False
-        GroupIndex = 1
-        Caption = 'btn_UniformAway'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWhite
-        Font.Height = -11
-        Font.Name = 'Tahoma'
-        Font.Style = []
-        Margin = 4
-        ParentFont = False
-        OnClick = Btn_UniformAwayClick
-      end
-      object ck_Shorts: TCnSpeedButton
-        Left = 225
-        Top = 157
-        Width = 76
-        Height = 15
-        Cursor = crHandPoint
-        Color = 8081721
-        DownColor = clBlue
-        DownBold = True
-        FlatBorder = False
-        HotTrackBold = False
-        GroupIndex = 2
-        Caption = 'pantaloncini'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWhite
-        Font.Height = -11
-        Font.Name = 'Tahoma'
-        Font.Style = []
-        Margin = 4
-        ParentFont = False
-      end
-      object Schema0: TCnSpeedButton
-        Left = 111
-        Top = 57
-        Width = 45
-        Height = 42
-        Cursor = crHandPoint
-        Color = 8081721
-        DownColor = clBlue
-        DownBold = True
-        FlatBorder = False
-        HotTrackBold = False
-        GroupIndex = 3
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWhite
-        Font.Height = -11
-        Font.Name = 'Tahoma'
-        Font.Style = []
-        Margin = 4
-        ParentFont = False
-        OnClick = Schema0Click
-      end
-      object ck_Jersey2: TCnSpeedButton
-        Left = 78
-        Top = 157
-        Width = 49
-        Height = 15
-        Cursor = crHandPoint
-        Color = 8081721
-        DownColor = clBlue
-        DownBold = True
-        FlatBorder = False
-        HotTrackBold = False
-        GroupIndex = 2
-        Caption = 'maglia'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWhite
-        Font.Height = -11
-        Font.Name = 'Tahoma'
-        Font.Style = []
-        Margin = 4
-        ParentFont = False
-      end
-      object ck_Jersey1: TCnSpeedButton
-        Left = 23
-        Top = 157
-        Width = 49
-        Height = 15
-        Cursor = crHandPoint
-        Color = 8081721
-        DownColor = clBlue
-        DownBold = True
-        FlatBorder = False
-        HotTrackBold = False
-        GroupIndex = 2
-        Down = True
-        Caption = 'maglia'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWhite
-        Font.Height = -11
-        Font.Name = 'Tahoma'
-        Font.Style = []
-        Margin = 4
-        ParentFont = False
-      end
-      object Schema2: TCnSpeedButton
-        Tag = 2
-        Left = 111
-        Top = 105
-        Width = 45
-        Height = 42
-        Cursor = crHandPoint
-        Color = 8081721
-        DownColor = clBlue
-        DownBold = True
-        FlatBorder = False
-        HotTrackBold = False
-        GroupIndex = 3
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWhite
-        Font.Height = -11
-        Font.Name = 'Tahoma'
-        Font.Style = []
-        Margin = 4
-        ParentFont = False
-        OnClick = Schema0Click
-      end
-      object Schema1: TCnSpeedButton
-        Tag = 1
-        Left = 158
-        Top = 57
-        Width = 45
-        Height = 42
-        Cursor = crHandPoint
-        Color = 8081721
-        DownColor = clBlue
-        DownBold = True
-        FlatBorder = False
-        HotTrackBold = False
-        GroupIndex = 3
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWhite
-        Font.Height = -11
-        Font.Name = 'Tahoma'
-        Font.Style = []
-        Margin = 4
-        ParentFont = False
-        OnClick = Schema0Click
-      end
-      object Schema3: TCnSpeedButton
-        Tag = 3
-        Left = 158
-        Top = 105
-        Width = 45
-        Height = 42
-        Cursor = crHandPoint
-        Color = 8081721
-        DownColor = clBlue
-        DownBold = True
-        FlatBorder = False
-        HotTrackBold = False
-        GroupIndex = 3
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWhite
-        Font.Height = -11
-        Font.Name = 'Tahoma'
-        Font.Style = []
-        Margin = 4
-        ParentFont = False
-        OnClick = Schema0Click
-      end
-      object CnColorGrid1: TCnColorGrid
-        Left = 16
-        Top = 178
-        Width = 289
-        Height = 23
-        BevelInner = bvNone
-        BevelOuter = bvNone
-        BorderStyle = bsNone
-        Color = 8081721
-        ColCount = 12
-        DefaultColWidth = 23
-        DefaultRowHeight = 20
-        FixedCols = 0
-        RowCount = 1
-        FixedRows = 0
-        GridLineWidth = 0
-        Options = []
-        ScrollBars = ssNone
-        TabOrder = 0
-        OnSelectCell = CnColorGrid1SelectCell
-        AutoSizeBy = asSameWidth
-        ColorSet = csCustomColors
-        CustomColors.Strings = (
-          '16777214'
-          '1'
-          '8421503'
-          '254'
-          '4227325'
-          '65535'
-          '32768'
-          '65281'
-          '16776960'
-          '16711681'
-          '16711808'
-          '16744703'
-          '128')
-        CustomRowCount = 1
-        CustomColCount = 12
-        CustomColorType = ccDec
-      end
+    object lbl_ConfirmBuy: TLabel
+      Left = 8
+      Top = 0
+      Width = 409
+      Height = 57
+      AutoSize = False
+      Caption = 'lbl_ConfirmBuy'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = 4308735
+      Font.Height = -19
+      Font.Name = 'Calibri'
+      Font.Style = []
+      ParentFont = False
+      WordWrap = True
     end
-    object PanelMarket: SE_Panel
-      Left = 576
-      Top = 587
-      Width = 1200
-      Height = 292
-      BevelOuter = bvNone
+  end
+  object PanelGameOver: SE_Panel
+    Left = 261
+    Top = 371
+    Width = 500
+    Height = 300
+    BevelOuter = bvNone
+    Color = 8081721
+    ParentBackground = False
+    TabOrder = 8
+    Visible = False
+    object lbl_Gameover1: TLabel
+      Left = 13
+      Top = 11
+      Width = 372
+      Height = 38
+      Alignment = taCenter
+      AutoSize = False
+      Caption = 'lbl_Gameover1'
       Color = 8081721
-      TabOrder = 15
-      Visible = False
-      object lbl_maxvalue: TLabel
-        Left = 255
-        Top = 253
-        Width = 82
-        Height = 13
-        AutoSize = False
-        Caption = 'lbl_maxvalue'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWhite
-        Font.Height = -11
-        Font.Name = 'Verdana'
-        Font.Style = []
-        ParentFont = False
-        Transparent = True
-        WordWrap = True
-      end
-      object btnMarketBack: TCnSpeedButton
-        Left = 3
-        Top = 267
-        Width = 88
-        Height = 22
-        Cursor = crHandPoint
-        Color = clGray
-        DownBold = False
-        FlatBorder = False
-        HotTrackBold = False
-        Caption = 'Back'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = 4308735
-        Font.Height = -16
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        Margin = 4
-        ParentFont = False
-        OnClick = btnMarketBackClick
-      end
-      object btnMarketRefresh: TCnSpeedButton
-        Left = 352
-        Top = 266
-        Width = 88
-        Height = 22
-        Cursor = crHandPoint
-        Color = clGray
-        DownBold = False
-        FlatBorder = False
-        HotTrackBold = False
-        Caption = 'btnMarketRefresh'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = 4308735
-        Font.Height = -16
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        Margin = 4
-        ParentFont = False
-        OnClick = btnMarketRefreshClick
-      end
-      object SE_GridMarket: SE_Grid
-        Left = 14
-        Top = 8
-        Width = 559
-        Height = 239
-        Cursor = crHandPoint
-        MouseScrollRate = 1.000000000000000000
-        MouseWheelInvert = False
-        MouseWheelValue = 10
-        MouseWheelZoom = False
-        MousePan = True
-        MouseScroll = False
-        BackColor = 8081721
-        AnimationInterval = 20
-        GridInfoCell = False
-        GridVisible = False
-        GridColor = clSilver
-        GridCellWidth = 40
-        GridCellHeight = 30
-        GridCellsX = 10
-        GridCellsY = 4
-        GridHexSmallWidth = 10
-        CollisionDelay = 0
-        ShowPerformance = False
-        VirtualWidth = 212
-        Virtualheight = 212
-        Passive = True
-        TabOrder = 0
-        OnGridCellMouseDown = SE_GridMarketGridCellMouseDown
-        CellBorder = CellBorderNone
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'Tahoma'
-        Font.Style = []
-      end
-      object edtsearchprice: TEdit
-        Left = 239
-        Top = 266
-        Width = 109
-        Height = 22
-        Alignment = taCenter
-        AutoSize = False
-        Color = 8081721
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = 4308735
-        Font.Height = -16
-        Font.Name = 'Tahoma'
-        Font.Style = []
-        ParentFont = False
-        TabOrder = 1
-      end
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWhite
+      Font.Height = -16
+      Font.Name = 'Calibri'
+      Font.Style = [fsBold]
+      ParentColor = False
+      ParentFont = False
+      Transparent = False
+      WordWrap = True
     end
-    object PanelDismiss: SE_Panel
-      Left = 189
-      Top = 185
-      Width = 116
-      Height = 58
-      Color = 8081721
-      TabOrder = 16
-      Visible = False
-      object lbl_ConfirmDismiss: TLabel
-        Left = 3
-        Top = 3
-        Width = 110
-        Height = 27
-        AutoSize = False
-        Caption = 'se_lbldescrtalent1'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWhite
-        Font.Height = -11
-        Font.Name = 'Verdana'
-        Font.Style = []
-        ParentFont = False
-        Transparent = True
-        WordWrap = True
-      end
-      object btnConfirmDismiss: TCnSpeedButton
-        Left = 19
-        Top = 33
-        Width = 74
-        Height = 22
-        Cursor = crHandPoint
-        Color = clGray
-        DownBold = False
-        FlatBorder = False
-        HotTrackBold = False
-        Caption = 'confirm'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = 4308735
-        Font.Height = -16
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        Margin = 4
-        ParentFont = False
-        OnClick = btnConfirmDismissClick
-      end
+    object btnGameOverOK: TCnSpeedButton
+      Left = 166
+      Top = 171
+      Width = 75
+      Height = 28
+      Cursor = crHandPoint
+      Color = clGray
+      DownBold = False
+      FlatBorder = False
+      HotTrackBold = False
+      Caption = 'OK'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWhite
+      Font.Height = -16
+      Font.Name = 'Calibri'
+      Font.Style = [fsBold]
+      Margin = 4
+      ParentFont = False
     end
-    object PanelMatchInfo: SE_Panel
-      Left = 1034
-      Top = 429
-      Width = 330
-      Height = 139
+    object lbl_GameOver2: TLabel
+      Left = 13
+      Top = 67
+      Width = 372
+      Height = 38
+      Alignment = taCenter
+      AutoSize = False
+      Caption = 'lbl_Gameover2'
       Color = 8081721
-      TabOrder = 17
-      Visible = False
-      object SE_GridMatchInfo: SE_Grid
-        Left = 3
-        Top = 3
-        Width = 313
-        Height = 110
-        MouseScrollRate = 1.000000000000000000
-        MouseWheelInvert = False
-        MouseWheelValue = 10
-        MouseWheelZoom = False
-        MousePan = False
-        MouseScroll = False
-        BackColor = 8081721
-        AnimationInterval = 20
-        GridInfoCell = False
-        GridVisible = False
-        GridColor = clSilver
-        GridCellWidth = 40
-        GridCellHeight = 30
-        GridCellsX = 10
-        GridCellsY = 4
-        GridHexSmallWidth = 10
-        CollisionDelay = 0
-        ShowPerformance = False
-        VirtualWidth = 212
-        Virtualheight = 212
-        Passive = True
-        TabOrder = 0
-        CellBorder = CellBorderNone
-        CellBorderColor = clGray
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'Verdana'
-        Font.Style = []
-      end
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWhite
+      Font.Height = -16
+      Font.Name = 'Calibri'
+      Font.Style = [fsBold]
+      ParentColor = False
+      ParentFont = False
+      Transparent = False
+      WordWrap = True
+    end
+    object lbl_GameOver3: TLabel
+      Left = 188
+      Top = 130
+      Width = 196
+      Height = 38
+      AutoSize = False
+      Caption = 'lbl_Gameover3'
+      Color = 8081721
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clYellow
+      Font.Height = -16
+      Font.Name = 'Calibri'
+      Font.Style = [fsBold]
+      ParentColor = False
+      ParentFont = False
+      Transparent = False
+      WordWrap = True
+    end
+    object Image1: TImage
+      Left = 138
+      Top = 121
+      Width = 44
+      Height = 44
+      Picture.Data = {
+        07544269746D617086150000424D861500000000000036000000280000002900
+        00002C000000010018000000000050150000E10E0000E10E0000000000000000
+        000000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF00
+        00FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF
+        0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000
+        FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF000000FF
+        0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000
+        FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF00
+        00FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF
+        0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF000000FF0000FF00
+        00FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF
+        0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000
+        FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF00
+        00FF0000FF0000FF0000FF0000FF0000FF0000FF000000FF0000FF0000FF0000
+        FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF00
+        00FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF
+        0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000
+        FF0000FF0000FF0000FF0000FF0000FF000000FF0000FF0000FF0000FF0000FF
+        0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000
+        FF0029E78344D5DB35D6EA24D8E723D7EA24D7E929D8E74ACFF035DDAD38E37E
+        00FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF
+        0000FF0000FF0000FF0000FF000000FF0000FF0000FF0000FF0000FF0000FF00
+        00FF0000FF0000FF0000FF0000FF0000FF0000FF004DD5AF38D2F428D1FF12D4
+        FF00DBFF00DAFF00D5FF06D3FF00D6FF00D9FF00DBFF04D6FF1ED3FF27D7FF46
+        D3E000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF00
+        00FF0000FF0000FF000000FF0000FF0000FF0000FF0000FF0000FF0000FF0000
+        FF0000FF0000FF0000FF0044DAA239CEFF0ED8FF00DAFF05D6FF00DCFF00DAFF
+        00DBFF03DBFF03DCFF00DCFF01DBFF01DCFD00DDFC07D9FE02D7FF00DBFF20D3
+        FF3BD5E400FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000
+        FF0000FF000000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF
+        0000FF002EDCB715D1FF00DBFF01DCFE0BD8FD0CDBFE07E0FF03E0FF05DFFF05
+        DDFF05DCFE06DCFF06DDFF05E0FE03E1FC02DCFE01D8FD03DAFF00DAFF00D8FF
+        30CBFF3ADEAA00FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF
+        000000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0025D8FF
+        07D6FF00D9FF03DAFD02E0FB01E4FE09DEFF11CFFB07C7F905C0F603BCF402BA
+        F204BBF405C0F706C6F70ACEFB05DAFD01E4FE05E1FB06DBFC00DAFF00DBFF05
+        DAFF45D1E400FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF000000FF
+        0000FF0000FF0000FF0000FF0000FF0000FF0000FF0025D0FF00D8FF00DAFE05
+        DBFE06DEFF10D9FF0ACAF800B9F600ACF600A8F400A8F200AAF201AAF305A8F5
+        02A9F300A9F001ADF108B2F403C5F70AD6FB10DEFF01DDFF09DAFD02DAFF06D7
+        FF40CCFF00FF0000FF0000FF0000FF0000FF0000FF0000FF000000FF0000FF00
+        00FF0000FF0000FF0000FF0000FF003BC6FF00DBFF01DBFE01DDFD06E0FF06CF
+        F903B8EF00ACED01A8F402AAF800ACF700AEF700AFF600AEF502ACFA03ACF903
+        ADF404AEF202AAF400A8F101B2EE07C8F80BDCFF04DFFE00DDFB00DBFE00D7FF
+        47C9FF00FF0000FF0000FF0000FF0000FF0000FF000000FF0000FF0000FF0000
+        FF0000FF0000FF0029D5F400DCFF01DBFE05DDFF0EDDFF07C6F400ACEE00A7F2
+        01AEF501AFF600B0F300B1F102AFF402ADF604ADF704ADF602AEF600AFF400B0
+        F300B0F300B0F400AEF201A8F205B9F507D9FE01DFFF00DCFE00D9FF0CD6FF00
+        FF0000FF0000FF0000FF0000FF0000FF000000FF0000FF0000FF0000FF0000FF
+        0037DAC306D5FF00DAFF01DEFF0CDCFF07BFF500A9EE02AAF703ABFA02AEF701
+        AFF501AFF401AFF301B0F301AEF000AAEE00ACEE00B0F100B0F300AFF500B0F4
+        01B0F303AEF605ABF801A7F201B8F108D9FE01DFFF02D9FE00DBFF12D4FF00FF
+        0000FF0000FF0000FF0000FF000000FF0000FF0000FF0000FF0000FF0017D2FF
+        00DBFF04DBFD07E2FF05C6F400A9ED00AAF900AFF500B0F200B0F401AFF502AD
+        F802ACF900AEF101BCF204C6F504C1F600B4F101AEF207ADF505ADF502AFF302
+        AFF300B1F004AEF402A8F002BCEF08DCFE05DEFE02DAFE00DBFF40CBFF00FF00
+        00FF0000FF0000FF000000FF0000FF0000FF0000FF0037D2FF00D9FF05DBFE05
+        E2FF08CDF800ACEB04ACF601AEF600AFF400AFF501AFF501AEF600AFF400B0F4
+        00ABEE06C4F605E3FF04DBFF02B6F200ABF603AEF503AEF501AEF501AFF501AF
+        F501AFF402ADF600A6F204C1F704E0FF00DDFE06D9FF12D2FF00FF0000FF0000
+        FF0000FF000000FF0000FF0000FF0000FF0010D6FF00D9FF01E1FD0CDCFE06B6
+        EE00ABEF04ADF600B0F400AFF601AEF601AEF601AEF600ADF603ACF702A9F105
+        C2F602E1FF01D9FD02B4F300ABF800AEF502AEF401AEF601AEF601AEF700AFF4
+        01AEF501AAF800ADEE05D1FB01E2FE08DAFC00DCFF43CDFF00FF0000FF0000FF
+        000000FF0000FF0000FF0000FF0002D6FF0ED6FE00E6FD04C9F701AAEF01B0F4
+        02AFF400AFF600AEF601AEF601AEF601AEF601AFF802ABF500A5EB05C3F402E2
+        FF02D8FD02B4F300ABF701AEF502AEF401AEF601AEF601AEF600AEF501AEF501
+        AEF600AAED04BCF305E1FF04DEF800DBFF18D1FF00FF0000FF0000FF000000FF
+        0000FF0000FF0026D2FB04D8FF09DCFD0CDBFB00B4F600A7F801B0F300B1F101
+        AEF601AEF701AEF601AEF600ABF701B7F209D0FA04B8EF04C2F301E1FF03D9FD
+        02B4F100ACF701AEF502AEF401AEF601AEF601AEF601AEF600AEF600AFF301AD
+        F103ADF20AD0FB00E3FA04DAFF00D7FF35D6DC00FF0000FF000000FF0000FF00
+        00FF001ECFFF00DEFF00E2FE0DCEFB01AAF802ABFA01AEF401AFF301AEF601AE
+        F701AEF601AEF600AAF702B5F10DDEFF05DFFF01D7FA02DBFE01D7FD01B0F702
+        A6FB00B0F400B0F301AEF701AEF601AEF601AEF601AEF600AFF402AFF502A7F3
+        07C2F902E4FC06DAFC05D7FF19D9EF00FF0000FF000000FF0000FF0000FF0010
+        D1FF00DCFF03E0FF02C5FA00A9F502AEF601AEF601AEF701AEF601AEF601AEF6
+        01AEF601ADF601ACF604B9F803D6FE01DFFF01DAFC06D6FF03BAF601A6F003AA
+        F103AFF500AEF701AEF601AEF601AEF601AEF601AEF601AEF600A9F503BAF804
+        DFFB02DCFC00DCFF2BCFFF00FF0000FF000000FF0000FF002DE0AD04D7FF00DC
+        FF04DFFF01BEF400A8F401ADF601AEF601AEF601AEF601AEF601AEF601AEF601
+        AFF500ADF800A6F401A9EC04C9F701DEFF03D9FF03DFFC00CEF505B2F503AAF6
+        00AEF601AEF601AEF601AEF601AEF601AEF601AEF601ABF603B3F303DAFB04DC
+        FF00DBFF22D2FF00FF0000FF000000FF0000FF0047D0F400DAFF03DCFF05DEFE
+        01BCF200A9F401ADF701AEF601AEF601AEF601AEF601AEF601AEF600ABF601B5
+        F308CDFD01B6F103C1F203DEFF00D9FB01DBFD08E3FF03D9FF00B5F501AAF601
+        AEF601AEF601AEF601AEF601AEF601AEF602ABF704AFF204D5FA07DBFF00D9FF
+        14D5FF00FF0000FF000000FF0000FF0039D4E400D6FF04DCFF05DCFE01B8F002
+        A8F502ADF701AEF601AEF601AEF601AEF601AEF601AEF600AAF701B4EE0ADEFD
+        05DDFF00D5FB03DEFC03D7FA01B2F20ABEFC05DDFE00BEF401A9F601AEF601AE
+        F601AEF601AEF601AEF600AEF603ABF704ACF304D3F908DCFF00D9FF10D5FF00
+        FF0000FF000000FF0000FF004CD0F400D8FF04DBFF05DBFF01B8F102A8F802AD
+        F701AEF601AEF601AEF601AEF601AEF601AEF601ADF700ADF206BEF509D5FD03
+        DFFE00DEFB05DBFD03B5F501A1F101B3F301B4F601ADF701AEF601AEF601AEF6
+        01AEF601AEF601AEF603ABF805ACF703D3FC05DCFF00DBFF14D4FF00FF0000FF
+        000000FF0000FF0029E1AE03D6FF02DBFF04DEFF01BDF301A8F501ADF601AEF6
+        01AEF601AEF601AEF601AEF601AEF601AEF602ADF600AAF000AFED04CCF906DB
+        FF08D8FF06DCFE01CCF601B2EF01AAF401AEF701AEF601AEF601AEF601AEF601
+        AEF601AEF601ABF704B0F503D8FB03DCFF00DBFF1FD2FF00FF0000FF000000FF
+        0000FF0000FF000DD3FF00DDFE03E0FF03C2F600A8F201ADF601AEF601AEF601
+        AEF601AEF601AEF601AEF601AEF602AFF502ADF600A6F107C0F607DDFF00D9FD
+        00DEFC02E6FF03D8FF01B3F501ABF601AEF601AEF601AEF601AEF601AEF601AE
+        F600AAF501B6F302DDFA02DCFD00DBFF2BD0FF00FF0000FF000000FF0000FF00
+        00FF001BD1FF00DEFD03E1FE04CAFA00AAF301ADF701AEF601AEF601AEF601AE
+        F601AEF601AEF601ADF600B0F201AFF200A8F406C1F803E2FE01D9F701BBF107
+        C4FA08DDFD01BCF601A9F601AEF601AEF601AEF601AEF601AEF601AEF700A8F3
+        02BFF702E2FC03DCFD00D9FF1AD8F300FF0000FF000000FF0000FF0000FF0019
+        D9FA04D7FF06DEFD01D7FB01ACF500AAF900AFF501AFF502AEF501AFF501AFF6
+        01ABF700ACF500AEF300ADF500A5F404C0F702E2FD02D8FB01B1F402A2F404B3
+        F401B3F600ABF601ADF602AFF502AEF500AEF600B0F301AFF405A6F106C7F906
+        E3FD08D9FE00D9FF2FD8DD00FF0000FF000000FF0000FF0000FF0023DDDD00D7
+        FF04DBFD08E0FC02BDF700A8F302AEF600AEF500AFF400AEF501B0F401B1F301
+        B1F101B2F001B1F301ABF004C3F402E1FF01D9FE01B8F301ABF301ACF001B2F0
+        01B3F100AFF302AFF502AEF500AEF500AFF300ACEF04B1F208D9FE02DFFB00DB
+        FF1CCEFF00FF0000FF0000FF000000FF0000FF0000FF0000FF0014D3FF00DAFF
+        09E0FE02D4FB01AEEB01ACF401ADF800B0F400ABF501B3F309CFFC08D2FD08D0
+        FD07D1FD07CFFD04D4FD00DCFD01DAFD04D2FE07CFFE07D1FE05D3FE0BD5FD08
+        C2F800ACF103AFF600AEF501ADF700ABEE05C6F705E2FF00DDFB02D8FF2CD1FF
+        00FF0000FF0000FF000000FF0000FF0000FF0000FF0036D1FF00DAFF08DAFF01
+        DFFF03C1F200A7F105ABFB00B0F300A9F702B5F204E2FC01E5FF02E2FF01E4FD
+        01E4FE02E1FF02DFFF00E0FE01E2FF01E3FF00E1FF00E4FE07E7FF08CDFA00AC
+        EF03B0F500AEF501A7F701B5F407DCFF02DDFE01D9FF08D2FF00FF0000FF0000
+        FF0000FF000000FF0000FF0000FF0000FF0000FF0016D1FF07D7FF00DFFE03DB
+        FE00B7F102A9F303ADF802ABF500B5F100CCF902CBFB03CAFB00CCF801CCF801
+        CAFA04C9FB03CAFB01CBF900CBFA00CAFB00CBF803CEFB03BEF600ADF102AEF7
+        00ACF300ADEF08CFFC05E1FF01DDFE00D9FF38C6FF00FF0000FF0000FF0000FF
+        000000FF0000FF0000FF0000FF0000FF0042CDFF00DAFF07D9FE06E0FF05D4FA
+        00B0EE01A8F603AEF601AEF300ABF602AAF503ABF400ABF300ABF300ACF300AC
+        F200ACF200ABF200ABF200ACF200ACF200ABF200ACF504ADFA02A8F700ABED05
+        CCF606E2FF03DCFE03DAFF02DAFF00FF0000FF0000FF0000FF0000FF000000FF
+        0000FF0000FF0000FF0000FF0000FF001CD5FF00DBFF04DAFE08DCFF0BD1FD00
+        B3EE01A6F103AAFB01ACF701AEF601B0F401B0F301B0F301B0F301B0F301B0F3
+        01B0F301B0F301B0F300B0F200B0F301AEF604A7F801AAF404CAF804DDFF00DC
+        FE00D9FF00D7FF36D6EF00FF0000FF0000FF0000FF0000FF000000FF0000FF00
+        00FF0000FF0000FF0000FF0000FF001BD2FF00DCFF03DAFE08DEFF06D8FC01BC
+        F300A9EE01AAF101AEF600AFF502AFF301AFF302AFF302AFF301AFF301AFF302
+        AFF302AFF301AEF400ADF300ACED01B6F108CFFD05DEFF00DDFC00DCFF00D7FF
+        29D4F500FF0000FF0000FF0000FF0000FF0000FF000000FF0000FF0000FF0000
+        FF0000FF0000FF0000FF0000FF0017D1FF00DDFF01DAFD05DEFF05DDFF05CCF8
+        01B5F002A8F400A7F501ABF303ADF401ADF403ADF503ACF402ACF301ACF300AA
+        F004A6F503ADF404C5F506DDFE03E0FD03DBFC00DBFC00D9FF3AC9FF00FF0000
+        FF0000FF0000FF0000FF0000FF0000FF000000FF0000FF0000FF0000FF0000FF
+        0000FF0000FF0000FF0000FF0023D0FF00DAFF02D7FF01DCFF05E2FE01DCFC01
+        CBFB04B9F804B2F602B0F300AEF100ACF102ABF202ADF102B3F305BAF604C4FA
+        06D5FE04E1FF00DFFF00DDFD05DBFF00D6FF2ED2FF00FF0000FF0000FF0000FF
+        0000FF0000FF0000FF0000FF000000FF0000FF0000FF0000FF0000FF0000FF00
+        00FF0000FF0000FF0000FF0024D8FF07D6FF00DBFF00DCFC04DDFC0AE0FE09DD
+        FF0AD6FF06D3FB04D0F904CEF907CEFB08D2FC06D6FD06DCFF09DFFF04DFFE04
+        DDFD00DAFE01D8FF0BD8FF3CD6E200FF0000FF0000FF0000FF0000FF0000FF00
+        00FF0000FF0000FF000000FF0000FF0000FF0000FF0000FF0000FF0000FF0000
+        FF0000FF0000FF0000FF0000FF0028CFFF03D5FF00DAFF05D8FF09D9FE00DFFE
+        00E0FE00E1FE00E1FF02DFFF01DEFF00DEFD00DFFB06D8FF00D8FF00D9FF10D3
+        FF2FCEFF00FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000
+        FF0000FF000000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF
+        0000FF0000FF0000FF0000FF0000FF0028D0FF0DD3FF00DBFF00DAFF00DBFF00
+        DDFE00DBFF00DAFF00DCFF00DBFF00DCFF05D8FF22CEFF39CFFF00FF0000FF00
+        00FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF
+        000000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF00
+        00FF0000FF0000FF0000FF0000FF0000FF004CCDF024D8ED28D4FF30CBFF28CD
+        FF24CFFF2ECDFF2CD4FF38D2F134E0AB00FF0000FF0000FF0000FF0000FF0000
+        FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF000000FF
+        0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000
+        FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF00
+        00FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF
+        0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF000000FF0000FF00
+        00FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF
+        0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000
+        FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF00
+        00FF0000FF0000FF0000FF0000FF0000FF0000FF000000FF0000FF0000FF0000
+        FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF00
+        00FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF
+        0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000FF0000
+        FF0000FF0000FF0000FF0000FF0000FF0000}
+      Stretch = True
+      Transparent = True
     end
   end
   object tcp: TWSocket
@@ -2387,47 +1018,45 @@ object Form1: TForm1
     Left = 928
     Top = 832
   end
-  object SE_field: SE_Engine
-    PixelCollision = False
-    IsoPriority = False
-    Priority = 0
-    Theater = SE_Theater1
-    Left = 632
-    Top = 944
-  end
   object SE_players: SE_Engine
     PixelCollision = False
-    IsoPriority = False
-    Priority = 1
-    Theater = SE_Theater1
-    Left = 680
-    Top = 944
-  end
-  object SE_ball: SE_Engine
-    PixelCollision = False
+    HiddenSpritesMouseMove = False
     IsoPriority = False
     Priority = 2
     Theater = SE_Theater1
+    Left = 496
+    Top = 808
+  end
+  object SE_ball: SE_Engine
+    ClickSprites = False
+    PixelCollision = False
+    HiddenSpritesMouseMove = False
+    IsoPriority = False
+    Priority = 3
+    Theater = SE_Theater1
     OnSpriteDestinationReached = SE_ballSpriteDestinationReached
+    OnSpritePartialMove = SE_ballSpritePartialMove
     Left = 720
     Top = 944
   end
   object SE_numbers: SE_Engine
     ClickSprites = False
     PixelCollision = False
+    HiddenSpritesMouseMove = False
     IsoPriority = False
-    Priority = 3
+    Priority = 4
     Theater = SE_Theater1
-    Left = 768
+    Left = 776
     Top = 944
   end
   object SE_interface: SE_Engine
     ClickSprites = False
     PixelCollision = False
+    HiddenSpritesMouseMove = False
     IsoPriority = False
-    Priority = 3
+    Priority = 4
     Theater = SE_Theater1
-    Left = 816
+    Left = 840
     Top = 944
   end
   object mainThread: SE_ThreadTimer
@@ -2452,5 +1081,228 @@ object Form1: TForm1
     Version = '1.1.3.0'
     Left = 1696
     Top = 592
+  end
+  object SE_FieldPoints: SE_Engine
+    PixelCollision = False
+    HiddenSpritesMouseMove = True
+    IsoPriority = False
+    Priority = 1
+    Theater = SE_Theater1
+    Left = 496
+    Top = 944
+  end
+  object SE_BackGround: SE_Engine
+    ClickSprites = False
+    PixelCollision = False
+    HiddenSpritesMouseMove = False
+    IsoPriority = False
+    Priority = 0
+    Theater = SE_Theater1
+    Left = 496
+    Top = 752
+  end
+  object SE_FieldPointsReserve: SE_Engine
+    PixelCollision = False
+    HiddenSpritesMouseMove = True
+    IsoPriority = False
+    Priority = 1
+    Theater = SE_Theater1
+    Left = 496
+    Top = 904
+  end
+  object SE_ShotCells: SE_Engine
+    PixelCollision = False
+    HiddenSpritesMouseMove = False
+    IsoPriority = False
+    Priority = 1
+    Theater = SE_Theater1
+    Left = 496
+    Top = 1008
+  end
+  object SE_FieldPointsSpecial: SE_Engine
+    PixelCollision = False
+    HiddenSpritesMouseMove = False
+    IsoPriority = False
+    Priority = 1
+    Theater = SE_Theater1
+    Left = 496
+    Top = 856
+  end
+  object SE_MainInterface: SE_Engine
+    PixelCollision = False
+    HiddenSpritesMouseMove = False
+    IsoPriority = False
+    Priority = 5
+    Theater = SE_Theater1
+    RenderBitmap = VisibleRender
+    Left = 296
+    Top = 816
+  end
+  object SE_PlayerDetails: SE_Engine
+    PixelCollision = False
+    HiddenSpritesMouseMove = False
+    IsoPriority = False
+    Priority = 5
+    Theater = SE_Theater1
+    Left = 376
+    Top = 816
+  end
+  object SE_Aml: SE_Engine
+    PixelCollision = False
+    HiddenSpritesMouseMove = False
+    IsoPriority = False
+    Priority = 5
+    Theater = SE_Theater1
+    RenderBitmap = VisibleRender
+    Left = 72
+    Top = 776
+  end
+  object SE_Market: SE_Engine
+    PixelCollision = False
+    HiddenSpritesMouseMove = False
+    IsoPriority = False
+    Priority = 5
+    Theater = SE_Theater1
+    RenderBitmap = VisibleRender
+    Left = 72
+    Top = 840
+  end
+  object SE_Spectator: SE_Engine
+    PixelCollision = False
+    HiddenSpritesMouseMove = False
+    IsoPriority = False
+    Priority = 5
+    Theater = SE_Theater1
+    RenderBitmap = VisibleRender
+    Left = 72
+    Top = 904
+  end
+  object SE_Score: SE_Engine
+    PixelCollision = False
+    HiddenSpritesMouseMove = False
+    IsoPriority = False
+    Priority = 5
+    Theater = SE_Theater1
+    RenderBitmap = VisibleRender
+    Left = 72
+    Top = 968
+  end
+  object SE_Live: SE_Engine
+    PixelCollision = False
+    HiddenSpritesMouseMove = False
+    IsoPriority = False
+    Priority = 5
+    Theater = SE_Theater1
+    Left = 128
+    Top = 904
+  end
+  object SE_CountryTeam: SE_Engine
+    PixelCollision = False
+    HiddenSpritesMouseMove = False
+    IsoPriority = False
+    Priority = 5
+    Theater = SE_Theater1
+    RenderBitmap = VisibleRender
+    Left = 160
+    Top = 712
+  end
+  object SE_MainStats: SE_Engine
+    ClickSprites = False
+    PixelCollision = False
+    HiddenSpritesMouseMove = False
+    IsoPriority = False
+    Priority = 5
+    Theater = SE_Theater1
+    RenderBitmap = VisibleRender
+    Left = 216
+    Top = 816
+  end
+  object SE_Loading: SE_Engine
+    PixelCollision = False
+    HiddenSpritesMouseMove = False
+    IsoPriority = False
+    Priority = 10
+    Theater = SE_Theater1
+    RenderBitmap = VisibleRender
+    Left = 296
+    Top = 696
+  end
+  object SE_Skills: SE_Engine
+    PixelCollision = False
+    HiddenSpritesMouseMove = False
+    IsoPriority = False
+    Priority = 6
+    Theater = SE_Theater1
+    Left = 568
+    Top = 808
+  end
+  object SE_Uniform: SE_Engine
+    PixelCollision = False
+    HiddenSpritesMouseMove = False
+    IsoPriority = False
+    Priority = 5
+    Theater = SE_Theater1
+    Left = 280
+    Top = 944
+  end
+  object SE_TacticsSubs: SE_Engine
+    PixelCollision = False
+    HiddenSpritesMouseMove = False
+    IsoPriority = False
+    Priority = 5
+    Theater = SE_Theater1
+    RenderBitmap = VisibleRender
+    Left = 176
+    Top = 904
+  end
+  object SE_LifeSpan: SE_Engine
+    ClickSprites = False
+    PixelCollision = False
+    HiddenSpritesMouseMove = False
+    IsoPriority = False
+    Priority = 5
+    Theater = SE_Theater1
+    RenderBitmap = VisibleRender
+    Left = 280
+    Top = 1040
+  end
+  object SE_FieldPointsOut: SE_Engine
+    PixelCollision = False
+    HiddenSpritesMouseMove = False
+    IsoPriority = False
+    Priority = 1
+    Theater = SE_Theater1
+    Left = 560
+    Top = 904
+  end
+  object SE_Green: SE_Engine
+    PixelCollision = False
+    HiddenSpritesMouseMove = False
+    IsoPriority = False
+    Priority = 7
+    Theater = SE_Theater1
+    Left = 640
+    Top = 808
+  end
+  object SE_RANK: SE_Engine
+    ClickSprites = False
+    PixelCollision = False
+    HiddenSpritesMouseMove = False
+    IsoPriority = False
+    Priority = 5
+    Theater = SE_Theater1
+    RenderBitmap = VisibleRender
+    Left = 296
+    Top = 760
+  end
+  object SE_GameOver: SE_Engine
+    PixelCollision = False
+    HiddenSpritesMouseMove = False
+    IsoPriority = False
+    Priority = 11
+    Theater = SE_Theater1
+    RenderBitmap = VisibleRender
+    Left = 360
+    Top = 704
   end
 end

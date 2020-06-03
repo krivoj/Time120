@@ -11,6 +11,8 @@ attribute_Ball.Control=Control
 attribute_Shot=Shot
 attribute_Heading=Heading
 attribute_Stamina=Stamina
+attribute_Fitness=Fitness
+attribute_Morale=Morale
 
 skill_Move=Move
 skill_Short.Passing=Short Passing
@@ -22,9 +24,9 @@ skill_Dribbling=Dribbling
 skill_Protection=Protection
 skill_Tackle=Tackle
 skill_Pressing=Pressing
-skill_Pass=Pass.
-skill_Stay=Stay.
-skill_Free=free.
+skill_Pass=End Turn
+skill_Stay=Stay
+skill_Free=free
 skill_Corner.Kick=Corner Kick
 skill_Volley=Volley
 skill_BuffD=Buff reparto Difesa
@@ -68,12 +70,12 @@ talent_super_dribbling=Super Dribbling
 talent_buff_defense=Buff Defense
 talent_buff_middle=Buff Middle
 talent_buff_forward=Buff Forward
-talent_heading=Colpi di testa
+talent_heading=Heading
 talent_finishing=Finalizzazione
-talent_diving=Cascatore
+talent_diving=Diving
 
-talent_gkmiracle=Miracolo.
-talent_gkpenalty=Specialista rigori.
+talent_gkmiracle=Miracle.
+talent_gkpenalty=Penalty God.
 
 role_G=Gk
 role_D=Def
@@ -151,12 +153,12 @@ descr_talent_gkpenalty=Ha una chance del 10% di ottenere +1 Difesa sui rigori.
 
 lbl_Talent=Talento
 
-lbl_Talent=Talent
+lbl_Talents=Talents
 lbl_Role=Role
 lbl_Surname=Surname
 lbl_Back=Back
 lbl_Play=Play
-lbl_End Turn=Pass
+lbl_EndTurn=Pass
 lbl_Round=Turn
 lbl_Round2=Round
 lbl_Formation=Formation
@@ -168,6 +170,10 @@ lbl_Minute=Minute
 lbl_Corner=Corner
 lbl_GameOver=Game Over
 lbl_AudioStadium=Audio Stadium
+lbl_yourturn=Your Turn.
+lbl_endturn=Finished.
+lbl_M=Man
+lbl_F=Woman
 
 lbl_Tactics=Tactics
 lbl_Tactic=Tactic
@@ -192,6 +198,7 @@ lbl_Wait=Wait
 lbl_MarketValue=Value
 lbl_Age=Age
 lbl_MatchesLeft=Matches left
+lbl_MatchesLeft2=M. Left
 lbl_Confirm=Confirm
 lbl_Rounds_left=Rounds left
 lbl_Freekick=Free Kick
@@ -202,7 +209,9 @@ lbl_errorformation=Invalid Formation
 lbl_watchlive=Watch match
 lbl_Archive=Archive
 lbl_waitingwatchlive=Waiting for signal
+lbl_loading=Loading...
 
+lbl_Levelup=Level up!
 lbl_Dismiss=Dismiss
 lbl_ConfirmDismiss=Are you joking? 
 
@@ -215,13 +224,18 @@ lbl_Shorts=Shorts
 lbl_Socks=Socks
 lbl_Home=Home
 lbl_Away=Away
+lbl_Close=Close
+lbl_endgame=Game Over
 
+lbl_Country=Country
+lbl_Country2=Country
 lbl_Sell=Sell
 lbl_Buy=Buy
 lbl_Cancel=Cancel
 lbl_CancelSell=Cancel Sell
 lbl_ErrorMarketMax=Max 3 Player on Market
 lbl_Market=Market
+lbl_Info=Info
 lbl_Confirm=Confirm
 lbl_Price=Price
 lbl_Search=Search
@@ -229,7 +243,10 @@ lbl_MaxValue=max value
 warning_nosellgk=Non puoi vendere l'unico portiere che hai.
 warning_max18=Non puoi avere piu' di 18 giocatori.
 warning_nosell_lowprice=Non puoi vendere un giocatore ad un costo inferiore al suo valore di mercato.
+lbl_ConfirmBuy=Are you sure?
 
 lbl_ConfirmTeam=Confirm your Team.
-
+lbl_Uniform1=Color 1
+lbl_Uniform2=Color 2
+lbl_UniformNormal=Normal
 

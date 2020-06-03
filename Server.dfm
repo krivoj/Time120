@@ -122,40 +122,6 @@ object FormServer: TFormServer
     TabOrder = 9
     OnClick = CheckBox2Click
   end
-  object SE_GridLiveMatches: SE_Grid
-    Left = 8
-    Top = 8
-    Width = 1081
-    Height = 225
-    MouseScrollRate = 1.000000000000000000
-    MouseWheelInvert = False
-    MouseWheelValue = 10
-    MouseWheelZoom = False
-    MousePan = True
-    MouseScroll = False
-    BackColor = clNavy
-    AnimationInterval = 100
-    GridInfoCell = False
-    GridVisible = False
-    GridColor = clSilver
-    GridCellWidth = 40
-    GridCellHeight = 30
-    GridCellsX = 10
-    GridCellsY = 4
-    GridHexSmallWidth = 10
-    CollisionDelay = 0
-    ShowPerformance = False
-    VirtualWidth = 212
-    Virtualheight = 212
-    TabOrder = 10
-    CellBorder = CellBorderNone
-    CellBorderColor = clGray
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -11
-    Font.Name = 'Verdana'
-    Font.Style = []
-  end
   object CheckBoxActiveMacthes: TCheckBox
     Left = 8
     Top = 260
@@ -164,8 +130,7 @@ object FormServer: TFormServer
     Caption = 'Show Active Matches'
     Checked = True
     State = cbChecked
-    TabOrder = 11
-    OnClick = CheckBoxActiveMacthesClick
+    TabOrder = 10
   end
   object CheckBox1: TCheckBox
     Left = 8
@@ -173,7 +138,7 @@ object FormServer: TFormServer
     Width = 124
     Height = 17
     Caption = 'Create Bots Active'
-    TabOrder = 12
+    TabOrder = 11
   end
   object Edit1: TEdit
     Left = 138
@@ -182,7 +147,7 @@ object FormServer: TFormServer
     Height = 21
     Alignment = taRightJustify
     NumbersOnly = True
-    TabOrder = 13
+    TabOrder = 12
     Text = '0'
   end
   object edit4: TEdit
@@ -192,7 +157,7 @@ object FormServer: TFormServer
     Height = 21
     Alignment = taRightJustify
     NumbersOnly = True
-    TabOrder = 14
+    TabOrder = 13
     Text = '1000'
   end
   object Edit2: TEdit
@@ -202,7 +167,7 @@ object FormServer: TFormServer
     Height = 21
     Alignment = taRightJustify
     NumbersOnly = True
-    TabOrder = 15
+    TabOrder = 14
     Text = '3000'
   end
   object Edit3: TEdit
@@ -212,24 +177,15 @@ object FormServer: TFormServer
     Height = 21
     Alignment = taRightJustify
     NumbersOnly = True
-    TabOrder = 16
+    TabOrder = 15
     Text = '12000'
-  end
-  object Button4: TButton
-    Left = 424
-    Top = 493
-    Width = 121
-    Height = 25
-    Caption = 'reset formation test100'
-    TabOrder = 17
-    OnClick = Button4Click
   end
   object Panel1: TPanel
     Left = 201
     Top = 358
     Width = 185
     Height = 98
-    TabOrder = 18
+    TabOrder = 16
     object Button5: TButton
       Left = 8
       Top = 59
@@ -262,7 +218,7 @@ object FormServer: TFormServer
     Width = 121
     Height = 25
     Caption = 'load from replay(lastmove)'
-    TabOrder = 19
+    TabOrder = 17
     OnClick = Button6Click
   end
   object Button7: TButton
@@ -271,7 +227,7 @@ object FormServer: TFormServer
     Width = 121
     Height = 25
     Caption = 'LevelUp Talent(FORCETALENT)'
-    TabOrder = 20
+    TabOrder = 18
     OnClick = Button7Click
   end
   object Button8: TButton
@@ -280,8 +236,74 @@ object FormServer: TFormServer
     Width = 121
     Height = 25
     Caption = 'LevelUp Talent 2 (FORCETALENT)'
-    TabOrder = 21
+    TabOrder = 19
     OnClick = Button8Click
+  end
+  object StringGrid1: TStringGrid
+    Left = 8
+    Top = 8
+    Width = 1009
+    Height = 233
+    DefaultRowHeight = 18
+    FixedCols = 0
+    FixedRows = 0
+    TabOrder = 20
+  end
+  object Button4: TButton
+    Left = 233
+    Top = 483
+    Width = 121
+    Height = 25
+    Caption = 'Maintenance'
+    TabOrder = 21
+    OnClick = Button4Click
+  end
+  object Button9: TButton
+    Left = 233
+    Top = 514
+    Width = 121
+    Height = 25
+    Caption = 'Pause All except'
+    TabOrder = 22
+    OnClick = Button9Click
+  end
+  object Edit7: TEdit
+    Left = 233
+    Top = 545
+    Width = 65
+    Height = 21
+    Alignment = taCenter
+    AutoSize = False
+    NumbersOnly = True
+    TabOrder = 23
+    Text = '0'
+  end
+  object Edit8: TEdit
+    Left = 304
+    Top = 545
+    Width = 65
+    Height = 21
+    Alignment = taCenter
+    AutoSize = False
+    NumbersOnly = True
+    TabOrder = 24
+    Text = '0'
+  end
+  object Button10: TButton
+    Left = 73
+    Top = 570
+    Width = 121
+    Height = 25
+    Caption = 'rnd'
+    TabOrder = 25
+    OnClick = Button10Click
+  end
+  object ProgressBar1: TProgressBar
+    Left = 424
+    Top = 493
+    Width = 121
+    Height = 17
+    TabOrder = 26
   end
   object Tcpserver: TWSocketThrdServer
     LineLimit = 1024
@@ -324,7 +346,7 @@ object FormServer: TFormServer
   end
   object threadBot: SE_ThreadTimer
     Enabled = True
-    Interval = 3000
+    Interval = 500
     KeepAlive = True
     OnTimer = threadBotTimer
     Left = 104

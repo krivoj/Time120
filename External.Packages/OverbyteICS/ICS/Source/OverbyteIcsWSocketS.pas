@@ -177,6 +177,8 @@ uses
 const
     WSocketServerVersion     = 837;
     CopyRight : String       = ' TWSocketServer (c) 1999-2016 F. Piette V8.37 ';
+type
+  TGuidteams = array[1..2] of Integer;
 
 type
     TCustomWSocketServer       = class;
@@ -216,7 +218,7 @@ type
         SelectedDeck: array [0..1] of string;
 
         GameType: string[2];
-        GuidTeam: Integer;
+        GuidTeams: TGuidTeams;
         WorldTeam: Integer;
         teamName: string;
         UserName: string;
@@ -225,6 +227,8 @@ type
         Marked: boolean;
         nextHA: integer;
         Rank: integer;
+        ActiveGender : Char;
+        ActiveGenderN : byte;
         mi: Integer;
         sreason: string;
         Processing: Boolean;
