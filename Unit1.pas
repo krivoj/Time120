@@ -22,7 +22,7 @@
   }
   { TODO -ctodoreali :
     cl_splash.gameover aggiungere miGain
-    esagoni dei colori blu, vila ecc... anche stelle. e stelle in showgameover
+    esagoni dei colori blu, viola ecc... anche stelle. e stelle in showgameover
     dopo rank1 comincia il campionato a 38 gare per i punti. se ne fa 70, vince la coppa
     aggiungere frecce doppie a nuovo team
     fare passaggio rank sul server
@@ -2064,7 +2064,7 @@ begin
   PanelDismiss.Top := aBtnSprite.Position.Y - (aBtnSprite.BMPCurrentFrame.Height div 2);
 
 // informative age e marketvalue , forma, morale nazionalità
-  bmp := SE_Bitmap.Create ( WGenericInfo,20 );
+  bmp := SE_Bitmap.Create ( WGenericInfo,22 );
   bmp.Canvas.Brush.Color := clBlue;
   bmp.Canvas.FillRect( Rect(0,0,bmp.Width,bmp.Height) );
   aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btn_country',1,1,1000,1040,200,true );
@@ -2074,7 +2074,7 @@ begin
   aSprite.Priority := 1200;
   bmp.Free;
 
-  bmp := SE_Bitmap.Create ( WGenericInfo,20 );
+  bmp := SE_Bitmap.Create ( WGenericInfo,22 );
   bmp.Canvas.Brush.Color := clBlue;
   bmp.Canvas.FillRect( Rect(0,0,bmp.Width,bmp.Height) );
   aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btn_age',1,1,1000,1040,232,true );
@@ -2086,7 +2086,7 @@ begin
   aSprite.Priority := 1200;
   bmp.Free;
 
-  bmp := SE_Bitmap.Create ( WGenericInfo,20 );
+  bmp := SE_Bitmap.Create ( WGenericInfo,22 );
   bmp.Canvas.Brush.Color := clBlue;
   bmp.Canvas.FillRect( Rect(0,0,bmp.Width,bmp.Height) );
   aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btn_matchesleft',1,1,1000,1040,264,true );
@@ -2098,7 +2098,7 @@ begin
   aSprite.Priority := 1200;
   bmp.Free;
 
-  bmp := SE_Bitmap.Create ( WGenericInfo,20 );
+  bmp := SE_Bitmap.Create ( WGenericInfo,22 );
   bmp.Canvas.Brush.Color := clBlue;
   bmp.Canvas.FillRect( Rect(0,0,bmp.Width,bmp.Height) );
   aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btn_marketvalue',1,1,1000,1040,296,true );
@@ -2110,7 +2110,7 @@ begin
   aSprite.Priority := 1200;
   bmp.Free;
 
-  bmp := SE_Bitmap.Create ( WGenericInfo,20 );
+  bmp := SE_Bitmap.Create ( WGenericInfo,22 );
   bmp.Canvas.Brush.Color := clBlue;
   bmp.Canvas.FillRect( Rect(0,0,bmp.Width,bmp.Height) );
   aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btn_fitness',1,1,1000,1040,328,true );
@@ -2120,7 +2120,7 @@ begin
   aSprite.Priority := 1200;
   bmp.Free;
 
-  bmp := SE_Bitmap.Create ( WGenericInfo,20 );
+  bmp := SE_Bitmap.Create ( WGenericInfo,22 );
   bmp.Canvas.Brush.Color := clBlue;
   bmp.Canvas.FillRect( Rect(0,0,bmp.Width,bmp.Height) );
   aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btn_morale',1,1,1000,1040,360,true );
@@ -2130,7 +2130,7 @@ begin
   aSprite.Priority := 1200;
   bmp.Free;
 
-  bmp := SE_Bitmap.Create ( WGenericInfo,20 );
+  bmp := SE_Bitmap.Create ( WGenericInfo,22 );
   bmp.Canvas.Brush.Color := clBlue;
   bmp.Canvas.FillRect( Rect(0,0,bmp.Width,bmp.Height) );
   aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btn_talents',1,1,1000,1040,392,true );
@@ -6844,16 +6844,16 @@ begin
 
         else if tsCmd[0]= 'sc_yellow' then begin
 
-          AnimationScript.TsAdd  ( 'cl_yellow,' + tsCmd[1]);
+          AnimationScript.TsAdd  ( 'cl_yellow,' + tsCmd[1] + ',' + tsCmd[2] + ',' + tsCmd[3]);
         end
         else if tsCmd[0]= 'sc_red' then begin
-          AnimationScript.TsAdd  ( 'cl_red,' + tsCmd[1]);
+          AnimationScript.TsAdd  ( 'cl_red,' + tsCmd[1] + ',' + tsCmd[2] + ',' + tsCmd[3]);
         end
         else if tsCmd[0]= 'sc_yellowred' then begin
-          AnimationScript.TsAdd  ( 'cl_yellowred,' + tsCmd[1]);
+          AnimationScript.TsAdd  ( 'cl_yellowred,' + tsCmd[1] + ',' + tsCmd[2] + ',' + tsCmd[3]);;
         end
         else if tsCmd[0]= 'sc_injured' then begin
-          AnimationScript.TsAdd  ( 'cl_injured,' + tsCmd[1]);
+          AnimationScript.TsAdd  ( 'cl_injured,' + tsCmd[1]+ ',' + tsCmd[2] + ',' + tsCmd[3]);;
         end
         else if tsCmd[0]= 'sc_FREEKICK1.FKA1' then begin
           AnimationScript.Tsadd ('cl_wait,' + IntTostr(( 3500)));
@@ -13778,9 +13778,9 @@ begin
 
     cBitmap := SE_Bitmap.Create ( dir_player + '\' + MyActiveGender + '\'+IntTostr(Country) +'\'+IntTostr(face) +'.bmp');
     cBitmap.Stretch(W,H);
-    cBitmap.CopyRectTo( aSprite.SubSprites[1].lBmp, 0,0,0,0,W,H,True,0 );
+    aSubSprite :=  aSprite.FindSubSprite('face');
+    cBitmap.CopyRectTo( aSubSprite.lBmp, 0,0,0,0,W,H,True,0 );
     cBitmap.Free;
-
 
 
     cBitmap := SE_Bitmap.Create (60,40);
@@ -13805,7 +13805,8 @@ begin
       end;
     end;
     cBitmap.Stretch(40,32);
-    cBitmap.CopyRectTo( aSprite.SubSprites[0].lBmp, 0,0,0,0,40,32,False,0 );
+    aSubSprite :=  aSprite.FindSubSprite('country');
+    cBitmap.CopyRectTo( aSubSprite.lBmp, 0,0,0,0,40,32,False,0 );
     cBitmap.Free;
 
 
@@ -13816,7 +13817,8 @@ begin
 
 
     cBitmap := SE_Bitmap.Create ( dir_interface + IntToStr (Fitness)+'.bmp' ) ;
-    cBitmap.CopyRectTo( aSprite.SubSprites[2].lBmp, 0,0,0,0,W,H,True,0 );
+    aSubSprite :=  aSprite.FindSubSprite('fitness');
+    cBitmap.CopyRectTo( aSubSprite.lBmp, 0,0,0,0,W,H,True,0 );
     cBitmap.Free;
 
     // morale non  lo mostro

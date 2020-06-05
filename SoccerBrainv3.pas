@@ -10785,7 +10785,7 @@ begin
             if aRnd <= Card then begin // cartellino
               aRnd := RndGenerate(100);
               if aRnd <= redCard then begin // cartellino rosso
-                  TsScript.add ('sc_red,' + aPlayer.ids ) ;
+                  TsScript.add ('sc_red,' + aPlayer.ids + ',' + IntTostr(Ball.Player.CellX)+',' + IntTostr(Ball.Player.CellY)) ;
                   aPlayer.Role := 'N';
                   aPlayer.RedCard :=  1;
                   aPlayer.Gameover := true;
@@ -10800,10 +10800,10 @@ begin
                   aPlayer.YellowCard :=  aPlayer.YellowCard + 1;
                   MatchInfo.Add( IntToStr(fminute) + '.yc.' + aPlayer.ids);
                   if aPlayer.YellowCard = 1 then
-                    TsScript.add ('sc_yellow,' + aPlayer.ids )
+                    TsScript.add ('sc_yellow,' + aPlayer.ids + ',' + IntTostr(Ball.Player.CellX)+',' + IntTostr(Ball.Player.CellY))
 
                   else if aPlayer.YellowCard = 2 then begin
-                    TsScript.add ('sc_yellowred,' + aPlayer.ids ) ;
+                    TsScript.add ('sc_yellowred,' + aPlayer.ids +',' + IntTostr(Ball.Player.CellX)+',' + IntTostr(Ball.Player.CellY) ) ;
                     aPlayer.Role := 'N';
                     aPlayer.Gameover := true;
                     //layer.RedCard :=  1;  no redcard diretto
@@ -10816,7 +10816,7 @@ begin
               end;
             end;
             if aRnd <= injured then begin
-                    TsScript.add ('sc_injured,' + Ball.Player.ids ) ;
+                    TsScript.add ('sc_injured,' + Ball.Player.ids +',' + IntTostr(Ball.Player.CellX)+',' + IntTostr(Ball.Player.CellY) ) ;
                     Ball.Player.CanMove := False;
 //                    aPlayer.CanSkill := False;
                     Ball.Player.Stamina := 0;

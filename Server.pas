@@ -4751,6 +4751,7 @@ begin
   // DIF - MID - FOR
     pcount := 2; // dopo il gk
     af:= FormationsPreset[ RndGenerate0( FormationsPreset.Count -1 )];
+   // af:= FormationsPreset[ FormationsPreset.Count -1 ];
 
     lstPlayers.sort(TComparer<TSoccerPlayer>.Construct(
     function (const L, R: TSoccerPlayer): integer
@@ -7216,6 +7217,23 @@ begin
   af.cells[10]:= Point (2,3);
   af.cells[11]:= Point (4,3);
 
+  // 6 attaccanti
+  FormationsPreset.add(af);
+
+  aF.d := 2; af.m:=2; aF.f:=6;
+  af.cells[2]:= Point (4,9);
+  af.cells[3]:= Point (2,9);
+
+  af.cells[4]:= Point (3,6);
+  af.cells[5]:= Point (0,6);
+
+  af.cells[6]:= Point (0,3);
+  af.cells[7]:= Point (1,3);
+  af.cells[8]:= Point (2,3); // cella obbligata
+  af.cells[9]:= Point (3,3);
+  af.cells[10]:= Point (4,3);
+  af.cells[11]:= Point (5,3);
+
   FormationsPreset.add(af);
 
 end;
@@ -7991,6 +8009,7 @@ var
   ConnGame : TMyConnection ;
   qPlayers :  TMyQuery;
   ValidPlayer: TValidPlayer;
+  alvlUp: TLevelUp;
 begin
 // cicla per tutti i player del db e prova anche senza punti xp necessari a livellare un talento random
 // copia e incolla F e poi M
@@ -8009,7 +8028,7 @@ begin
   qPlayers.Execute ;
 
 
-  for I := qPlayers.RecordCount -1 downto 0 do begin
+  for I := 0 to qPlayers.RecordCount -1 do begin
 
     ValidPlayer.Age:= Trunc(  qPlayers.FieldByName ('Matches_Played').AsInteger  div SEASON_MATCHES) + 18 ;
     ValidPlayer.talentID1 := qPlayers.FieldByName ('talentid1').AsInteger;
@@ -8041,9 +8060,13 @@ begin
     end;
 
 
-    TrylevelUpTalent('f', qPlayers.FieldByName('guid').AsInteger, RndGenerate(NUM_TALENT), ValidPlayer  );
+    alvlUp := TrylevelUpTalent('f', qPlayers.FieldByName('guid').AsInteger, RndGenerate(NUM_TALENT), ValidPlayer  );
+   // if alvlUp.value then
+   //   Memo1.Lines.Add('lvlup!');
+    ProgressBar1.Position :=  (((i * 100 ) div qPlayers.RecordCount) div 2) ;
 
     qPlayers.Next;
+
   end;
 
 
@@ -8069,7 +8092,7 @@ begin
   qPlayers.Execute ;
 
 
-  for I := qPlayers.RecordCount -1 downto 0 do begin
+  for I := 0 to qPlayers.RecordCount -1 do begin
 
     ValidPlayer.Age:= Trunc(  qPlayers.FieldByName ('Matches_Played').AsInteger  div SEASON_MATCHES) + 18 ;
     ValidPlayer.talentID1 := qPlayers.FieldByName ('talentid1').AsInteger;
@@ -8101,11 +8124,15 @@ begin
     end;
 
 
-    TrylevelUpTalent('m', qPlayers.FieldByName('guid').AsInteger, RndGenerate(NUM_TALENT), ValidPlayer  );
+    alvlUp := TrylevelUpTalent('m', qPlayers.FieldByName('guid').AsInteger, RndGenerate(NUM_TALENT), ValidPlayer  );
+  //  if alvlUp.value then
+   //   Memo1.Lines.Add('lvlup!');
 
+    ProgressBar1.Position :=  (i * 100 ) div qPlayers.RecordCount;
     qPlayers.Next;
   end;
 
+  ProgressBar1.Position :=  0;
   qPlayers.Free;
   Conngame.Connected:= False;
   Conngame.Free;
@@ -8121,6 +8148,7 @@ var
   ConnGame : TMyConnection ;
   qPlayers :  TMyQuery;
   ValidPlayer: TValidPlayer;
+  alvlUp: TLevelUp;
   label retry;
 begin
 // cicla per tutti i player del db che hanno il talento1 e cerca di ottenere un talent 2
@@ -8141,7 +8169,7 @@ begin
   qPlayers.Execute ;
 
 
-  for I := qPlayers.RecordCount -1 downto 0 do begin
+  for I := 0 to qPlayers.RecordCount -1 do begin
 
     ValidPlayer.Age:= Trunc(  qPlayers.FieldByName ('Matches_Played').AsInteger  div SEASON_MATCHES) + 18 ;
     ValidPlayer.talentID1 := qPlayers.FieldByName ('talentid1').AsInteger;
@@ -8173,8 +8201,11 @@ begin
     end;
 
 
-    TrylevelUpTalent( 'f', qPlayers.FieldByName('guid').AsInteger, ValidPlayer.talentID1 , ValidPlayer  );
+    alvlUp := TrylevelUpTalent( 'f', qPlayers.FieldByName('guid').AsInteger, ValidPlayer.talentID1 , ValidPlayer  );
+   // if alvlUp.value then
+   //   Memo1.Lines.Add('lvlup2!');
 
+    ProgressBar1.Position :=  (((i * 100 ) div qPlayers.RecordCount) div 2);
     qPlayers.Next;
   end;
 
@@ -8182,7 +8213,7 @@ begin
   qPlayers.SQL.Text := 'SELECT * from m_game.players where talentid1 <> 0'; // chi ha già il talento1
   qPlayers.Execute ;
 
-  for I := qPlayers.RecordCount -1 downto 0 do begin
+  for I := 0 to qPlayers.RecordCount -1 do begin
 
     ValidPlayer.Age:= Trunc(  qPlayers.FieldByName ('Matches_Played').AsInteger  div SEASON_MATCHES) + 18 ;
     ValidPlayer.talentID1 := qPlayers.FieldByName ('talentid1').AsInteger;
@@ -8214,16 +8245,20 @@ begin
     end;
 
 
-    TrylevelUpTalent( 'm', qPlayers.FieldByName('guid').AsInteger, ValidPlayer.talentID1 , ValidPlayer  );
+    alvlUp:= TrylevelUpTalent( 'm', qPlayers.FieldByName('guid').AsInteger, ValidPlayer.talentID1 , ValidPlayer  );
+  //  if alvlUp.value then
+   //   Memo1.Lines.Add('lvlup2!');
 
+    ProgressBar1.Position :=  ((i * 100 ) div qPlayers.RecordCount);
     qPlayers.Next;
   end;
 
 
+  ProgressBar1.Position :=  0;
   qPlayers.Free;
   Conngame.Connected:= False;
   Conngame.Free;
-  debug_trytalentnoxp := True;
+  debug_trytalentnoxp := False;
   ShowMessage ('Done!');
 
 
