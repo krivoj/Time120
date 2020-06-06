@@ -2875,6 +2875,16 @@ MyExit:
                                    'xp="' + tsXP.CommaText + '",' +
                                    'history="' + tsXPhistory.CommaText + '" WHERE guid =' + IntToStr(Guid)+ ' and young=0';
     qPlayers.Execute ;
+
+    // se è un GK azzero cartellini e injured
+    if aPlayer.TalentId1 = TALENT_ID_GOALKEEPER then begin
+      qPlayers.SQL.text := 'UPDATE ' +fm +'_game.players SET ' +
+                                     'injured=0,totyellowcard=0,disqualified=0' +
+                                     ' WHERE guid =' + IntToStr(Guid);
+      qPlayers.Execute ;
+
+    end;
+
     qPlayers.Free;
   end
   else begin  // aggirno solo la perdita di xp
@@ -6869,7 +6879,7 @@ begin
   Result := False;
   WaitForSingleObject(Mutex,INFINITE);
   for I := BrainManager.lstBrain.Count - 1 downto 0  do begin
-    if  (BrainManager.lstBrain [i].Score.CliId [0] = CliId) or (BrainManager.lstBrain [i].Score.CliId [1] = CliId)  and (not BrainManager.lstBrain [i].FlagEndGame ) then begin
+    if  (BrainManager.lstBrain [i].Score.CliId [0] = CliId) or (BrainManager.lstBrain [i].Score.CliId [1] = CliId)  and (not BrainManager.lstBrain [i].Finished ) then begin
       result := True;
       ReleaseMutex(Mutex);
       Exit;
@@ -6886,7 +6896,7 @@ begin
   Result := nil;
   for I := BrainManager.lstBrain.Count - 1  downto 0 do begin
     if  (BrainManager.lstBrain [i].Score.TeamGuid [0] = GuidTeam) or (BrainManager.lstBrain [i].Score.TeamGuid  [1] = GuidTeam)
-    and ((BrainManager.lstBrain [i].Gender = fm )) and (not BrainManager.lstBrain [i].FlagEndGame )
+    and ((BrainManager.lstBrain [i].Gender = fm )) and (not BrainManager.lstBrain [i].Finished )
     then begin
       result := BrainManager.lstBrain [i];
       ReleaseMutex(Mutex);

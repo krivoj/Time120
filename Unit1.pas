@@ -4,7 +4,7 @@
 
   { TODO -cbug :
     inizo partita LOP e poi non arriva PASS, ma fa un solo turno
-    ocntrollare invio dati dal server corrotto dopo un tot di inattività. o è compressione o è ics o è il mm3 o il brain.
+    controllare invio dati dal server corrotto dopo un tot di inattività. o è compressione o è ics o è il mm3 o il brain.
 
     fine partita rimane su sto caricando perchè è ancora in inliveguidteam (5 secondi) .fare IF FLAGENDGAME
     if Minute >= 120 then FlagEndGame := True; // le sostituzioni non incrementano i minuti    deve usare anche finished
@@ -14,16 +14,13 @@
     bug lastman. ricalcolare le condizioni . anche la nuova versione forse non va bene. c'è sicuro errore perchè compare al 44' di una partita
     islastman diventa islastman ( aplayer, ballplayer)
 
-    marketlog e dismisslog. ogni volta si chiama anche addyoung. testare
     verificare in spritereset e ovunque la palla sempre in movimento, tanto corner e freekick settano la palla
-    test offside AI
     Server, gender bonus. controllare anche AI.
-    test contro squadra che ha 6 attaccanti.
   }
   { TODO -ctodoreali :
     cl_splash.gameover aggiungere miGain
     esagoni dei colori blu, viola ecc... anche stelle. e stelle in showgameover
-    dopo rank1 comincia il campionato a 38 gare per i punti. se ne fa 70, vince la coppa
+    dopo rank1 comincia il campionato a 38 gare per i punti. se ne fa 70, vince la coppa ( hall of fame )
     aggiungere frecce doppie a nuovo team
     fare passaggio rank sul server
     fare comparire nome skill in basso sul mouseover della skill se_skills
@@ -4890,10 +4887,10 @@ begin
 //    Mybrain.Ball.SE_Sprite.MoverData.Destination := Mybrain.Ball.SE_Sprite.Position;
     case Mybrain.Ball.Player.team of
       0: begin
-        Mybrain.Ball.SE_Sprite.MoverData.Destination :=  Point(Mybrain.Ball.Player.SE_Sprite.Position.X+ abs(Ball0X),Mybrain.Ball.Player.SE_Sprite.Position.Y);
+        Mybrain.Ball.SE_Sprite.MoverData.Destination :=  Point(aFieldPointSpr.Position.X + abs(Ball0X),aFieldPointSpr.Position.Y);
       end;
       1: begin
-        Mybrain.Ball.SE_Sprite.MoverData.Destination := Point(Mybrain.Ball.Player.SE_Sprite.Position.X- abs(Ball0X),Mybrain.Ball.Player.SE_Sprite.Position.Y);
+        Mybrain.Ball.SE_Sprite.MoverData.Destination := Point(aFieldPointSpr.Position.X - abs(Ball0X),aFieldPointSpr.Position.Y);
       end;
     end;
 
@@ -4916,11 +4913,11 @@ begin
     aPlayer := Mybrain.lstSoccerPlayer [i];
 
 
-      aFieldPointSpr := SE_FieldPoints.FindSprite(IntToStr (aPlayer.CellX ) + '.' + IntToStr (aPlayer.CellY ));
-      aPlayer.se_Sprite.Position := aFieldPointSpr.position  ;
-      aPlayer.se_sprite.MoverData.Destination := aFieldPointSpr.Position;
-      aPlayer.se_sprite.Scale := ScaleSprites;
-      aPlayer.SE_Sprite.Visible := True;
+    aFieldPointSpr := SE_FieldPoints.FindSprite(IntToStr (aPlayer.CellX ) + '.' + IntToStr (aPlayer.CellY ));
+    aPlayer.se_Sprite.Position := aFieldPointSpr.position  ;
+    aPlayer.se_sprite.MoverData.Destination := aFieldPointSpr.Position;
+    aPlayer.se_sprite.Scale := ScaleSprites;
+    aPlayer.SE_Sprite.Visible := True;
 
 
 
@@ -4948,6 +4945,7 @@ begin
     if (overridecolor) and (aPlayer.Team = 1) then begin
      aPlayer.se_sprite.BlendMode := SE_BlendAverage;
     end;
+
   end;
 
   // le riserve
@@ -4956,19 +4954,19 @@ begin
 
     // le riserve tutte a sinistra e tutte a destra
 
-      MyBrain.ReserveSlot [aPlayer.Team, aPlayer.cellx]:= aPlayer.Ids;
+    MyBrain.ReserveSlot [aPlayer.Team, aPlayer.cellx]:= aPlayer.Ids;
 
-      if aPlayer.Team = 0 then
-        aFieldPointSpr := SE_FieldpointsReserve.FindSprite(IntToStr (aPlayer.AIFormationCellX)+ '.-1')
-      else aFieldPointSpr := SE_FieldpointsReserve.FindSprite(IntToStr (aPlayer.AIFormationCellX+11)+ '.-1') ;
+    if aPlayer.Team = 0 then
+      aFieldPointSpr := SE_FieldpointsReserve.FindSprite(IntToStr (aPlayer.AIFormationCellX)+ '.-1')
+    else aFieldPointSpr := SE_FieldpointsReserve.FindSprite(IntToStr (aPlayer.AIFormationCellX+11)+ '.-1') ;
 
-      aPlayer.se_Sprite.Position := aFieldPointSpr.Position;
-      aPlayer.se_sprite.MoverData.Destination := aFieldPointSpr.Position;
-      aPlayer.se_sprite.Scale := ScaleSprites;
+    aPlayer.se_Sprite.Position := aFieldPointSpr.Position;
+    aPlayer.se_sprite.MoverData.Destination := aFieldPointSpr.Position;
+    aPlayer.se_sprite.Scale := ScaleSprites;
 
-      if GameScreen = ScreenSubs then
-        aPlayer.se_Sprite.Visible := True
-        else aPlayer.se_Sprite.Visible := false;
+    if GameScreen = ScreenSubs then
+      aPlayer.se_Sprite.Visible := True
+      else aPlayer.se_Sprite.Visible := false;
 
     if (overridecolor) and (aPlayer.Team = 1) then begin
      aPlayer.se_sprite.BlendMode := SE_BlendAverage;
@@ -5298,8 +5296,6 @@ begin
   cur := cur + 1 ;
   MyBrain.Minute :=  Ord( buf3[incMove][ cur ]);
   cur := cur + 1 ;
-  MyBrain.Finished := Boolean ( Ord( buf3[incMove][ cur ]));
-  cur := cur + 1 ;
 
   LocalSeconds  :=  Ord( buf3[incMove][ cur ]);
   MyBrain.fmilliseconds :=  (PWORD(@buf3[incMove][ cur ])^ ) * 1000;
@@ -5314,6 +5310,8 @@ begin
   MyBrain.GameStarted :=  Boolean(  Ord( buf3[incMove][ cur ]));
   cur := cur + 1 ;
   MyBrain.FlagEndGame :=  Boolean(  Ord( buf3[incMove][ cur ]));
+  cur := cur + 1 ;
+  MyBrain.Finished :=  Boolean(  Ord( buf3[incMove][ cur ]));
   cur := cur + 1 ;
   MyBrain.Shpbuff :=  Boolean(  Ord( buf3[incMove][ cur ]));
   cur := cur + 1 ;
@@ -5581,26 +5579,26 @@ begin
     Cur := Cur + 1;
 
 
-      if aPlayer.TalentId1 <> TALENT_ID_GOALKEEPER then
-        aPlayer.Se_Sprite := se_players.CreateSprite( UniformBitmap[aTeam].bitmap ,aPlayer.Ids,1,1,100,0,0,true)
-      else
-        aPlayer.Se_Sprite := se_Players.CreateSprite(UniformBitmapGK.Bitmap , aPlayer.Ids,1,1,1000,0,0,true);
-      aPlayer.Se_Sprite.Scale:= ScaleSprites;
-      AddFace ( aPlayer );
-      aPlayer.Se_Sprite.Priority :=  StrToInt(aPlayer.ids) ;
-      aPlayer.Se_Sprite.MoverData.Speed := DEFAULT_SPEED_PLAYER;
+    if aPlayer.TalentId1 <> TALENT_ID_GOALKEEPER then
+      aPlayer.Se_Sprite := se_players.CreateSprite( UniformBitmap[aTeam].bitmap ,aPlayer.Ids,1,1,100,0,0,true)
+    else
+      aPlayer.Se_Sprite := se_Players.CreateSprite(UniformBitmapGK.Bitmap , aPlayer.Ids,1,1,1000,0,0,true);
+    aPlayer.Se_Sprite.Scale:= ScaleSprites;
+    AddFace ( aPlayer );
+    aPlayer.Se_Sprite.Priority :=  StrToInt(aPlayer.ids) ;
+    aPlayer.Se_Sprite.MoverData.Speed := DEFAULT_SPEED_PLAYER;
 
-      if (overridecolor) and (aPlayer.Team = 1)  then  begin
-        aPlayer.se_sprite.BlendMode := SE_BlendAverage;
-      end;
+    if (overridecolor) and (aPlayer.Team = 1)  then  begin
+      aPlayer.se_sprite.BlendMode := SE_BlendAverage;
+    end;
 
-      aFieldPointSpr := SE_FieldPoints.FindSprite(IntToStr (aPlayer.CellX ) + '.' + IntToStr (aPlayer.CellY ));
-      aPlayer.Se_Sprite.Position := aFieldPointSpr.position  ;
-      aPlayer.Se_Sprite.MoverData.Destination := aFieldPointSpr.Position;
+    aFieldPointSpr := SE_FieldPoints.FindSprite(IntToStr (aPlayer.CellX ) + '.' + IntToStr (aPlayer.CellY ));
+    aPlayer.Se_Sprite.Position := aFieldPointSpr.position  ;
+    aPlayer.Se_Sprite.MoverData.Destination := aFieldPointSpr.Position;
 
-      if GameScreen = ScreenSubs then
-        aPlayer.Se_Sprite.Visible := True
-        else aPlayer.Se_Sprite.Visible := false;
+    if GameScreen = ScreenSubs then
+      aPlayer.Se_Sprite.Visible := True
+      else aPlayer.Se_Sprite.Visible := false;
 
 
     if MyBrain.w_FreeKick3  then begin
@@ -5643,7 +5641,7 @@ begin
     if Mybrain.Ball.Player <> nil then begin
       case Mybrain.Ball.Player.team of
         0: Mybrain.Ball.SE_Sprite := se_Ball.CreateSprite(bmp.Bitmap,'ball',6,1,40, aFieldPointSpr.Position.X+ abs(Ball0X), aFieldPointSpr.Position.Y , true);
-        1: Mybrain.Ball.SE_Sprite := se_Ball.CreateSprite(bmp.Bitmap,'ball',6,1,40, aFieldPointSpr.Position.X+ abs(Ball0X), aFieldPointSpr.Position.Y , true);
+        1: Mybrain.Ball.SE_Sprite := se_Ball.CreateSprite(bmp.Bitmap,'ball',6,1,40, aFieldPointSpr.Position.X- abs(Ball0X), aFieldPointSpr.Position.Y , true);
       end;
     end
     else Mybrain.Ball.SE_Sprite := se_Ball.CreateSprite(bmp.Bitmap,'ball',6,1,40,
@@ -6343,7 +6341,7 @@ var
   BaseY,XScoreFrame,YScoreFrame : integer;
   const Xbmp = 30; XDescr = 60;
 begin
-  if MyBrain.FlagEndGame then begin
+  if MyBrain.Finished then begin
     if (MyBrain.Score.TeamGuid[0] = MyGuidTeam) or (MyBrain.Score.TeamGuid[1] = MyGuidTeam) then
       ShowGameOver ( true )
       else ShowGameOver ( false );
@@ -6465,9 +6463,13 @@ begin
   tsCmd:= TstringList.Create ;
   tsCmd.CommaText := Cmd;//Mybrain.tsScript [0];
 
-  if (tsCmd[0]= 'sc_player')  or (tsCmd[0]='sc_pa') then begin
+  if (tsCmd[0]= 'sc_player')   then begin
     // il player è già posizionato
     AnimationScript.Tsadd (  'cl_player.move,'  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5] );
+  end
+  else if (tsCmd[0]='sc_pa') then begin
+    AnimationScript.Tsadd (  'cl_player.move,'  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5] );
+   // AnimationScript.Tsadd (  'cl_wait.moving.players' );
   end
   else if tsCmd[0]= 'sc_DICE' then begin
 //    TsScript.add ( 'sc_DICE,' + IntTostr(aPlayer.CellX) + ',' + Inttostr(aPlayer.CellY) +','+  IntTostr(aRnd) +','+
@@ -6569,18 +6571,18 @@ begin
           LogMemo ( tsCmd.CommaText );
 
 
-        if tsCmd[0]='sc_ball' then begin
+        if tsCmd[0]='sc_ball.move' then begin
           AnimationScript.Tsadd (  'cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ',' +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]+ ','+tsCmd[6]+','+tsCmd[0]   );
         end
-        else if tsCmd[0]='sc_ball.move.toball' then begin
-          AnimationScript.Tsadd (  'cl_ball.move.toball,' + IntTostr(DEFAULT_SPEED_BALL) + ','  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]+ ','+tsCmd[6]   );
+        else if tsCmd[0]='sc_ball.move.offsetx' then begin
+          AnimationScript.Tsadd (  'cl_ball.move.offsetx,' + IntTostr(DEFAULT_SPEED_BALL) + ','  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]+ ','+tsCmd[6]   );
         end
         else if tsCmd[0]='sc_bounce' then begin
           AnimationScript.Tsadd (  'cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ','  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]+',0,'+tsCmd[0]);
         end
-        else if tsCmd[0]= 'sc_player.move.toball' then begin
-          AnimationScript.Tsadd (  'cl_player.move.toball,'  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5] );
-          AnimationScript.Tsadd ('cl_wait,' + IntTostr(( sprite1cell)));
+        else if tsCmd[0]= 'sc_player.move' then begin
+          AnimationScript.Tsadd (  'cl_player.move,'  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5] );
+         // AnimationScript.Tsadd ('cl_wait,' + IntTostr(( sprite1cell)));
          // AnimationScript.Tsadd ('cl_sound,soundtackle');
         end
         else if tsCmd[0]= 'sc_ai.moveall' then begin
@@ -6647,18 +6649,18 @@ begin
           tsCmd.CommaText := Mybrain.tsScript [i];
           LogMemo ( tsCmd.CommaText );
 
-        if tsCmd[0]='sc_ball' then begin
+        if tsCmd[0]='sc_ball.move' then begin
           AnimationScript.Tsadd ('cl_sound,soundishot');
           AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(SPEED_BALL_SHP) + ',' +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5] + ','+tsCmd[6]+','+tsCmd[0]  );
 
         end
-        else if tsCmd[0]='sc_ball.move.toball' then begin
+        else if tsCmd[0]='sc_ball.move.offsetx' then begin
           AnimationScript.Tsadd ('cl_wait,' + IntTostr(( sprite1cell)));
           AnimationScript.Tsadd ('cl_sound,soundishot');
-          AnimationScript.Tsadd (  'cl_ball.move.toball,' + IntTostr(SPEED_BALL_SHP) + ','  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]+ ','+tsCmd[6]   );
+          AnimationScript.Tsadd (  'cl_ball.move.offsetx,' + IntTostr(SPEED_BALL_SHP) + ','  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]+ ','+tsCmd[6]   );
         end
-        else if tsCmd[0]= 'sc_player.move.toball' then begin
-          AnimationScript.Tsadd (  'cl_player.move.toball,'  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5] );
+        else if tsCmd[0]= 'sc_player.move' then begin
+          AnimationScript.Tsadd (  'cl_player.move,'  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5] );
         end
         else if tsCmd[0]='sc_bounce' then begin  // rimbalzo nel caso venga intercettato
           AnimationScript.Tsadd (  'cl_ball.move,' + IntTostr(SPEED_BALL_SHP) + ','  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]+',0,'+tsCmd[0]);
@@ -6806,12 +6808,12 @@ begin
           aTackle := Mybrain.GetSoccerPlayer(tsCmd[2]);
 
           AnimationScript.Tsadd ('cl_player.priority,'      +  tsCmd[2] + ',min');
-          AnimationScript.Tsadd ('cl_player.move.toball,'   +  BallPlayer.ids + ',' + tsCmd[3] + ','+tsCmd[4]  +',' + tsCmd[5] + ','+tsCmd[6] );
-          AnimationScript.Tsadd ('cl_ball.move.toball,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[1]+ ',0' );
+          AnimationScript.Tsadd ('cl_player.move,'   +  BallPlayer.ids + ',' + tsCmd[3] + ','+tsCmd[4]  +',' + tsCmd[5] + ','+tsCmd[6] );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[1]+ ',0' );
           AnimationScript.Tsadd ('cl_player.move,'      +  aTackle.ids + ','  + tsCmd[5] + ','+tsCmd[6] +',' + tsCmd[3] + ','+tsCmd[4]  );
           AnimationScript.Tsadd ('cl_wait,' + IntTostr(( sprite1cell)));
           AnimationScript.Tsadd ('cl_sound,soundtackle');
-          AnimationScript.Tsadd ('cl_ball.move.toball,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[5] + ','+tsCmd[6] + ',' + tsCmd[7] + ','+tsCmd[8] + ',' + tsCmd[1]+ ',0' );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[5] + ','+tsCmd[6] + ',' + tsCmd[7] + ','+tsCmd[8] + ',' + tsCmd[1]+ ',0' );
           AnimationScript.Tsadd ('cl_player.move,'      +  BallPlayer.ids + ','  + tsCmd[5] + ','+tsCmd[6] +','+tsCmd[7] + ','+tsCmd[8]  );
           AnimationScript.Tsadd ('cl_wait,' + IntTostr(( sprite1cell )));
           AnimationScript.Tsadd ('cl_player.priority,'  +  tsCmd[2] + ',reset');
@@ -6830,13 +6832,13 @@ begin
           aTackle := Mybrain.GetSoccerPlayer(tsCmd[2]);
 
           AnimationScript.Tsadd ('cl_player.priority,'      +  tsCmd[2] + ',min');
-          AnimationScript.Tsadd ('cl_player.move.toball,'      +  BallPlayer.ids + ',' + tsCmd[3] + ','+tsCmd[4]  +',' + tsCmd[5] + ','+tsCmd[6] );
-          AnimationScript.Tsadd ('cl_ball.move.toball,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[1]+ ',0' );
+          AnimationScript.Tsadd ('cl_player.move,'      +  BallPlayer.ids + ',' + tsCmd[3] + ','+tsCmd[4]  +',' + tsCmd[5] + ','+tsCmd[6] );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[1]+ ',0' );
           AnimationScript.Tsadd ('cl_player.move,'      +  aTackle.ids + ','  + tsCmd[5] + ','+tsCmd[6] +',' + tsCmd[3] + ','+tsCmd[4]  );
           AnimationScript.Tsadd ('cl_wait,' + IntTostr(( sprite1cell)));
           AnimationScript.Tsadd ('cl_sound,soundtackle');
-          AnimationScript.Tsadd ('cl_ball.move.toball,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[5] + ','+tsCmd[6] + ',' + tsCmd[7] + ','+tsCmd[8] + ',' + tsCmd[1]+ ',0' );
-          AnimationScript.Tsadd ('cl_player.move.toball,'      +  BallPlayer.ids + ','  + tsCmd[5] + ','+tsCmd[6] +','+tsCmd[7] + ','+tsCmd[8]  );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[5] + ','+tsCmd[6] + ',' + tsCmd[7] + ','+tsCmd[8] + ',' + tsCmd[1]+ ',0' );
+          AnimationScript.Tsadd ('cl_player.move,'      +  BallPlayer.ids + ','  + tsCmd[5] + ','+tsCmd[6] +','+tsCmd[7] + ','+tsCmd[8]  );
           AnimationScript.Tsadd ('cl_wait,' + IntTostr(( sprite1cell )));
           AnimationScript.Tsadd ('cl_player.priority,'      +  tsCmd[2] + ',reset');
         end
@@ -6872,19 +6874,19 @@ begin
 //          AnimationScript.Ts.Insert(AnimationScript.Index + 1 ,'cl_wait,3000');
           AnimationScript.Tsadd ('cl_freekick4.fka4,' + tsCmd[1]+','+tsCmd[2] +','+tsCmd[3] );
         end
-        else if tsCmd[0]='sc_ball' then begin
+        else if tsCmd[0]='sc_ball.move' then begin
           AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ',' +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5] + ','+tsCmd[6]+','+tsCmd[0]   );
          // AnimationScript.Tsadd ('cl_wait,' + IntTostr(( 1200)));
         end
-        else if tsCmd[0]='sc_ball.move.toball' then begin
-          AnimationScript.Tsadd (  'cl_ball.move.toball,' + IntTostr(DEFAULT_SPEED_BALL) + ','  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]+ ','+tsCmd[6]   );
+        else if tsCmd[0]='sc_ball.move.offsetx' then begin
+          AnimationScript.Tsadd (  'cl_ball.move.offsetx,' + IntTostr(DEFAULT_SPEED_BALL) + ','  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]+ ','+tsCmd[6]   );
         end
         else if tsCmd[0]='sc_bounce' then begin
           AnimationScript.Tsadd (  'cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ','  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]+',0,'+tsCmd[0]);
         end
-        else if tsCmd[0]= 'sc_player.move.toball' then begin
+        else if tsCmd[0]= 'sc_player.move' then begin
           // il player è già posizionato
-          AnimationScript.Tsadd (  'cl_player.move.toball,'  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5] );
+          AnimationScript.Tsadd (  'cl_player.move,'  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5] );
         end
         else begin
           AnimCommon ( tsCmd.commatext );
@@ -6924,17 +6926,17 @@ begin
           tsCmd.CommaText := Mybrain.tsScript [i];
           LogMemo ( tsCmd.CommaText );
 
-        if tsCmd[0]='sc_ball' then begin
+        if tsCmd[0]='sc_ball.move' then begin
           AnimationScript.Tsadd ('cl_sound,soundishot');
           AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ',' +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5] + ','+tsCmd[6] +','+tsCmd[0] );
         end
-        else if tsCmd[0]='sc_ball.move.toball' then begin
+        else if tsCmd[0]='sc_ball.move.offsetx' then begin
           AnimationScript.Tsadd ('cl_sound,soundishot');
-          AnimationScript.Tsadd (  'cl_ball.move.toball,' + IntTostr(DEFAULT_SPEED_BALL) + ','  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]+ ','+tsCmd[6]   );
+          AnimationScript.Tsadd (  'cl_ball.move.offsetx,' + IntTostr(DEFAULT_SPEED_BALL) + ','  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]+ ','+tsCmd[6]   );
         end
-        else if tsCmd[0]= 'sc_player.move.toball' then begin
+        else if tsCmd[0]= 'sc_player.move' then begin
           // il player è già posizionato
-          AnimationScript.Tsadd (  'cl_player.move.toball,'  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5] );
+          AnimationScript.Tsadd (  'cl_player.move,'  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5] );
         end
 
     // in realtà qui sono già swappati nel brain
@@ -6975,7 +6977,7 @@ begin
           AnimationScript.Tsadd ('cl_nextsound,soundreceive');
           AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[7] + ','+tsCmd[8]+ ',' + tsCmd[1]+ ',0,'+tsCmd[0] );
         end
-        else if tsCmd[0] = 'sc_lop.ballcontrol.bounce.toball' then begin
+        else if tsCmd[0] = 'sc_lop.ballcontrol.bounce.playertoball' then begin
           // 1 ids aPlayer
           // 2 ids aFriend
           // 3 cellx aPlayer
@@ -7397,9 +7399,9 @@ begin
 //          aGK := Mybrain.GetSoccerPlayer  ( StrToInt(tsCmd[1]),StrToInt(tsCmd[2]));
           AnimationScript.Tsadd (  'cl_ball.bounce.crossbar,' + IntTostr(DEFAULT_SPEED_BALL) + ','  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]);
         end
-        else if tsCmd[0]= 'sc_player.move.toball' then begin
+        else if tsCmd[0]= 'sc_player.move' then begin
           // il player è già posizionato
-          AnimationScript.Tsadd (  'cl_player.move.toball,'  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5] );
+          AnimationScript.Tsadd (  'cl_player.move,'  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5] );
         end
 
 //***********************************************************************************************************
@@ -7752,8 +7754,8 @@ begin
 
 
 
-        else if tsCmd[0]='sc_ball' then begin
-//     TsScript.add ('sc_ball,'+ IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+  IntTostr(aPath[i].X)+','+ IntTostr(aPath[i].Y)
+        else if tsCmd[0]='sc_ball.move' then begin
+//     TsScript.add ('sc_ball.move,'+ IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+  IntTostr(aPath[i].X)+','+ IntTostr(aPath[i].Y)
 //     +','+anIntercept.Ids+',intercept' ) ;
           AnimationScript.Tsadd ('cl_sound,soundishot');
           if ((tsCmd[1] = '0') and  (tsCmd[2]='3' )) or ( (tsCmd[1] = '11') and  (tsCmd[2]='3' )) then
@@ -7761,14 +7763,14 @@ begin
           else
           AnimationScript.Tsadd (  'cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ',' +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]+ ','+tsCmd[6]+ ',0,'+tsCmd[0]  );
         end
-        else if tsCmd[0]='sc_ball.move.toball' then begin
- //        TsScript.add ('sc_ball.move.toball,'+ IntTostr(OldBall.X)+','+ IntTostr(OldBall.Y)+','+  IntTostr(Ball.CellX)+','+ IntTostr(Ball.CellY)
+        else if tsCmd[0]='sc_ball.move.offsetx' then begin
+ //        TsScript.add ('sc_ball.move.offsetx,'+ IntTostr(OldBall.X)+','+ IntTostr(OldBall.Y)+','+  IntTostr(Ball.CellX)+','+ IntTostr(Ball.CellY)
  //        +','+anOpponent.Ids+',stop' ) ;
           AnimationScript.Tsadd ('cl_sound,soundishot');
           if ((tsCmd[1] = '0') and  (tsCmd[2]='3' )) or ( (tsCmd[1] = '11') and  (tsCmd[2]='3' )) then
             AnimationScript.Tsadd ('cl_ball.move.gk,' + IntTostr(DEFAULT_SPEEDMAX_BALL) + ',' + tsCmd[1] + ','+tsCmd[2]+ ',' + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5]+ ',0' )
           else
-          AnimationScript.Tsadd (  'cl_ball.move.toball,' + IntTostr(DEFAULT_SPEED_BALL) + ','  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]+ ','+tsCmd[6]   );
+          AnimationScript.Tsadd (  'cl_ball.move.offsetx,' + IntTostr(DEFAULT_SPEED_BALL) + ','  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]+ ','+tsCmd[6]   );
         end
         else if tsCmd[0]= 'sc_gol.cross' then begin
           AnimationScript.Tsadd ('cl_gol.cross,' + tsCmd[1] + ','+ tsCmd[2]+','+tsCmd[3] + ','+ tsCmd[4]+','+tsCmd[5]);
@@ -8122,13 +8124,13 @@ begin
           BallPlayer := Mybrain.GetSoccerPlayer(tsCmd[1]);
           aTackle := Mybrain.GetSoccerPlayer(tsCmd[2]);
 
-          AnimationScript.Tsadd ('cl_player.move.toball,'      +  BallPlayer.ids + ',' + tsCmd[3] + ','+tsCmd[4]  +',' + tsCmd[5] + ','+tsCmd[6] );
-          AnimationScript.Tsadd ('cl_ball.move.toball,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[1]+ ',0' );
+          AnimationScript.Tsadd ('cl_player.move,'      +  BallPlayer.ids + ',' + tsCmd[3] + ','+tsCmd[4]  +',' + tsCmd[5] + ','+tsCmd[6] );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[1]+ ',0' );
           AnimationScript.Tsadd ('cl_player.move,'      +  aTackle.ids + ','  + tsCmd[5] + ','+tsCmd[6] +',' + tsCmd[3] + ','+tsCmd[4]  );
           AnimationScript.Tsadd ('cl_wait,' + IntTostr(( sprite1cell)));
           AnimationScript.Tsadd ('cl_sound,soundtackle');
-          AnimationScript.Tsadd ('cl_ball.move.toball,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[5] + ','+tsCmd[6] + ',' + tsCmd[7] + ','+tsCmd[8] + ',' + tsCmd[1]+ ',0' );
-          AnimationScript.Tsadd ('cl_player.move.toball,'      +  BallPlayer.ids + ','  + tsCmd[5] + ','+tsCmd[6] +','+tsCmd[7] + ','+tsCmd[8]  );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[5] + ','+tsCmd[6] + ',' + tsCmd[7] + ','+tsCmd[8] + ',' + tsCmd[1]+ ',0' );
+          AnimationScript.Tsadd ('cl_player.move,'      +  BallPlayer.ids + ','  + tsCmd[5] + ','+tsCmd[6] +','+tsCmd[7] + ','+tsCmd[8]  );
 //          AnimationScript.Tsadd ('cl_wait,' + IntTostr(( 1200)));
         end
         else begin
@@ -8765,24 +8767,6 @@ begin
     end;
 
   end
-  else if ts[0] = 'cl_player.move.toball' then begin
-    //1 aList[i].Ids
-    //2 aList[i].CellX     // cella di partenza
-    //3 aList[i].CellY
-    //4 CellX              // cella di arrivo
-    //5 CellY
-//    srcCellX :=  StrToInt(Ts[2]);
-//    srcCellY :=  StrToInt(Ts[3]);
-    dstCellX :=  StrToInt(Ts[4]);
-    dstCellY :=  StrToInt(Ts[5]);
-    aPlayer := MyBrain.GetSoccerPlayer(ts[1]);
-
-    aFieldPointSpr := SE_FieldPoints.FindSprite(IntToStr (dstCellX ) + '.' + IntToStr (dstCellY ));
-    Mybrain.Ball.SE_Sprite.MoverData.Destination := point (aFieldPointSpr.Position.X +abs(Ball0X),aFieldPointSpr.Position.Y );
-    aPlayer.se_sprite.MoverData.Destination := aFieldPointSpr.Position;
-//    aPlayer.Sprite.NotifyDestinationReached := true;
-
-  end
   else if ts[0] = 'cl_player.move.intercept' then begin
     //1 aList[i].Ids
     //2 aList[i].CellX     // cella di partenza
@@ -8900,36 +8884,6 @@ begin
     if (ContainsText ( ts8,'sc_corner') ) or ( ContainsText ( ts8,'sc_cross') ) then begin
       Mybrain.Ball.se_sprite.MoverData.PartialList := '10,20,30,40,50,60,70,80,90';
     end;
-
-  end
-  else if ts[0] = 'cl_ball.move.toball' then begin
-    //1 Speed
-    //2 aList[i].CellX     // cella di partenza
-    //3 aList[i].CellY
-    //4 CellX              // cella di arrivo
-    //5 CellY
-    //6 ids eventuale azione
-    //7 heading, intercept, stop ecc...
-//    srcCellX :=  StrToInt(Ts[2]);
-//    srcCellY :=  StrToInt(Ts[3]);
-    dstCellX :=  StrToInt(Ts[4]);
-    dstCellY :=  StrToInt(Ts[5]);
-
-
-    Mybrain.Ball.SE_Sprite.MoverData.Speed := StrToFloat (Ts[1]);
-    SetBallRotation ( StrToInt(ts[2]),StrToInt(ts[3]),StrToInt(ts[4]),StrToInt(ts[5]) ) ;
-
-    aFieldPointSpr := SE_FieldPoints.FindSprite(IntToStr (dstCellX ) + '.' + IntToStr (dstCellY ));
-    //aPlayer.se_sprite.MoverData.Destination := aFieldPointSpr.Position;
-
-
-    Mybrain.Ball.SE_Sprite.MoverData.Destination := point (aFieldPointSpr.Position.X  {+abs(Ball0X)},aFieldPointSpr.Position.Y );
-
-
-        {if Mybrain.Ball.Player.Role='G' then begin
-          AudioNoGol.Position:=0;
-          AudioNoGol.Play;
-        end;}
 
   end
   else if  ts[0] = 'cl_ball.move.gk' then begin // diretta sul Gk
