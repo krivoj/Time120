@@ -164,6 +164,7 @@ type
     Edit8: TEdit;
     Button10: TButton;
     ProgressBar1: TProgressBar;
+    Memo2: TMemo;
 
     procedure FormCreate(Sender: TObject);
       procedure CleanDirectory(dir:string);
@@ -184,8 +185,8 @@ type
     function CreateGameTeam ( fm :char; cli: TWSocketThrdClient;  WorldTeamGuid: string): integer;
 
 
-    function GetQueueOpponent ( fm : Char; WorldTeam : integer; Rank, NextHA: byte ): TWSocketThrdClient;
-    procedure GetGuidTeamOpponentBOT (fm :Char; WorldTeam : integer; Rank, NextHA: byte; var BotGuidTeam: Integer; var BotUserName: string );
+    function GetQueueOpponent ( fm : Char; WorldTeam : integer; Rank, NextHA: byte ): TWSocketThrdClient;  // rank < > 1 = tolleranza
+    procedure GetGuidTeamOpponentBOT (fm :Char; WorldTeam : integer; Rank, NextHA: byte; var BotGuidTeam: Integer; var BotUserName: string ); // rank < > 1 = tolleranza
     function GetTCPClient ( CliId: integer): TWSocketClient;
     function GetTCPClientQueue ( CliId: integer): TWSocketClient;
     procedure QueueThreadTimer(Sender: TObject);
@@ -258,6 +259,8 @@ type
     procedure MarketBuy ( Cli: TWSocketThrdClient; CommaText: string  );
     function GetMarketValueTeam (fm : Char;  Guidteam: Integer ) : Integer;
     function TryAddYoung ( fm :Char; GuidTeam: Integer): Boolean;
+
+    function CalculateRank ( mi : integer): Integer;
 
     function RandomPassword(PLen: Integer): string; // deprecated
     function RndGenerate( Upper: integer ): integer;
@@ -831,6 +834,7 @@ var
   ValidPlayer: TValidPlayer;
   ConnGame :  TMyConnection;
   qTeams,qPlayers, MyQueryUpdate, MyQueryArchive,qTransfers,qlast:  TMyQuery;
+  Start: Integer;
   label skip,MyStoreDone;
 begin
     // adesso il match è finito
@@ -1099,12 +1103,39 @@ MyStoreDone:
     if Nextha[0] = 1 then
       Nextha[0] := 0
       else Nextha[0] := 1;
-  // in Questo momento potrebbe essere fine season con MatchesplayedTeam = 38
- { TODO : passaggio rank qui e sotto }
-  // passaggio rank . sopra i 15
 
+    if brain.Gender='m' then begin
+      case Rank[0] of
+        1:Money[0]:= Money[0] + (1000 * brain.Score.Points[0]);
+        2:Money[0]:= Money[0] + (800 * brain.Score.Points[0]);
+        3:Money[0]:= Money[0] + (600 * brain.Score.Points[0]);
+        4:Money[0]:= Money[0] + (400 * brain.Score.Points[0]);
+        5:Money[0]:= Money[0] + (200 * brain.Score.Points[0]);
+        6:Money[0]:= Money[0] + (100 * brain.Score.Points[0]);
+      end;
+    end
+    else begin // female
+      case Rank[0] of
+        1:Money[0]:= Money[0] + (600 * brain.Score.Points[0]);
+        2:Money[0]:= Money[0] + (480 * brain.Score.Points[0]);
+        3:Money[0]:= Money[0] + (460 * brain.Score.Points[0]);
+        4:Money[0]:= Money[0] + (340 * brain.Score.Points[0]);
+        5:Money[0]:= Money[0] + (220 * brain.Score.Points[0]);
+        6:Money[0]:= Money[0] + (100 * brain.Score.Points[0]);
+      end;
+    end;
+
+  // in Questo momento potrebbe essere fine season con MatchesplayedTeam = 38
+  // passaggio rank . sopra i 15
+//  Rank[0] := Trunc(brain.Score.TeamMI [0] / 15); // passaggio rank qui e sotto
+
+
+
+  Rank [0] := Formserver.Calculaterank (brain.Score.TeamMI [0]);
   qTeams.SQL.text := 'UPDATE ' +brain.Gender + '_game.teams SET nextha = '+ IntTostr( Nextha[0]) +', mi = ' + IntToStr(brain.Score.TeamMI [0])  +
-  ',matchesplayed=' + IntToStr(MatchesplayedTeam[0])+ ',rank=' + IntToStr(Rank[0]) +  ',points=' + IntToStr(Points[0]) + ' WHERE Guid = ' + IntToStr( brain.Score.TeamGuid [0]);
+  ',matchesplayed=' + IntToStr(MatchesplayedTeam[0])+ ',rank=' + IntToStr(Rank[0]) +  ',points=' + IntToStr(Points[0]) +
+  ',money='+ IntToStr (Money[0]) +
+  ' WHERE Guid = ' + IntToStr( brain.Score.TeamGuid [0]);
   qTeams.Execute;
 
 
@@ -1127,8 +1158,33 @@ MyStoreDone:
       Nextha[1] := 0
       else Nextha[1] := 1;
 
+
+    if brain.Gender='m' then begin
+      case Rank[1] of
+        1:Money[1]:= Money[1] + (1000 * brain.Score.Points[1]);
+        2:Money[1]:= Money[1] + (800 * brain.Score.Points[1]);
+        3:Money[1]:= Money[1] + (600 * brain.Score.Points[1]);
+        4:Money[1]:= Money[1] + (400 * brain.Score.Points[1]);
+        5:Money[1]:= Money[1] + (200 * brain.Score.Points[1]);
+        6:Money[1]:= Money[1] + (100 * brain.Score.Points[1]);
+      end;
+    end
+    else begin // female
+      case Rank[1] of
+        1:Money[1]:= Money[1] + (600 * brain.Score.Points[1]);
+        2:Money[1]:= Money[1] + (480 * brain.Score.Points[1]);
+        3:Money[1]:= Money[1] + (460 * brain.Score.Points[1]);
+        4:Money[1]:= Money[1] + (340 * brain.Score.Points[1]);
+        5:Money[1]:= Money[1] + (220 * brain.Score.Points[1]);
+        6:Money[1]:= Money[1] + (100 * brain.Score.Points[1]);
+      end;
+    end;
+
+  Rank [1] := Formserver.Calculaterank (brain.Score.TeamMI [1]);
   qTeams.SQL.text := 'UPDATE ' +brain.Gender + '_game.teams SET nextha = '+ IntTostr( Nextha[1]) +', mi = ' + IntToStr(brain.Score.TeamMI [1])  +
-  ',matchesplayed=' + IntToStr(MatchesplayedTeam[1]) + ',rank=' + IntToStr(Rank[1]) + ',points=' + IntToStr(Points[1]) + ' WHERE Guid = ' + IntToStr( brain.Score.TeamGuid [1]);
+  ',matchesplayed=' + IntToStr(MatchesplayedTeam[1]) + ',rank=' + IntToStr(Rank[1]) + ',points=' + IntToStr(Points[1]) +
+  ',money='+ IntToStr (Money[1]) +
+  ' WHERE Guid = ' + IntToStr( brain.Score.TeamGuid [1]);
   qTeams.Execute;
 
   // Aggiorno archive con tutti i dati e matchinfo
@@ -1149,29 +1205,6 @@ MyStoreDone:
   MyQueryArchive.Free;
 
   // rimagonono N posti liberi. genero 2 giovani. Se posso li metto in squadra, altrimenti userò la tabella youngqueue
-  For T:= 0 to 1 do begin
-    if brain.Gender='m' then begin
-      case Rank[T] of
-        1:Money[T]:= Money[T] + (1000 * brain.Score.Points[T]);
-        2:Money[T]:= Money[T] + (800 * brain.Score.Points[T]);
-        3:Money[T]:= Money[T] + (600 * brain.Score.Points[T]);
-        4:Money[T]:= Money[T] + (400 * brain.Score.Points[T]);
-        5:Money[T]:= Money[T] + (200 * brain.Score.Points[T]);
-        6:Money[T]:= Money[T] + (100 * brain.Score.Points[T]);
-      end;
-
-    end
-    else begin // female
-      case Rank[T] of
-        1:Money[T]:= Money[T] + (600 * brain.Score.Points[T]);
-        2:Money[T]:= Money[T] + (480 * brain.Score.Points[T]);
-        3:Money[T]:= Money[T] + (460 * brain.Score.Points[T]);
-        4:Money[T]:= Money[T] + (340 * brain.Score.Points[T]);
-        5:Money[T]:= Money[T] + (220 * brain.Score.Points[T]);
-        6:Money[T]:= Money[T] + (100 * brain.Score.Points[T]);
-      end;
-
-    end;
 
    // solo per test qTeams.SQL.text := 'UPDATE ' +brain.Gender + '_game.teams SET bot=0 WHERE Guid = ' + IntToStr( brain.Score.TeamGuid [T]);
    // qTeams.Execute;
@@ -1182,6 +1215,8 @@ MyStoreDone:
 
 //     talentid2 può essere generato ogni 20 partite. solo per chi ha già talentid1
 //
+  for T := 0 to 1 do begin
+
     if frac ( MatchesplayedTeam[T] / 20 )= 0 then begin
 
       for p := qPlayers.RecordCount -1 downto 0 do begin
@@ -1249,7 +1284,11 @@ Skip:
       aReserveSlot.X := brain.NextReserveSlot ( T ); //<--- la prossima libera
     //  aReserveSlot.Y := -1;
 
+      Start := GettickCount;
       aBasePlayer := FormServer.CreateRandomPlayer ( brain.Gender, brain.Score.Country[T], true );
+      FormServer.memo2.lines.Add( IntToStr( GetTickCount - Start));
+
+
       MatchesPlayed := 0; //38 * 18  ; // 18 anni
       MatchesLeft := (38*15) - MatchesPlayed;
       if not GKpresent then begin
@@ -1291,9 +1330,7 @@ Skip:
 
 
     end;
-
   end;
-
 
   ReleaseMutex ( MutexMarket); // sblocco il mercato
   ReleaseMutex ( Mutex); // sblocco il thread delle partite
@@ -3612,7 +3649,7 @@ begin
     end;
   end;      }
   for I := 0 to Queue.Count -1 do begin
-    if (Queue[i].WorldTeam <> WorldTeam) and (Queue[i].rank = Rank )
+    if (Queue[i].WorldTeam <> WorldTeam) and ( (Queue[i].rank = Rank ) or (Queue[i].rank = Rank -1)  or (Queue[i].rank = Rank +1) )
       and ( Queue[i].nextHA <> nextHA ) and (queue[i].ActiveGender = fm )  and not (queue[i].Marked) // non marcato, cioè non già in gioco
     then begin
       result := Queue[i] ;
@@ -3648,8 +3685,9 @@ begin
                                   ') and (bot <> 0' +
                                   ') and (nextha <> ' + IntToStr(nextha) +
                                   ') order by rand() limit 1';  }
-    qTeams.SQL.text := 'SELECT guid, username from '+fm+'_game.teams INNER JOIN realmd.account ON realmd.account.id = '+fm+'_game.teams.account WHERE (rank=' +
-                                  IntToStr(Rank) + ') and (WorldTeam <> ' + IntTostr(WorldTeam) +
+    qTeams.SQL.text := 'SELECT guid, username from '+fm+'_game.teams INNER JOIN realmd.account ON realmd.account.id = '+fm+'_game.teams.account WHERE ' +
+                                  '( (rank=' + IntToStr(Rank) + ') or (rank='+IntToStr(Rank-1) + ') or (rank='+IntToStr(Rank+1) + ') ' +
+                                  ') and (WorldTeam <> ' + IntTostr(WorldTeam) +
                                   ') and (bot <> 0' +
                                   ') and (nextha <> ' + IntToStr(nextha) +
                                   ') order by rand() limit 1';
@@ -4507,7 +4545,6 @@ begin
   if fm ='f' then
     Result.face := rndGenerate ( ffaces[country])
   else  Result.face := rndGenerate ( mfaces[country]);
-  if Result.face = 19 then asm Int 3; end;
 
   Ts := TStringList.Create ;
 
@@ -4561,6 +4598,8 @@ retryf:
 
     if RndGenerate(100) <= Result.devt1 then begin    // se talentChance > 0
       Result.TalentId1 := rndgenerate(NUM_TALENT);    // creo un talento
+      if Result.TalentId1 = TALENT_ID_GOALKEEPER then
+        Result.DefaultShot := 1; // al minimo per non impacciare defense
         if EnableTalent2 then begin
           if RndGenerate(100) <= Result.devt1 then        // creo il secondo talento
             Result.TalentId2 := CreateTalentLevel2 ( Result );
@@ -4611,6 +4650,9 @@ retrym:
 
     if RndGenerate(100) <= Result.devt1 then begin    // se talentChance > 0
       Result.TalentId1 := rndgenerate(NUM_TALENT);    // creo un talento
+      if Result.TalentId1 = TALENT_ID_GOALKEEPER then
+        Result.DefaultShot := 1; // al minimo per non impacciare defense
+
         if EnableTalent2 then begin
           if RndGenerate(100) <= Result.devt1 then        // creo il secondo talento
             Result.TalentId2 := CreateTalentLevel2 ( Result );
@@ -6237,6 +6279,19 @@ begin
   qYoungPlayers.Free;
 
 end;
+function TFormServer.CalculateRank ( mi : integer): Integer;
+begin
+  case mi of
+    0..15: Result := 6;
+    16..30: Result := 5;
+    31..45: Result := 4;
+    46..60: Result := 3;
+    61..75: Result := 2;
+    76..MaxInt: Result := 1;
+
+  end;
+
+end;
 procedure TFormServer.store_Uniform ( Guidteam: integer; CommaText: string );
 var
   ts,UniformH,UniformA: TStringList;
@@ -7448,7 +7503,7 @@ var
   OpponentBOT: TServerOpponent;
   qTeams: TMyQuery;
   ConnGame : TMyConnection;
-  label retry1, retry2;
+  label retry1, retry2, MyExit;
 begin
 
   ConnGame := TMyConnection.Create(nil);
@@ -7475,14 +7530,14 @@ retry1:
 
       if qTeams.RecordCount = 0 then goto retry1; // non nextha
      // if qTeams.RecordCount > 0 then begin
-       if inLiveMatchGuidTeam( fm, qTeams.FieldByName('guid').AsInteger ) <> nil then goto retry1;   // già in gioco
+       if inLiveMatchGuidTeam( fm, qTeams.FieldByName('guid').AsInteger ) <> nil then goto MyExit;// retry1;   // già in gioco
 retry2:
       Application.ProcessMessages;
         GetGuidTeamOpponentBOT ( fm, qTeams.FieldByName('worldteam').AsInteger  ,
                                   qTeams.FieldByName('rank').AsInteger  , // marketTeam
                                   qTeams.FieldByName('nextha').AsInteger,
                                   OpponentBOT.GuidTeam,OpponentBOT.UserName   ); // worldteam diversa in opponent, no Bologna vs Bologna
-        if inLiveMatchGuidTeam( fm, OpponentBOT.GuidTeam ) <> nil then goto retry2;    // già in gioco il secondo
+        if inLiveMatchGuidTeam( fm, OpponentBOT.GuidTeam ) <> nil then goto MyExit;// retry2;    // già in gioco il secondo
 
         CreateMatchBOTvsBOT (fm,  qTeams.FieldByName('guid').AsInteger  , OpponentBOT.GuidTeam,
                                 qTeams.FieldByName('username').AsString,  OpponentBOT.Username );
@@ -7490,6 +7545,7 @@ retry2:
      // end;
 
 //  end;
+MyExit:
   qTeams.free;
   Conngame.Connected:= False;
   Conngame.Free;

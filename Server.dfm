@@ -305,6 +305,15 @@ object FormServer: TFormServer
     Height = 17
     TabOrder = 26
   end
+  object Memo2: TMemo
+    Left = 574
+    Top = 585
+    Width = 75
+    Height = 33
+    Lines.Strings = (
+      '')
+    TabOrder = 27
+  end
   object Tcpserver: TWSocketThrdServer
     LineLimit = 1024
     LineEnd = #13#10

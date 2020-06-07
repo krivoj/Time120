@@ -6,11 +6,10 @@
     inizo partita LOP e poi non arriva PASS, ma fa un solo turno
     controllare invio dati dal server corrotto dopo un tot di inattività. o è compressione o è ics o è il mm3 o il brain.
 
-    fine partita rimane su sto caricando perchè è ancora in inliveguidteam (5 secondi) .fare IF FLAGENDGAME
-    if Minute >= 120 then FlagEndGame := True; // le sostituzioni non incrementano i minuti    deve usare anche finished
-
+    createrandomplayer cronometrare.
   }
   { TODO -ctest :
+    check fine partita
     bug lastman. ricalcolare le condizioni . anche la nuova versione forse non va bene. c'è sicuro errore perchè compare al 44' di una partita
     islastman diventa islastman ( aplayer, ballplayer)
 
@@ -22,7 +21,7 @@
     esagoni dei colori blu, viola ecc... anche stelle. e stelle in showgameover
     dopo rank1 comincia il campionato a 38 gare per i punti. se ne fa 70, vince la coppa ( hall of fame )
     aggiungere frecce doppie a nuovo team
-    fare passaggio rank sul server
+
     fare comparire nome skill in basso sul mouseover della skill se_skills
 
     ischeatingball è  da rifare. Isolare la palla tenendo conto dle fatto che i Gk può finire il turno con la palla tra le mani.
@@ -2906,62 +2905,62 @@ begin
   bmp:= SE_Bitmap.Create (dir_interface + 'animball.bmp');
   bmp.Stretch(32*6,32);
 
-  if not ((aPlayer.DefaultSpeed >= MyBrainFormation.MAX_DEFAULT_SPEED) or (aPlayer.Age > 24) or (aPlayer.History_Speed > 0) or (aPlayer.TalentId1=TALENT_ID_GOALKEEPER))  then begin
-     // dopo i 24 anni non incrementa più in speed.speed incrementa solo una volta e al amssimo a 4
-    pbSprite :=  SE_SpriteProgressBar ( SE_PlayerDetails.FindSprite('bar_speed'));
-    pbSprite.Text :=  IntToStr( aPlayer.xp_Speed) + ' / ' + IntToStr(xp_SPEED_POINTS) ;
-    pbSprite.Value := trunc (aPlayer.xp_Speed * 100) div  xp_SPEED_POINTS;
-    pbSprite.Visible := true;
-  end;
   aSprite := SE_PlayerDetails.FindSprite('btn_speed');
   aSprite.Visible := True;
   aSprite := SE_PlayerDetails.FindSprite('playerdetailsspeed');
   aSprite.Visible := True;
   aSprite.Labels[0].lFontColor := GetAttributeColorSpeed ( aPlayer.Speed );
   aSprite.Labels[0].lText := IntToStr(aPlayer.Speed);
+  pbSprite :=  SE_SpriteProgressBar ( SE_PlayerDetails.FindSprite('bar_speed'));
+  pbSprite.Text :=  IntToStr( aPlayer.xp_Speed) + ' / ' + IntToStr(xp_SPEED_POINTS) ;
+  pbSprite.Value := trunc (aPlayer.xp_Speed * 100) div  xp_SPEED_POINTS;
+  pbSprite.Visible := false;
+
+  if not ((aPlayer.DefaultSpeed >= MyBrainFormation.MAX_DEFAULT_SPEED) or (aPlayer.Age > 24)
+       or (aPlayer.History_Speed > 0) )  then begin
+     // dopo i 24 anni non incrementa più in speed.speed incrementa solo una volta e al amssimo a 4
+    pbSprite.Visible := true;
   { button levelup talent e stat }
-  if aPlayer.xp_Speed >= xp_SPEED_POINTS then begin
-    AnimBallSprite :=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'levelup_speed',6,1,40,pbSprite.Position.X + (pbSprite.BMP.Width div 2) ,pbSprite.Position.Y,true );
-    AnimBallSprite.sTag := '0';
-    AnimBallSprite.Priority := 4000;
+    if aPlayer.xp_Speed >= xp_SPEED_POINTS then begin
+      AnimBallSprite :=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'levelup_speed',6,1,40,pbSprite.Position.X + (pbSprite.BMP.Width div 2) ,pbSprite.Position.Y,true );
+      AnimBallSprite.sTag := '0';
+      AnimBallSprite.Priority := 4000;
+    end;
   end;
 
  skipforGK:
-  if aPlayer.DefaultDefense < MyBrainFormation.MAX_DEFAULT_DEFENSE then begin
-
-    if Not (aPlayer.DefaultShot >= Diff ) then begin // difesa / shot  // 3 oppure 4 nel caso male
-      pbSprite :=  SE_SpriteProgressBar (  SE_PlayerDetails.FindSprite('bar_defense'));
-      pbSprite.Text :=  IntToStr( aPlayer.xp_defense) + ' / ' + IntToStr(xp_DEFENSE_POINTS) ;
-      pbSprite.Value := trunc (aPlayer.xp_defense * 100) div xp_DEFENSE_POINTS;
-      pbSprite.Visible := true;
-    end;
-  end;
-  aSprite := SE_PlayerDetails.FindSprite('btn_defense');
-  aSprite.Visible:= True;
-  aSprite := SE_PlayerDetails.FindSprite('playerdetailsdefense');
-  aSprite.Visible := True;
-  aSprite.Labels[0].lFontColor := GetAttributeColor ( aPlayer.Defense );
-  aSprite.Labels[0].lText := IntToStr(aPlayer.Defense);
-  if aPlayer.xp_Defense >= xp_DEFENSE_POINTS then begin
+    aSprite := SE_PlayerDetails.FindSprite('btn_defense');
+    aSprite.Visible:= True;
+    aSprite := SE_PlayerDetails.FindSprite('playerdetailsdefense');
+    aSprite.Visible := True;
+    aSprite.Labels[0].lFontColor := GetAttributeColor ( aPlayer.Defense );
+    aSprite.Labels[0].lText := IntToStr(aPlayer.Defense);
+    pbSprite :=  SE_SpriteProgressBar (  SE_PlayerDetails.FindSprite('bar_defense'));
+    pbSprite.Text :=  IntToStr( aPlayer.xp_defense) + ' / ' + IntToStr(xp_DEFENSE_POINTS) ;
+    pbSprite.Value := trunc (aPlayer.xp_defense * 100) div xp_DEFENSE_POINTS;
+    pbSprite.Visible := false;
+  if (aPlayer.DefaultDefense < MyBrainFormation.MAX_DEFAULT_DEFENSE) and Not (aPlayer.DefaultShot >= Diff) then  // difesa / shot  // 3 oppure 4 nel caso male
+    pbSprite.Visible := true;
+   if (pbSprite.Visible) and (aPlayer.xp_Defense >= xp_DEFENSE_POINTS) then begin
     AnimBallSprite :=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'levelup_defense',6,1,40,pbSprite.Position.X + (pbSprite.BMP.Width div 2) ,pbSprite.Position.Y,true );
     AnimBallSprite.sTag := '1';
     AnimBallSprite.Priority := 4000;
   end;
 
 
-  if aPlayer.DefaultPassing < MyBrainFormation.MAX_DEFAULT_PASSING then begin
-    pbSprite :=  SE_SpriteProgressBar (  SE_PlayerDetails.FindSprite('bar_passing'));
-    pbSprite.Text :=  IntToStr( aPlayer.xp_passing) + ' / ' + IntToStr(xp_PASSING_POINTS) ;
-    pbSprite.Value := trunc (aPlayer.xp_passing * 100) div xp_PASSING_POINTS;
-    pbSprite.Visible := true;
-  end;
   aSprite := SE_PlayerDetails.FindSprite('btn_passing');
   aSprite.Visible:= True;
   aSprite := SE_PlayerDetails.FindSprite('playerdetailspassing');
   aSprite.Visible := True;
   aSprite.Labels[0].lFontColor := GetAttributeColor ( aPlayer.Passing );
   aSprite.Labels[0].lText := IntToStr(aPlayer.Passing);
-  if aPlayer.xp_passing >= xp_PASSING_POINTS then begin
+  pbSprite :=  SE_SpriteProgressBar (  SE_PlayerDetails.FindSprite('bar_passing'));
+  pbSprite.Text :=  IntToStr( aPlayer.xp_passing) + ' / ' + IntToStr(xp_PASSING_POINTS) ;
+  pbSprite.Value := trunc (aPlayer.xp_passing * 100) div xp_PASSING_POINTS;
+  pbSprite.Visible := false;
+  if (aPlayer.DefaultPassing < MyBrainFormation.MAX_DEFAULT_PASSING) then
+    pbSprite.Visible := true;
+  if (pbSprite.Visible) and (aPlayer.xp_passing >= xp_PASSING_POINTS) then begin
     AnimBallSprite :=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'levelup_passing',6,1,40,pbSprite.Position.X + (pbSprite.BMP.Width div 2) ,pbSprite.Position.Y,true );
     AnimBallSprite.sTag := '2';
     AnimBallSprite.Priority := 4000;
@@ -2969,67 +2968,65 @@ begin
 
   if aPlayer.TalentId1 = TALENT_ID_GOALKEEPER then goto skipforGK2;
 
-  if aPlayer.DefaultBallControl < MyBrainFormation.MAX_DEFAULT_BALLCONTROL then begin
-    if (aPlayer.TalentId1 <> TALENT_ID_GOALKEEPER) then begin
-      pbSprite :=  SE_SpriteProgressBar (  SE_PlayerDetails.FindSprite('bar_ballcontrol'));
-      pbSprite.Text :=  IntToStr( aPlayer.xp_BallControl) + ' / ' + IntToStr(xp_BALLCONTROL_POINTS) ;
-      pbSprite.Value := trunc (aPlayer.xp_BallControl * 100) div xp_BALLCONTROL_POINTS;
-      pbSprite.Visible := true;
-    end
-  end;
   aSprite := SE_PlayerDetails.FindSprite('btn_ballcontrol');
   aSprite.Visible:= True;
   aSprite := SE_PlayerDetails.FindSprite('playerdetailsballcontrol');
   aSprite.Visible := True;
   aSprite.Labels[0].lFontColor := GetAttributeColor ( aPlayer.Ballcontrol );
   aSprite.Labels[0].lText := IntToStr(aPlayer.Ballcontrol);
-  if aPlayer.xp_BallControl >= xp_BALLCONTROL_POINTS then begin
+  pbSprite :=  SE_SpriteProgressBar (  SE_PlayerDetails.FindSprite('bar_ballcontrol'));
+  pbSprite.Text :=  IntToStr( aPlayer.xp_BallControl) + ' / ' + IntToStr(xp_BALLCONTROL_POINTS) ;
+  pbSprite.Value := trunc (aPlayer.xp_BallControl * 100) div xp_BALLCONTROL_POINTS;
+  pbSprite.Visible := false;
+
+  if (aPlayer.DefaultBallControl < MyBrainFormation.MAX_DEFAULT_BALLCONTROL) then
+    pbSprite.Visible := true;
+
+   if (pbSprite.Visible) and  (aPlayer.xp_BallControl >= xp_BALLCONTROL_POINTS) then begin
     AnimBallSprite :=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'levelup_ballcontrol',6,1,40,pbSprite.Position.X + (pbSprite.BMP.Width div 2) ,pbSprite.Position.Y,true );
     AnimBallSprite.sTag := '3';
     AnimBallSprite.Priority := 4000;
   end;
 
-  if aPlayer.DefaultShot < MyBrainFormation.MAX_DEFAULT_SHOT then begin
-    if not( (aPlayer.DefaultDefense >= Diff) or (aPlayer.TalentId1=TALENT_ID_GOALKEEPER)) then begin // difesa / shot
-      pbSprite :=  SE_SpriteProgressBar (  SE_PlayerDetails.FindSprite('bar_shot'));
-      pbSprite.Text :=  IntToStr( aPlayer.xp_shot) + ' / ' + IntToStr(xp_SHOT_POINTS) ;
-      pbSprite.Value := trunc (aPlayer.xp_shot * 100 ) div xp_SHOT_POINTS;
-      pbSprite.Visible := true;
-    end;
-  end;
   aSprite := SE_PlayerDetails.FindSprite('btn_shot');
   aSprite.Visible:= True;
   aSprite := SE_PlayerDetails.FindSprite('playerdetailsshot');
   aSprite.Visible := True;
   aSprite.Labels[0].lFontColor := GetAttributeColor ( aPlayer.Shot );
   aSprite.Labels[0].lText := IntToStr(aPlayer.Shot);
-  if aPlayer.xp_Shot >= xp_SHOT_POINTS then begin
+  pbSprite :=  SE_SpriteProgressBar (  SE_PlayerDetails.FindSprite('bar_shot'));
+  pbSprite.Text :=  IntToStr( aPlayer.xp_shot) + ' / ' + IntToStr(xp_SHOT_POINTS) ;
+  pbSprite.Value := trunc (aPlayer.xp_shot * 100 ) div xp_SHOT_POINTS;
+  pbSprite.Visible := false;
+
+  if (aPlayer.DefaultShot < MyBrainFormation.MAX_DEFAULT_SHOT) and not( aPlayer.DefaultDefense >= Diff)  then // difesa / shot
+  pbSprite.Visible := true;
+  if (aPlayer.xp_Shot >= xp_SHOT_POINTS) then begin
     AnimBallSprite :=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'levelup_shot',6,1,40,pbSprite.Position.X + (pbSprite.BMP.Width div 2) ,pbSprite.Position.Y,true );
     AnimBallSprite.sTag := '4';
     AnimBallSprite.Priority := 4000;
   end;
 
 //  aPlayer.xp_Heading := 25; // debug
-  if aPlayer.DefaultHeading < MyBrainFormation.MAX_DEFAULT_HEADING then begin
-    // Heading incrementa solo una volta
-    if Not ((aPlayer.History_Heading > 0) or (aPlayer.TalentId1=TALENT_ID_GOALKEEPER)) then begin
-      pbSprite :=  SE_SpriteProgressBar (  SE_PlayerDetails.FindSprite('bar_heading'));
-      pbSprite.Text :=  IntToStr( aPlayer.xp_heading) + ' / ' + IntToStr(xp_HEADING_POINTS) ;
-      pbSprite.Value := trunc (aPlayer.xp_heading * 100) div xp_HEADING_POINTS;
-      pbSprite.Visible := true;
-    end;
-  end;
   aSprite := SE_PlayerDetails.FindSprite('btn_heading');
   aSprite.Visible:= True;
   aSprite := SE_PlayerDetails.FindSprite('playerdetailsheading');
   aSprite.Visible := True;
   aSprite.Labels[0].lFontColor := GetAttributeColor ( aPlayer.Heading );
   aSprite.Labels[0].lText := IntToStr(aPlayer.Heading);
-  if aPlayer.xp_Heading >= xp_HEADING_POINTS then begin
-    AnimBallSprite :=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'levelup_heading',6,1,40,pbSprite.Position.X + (pbSprite.BMP.Width div 2) ,pbSprite.Position.Y,true );
-    AnimBallSprite.sTag := '5';
-    AnimBallSprite.Priority := 4000;
+  pbSprite :=  SE_SpriteProgressBar (  SE_PlayerDetails.FindSprite('bar_heading'));
+  pbSprite.Text :=  IntToStr( aPlayer.xp_heading) + ' / ' + IntToStr(xp_HEADING_POINTS) ;
+  pbSprite.Value := trunc (aPlayer.xp_heading * 100) div xp_HEADING_POINTS;
+  pbSprite.Visible := false;
+  if (aPlayer.DefaultHeading < MyBrainFormation.MAX_DEFAULT_HEADING) and ( aPlayer.History_Heading = 0) then begin
+    // Heading incrementa solo una volta
+    pbSprite.Visible := true;
   end;
+    if (pbSprite.Visible) and (aPlayer.xp_Heading >= xp_HEADING_POINTS) then begin
+      AnimBallSprite :=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'levelup_heading',6,1,40,pbSprite.Position.X + (pbSprite.BMP.Width div 2) ,pbSprite.Position.Y,true );
+      AnimBallSprite.sTag := '5';
+      AnimBallSprite.Priority := 4000;
+    end;
 
 
   // rispetto l'esatto ordine dei talenti sul DB
