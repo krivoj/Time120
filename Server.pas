@@ -324,7 +324,7 @@ var
   Queue: TObjectList<TWSocketThrdClient>;
   RandGen: TtdBasePRNG;
   FormationsPreset: TList<TFormation>;
-  Mutex,MutexMarket: cardinal;
+  Mutex,MutexMarket,MutexLockbrain: cardinal;
   dir_log: string;
   MySqlServerGame,  MySqlServerWorld,  MySqlServerAccount: string; // le 3 tabelle del DB: account, world e Game
                                                                    // world contiene le definizioni come i nomi delle squadre e i cognomi dei player
@@ -840,6 +840,7 @@ begin
 //fine partita
   WaitforSingleObject ( MutexMarket, INFINITE ); // devo bloccare il mercato
   WaitForSingleObject(Mutex,INFINITE);
+  WaitForSingleObject(MutexLockBrain,INFINITE);
 
 
     ConnGame := TMyConnection.Create(nil);
@@ -1296,6 +1297,7 @@ Skip:
 
   ReleaseMutex ( MutexMarket); // sblocco il mercato
   ReleaseMutex ( Mutex); // sblocco il thread delle partite
+  ReleaseMutex ( MutexLockBrain); // sblocco il thread per permettere l'eliminazione del brain
 
   qTeams.Free;
   MyQueryUpdate.Free;
@@ -1504,6 +1506,7 @@ begin
 
   Mutex:=CreateMutex(nil,false,'list');
   MutexMarket:=CreateMutex(nil,false,'market');
+  MutexLockBrain:=CreateMutex(nil,false,'lockbrain');
   RandGen := TtdCombinedPRNG.Create(0, 0);
 
   FormationsPreset := TList<TFormation>.Create;
@@ -1695,6 +1698,7 @@ begin
   TsWorldCountries.Free;
   CloseHandle(Mutex);
   CloseHandle(MutexMarket);
+  CloseHandle(MutexLockbrain);
 
 end;
 
@@ -7019,7 +7023,9 @@ begin
     if BrainManager.lstBrain [i].paused then Continue;
     if BrainManager.lstBrain[i].Finished then // 30 secondi poi cancella il brain
       if GetTickCount - BrainManager.lstBrain[i].FinishedTime > 30000 then begin
+         WaitForSingleObject(MutexLockBrain,INFINITE);
          BrainManager.lstBrain.Delete(i); // libera anche gli spettatori
+         ReleaseMutex(MutexLockBrain);
    //      Break;
       end;
   end;
