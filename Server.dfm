@@ -67,27 +67,27 @@ object FormServer: TFormServer
     OnClick = btnStartAllBrainClick
   end
   object Button1: TButton
-    Left = 424
+    Left = 408
     Top = 431
-    Width = 121
+    Width = 137
     Height = 25
-    Caption = 'create accounts test100'
+    Caption = 'create 300 accounts test '
     TabOrder = 4
     OnClick = Button1Click
   end
   object Button2: TButton
-    Left = 424
+    Left = 408
     Top = 462
-    Width = 121
+    Width = 137
     Height = 25
-    Caption = 'create teams test100'
+    Caption = 'create 300 teams test'
     TabOrder = 5
     OnClick = Button2Click
   end
   object Button3: TButton
-    Left = 424
+    Left = 408
     Top = 524
-    Width = 121
+    Width = 137
     Height = 25
     Caption = 'Update Uniforms'
     TabOrder = 6
@@ -213,27 +213,27 @@ object FormServer: TFormServer
     end
   end
   object Button6: TButton
-    Left = 424
+    Left = 408
     Top = 375
-    Width = 121
+    Width = 137
     Height = 25
     Caption = 'load from replay(lastmove)'
     TabOrder = 17
     OnClick = Button6Click
   end
   object Button7: TButton
-    Left = 424
+    Left = 408
     Top = 555
-    Width = 121
+    Width = 137
     Height = 25
     Caption = 'LevelUp Talent(FORCETALENT)'
     TabOrder = 18
     OnClick = Button7Click
   end
   object Button8: TButton
-    Left = 424
+    Left = 408
     Top = 586
-    Width = 121
+    Width = 137
     Height = 25
     Caption = 'LevelUp Talent 2 (FORCETALENT)'
     TabOrder = 19
@@ -299,9 +299,9 @@ object FormServer: TFormServer
     OnClick = Button10Click
   end
   object ProgressBar1: TProgressBar
-    Left = 424
+    Left = 408
     Top = 493
-    Width = 121
+    Width = 137
     Height = 17
     TabOrder = 26
   end

@@ -504,7 +504,7 @@ begin
   MyQueryAccount.Connection := ConnAccount;   // realmd
 
   // genero test1, test2, test3 ecc....
-  for I := 1 to 100 do begin
+  for I := 1 to 300 do begin
 
     username :=  Uppercase('TEST' + IntTostr(i));
     password := UserName;
@@ -513,7 +513,7 @@ begin
                                  '"' + username + '","' +  sha_pass_hash  + '","' +  UserName +'.GMAIL.COM")';
 
     MyQueryAccount.Execute;
-    ProgressBar1.Position := i;
+    ProgressBar1.Position := (100* i) div 300 ;
     application.ProcessMessages;
   end;
 
@@ -1284,9 +1284,13 @@ Skip:
       aReserveSlot.X := brain.NextReserveSlot ( T ); //<--- la prossima libera
     //  aReserveSlot.Y := -1;
 
+      {$ifdef debug}
       Start := GettickCount;
+      {$endif debug}
       aBasePlayer := FormServer.CreateRandomPlayer ( brain.Gender, brain.Score.Country[T], true );
+      {$ifdef debug}
       FormServer.memo2.lines.Add( IntToStr( GetTickCount - Start));
+      {$endif debug}
 
 
       MatchesPlayed := 0; //38 * 18  ; // 18 anni
@@ -7339,20 +7343,20 @@ begin
 
   cli:= TWSocketThrdClient.Create(nil);
 
-  for I := 1 to 100 do begin
+  for I := 1 to 300 do begin
 
     MyQueryAccount.SQL.Text := 'select id from realmd.account where username=' + '"TEST' + IntToStr(i) + '"';
     MyQueryAccount.Execute;
 
     cli.CliId := MyQueryAccount.FieldByName('id').AsInteger;
 
-    MyQueryWT.SQL.Text := 'select guid from world.teams where serie=1 and rank=1 order by rand() limit 1';
+    MyQueryWT.SQL.Text := 'select guid from world.teams where serie=1 or serie=2 order by rand() limit 1';
     MyQueryWT.Execute;
 
     THEWORLDTEAM :=  MyQueryWT.FieldByName('guid').AsString;
     CreateGameTeam (  'f', Cli, THEWORLDTEAM );  // ts[1] è guid world.teams, non la Guidteam
     CreateGameTeam (  'm', Cli, THEWORLDTEAM );  // ts[1] è guid world.teams, non la Guidteam
-    ProgressBar1.Position := i;
+    ProgressBar1.Position := (100* i) div 300 ;
     application.ProcessMessages;
 
   end;
@@ -7399,15 +7403,15 @@ begin
   MyQueryWT := TMyQuery.Create(nil);
   qTeams.Connection := ConnGame;   // game
   MyQueryWT.Connection := ConnWorld;   // world
-  MyQueryWT.SQL.Text := 'select guid, uniformh,uniforma from world.teams';
+  MyQueryWT.SQL.Text := 'select guid, name, uniformh,uniforma from world.teams';
   MyQueryWT.Execute;
 
   for I := 0 to MyQueryWT.RecordCount -1 do begin
-    qTeams.SQL.Text := 'UPDATE f_game.teams set uniformh="' +
+    qTeams.SQL.Text := 'UPDATE f_game.teams set name="'+MyQueryWT.FieldByName('name').AsString + '",uniformh="' +
                                   MyQueryWT.FieldByName('uniformh').AsString + '",uniforma="' +
                                   MyQueryWT.FieldByName('uniforma').AsString + '" WHERE worldteam =' + MyQueryWT.FieldByName('guid').AsString;
     qTeams.Execute;
-    qTeams.SQL.Text := 'UPDATE m_game.teams set uniformh="' +
+    qTeams.SQL.Text := 'UPDATE m_game.teams set name="'+MyQueryWT.FieldByName('name').AsString + '",uniformh="' +
                                   MyQueryWT.FieldByName('uniformh').AsString + '",uniforma="' +
                                   MyQueryWT.FieldByName('uniforma').AsString + '" WHERE worldteam =' + MyQueryWT.FieldByName('guid').AsString;
     qTeams.Execute;
@@ -7522,7 +7526,7 @@ begin
 
 retry1:
       Application.ProcessMessages;
-      aRnd := RndGenerate (100);
+      aRnd := RndGenerate (300);   // numero di bot account test
 
       qTeams.SQL.text := 'SELECT username, guid, worldTeam, rank, nextha, bot from realmd.account INNER JOIN '+fm+'_game.teams ON realmd.account.id = '+fm+'_game.teams.account WHERE ' +
                                     'username = "TEST' + IntTostr(aRnd) + '" and bot <> 0 and nextha = 0'; // parto dal team0

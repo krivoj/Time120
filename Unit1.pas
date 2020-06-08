@@ -3,10 +3,10 @@
 {$R-}
 
   { TODO -cbug :
-    inizo partita LOP e poi non arriva PASS, ma fa un solo turno
+
+    sistemare world team list (russia 6 )
     controllare invio dati dal server corrotto dopo un tot di inattività. o è compressione o è ics o è il mm3 o il brain.
 
-    createrandomplayer cronometrare.
   }
   { TODO -ctest :
     check fine partita
@@ -39,7 +39,7 @@
     campionato a 32 squadre, 16, 8 etc.... ?
     implementare versione locale o campionati in rete indipendente ?
     ordinare per performance  i cmd dal client ?
-    gestire incrossbarposition, ingolposition con nextsound?
+    gestire incrossbarposition, ingolposition con nextsound? per liberarlo dai pixel precisi.
 
     ssl con passwordrandom
     Aggiorno classifica cannonieri ?
@@ -54,7 +54,6 @@
 
 
     funzione aggiungi amico
-    cellx, celly fare Shortint. cambiare tutti i tpoint in TShortPoint
            }
 
       // procedure importanti:
