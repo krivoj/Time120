@@ -96,6 +96,7 @@ end;
 type TValidPlayer = record
   speed,defense,passing,ballcontrol,shot,heading, disqualified, chancelvlUp, chancetalentlvlUp,talentID1,TalentId2,age : integer;
   history,xp:string;
+  xp_speed,xp_defense,xp_passing,xp_ballcontrol,xp_shot,xp_heading: Integer;
 end;
   type TAttributeName = ( atSpeed , atDefense, atBallControl, atPassing, atShot, atHeading);
   type TLevelUp = record
@@ -165,6 +166,7 @@ type
     Button10: TButton;
     ProgressBar1: TProgressBar;
     Memo2: TMemo;
+    Button11: TButton;
 
     procedure FormCreate(Sender: TObject);
       procedure CleanDirectory(dir:string);
@@ -209,6 +211,7 @@ type
     procedure Button9Click(Sender: TObject);
     procedure Button10Click(Sender: TObject);
     procedure Button4Click(Sender: TObject);
+    procedure Button11Click(Sender: TObject);
   private
     { Private declarations }
     procedure Display(Msg : String);
@@ -589,6 +592,9 @@ NextTeam:
 
   Conngame.Connected := False;
   Conngame.Free;
+
+  ShowMessage ('Done!');
+
 end;
 
 procedure TFormServer.Button1Click(Sender: TObject);
@@ -7466,7 +7472,7 @@ begin
 
     cli.CliId := MyQueryAccount.FieldByName('id').AsInteger;
 
-    MyQueryWT.SQL.Text := 'select guid from world.teams where serie=1 or serie=2 order by rand() limit 1';
+    MyQueryWT.SQL.Text := 'select guid from world.teams order by rand() limit 1';
     MyQueryWT.Execute;
 
     THEWORLDTEAM :=  MyQueryWT.FieldByName('guid').AsString;
@@ -8888,6 +8894,232 @@ begin
   end;
   ReleaseMutex(Mutex);
 
+end;
+
+procedure TFormServer.Button11Click(Sender: TObject);
+var
+  i,aRnd: Integer;
+  ConnGame : TMyConnection ;
+  qPlayers :  TMyQuery;
+  ValidPlayer: TValidPlayer;
+  alvlUp: TLevelUp;
+  tsXP : TStringList;
+begin
+// cicla per tutti i player del db e prova , se ci sono gli xp necessari a livellare un attributo disponibile. checkdefense/shot
+// copia e incolla F e poi M
+
+  ConnGame := TMyConnection.Create(nil);
+  Conngame.Server := MySqlServerGame;
+  Conngame.Username:='root';
+  Conngame.Password:='root';
+  Conngame.Database:='f_game';
+  Conngame.Connected := True;
+
+  qPlayers := TMyQuery.Create(nil);
+  qPlayers.Connection := ConnGame;   // game
+  qPlayers.SQL.Text := 'SELECT * from f_game.players';
+  qPlayers.Execute ;
+
+
+  for I := 0 to qPlayers.RecordCount -1 do begin
+
+    ValidPlayer.Age:= Trunc(  qPlayers.FieldByName ('Matches_Played').AsInteger  div SEASON_MATCHES) + 18 ;
+    ValidPlayer.talentID1 := qPlayers.FieldByName ('talentid1').AsInteger;
+
+
+    ValidPlayer.talentID2 := qPlayers.FieldByName ('talentid2').AsInteger;
+    ValidPlayer.speed :=  qPlayers.FieldByName ('speed').AsInteger;
+    ValidPlayer.defense :=  qPlayers.FieldByName ('defense').AsInteger;
+    ValidPlayer.passing :=  qPlayers.FieldByName ('passing').AsInteger;
+    ValidPlayer.ballcontrol :=  qPlayers.FieldByName ('ballcontrol').AsInteger;
+    ValidPlayer.shot :=  qPlayers.FieldByName ('shot').AsInteger;
+    ValidPlayer.heading :=  qPlayers.FieldByName ('heading').AsInteger;
+    ValidPlayer.history := qPlayers.FieldByName ('history').AsString;
+    ValidPlayer.xp := qPlayers.FieldByName ('xp').AsString;
+
+    case ValidPlayer.Age of
+      18..24: begin
+        ValidPlayer.chancelvlUp := qPlayers.FieldByName ('deva1').AsInteger;
+        ValidPlayer.chancetalentlvlUp :=  qPlayers.FieldByName ('devt1').AsInteger;
+      end;
+      25..30: begin
+        ValidPlayer.chancelvlUp := qPlayers.FieldByName ('deva2').AsInteger;
+        ValidPlayer.chancetalentlvlUp :=  qPlayers.FieldByName ('devt2').AsInteger;
+      end;
+      31..33: begin
+        ValidPlayer.chancelvlUp := qPlayers.FieldByName ('deva3').AsInteger;
+        ValidPlayer.chancetalentlvlUp :=  qPlayers.FieldByName ('devt3').AsInteger;
+      end;
+    end;
+
+    tsXP := TStringList.Create;
+    tsXP.commaText := ValidPlayer.xp; // <-- init importante 18 talenti
+    // rispettare esatto ordine
+    ValidPlayer.xp_Speed         := StrToInt( tsXP[0]);
+    ValidPlayer.xp_Defense       := StrToInt( tsXP[1]);
+    ValidPlayer.xp_Passing       := StrToInt( tsXP[2]);
+    ValidPlayer.xp_BallControl   := StrToInt( tsXP[3]);
+    ValidPlayer.xp_Shot          := StrToInt( tsXP[4]);
+    ValidPlayer.xp_Heading       := StrToInt( tsXP[5]);
+
+    // da qui in poi la function non passa dal validate. le richieste errate vengono semplicemente scartate con MyExit
+    if ValidPlayer.xp_Speed >= xp_SPEED_POINTS then
+      alvlUp := TrylevelUpAttribute ('f', qPlayers.FieldByName('guid').AsInteger, 0, ValidPlayer  );
+    if ValidPlayer.xp_Passing >= xp_PASSING_POINTS then
+      alvlUp := TrylevelUpAttribute ('f', qPlayers.FieldByName('guid').AsInteger, 2, ValidPlayer  );
+    if ValidPlayer.xp_BallControl >= xp_BALLCONTROL_POINTS then
+      alvlUp := TrylevelUpAttribute ('f', qPlayers.FieldByName('guid').AsInteger, 3, ValidPlayer  );
+    if ValidPlayer.xp_Heading >= xp_HEADING_POINTS then
+      alvlUp := TrylevelUpAttribute ('f', qPlayers.FieldByName('guid').AsInteger, 5, ValidPlayer  );
+
+    // per defense e shot scelgo chi è già in vantaggio, altrimenti random
+    if ValidPlayer.shot >  ValidPlayer.defense then begin
+      if ValidPlayer.xp_Shot >= xp_SHOT_POINTS then
+        alvlUp := TrylevelUpAttribute ('f', qPlayers.FieldByName('guid').AsInteger, 4, ValidPlayer  );
+
+    end
+    else if ValidPlayer.shot <  ValidPlayer.defense then begin
+      if ValidPlayer.xp_Defense >= xp_DEFENSE_POINTS then
+        alvlUp := TrylevelUpAttribute ('f', qPlayers.FieldByName('guid').AsInteger, 1, ValidPlayer  );
+
+    end
+    else if ValidPlayer.shot =  ValidPlayer.defense then begin
+      aRnd := rndgenerate (100);
+      if aRnd <= 50 then begin
+      if ValidPlayer.xp_Defense >= xp_DEFENSE_POINTS then
+        alvlUp := TrylevelUpAttribute ('f', qPlayers.FieldByName('guid').AsInteger, 1, ValidPlayer  );
+      end
+      else begin
+      if ValidPlayer.xp_Shot >= xp_SHOT_POINTS then
+        alvlUp := TrylevelUpAttribute ('f', qPlayers.FieldByName('guid').AsInteger, 4, ValidPlayer  );
+
+      end;
+    end;
+
+
+    tsXP.free;
+   // if alvlUp.value then
+
+   //   Memo1.Lines.Add('lvlup!');
+    ProgressBar1.Position :=  (((i * 100 ) div qPlayers.RecordCount) div 2) ;
+
+    qPlayers.Next;
+
+  end;
+
+
+  qPlayers.Free;
+  Conngame.Connected:= False;
+  Conngame.Free;
+
+
+
+  ConnGame := TMyConnection.Create(nil);
+  Conngame.Server := MySqlServerGame;
+  Conngame.Username:='root';
+  Conngame.Password:='root';
+  Conngame.Database:='m_game';
+  Conngame.Connected := True;
+
+  qPlayers := TMyQuery.Create(nil);
+
+  qPlayers.Connection := ConnGame;   // game
+
+
+  qPlayers.SQL.Text := 'SELECT * from m_game.players';
+  qPlayers.Execute ;
+
+
+  for I := 0 to qPlayers.RecordCount -1 do begin
+
+    ValidPlayer.Age:= Trunc(  qPlayers.FieldByName ('Matches_Played').AsInteger  div SEASON_MATCHES) + 18 ;
+    ValidPlayer.talentID1 := qPlayers.FieldByName ('talentid1').AsInteger;
+
+
+    ValidPlayer.talentID2 := qPlayers.FieldByName ('talentid2').AsInteger;
+    ValidPlayer.speed :=  qPlayers.FieldByName ('speed').AsInteger;
+    ValidPlayer.defense :=  qPlayers.FieldByName ('defense').AsInteger;
+    ValidPlayer.passing :=  qPlayers.FieldByName ('passing').AsInteger;
+    ValidPlayer.ballcontrol :=  qPlayers.FieldByName ('ballcontrol').AsInteger;
+    ValidPlayer.shot :=  qPlayers.FieldByName ('shot').AsInteger;
+    ValidPlayer.heading :=  qPlayers.FieldByName ('heading').AsInteger;
+    ValidPlayer.history := qPlayers.FieldByName ('history').AsString;
+    ValidPlayer.xp := qPlayers.FieldByName ('xp').AsString;
+
+    case ValidPlayer.Age of
+      18..24: begin
+        ValidPlayer.chancelvlUp := qPlayers.FieldByName ('deva1').AsInteger;
+        ValidPlayer.chancetalentlvlUp :=  qPlayers.FieldByName ('devt1').AsInteger;
+      end;
+      25..30: begin
+        ValidPlayer.chancelvlUp := qPlayers.FieldByName ('deva2').AsInteger;
+        ValidPlayer.chancetalentlvlUp :=  qPlayers.FieldByName ('devt2').AsInteger;
+      end;
+      31..33: begin
+        ValidPlayer.chancelvlUp := qPlayers.FieldByName ('deva3').AsInteger;
+        ValidPlayer.chancetalentlvlUp :=  qPlayers.FieldByName ('devt3').AsInteger;
+      end;
+    end;
+    tsXP := TStringList.Create;
+    tsXP.commaText := ValidPlayer.xp; // <-- init importante 18 talenti
+    // rispettare esatto ordine
+    ValidPlayer.xp_Speed         := StrToInt( tsXP[0]);
+    ValidPlayer.xp_Defense       := StrToInt( tsXP[1]);
+    ValidPlayer.xp_Passing       := StrToInt( tsXP[2]);
+    ValidPlayer.xp_BallControl   := StrToInt( tsXP[3]);
+    ValidPlayer.xp_Shot          := StrToInt( tsXP[4]);
+    ValidPlayer.xp_Heading       := StrToInt( tsXP[5]);
+
+    // da qui in poi la function non passa dal validate. le richieste errate vengono semplicemente scartate con MyExit
+    if ValidPlayer.xp_Speed >= xp_SPEED_POINTS then
+      alvlUp := TrylevelUpAttribute ('m', qPlayers.FieldByName('guid').AsInteger, 0, ValidPlayer  );
+    if ValidPlayer.xp_Passing >= xp_PASSING_POINTS then
+      alvlUp := TrylevelUpAttribute ('m', qPlayers.FieldByName('guid').AsInteger, 2, ValidPlayer  );
+    if ValidPlayer.xp_BallControl >= xp_BALLCONTROL_POINTS then
+      alvlUp := TrylevelUpAttribute ('m', qPlayers.FieldByName('guid').AsInteger, 3, ValidPlayer  );
+    if ValidPlayer.xp_Heading >= xp_HEADING_POINTS then
+      alvlUp := TrylevelUpAttribute ('m', qPlayers.FieldByName('guid').AsInteger, 5, ValidPlayer  );
+
+    // per defense e shot scelgo chi è già in vantaggio, altrimenti random
+    if ValidPlayer.shot >  ValidPlayer.defense then begin
+      if ValidPlayer.xp_Shot >= xp_SHOT_POINTS then
+        alvlUp := TrylevelUpAttribute ('m', qPlayers.FieldByName('guid').AsInteger, 4, ValidPlayer  );
+
+    end
+    else if ValidPlayer.shot <  ValidPlayer.defense then begin
+      if ValidPlayer.xp_Defense >= xp_DEFENSE_POINTS then
+        alvlUp := TrylevelUpAttribute ('m', qPlayers.FieldByName('guid').AsInteger, 1, ValidPlayer  );
+
+    end
+    else if ValidPlayer.shot =  ValidPlayer.defense then begin
+      aRnd := rndgenerate (100);
+      if aRnd <= 50 then begin
+      if ValidPlayer.xp_Defense >= xp_DEFENSE_POINTS then
+        alvlUp := TrylevelUpAttribute ('m', qPlayers.FieldByName('guid').AsInteger, 1, ValidPlayer  );
+      end
+      else begin
+      if ValidPlayer.xp_Shot >= xp_SHOT_POINTS then
+        alvlUp := TrylevelUpAttribute ('m', qPlayers.FieldByName('guid').AsInteger, 4, ValidPlayer  );
+
+      end;
+    end;
+
+
+    tsXP.free;
+
+  //  if alvlUp.value then
+   //   Memo1.Lines.Add('lvlup!');
+
+    ProgressBar1.Position :=  (i * 100 ) div qPlayers.RecordCount;
+    qPlayers.Next;
+  end;
+
+  ProgressBar1.Position :=  0;
+  qPlayers.Free;
+  Conngame.Connected:= False;
+  Conngame.Free;
+
+  ShowMessage ('Done!');
 end;
 
 end.

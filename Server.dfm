@@ -2,7 +2,7 @@ object FormServer: TFormServer
   Left = 0
   Top = 0
   Caption = 'Time120 Server'
-  ClientHeight = 626
+  ClientHeight = 653
   ClientWidth = 1110
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -313,6 +313,15 @@ object FormServer: TFormServer
     Lines.Strings = (
       '')
     TabOrder = 27
+  end
+  object Button11: TButton
+    Left = 408
+    Top = 620
+    Width = 137
+    Height = 25
+    Caption = 'Attribute LvlUp'
+    TabOrder = 28
+    OnClick = Button11Click
   end
   object Tcpserver: TWSocketThrdServer
     LineLimit = 1024

@@ -3095,6 +3095,9 @@ skipforGK2:
     5: begin
       bmpflags.CopyRectTo( cBitmap, 259,12,0,0,60,40,False,0 );
     end;
+    6: begin
+      bmpflags.CopyRectTo( cBitmap, 450,716,0,0,60,40,False,0 );
+    end;
   end;
   cBitmap.Stretch(40,32);
   aSprite.ChangeBitmap( cBitmap.Bitmap ,1,1,1000 );
@@ -13521,6 +13524,9 @@ begin
       5: begin
         bmpflags.CopyRectTo( cBitmap, 259,12,0,0,60,40,False,0 );
       end;
+      6: begin
+        bmpflags.CopyRectTo( cBitmap, 450,716,0,0,60,40,False,0 );
+      end;
     end;
     cBitmap.Stretch(40,32);
     cBitmap.CopyRectTo( aSprite.SubSprites[0].lBmp, 0,0,0,0,40,32,False,0 );
@@ -13545,6 +13551,9 @@ begin
       end;
       5: begin
         bmpflags.CopyRectTo( cBitmap, 259,12,0,0,60,40,False,0 );
+      end;
+      6: begin
+        bmpflags.CopyRectTo( cBitmap, 450,716,0,0,60,40,False,0 );
       end;
     end;
     cBitmap.Stretch(40,32);
@@ -13754,6 +13763,9 @@ begin
       end;
       5: begin
         bmpflags.CopyRectTo( cBitmap, 259,12,0,0,60,40,False,0 );
+      end;
+      6: begin
+        bmpflags.CopyRectTo( cBitmap, 450,716,0,0,60,40,False,0 );
       end;
     end;
     cBitmap.Stretch(40,32);
