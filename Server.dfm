@@ -294,7 +294,7 @@ object FormServer: TFormServer
     Top = 570
     Width = 121
     Height = 25
-    Caption = 'rnd'
+    Caption = 'Random Market Sell'
     TabOrder = 25
     OnClick = Button10Click
   end

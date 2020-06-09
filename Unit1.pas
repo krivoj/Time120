@@ -6,6 +6,8 @@
 
     sistemare world team list (russia 6 )
     controllare invio dati dal server corrotto dopo un tot di inattività. o è compressione o è ics o è il mm3 o il brain.
+    fare marketsell automatico - da testare
+    fare sprite russian faces
 
   }
   { TODO -ctest :

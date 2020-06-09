@@ -332,8 +332,8 @@ var
   MySqlServerGame,  MySqlServerWorld,  MySqlServerAccount: string; // le 3 tabelle del DB: account, world e Game
                                                                    // world contiene le definizioni come i nomi delle squadre e i cognomi dei player
   Rewards : array [1..4, 1..20] of Integer;
-  mfaces : array[1..5] of Integer;
-  ffaces : array[1..5] of Integer;
+  mfaces : array[1..6] of Integer;
+  ffaces : array[1..6] of Integer;
   injured_penalty, Growth, Talent: array [1..3] of Integer;
 
   mp_template: array [0..PlayerCountStart-1] of Integer;
@@ -471,15 +471,124 @@ end;
 
 procedure TFormServer.Button10Click(Sender: TObject);
 var
-  a: Integer;
+  mValue,T,G : Integer;
+  price: Integer;
+  ConnGame : TMyConnection ;
+  qTeams, qPlayers,qMarket,qPlayersGK: TMyQuery ;
+  label NextTeam;
 begin
-  while true do begin
-    a:= RndGenerate(100);
-    if a= 101  then ShowMessage('101');
-    a:= RndGenerate(18);
-    if a= 19  then ShowMessage('19');
 
+  ConnGame := TMyConnection.Create(nil);
+  Conngame.Server := MySqlServerGame;
+  Conngame.Username:='root';
+  Conngame.Password:='root';
+  Conngame.Database:= 'f_game';
+  Conngame.Connected := True;
+
+  qTeams := TMyQuery.Create(nil);
+  qTeams.Connection := ConnGame;   // game
+
+  qPlayers := TMyQuery.Create(nil);
+  qPlayers.Connection := ConnGame;   // game
+  qPlayersGK := TMyQuery.Create(nil);
+  qPlayersGK.Connection := ConnGame;   // game
+  qMarket := TMyQuery.Create(nil);
+  qMarket.Connection := ConnGame;   // game
+
+  for G := 1 to 2 do begin
+
+    qTeams.SQL.text := 'SELECT guid from ' + Gender[G]+ '_game.teams';
+    qTeams.Execute ;
+
+    for T := 0 to qTeams.RecordCount -1 do begin
+
+      qPlayers.SQL.text := 'SELECT * from ' + Gender[G]+ '_game.players WHERE onmarket=0 and team=' +
+                                    qTeams.FieldByName('guid').AsString +' and young=0 order by rand() limit 1';
+      qPlayers.Execute ;
+
+    // non deve essere presente sul mercato
+      qMarket.SQL.text := 'SELECT guid from '+Gender[G]+'_game.market WHERE guid =' + qPlayers.FieldByName('guid').AsString ;
+      qMarket.Execute ;
+      if qMarket.RecordCount > 0 then goto NextTeam;  // non posso venderlo, non faccio nulla
+
+    // sul mercato massimo 3 player
+
+      qMarket.SQL.text := 'SELECT guid from '+Gender[G]+'_game.market WHERE guidteam =' + qTeams.FieldByName('guid').AsString;
+      qMarket.Execute ;
+      if qMarket.RecordCount >= 3 then goto NextTeam;  // non posso venderlo, non faccio nulla
+
+      if qPlayers.FieldByName('talentid1').AsInteger <> TALENT_ID_GOALKEEPER then  // non un goalkeeper (portiere) o senza talento o con talento
+
+      mValue :=  Trunc ( qPlayers.FieldByName('speed').AsInteger *   MARKET_VALUE_ATTRIBUTE [qPlayers.FieldByName('speed').AsInteger] +
+                 qPlayers.FieldByName('defense').AsInteger *   MARKET_VALUE_ATTRIBUTE [qPlayers.FieldByName('defense').AsInteger] +
+                 qPlayers.FieldByName('passing').AsInteger *   MARKET_VALUE_ATTRIBUTE [qPlayers.FieldByName('passing').AsInteger] +
+                 qPlayers.FieldByName('ballcontrol').AsInteger *   MARKET_VALUE_ATTRIBUTE [qPlayers.FieldByName('ballcontrol').AsInteger] +
+                 qPlayers.FieldByName('shot').AsInteger *   MARKET_VALUE_ATTRIBUTE [qPlayers.FieldByName('shot').AsInteger] +
+                 qPlayers.FieldByName('heading').AsInteger *   MARKET_VALUE_ATTRIBUTE [qPlayers.FieldByName('heading').AsInteger])
+
+      else if qPlayers.FieldByName('talentid1').AsInteger = TALENT_ID_GOALKEEPER then begin  // un portiere
+
+      mValue :=  Trunc ((qPlayers.FieldByName('defense').AsInteger *   MARKET_VALUE_ATTRIBUTE [qPlayers.FieldByName('defense').AsInteger] * MARKET_VALUE_ATTRIBUTE_DEFENSE_GK) +
+                 qPlayers.FieldByName('passing').AsInteger *   MARKET_VALUE_ATTRIBUTE [qPlayers.FieldByName('passing').AsInteger]  );
+
+
+        // è un goalkeeper, se è l'unico non posso venderlo . se ce nes sono di più, ce ne deve essere almeno 1 non sul mercato
+        qPlayersGK.SQL.text := 'SELECT * from ' + Gender[G]+'_game.players WHERE talentid1=1 ' +
+                               'and guid <>' + qPlayers.FieldByName('guid').AsString +
+                                           ' and onmarket=0 and team=' + qTeams.FieldByName('guid').AsString + ' and young=0';
+        qPlayersGK.Execute ;
+
+        if qPlayersGK.RecordCount = 0 then goto NextTeam;  // non posso venderlo, non faccio nulla
+
+
+      end;
+
+      if qPlayers.FieldByName('talentid1').AsInteger  <> 0 then mValue := Trunc (mValue  *  MARKET_VALUE_TALENT1) ; //se c'è un talento, anche goalkeeper
+      if qPlayers.FieldByName('talentid2').AsInteger  <> 0 then mValue := mValue + Trunc (mValue  *  MARKET_VALUE_TALENT2) ;
+
+
+      // update f_game.players onmarket e market con tutti i dati attuali e congelati qui
+      qMarket.SQL.text := 'INSERT INTO '+Gender[G]+'_game.market (speed,defense,passing,ballcontrol,shot,heading,talentid1,talentid2,'+
+                                'matches_played,matches_left,name,guidteam,guidplayer,face,sellprice,history,xp,country,fitness,morale) VALUES ('+
+                                 qPlayers.FieldByName('speed').AsString +
+                                ',' + qPlayers.FieldByName('defense').AsString +
+                                ',' + qPlayers.FieldByName('passing').AsString +
+                                ',' + qPlayers.FieldByName('ballcontrol').AsString +
+                                ',' + qPlayers.FieldByName('shot').AsString +
+                                ',' + qPlayers.FieldByName('heading').AsString +
+                                ',' + qPlayers.FieldByName('talentid1').AsString +
+                                ',' + qPlayers.FieldByName('talentid2').AsString +
+                                ',' + qPlayers.FieldByName('matches_played').AsString +
+                                ',' + qPlayers.FieldByName('matches_left').AsString +
+                                ',"' + qPlayers.FieldByName('name').AsString + '"'+
+                                ',' + qPlayers.FieldByName('team').AsString + // guidteam
+                                ',' + qPlayers.FieldByName('guid').AsString + // guidplayer
+                                ',' + qPlayers.FieldByName('face').AsString + // face
+                                ',' + IntToStr(mValue) + // price
+                                ',"' + qPlayers.FieldByName('history').AsString + '"'+
+                                ',"' + qPlayers.FieldByName('xp').AsString + '"'+
+                                ',' + qPlayers.FieldByName('country').AsString +
+                                ',' + qPlayers.FieldByName('fitness').AsString +
+                                ',' + qPlayers.FieldByName('morale').AsString
+                                + ')';
+      qMarket.Execute ;
+
+      qPlayers.SQL.text := 'UPDATE '+Gender[G]+'_game.players set onmarket=1 WHERE guid =' +  qPlayers.FieldByName('guid').AsString +
+                            ' and team=' + qTeams.FieldByName('guid').AsString ; // per essere sicuri anche cli.guidteam
+      qPlayers.Execute ;
+
+NextTeam:
+      qTeams.Next;
+    end;
   end;
+  qTeams.Free;
+  qPlayers.Free;
+  qPlayersGK.Free;
+  qMarket.Free;
+
+
+  Conngame.Connected := False;
+  Conngame.Free;
 end;
 
 procedure TFormServer.Button1Click(Sender: TObject);
@@ -4581,7 +4690,7 @@ retryf:
     Result.DefaultBallControl := StrToInt( ts[3] );
     Result.DefaultShot := StrToInt( ts[4] );
     Result.DefaultHeading := StrToInt( ts[5] );
-    ts.Free;
+//    ts.Free;
 
 
     Result.Injured_Penalty1 := injured_penalty [rndGenerate (3)]; //    0..38*6:begin    // 18..24 anni
@@ -4602,14 +4711,18 @@ retryf:
 
     if RndGenerate(100) <= Result.devt1 then begin    // se talentChance > 0
       Result.TalentId1 := rndgenerate(NUM_TALENT);    // creo un talento
-      if Result.TalentId1 = TALENT_ID_GOALKEEPER then
+      if Result.TalentId1 = TALENT_ID_GOALKEEPER then begin
         Result.DefaultShot := 1; // al minimo per non impacciare defense
+        ts.CommaText :=  Result.Attributes;
+        ts[4] := '1';
+        Result.Attributes := ts.CommaText;
+      end;
         if EnableTalent2 then begin
           if RndGenerate(100) <= Result.devt1 then        // creo il secondo talento
             Result.TalentId2 := CreateTalentLevel2 ( Result );
         end;
     end;
-
+    ts.Free;
   end
   else if fm = 'm' then begin
 retrym:
@@ -4633,7 +4746,7 @@ retrym:
     Result.DefaultBallControl := StrToInt( ts[3] );
     Result.DefaultShot := StrToInt( ts[4] );
     Result.DefaultHeading := StrToInt( ts[5] );
-    ts.Free;
+    //ts.Free;
 
     Result.Injured_Penalty1 := injured_penalty [rndGenerate (3)]; //    0..38*6:begin    // 18..24 anni
     Result.Injured_Penalty2 := injured_penalty [rndGenerate (3)];//     38*7..38*12:begin    // 25..30
@@ -4654,15 +4767,18 @@ retrym:
 
     if RndGenerate(100) <= Result.devt1 then begin    // se talentChance > 0
       Result.TalentId1 := rndgenerate(NUM_TALENT);    // creo un talento
-      if Result.TalentId1 = TALENT_ID_GOALKEEPER then
+      if Result.TalentId1 = TALENT_ID_GOALKEEPER then begin
         Result.DefaultShot := 1; // al minimo per non impacciare defense
-
+        ts.CommaText :=  Result.Attributes;
+        ts[4] := '1';
+        Result.Attributes := ts.CommaText;
+      end;
         if EnableTalent2 then begin
           if RndGenerate(100) <= Result.devt1 then        // creo il secondo talento
             Result.TalentId2 := CreateTalentLevel2 ( Result );
         end;
     end;
-
+    ts.Free;
   end;
 
 
@@ -7675,8 +7791,13 @@ begin
   MyBrain.Score.TeamGuid [0] :=  PDWORD(@buf3[ cur ])^;
   cur := cur + 4 ;
   MyBrain.Score.TeamGuid [1] :=  PDWORD(@buf3[ cur ])^;
-
   cur := cur + 4 ;
+
+  MyBrain.Score.Rank [0] :=  Ord( buf3[ cur ]);
+  cur := cur + 1 ;
+  MyBrain.Score.Rank [1] :=  Ord( buf3[ cur ]);
+  cur := cur + 1 ;
+
   MyBrain.Score.TeamMI [0] :=  PDWORD(@buf3[ cur ])^;
   cur := cur + 4 ;
   MyBrain.Score.TeamMI [1] :=  PDWORD(@buf3[ cur ])^;
@@ -7694,9 +7815,27 @@ begin
   MyBrain.Score.Uniform [1] := MidStr( dataStr, Cur + 2, lenUniform1 );// ragiona in base 1   uso solo SS
   cur := Cur + lenUniform1 + 1;
 
+
   MyBrain.Score.Gol [0] :=  Ord( buf3[ cur ]);
   cur := cur + 1 ;
   MyBrain.Score.Gol [1] :=  Ord( buf3[ cur ]);
+  cur := cur + 1 ;
+
+  MyBrain.Score.BuffD[0]:= Ord( buf3[ cur ]);
+  cur := cur + 1 ;
+  MyBrain.Score.BuffD[1]:= Ord( buf3[ cur ]);
+  cur := cur + 1 ;
+  MyBrain.Score.BuffM[0]:= Ord( buf3[ cur ]);
+  cur := cur + 1 ;
+  MyBrain.Score.BuffM[1]:= Ord( buf3[ cur ]);
+  cur := cur + 1 ;
+  MyBrain.Score.BuffF[0]:= Ord( buf3[ cur ]);
+  cur := cur + 1 ;
+  MyBrain.Score.BuffF[1]:= Ord( buf3[ cur ]);
+  cur := cur + 1 ;
+  MyBrain.Score.TeamSubs[0]:= Ord( buf3[ cur ]);
+  cur := cur + 1 ;
+  MyBrain.Score.TeamSubs[1]:= Ord( buf3[ cur ]);
   cur := cur + 1 ;
 
   // season e seasonRound
@@ -7709,20 +7848,24 @@ begin
   MyBrain.Score.SeasonRound [1] :=  Ord( buf3[ cur ]);
   cur := cur + 1 ;
 
+    MyBrain.Gender :=  Char( buf3[ cur ]);
+  cur := cur + 1 ;
   MyBrain.Minute :=  Ord( buf3[ cur ]);
   cur := cur + 1 ;
-  MyBrain.Finished := Boolean ( Ord( buf3[ cur ]));
-  cur := cur + 1 ;
 
-  MyBrain.fmilliseconds :=  (PWORD(@buf3[ cur ])^ ) * 1000;
+MyBrain.fmilliseconds :=  (PWORD(@buf3[ cur ])^ ) * 1000;
   cur := cur + 2 ;
   MyBrain.TeamTurn :=  Ord( buf3[ cur ]);
   cur := cur + 1 ;
+
+
   MyBrain.FTeamMovesLeft :=  Ord( buf3[ cur ]);
   cur := cur + 1 ;
   MyBrain.GameStarted :=  Boolean(  Ord( buf3[ cur ]));
   cur := cur + 1 ;
   MyBrain.FlagEndGame :=  Boolean(  Ord( buf3[ cur ]));
+  cur := cur + 1 ;
+  MyBrain.Finished :=  Boolean(  Ord( buf3[ cur ]));
   cur := cur + 1 ;
   MyBrain.Shpbuff :=  Boolean(  Ord( buf3[ cur ]));
   cur := cur + 1 ;
@@ -7740,7 +7883,8 @@ begin
   cur := cur + 1 ;
 
 
-  MyBrain.TeamCorner :=  Ord( buf3[ cur ]);
+
+MyBrain.TeamCorner :=  Ord( buf3[ cur ]);
   cur := cur + 1 ;
   MyBrain.w_CornerSetup :=  Boolean( Ord( buf3[ cur ]));
   cur := cur + 1 ;
@@ -7928,7 +8072,9 @@ begin
     Cur := Cur + 1;
     aPlayer.BonuSPLMturn := Ord( buf3[ cur ]);
     Cur := Cur + 1;
-    aPlayer.isCOF := Boolean( Ord( buf3[ cur ]));
+    aPlayer.BonusFinishingTurn:= Ord( buf3[ cur ]);
+Cur := Cur + 1;
+aPlayer.isCOF := Boolean( Ord( buf3[ cur ]));
     Cur := Cur + 1;
     aPlayer.isFK1 := Boolean( Ord( buf3[ cur ]));
     Cur := Cur + 1;
@@ -8067,6 +8213,21 @@ begin
 
     MM.Free;
     sf.Free;
+
+
+
+    MyBrain.Score.AI[0]:=True;
+    MyBrain.Score.AI[1]:=True;
+    MyBrain.dir_log := dir_log;
+    MyBrain.LogUser[0] := 1;
+    MyBrain.LogUser[1] := 1;
+    MyBrain.SaveData (MyBrain.incMove);//<-- riempe mmbraindata che zippata in mmbraindatazip viene inviata al client
+    BrainManager.AddBrain(MyBrain );
+    MM.Free;
+    sf.Free;
+
+
+
     MyBrain.Score.AI[0]:=True;
     MyBrain.Score.AI[1]:=True;
     MyBrain.dir_log := dir_log;
