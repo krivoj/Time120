@@ -323,6 +323,15 @@ object FormServer: TFormServer
     TabOrder = 28
     OnClick = Button11Click
   end
+  object Button12: TButton
+    Left = 73
+    Top = 601
+    Width = 121
+    Height = 25
+    Caption = 'Clear Market'
+    TabOrder = 29
+    OnClick = Button12Click
+  end
   object Tcpserver: TWSocketThrdServer
     LineLimit = 1024
     LineEnd = #13#10

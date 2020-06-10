@@ -167,6 +167,7 @@ type
     ProgressBar1: TProgressBar;
     Memo2: TMemo;
     Button11: TButton;
+    Button12: TButton;
 
     procedure FormCreate(Sender: TObject);
       procedure CleanDirectory(dir:string);
@@ -212,6 +213,7 @@ type
     procedure Button10Click(Sender: TObject);
     procedure Button4Click(Sender: TObject);
     procedure Button11Click(Sender: TObject);
+    procedure Button12Click(Sender: TObject);
   private
     { Private declarations }
     procedure Display(Msg : String);
@@ -260,7 +262,6 @@ type
     procedure MarketCancelSell ( Cli: TWSocketThrdClient; CommaText: string  );
     procedure DismissPlayer ( Cli: TWSocketThrdClient; CommaText: string  );
     procedure MarketBuy ( Cli: TWSocketThrdClient; CommaText: string  );
-    function GetMarketValueTeam (fm : Char;  Guidteam: Integer ) : Integer;
     function TryAddYoung ( fm :Char; GuidTeam: Integer): Boolean;
 
     function CalculateRank ( mi : integer): Integer;
@@ -498,6 +499,8 @@ begin
   qMarket := TMyQuery.Create(nil);
   qMarket.Connection := ConnGame;   // game
 
+  ProgressBar1.Position := 0 ;
+
   for G := 1 to 2 do begin
 
     qTeams.SQL.text := 'SELECT guid from ' + Gender[G]+ '_game.teams';
@@ -582,6 +585,8 @@ begin
 
 NextTeam:
       qTeams.Next;
+      ProgressBar1.Position := (100* t) div qTeams.RecordCount ;
+
     end;
   end;
   qTeams.Free;
@@ -593,6 +598,7 @@ NextTeam:
   Conngame.Connected := False;
   Conngame.Free;
 
+  ProgressBar1.Position := 0 ;
   ShowMessage ('Done!');
 
 end;
@@ -3514,55 +3520,6 @@ begin
     MM.Free;
 end;
 
-function TFormServer.GetMarketValueTeam ( fm : Char; Guidteam: Integer ) : Integer;
-var
-  qPlayers: TMyQuery;
-  i,pTot: Integer;
-  ConnGame : TMyConnection;
-begin
-  Result := 0;
-  // Singoli players   . uguale a getmarketvalue
-
-  ConnGame := TMyConnection.Create(nil);
-  Conngame.Server := MySqlServerGame;
-  Conngame.Username:='root';
-  Conngame.Password:='root';
-  Conngame.Database:= fm + '_game';
-  Conngame.Connected := True;
-
-
-  qPlayers := TMyQuery.Create(nil);
-  qPlayers.Connection := ConnGame;   // game
-  qPlayers.SQL.text := 'SELECT talentid1,talentid2, speed,defense,passing,ballcontrol,heading,shot,matches_left from ' +
-      fm +'_game.players WHERE team =' + IntToStr(GuidTeam) + ' and young=0';
-  qPlayers.Execute ;
-
-
-  for I := 0 to qPlayers.RecordCount -1 do begin
-    if qPlayers.FieldByName('talentid1').AsInteger <> TALENT_ID_GOALKEEPER then
-
-    pTot :=  Trunc ( qPlayers.FieldByName('Speed').AsInteger  *   MARKET_VALUE_ATTRIBUTE [qPlayers.FieldByName('Speed').AsInteger] +
-               qPlayers.FieldByName('Defense').AsInteger *   MARKET_VALUE_ATTRIBUTE [ qPlayers.FieldByName('Defense').AsInteger] +
-               qPlayers.FieldByName('Passing').AsInteger *   MARKET_VALUE_ATTRIBUTE [qPlayers.FieldByName('Passing').AsInteger] +
-               qPlayers.FieldByName('BallControl').AsInteger *   MARKET_VALUE_ATTRIBUTE [ qPlayers.FieldByName('BallControl').AsInteger] +
-               qPlayers.FieldByName('Shot').AsInteger *   MARKET_VALUE_ATTRIBUTE [qPlayers.FieldByName('Shot').AsInteger] +
-               qPlayers.FieldByName('Heading').AsInteger *   MARKET_VALUE_ATTRIBUTE [qPlayers.FieldByName('Heading').AsInteger])
-    else
-    pTot :=  Trunc ((qPlayers.FieldByName('Defense').AsInteger *   MARKET_VALUE_ATTRIBUTE [qPlayers.FieldByName('Defense').AsInteger]
-               * MARKET_VALUE_ATTRIBUTE_DEFENSE_GK) +
-               qPlayers.FieldByName('Passing').AsInteger *   MARKET_VALUE_ATTRIBUTE [qPlayers.FieldByName('Passing').AsInteger]  );
-
-    if qPlayers.FieldByName('talentid1').asinteger <> 0 then pTot := Trunc(pTot * MARKET_VALUE_TALENT1) ;
-    if qPlayers.FieldByName('talentid2').asinteger <> 0 then pTot := pTot + Trunc(pTot * MARKET_VALUE_TALENT2) ;
-    Result := Result + pTot;
-    qPlayers.Next ;
-  end;
-
-  qPlayers.Free;
-  Conngame.Connected := false;
-  Conngame.Free;
-
-end;
 
 procedure TFormServer.TcpserverLineLimitExceeded(Sender: TObject;
   RcvdLength: Integer; var ClearData: Boolean);
@@ -4369,8 +4326,7 @@ end;
 function TFormServer.CreateGameTeam ( fm :char;  cli: TWSocketThrdClient;  WorldTeamGuid: string ): integer;
 //  cli.cliid=account: integer;
 var
-  GuidTeams: array[1..2] of Integer;
-  i,g: Integer;
+  i: Integer;
   aPlayer: TSoccerPlayer;
   aBasePlayer: TBasePlayer;
   GuidGameTeam,Fitness0,Fitness: Integer;
@@ -9121,5 +9077,47 @@ begin
 
   ShowMessage ('Done!');
 end;
+
+procedure TFormServer.Button12Click(Sender: TObject);
+var
+  ConnGame : TMyConnection ;
+  qPlayers,qMarket: TMyQuery ;
+begin
+
+  ConnGame := TMyConnection.Create(nil);
+  Conngame.Server := MySqlServerGame;
+  Conngame.Username:='root';
+  Conngame.Password:='root';
+  Conngame.Database:= 'f_game';
+  Conngame.Connected := True;
+
+  qPlayers := TMyQuery.Create(nil);
+  qPlayers.Connection := ConnGame;   // game
+  qMarket := TMyQuery.Create(nil);
+  qMarket.Connection := ConnGame;   // game
+
+  qPlayers.SQL.text := 'UPDATE f_game.players SET onmarket =0' ;
+  qPlayers.Execute ;
+
+  qPlayers.SQL.text := 'UPDATE m_game.players SET onmarket =0' ;
+  qPlayers.Execute ;
+
+  qMarket.SQL.text := 'DELETE from f_game.market' ;
+  qMarket.Execute ;
+
+  qMarket.SQL.text := 'DELETE from m_game.market' ;
+  qMarket.Execute ;
+  qPlayers.Free;
+  qMarket.Free;
+
+
+  Conngame.Connected := False;
+  Conngame.Free;
+
+  ShowMessage ('Done!');
+
+end;
+
+
 
 end.

@@ -4,11 +4,11 @@
 
   { TODO -cbug :
 
-    sistemare world team list (russia 6 )
     controllare invio dati dal server corrotto dopo un tot di inattività. o è compressione o è ics o è il mm3 o il brain.
-    fare marketsell automatico - da testare
     fare sprite russian faces
+    fare cognomi russi , un problema sui cognomi maschili e femminili . applicare regola:
 
+    La maggior parte dei cognomi russi cambia al femminile con l'aggiunta della lettera "-a" (Ivanova, Sorokina); si modificano in -skaja nel caso di terminazione in -skij (Moskovskaja) mentre rimangono invariati in caso di finale in "-ich" e "-ko".
   }
   { TODO -ctest :
     check fine partita
@@ -50,7 +50,7 @@
       talento Volley+2 prereq: bomb. volley si attiva anche con roll 9.
 
       TALENT_ID_PLAYMAKER estensione livello 2:
-      talento se gioca centro 234(sua metacampo) ha +2 passaggio  +3m ( regista ) . solo sua metacampo
+      talento se gioca centro 234(sua metacampo) ha +2 passaggio  +3male ( regista ) . solo sua metacampo
 
     Valutare se Pos (tiro potente) può innescare autogol
 
@@ -8652,8 +8652,8 @@ begin
   end
   else if ts[0] = 'cl_red' then begin
 
-    aFieldPointSpr := SE_FieldPoints.FindSprite( ts[2]+'.'+ts[3] );
-    seSprite:= SE_LifeSpan.CreateSprite(dir_interface + 'faulred.bmp' ,'fault',1,1,10,aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y,true  );
+    aPlayer:= MyBrain.GetSoccerPlayer3(ts[1]);
+    seSprite:= SE_LifeSpan.CreateSprite(dir_interface + 'faulred.bmp' ,'fault',1,1,10,aPlayer.se_sprite.Position.X, aPlayer.se_sprite.Position.Y,true  );
     seSprite.LifeSpan := ShowFaultLifeSpan;
     i_red(ts[1]);
 
@@ -8662,16 +8662,16 @@ begin
 
     i_injured(ts[1]);
   end
-  else if ts[0] = 'cl_yellow' then begin
-    aFieldPointSpr := SE_FieldPoints.FindSprite( ts[2]+'.'+ts[3] );
-    seSprite:= SE_LifeSpan.CreateSprite(dir_interface + 'faulyellow.bmp' ,'fault',1,1,10,aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y,true  );
+  else if ts[0] = 'cl_yellow' then begin    // ids cellx celly
+    aPlayer:= MyBrain.GetSoccerPlayer3(ts[1]);
+    seSprite:= SE_LifeSpan.CreateSprite(dir_interface + 'faulyellow.bmp' ,'fault',1,1,10,aPlayer.se_sprite.Position.X, aPlayer.se_sprite.Position.Y,true  );
     seSprite.LifeSpan := ShowFaultLifeSpan;
     i_Yellow(ts[1]);
   end
   else if ts[0] = 'cl_yellowred' then begin
     // qui doppio cartellino sprite
-    aFieldPointSpr := SE_FieldPoints.FindSprite( ts[2]+'.'+ts[3] );
-    seSprite:= SE_LifeSpan.CreateSprite(dir_interface + 'faulyellowred.bmp' ,'fault',1,1,10,aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y,true  );
+    aPlayer:= MyBrain.GetSoccerPlayer3(ts[1]);
+    seSprite:= SE_LifeSpan.CreateSprite(dir_interface + 'faulyellowred.bmp' ,'fault',1,1,10,aPlayer.se_sprite.Position.X, aPlayer.se_sprite.Position.Y,true  );
     seSprite.LifeSpan := ShowFaultLifeSpan;
     i_red(ts[1]);
 
@@ -10457,6 +10457,7 @@ begin
   else if aSpriteClicked.Guid = 'btnmenu_refresh' then begin
     if GCD <= 0 then begin
       MemoC.Lines.Add('--->Tcp : market'  );
+      ShowLoading;
       tcp.SendStr( 'market,'  +  IntToStr(MaxInt)  + EndofLine );
       GCD := GCD_DEFAULT;
     end;
@@ -13341,6 +13342,7 @@ begin
   end
   else if fGameScreen = ScreenMarket then begin
     //AudioCrowd.Stop;
+    SE_Loading.Visible := False;
     SE_BackGround.HideAllSprites;
     aSprite := SE_Background.FindSprite('backgroundmarket');
     aSprite.Visible := True;
