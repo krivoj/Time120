@@ -8922,6 +8922,11 @@ Normalpressing:
      reason := 'STAY,GK';
      goto myexit; // hack
     end;
+    if minute >= 120 then begin
+     reason := 'STAY, 120+ ';
+     goto myexit; // hack
+
+    end;
 
     TsScript.add ('SERVER_STAY,' + aPlayer.ids ) ;
     aPlayer.stay := True;
@@ -8949,6 +8954,11 @@ Normalpressing:
     if aPlayer.TalentID1 = TALENT_ID_GOALKEEPER then begin
      reason := 'FREE,GK';
      goto myexit; // hack
+    end;
+    if minute >= 120 then begin
+     reason := 'FREE, 120+ ';
+     goto myexit; // hack
+
     end;
 
     TsScript.add ('SERVER_FREE,' + aPlayer.ids ) ;
@@ -9388,6 +9398,11 @@ Normalpressing:
      goto myexit; // hack
     end;  // concesso nulla
 
+    if minute >= 120 then begin
+     reason := 'PASS, 120+ ';
+     goto myexit; // hack
+
+    end;
     TsScript.add ('SERVER_PASS,' + IntToStr(teamturn) ) ;
 
     TeamMovesLeft := 0;

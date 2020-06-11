@@ -5,6 +5,7 @@
   { TODO -cbug :
 
     controllare invio dati dal server corrotto dopo un tot di inattività. o è compressione o è ics o è il mm3 o il brain.
+    Estendere il concettp Hide120 anche a free e stay
 
   }
   { TODO -ctest :
@@ -16,10 +17,11 @@
     Server, gender bonus. controllare anche AI.
   }
   { TODO -ctodoreali :
-    cl_splash.gameover aggiungere miGain
-    esagoni dei colori blu, viola ecc... anche stelle. e stelle in showgameover
-    dopo rank1 comincia il campionato a 38 gare per i punti. se ne fa 70, vince la coppa ( hall of fame )
-    aggiungere frecce doppie a nuovo team
+    cl_splash.gameover aggiungere miGain, rank e stelle in showgameover
+
+    server = dopo rank1 comincia il campionato a 38 gare per i punti. se ne fa 70, vince la coppa ( hall of fame )
+    client = hall of fame
+    creazione team aggiungere frecce doppie a nuovo team
 
     fare comparire nome skill in basso sul mouseover della skill se_skills
 
@@ -366,6 +368,8 @@ type
     procedure ShowGameOver( MoneyStarVisible: Boolean ) ;
     procedure FocusMarketPlayer ( aSprite: SE_Sprite);
 
+
+    procedure Hide120;
     procedure SetBallRotation ( X1,Y1,X2,Y2: integer ) ;
 // replay
     procedure btnReplayClick(Sender: TObject);
@@ -839,7 +843,7 @@ end;
 
 procedure TForm1.btnReplayClick(Sender: TObject);
 var
-  i: Integer;
+  i,b: Integer;
   sf : SE_SearchFiles;
 begin
   {$ifdef tools}
@@ -869,7 +873,12 @@ begin
 
   if sf.ListFiles.Count > 0 then begin
     if FileExists( FolderDialog1.Directory  + '\' + sf.ListFiles[0] ) then begin
-      MyActiveGender :=  'f';   { TODO : fix }
+      for b := Length( FolderDialog1.Directory) downto 1 do begin
+        if midstr( FolderDialog1.Directory , b,1) = '\' then begin
+          MyActiveGender :=  midStr(FolderDialog1.Directory,b+1,1);
+          break;
+        end;
+      end;
 
       SE_players.RemoveAllSprites;
       GameScreen := ScreenSpectator ;
@@ -3749,15 +3758,15 @@ begin
     aSprite.Labels.Add(aSpriteLabel);
     bmp.Free;
 
-    bmp2:= SE_Bitmap.Create ( dir_interface + 'starg.bmp');
+    bmp2:= SE_Bitmap.Create ( dir_interface + '\star\24\star0.bmp');
     bmp := SE_Bitmap.Create (bmp2.Width*15,bmp2.Height);
     for i := 0 to 14 do begin
       bmp2.CopyRectTo(bmp,0,0,i*bmp2.Width,0,bmp2.Width-1,bmp2.Height,False,0);
     end;
-    aSprite := SE_RANK.CreateSprite(bmp.bitmap,'starsg', 1,1,1000,720 + (bmp.Width div 2),134,true);
+    aSprite := SE_RANK.CreateSprite(bmp.bitmap,'stars0', 1,1,1000,720 + (bmp.Width div 2),134,true);
     bmp2.Free;
 
-    bmp2:= SE_Bitmap.Create ( dir_interface + 'stary.bmp');
+    bmp2:= SE_Bitmap.Create ( dir_interface + '\star\24\star' +IntToStr(rank) +'.bmp');
     for i := 0 to mi do begin
       bmp2.CopyRectTo(aSprite.bmp,0,0,i*bmp2.Width,0,bmp2.Width-1,bmp2.Height,False,0);
     end;
@@ -4517,6 +4526,7 @@ begin
         aSprite.Visible := True;
         aSprite:=SE_LIVE.FindSprite('btnmenu_skillpass' );
         aSprite.Visible := true;
+        Hide120;
       end;
 
       //      FirstTickCount := GetTickCount;   // margine di sicurezza o il successivo ClientLoadBrainMM svuota la lstSoccerPlayer
@@ -6072,19 +6082,21 @@ begin
   if GameScreen = ScreenLive  then begin
     aSprite:=SE_LIVE.FindSprite('btnmenu_skillpass' );
     aSprite.Visible := Mybrain.Score.TeamGuid [  MyBrain.TeamTurn  ]  = MyGuidTeam;
-  end;
 
-  if MyBrain.w_CornerSetup or MyBrain.w_CornerKick or MyBrain.w_FreeKickSetup1 or MyBrain.w_FreeKickSetup2 or
-    MyBrain.w_FreeKickSetup3 or MyBrain.w_FreeKickSetup4  or (Mybrain.Score.TeamGuid [ Mybrain.TeamTurn ]  <> MyGuidTeam)  then begin
-    SE_TacticsSubs.Visible := False;
-    aSprite := SE_LIVE.FindSprite('btnmenu_tactics');
-    aSprite.Visible := False;
-    aSprite := SE_LIVE.FindSprite('btnmenu_subs');
-    aSprite.Visible := False;
-    aSprite:=SE_LIVE.FindSprite('btnmenu_skillpass' );
-    aSprite.Visible := false;
-  end;
+    if MyBrain.w_CornerSetup or MyBrain.w_CornerKick or MyBrain.w_FreeKickSetup1 or MyBrain.w_FreeKickSetup2 or
+      MyBrain.w_FreeKickSetup3 or MyBrain.w_FreeKickSetup4  or (Mybrain.Score.TeamGuid [ Mybrain.TeamTurn ]  <> MyGuidTeam)  then begin
+      SE_TacticsSubs.Visible := False;
+      aSprite := SE_LIVE.FindSprite('btnmenu_tactics');
+      aSprite.Visible := False;
+      aSprite := SE_LIVE.FindSprite('btnmenu_subs');
+      aSprite.Visible := False;
+      aSprite:=SE_LIVE.FindSprite('btnmenu_skillpass' );
+      aSprite.Visible := false;
+    end;
 
+    Hide120;
+
+  end;
   SetGlobalCursor(crHandPoint );
 
      //if (not AudioCrowd.Playing) and ( not btnAudioStadium.Down) then begin
@@ -6221,6 +6233,8 @@ begin
   aSprite.Visible := Mybrain.Score.TeamGuid [ StrToInt(team) ]  = MyGuidTeam;// Mybrain.Score.TeamGuid [ Mybrain.TeamTurn ]  = MyGuidTeam;
   aSprite:=SE_LIVE.FindSprite('btnmenu_skillpass' );
   aSprite.Visible := Mybrain.Score.TeamGuid [ StrToInt(team) ]  = MyGuidTeam;// Mybrain.Score.TeamGuid [ Mybrain.TeamTurn ]  = MyGuidTeam;
+
+  Hide120;
 
   //  if Mybrain.Score.TeamGuid [ StrToInt(team) ] = MyGuidTeam then begin
 //    BackColor := GetDominantColor (StrToInt(team));
@@ -6506,8 +6520,9 @@ begin
     AnimationScript.Tsadd ('cl_wait,'+  IntToStr(ShowFaultLifeSpan));
   end
   else if tsCmd[0]= 'sc_GAMEOVER' then begin
-    AnimationScript.TsAdd  ( 'cl_splash.gameover');
+    AnimationScript.TsAdd  ( 'cl_wait.moving.players');
     AnimationScript.TsAdd  ( 'cl_wait,3000');
+    AnimationScript.TsAdd  ( 'cl_splash.gameover');
   end;
 
   tsCmd.free;
@@ -8649,8 +8664,9 @@ begin
   end
   else if ts[0] = 'cl_red' then begin
 
-    aPlayer:= MyBrain.GetSoccerPlayer3(ts[1]);
-    seSprite:= SE_LifeSpan.CreateSprite(dir_interface + 'faulred.bmp' ,'fault',1,1,10,aPlayer.se_sprite.Position.X, aPlayer.se_sprite.Position.Y,true  );
+  //  aPlayer:= MyBrain.GetSoccerPlayer3(ts[1]);
+    aFieldPointSpr := SE_FieldPoints.FindSprite( ts[2]+'.'+ts[3] );
+    seSprite:= SE_LifeSpan.CreateSprite(dir_interface + 'faulred.bmp' ,'fault',1,1,10,aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y,true  );
     seSprite.LifeSpan := ShowFaultLifeSpan;
     i_red(ts[1]);
 
@@ -8660,15 +8676,17 @@ begin
     i_injured(ts[1]);
   end
   else if ts[0] = 'cl_yellow' then begin    // ids cellx celly
-    aPlayer:= MyBrain.GetSoccerPlayer3(ts[1]);
-    seSprite:= SE_LifeSpan.CreateSprite(dir_interface + 'faulyellow.bmp' ,'fault',1,1,10,aPlayer.se_sprite.Position.X, aPlayer.se_sprite.Position.Y,true  );
+  //  aPlayer:= MyBrain.GetSoccerPlayer3(ts[1]);
+    aFieldPointSpr := SE_FieldPoints.FindSprite( ts[2]+'.'+ts[3] );
+    seSprite:= SE_LifeSpan.CreateSprite(dir_interface + 'faulyellow.bmp' ,'fault',1,1,10,aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y,true  );
     seSprite.LifeSpan := ShowFaultLifeSpan;
     i_Yellow(ts[1]);
   end
   else if ts[0] = 'cl_yellowred' then begin
     // qui doppio cartellino sprite
-    aPlayer:= MyBrain.GetSoccerPlayer3(ts[1]);
-    seSprite:= SE_LifeSpan.CreateSprite(dir_interface + 'faulyellowred.bmp' ,'fault',1,1,10,aPlayer.se_sprite.Position.X, aPlayer.se_sprite.Position.Y,true  );
+  //  aPlayer:= MyBrain.GetSoccerPlayer3(ts[1]);
+    aFieldPointSpr := SE_FieldPoints.FindSprite( ts[2]+'.'+ts[3] );
+    seSprite:= SE_LifeSpan.CreateSprite(dir_interface + 'faulyellowred.bmp' ,'fault',1,1,10,aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y,true  );
     seSprite.LifeSpan := ShowFaultLifeSpan;
     i_red(ts[1]);
 
@@ -9724,8 +9742,10 @@ begin
 PreLoadGridSkill:
 //  SelectedPlayer.ActiveSkills.Add('Pass=0');
   if (SelectedPlayer.Role <> 'G') then begin
-    if SelectedPlayer.stay then SelectedPlayer.ActiveSkills.Add('Free=0')
-      else SelectedPlayer.ActiveSkills.Add('Stay=0');
+    if MyBrain.Minute < 120 then begin
+      if SelectedPlayer.stay then SelectedPlayer.ActiveSkills.Add('Free=0')
+        else SelectedPlayer.ActiveSkills.Add('Stay=0');
+    end;
   {  buff reparto deve fare parte del reparto e avere il talento e il buff deve essere a 0 }
     if (SelectedPlayer.TalentId2 = TALENT_ID_BUFF_DEFENSE) and ( MyBrain.Score.BuffD[SelectedPlayer.team] = 0 )
     and ( SelectedPlayer.Role ='D') then
@@ -11311,6 +11331,7 @@ begin
     aSprite.Visible := True;
     aSprite:=SE_LIVE.FindSprite('btnmenu_skillpass' );
     aSprite.Visible := True;
+    Hide120;
 
 
     MyBrain.Ball.SE_Sprite.Visible := true;
@@ -11379,7 +11400,8 @@ begin
     end;
   end
   else if aSpriteClicked.Guid = 'btnmenu_skillpass' then begin
-    tcp.SendStr(  'PASS' + EndOfline );
+    if MyBrain.Minute < 120 then
+      tcp.SendStr(  'PASS' + EndOfline );
   end
   else if aSpriteClicked.Guid = 'btnmenu_tactics' then begin
 
@@ -13884,6 +13906,7 @@ var
   aSpriteLabel : SE_SpriteLabel;
   index,MoneyGain, miGain:Integer;
   MoneyGainS,miGainS: string;
+  Rank : Integer;
 begin
   // è tutto dinamico. il button elimina tutti gli sprites
   // 3 label: endgame, team e risultato , icona + money, e le star con il rank . le creo qui in showGameOver e le distruggo sul button
@@ -13900,7 +13923,6 @@ begin
       miGain := 0
     else if MyBrain.Score.gol[0] < MyBrain.Score.gol[1] then
       miGain := -3;
-
   end
   else if MyBrain.Score.TeamGuid[1]= MyGuidTeam then begin
     index := 1;
@@ -13940,11 +13962,12 @@ begin
   // 3 label: endgame, team e risultato , icona + money, e le star con il rank . le creo qui in showGameOver e le distruggo sul button
 
   // backframe
-  aSprite:=SE_Uniform.CreateSprite(dir_interface + 'bgmanagergo.bmp' ,'frameback',1,1,1000,SE_Theater1.VirtualWidth div 2  ,SE_Theater1.Virtualheight div 2 ,false );
+  aSprite:=SE_GameOver.CreateSprite(dir_interface + 'bguniform.bmp' ,'frameback',1,1,1000,720,450,false ); // 400x200
   aSprite.Priority := 1;
-//close
+
+  //close
   bmp := SE_Bitmap.Create ( dir_interface + 'button.bmp' );
-  aBtnSprite:=SE_GameOver.CreateSprite(bmp.Bitmap ,'btnmenu_back',1,1,1000,90,280,true );
+  aBtnSprite:=SE_GameOver.CreateSprite(bmp.Bitmap ,'btnmenu_back',1,1,1000,720,450,true );
 //  aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize, Translate('lbl_Tactics') ,true  );
 //  aBtnSprite.Labels.Add( aSpriteLabel);
   aBtnSprite.TransparentForced := True;
@@ -13958,8 +13981,8 @@ begin
 
   // money
   if MoneyStarVisible then begin
-                                                                            { TODO : centrare bene }
-    aSprite := SE_RANK.CreateSprite(dir_interface + 'money.bmp','gold', 1,1,1000,305,40,true);
+
+    aSprite := SE_GameOver.CreateSprite(dir_interface + 'money.bmp','gold', 1,1,1000,540,300,true);
     aSprite.Priority := 1200;
 
     bmp := SE_Bitmap.Create (300,22);
@@ -13971,25 +13994,25 @@ begin
           MoneyGainS := '- ' + IntToStr(MoneyGain);
 
     aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clYellow,clBlack,16, MoneyGainS ,True  );
-    aSprite := SE_RANK.CreateSprite(bmp.bitmap,'money', 1,1,1000,490,40,true);
+    aSprite := SE_GameOver.CreateSprite(bmp.bitmap,'money', 1,1,1000,490,400,true);
     aSprite.Labels.Add(aSpriteLabel);
     aSprite.Priority := 1200;
     bmp.Free;
-
-    // star
-    aSprite := SE_RANK.CreateSprite(dir_interface + 'stary.bmp','stary', 1,1,1000,305,40,true);
+       { TODO : fare bene star 44 }
+    // star del colore del rank attuale. in caso di passaggio rank su questa partita finita, si vede per un attimo ancora il vecchio colore qui.
+    aSprite := SE_GameOver.CreateSprite(dir_interface + '\star\24\star' + IntTostr(MyBrain.Score.Rank [index]) +'.bmp','star', 1,1,1000,305,300,true);
     aSprite.Priority := 1200;
 
     bmp := SE_Bitmap.Create (300,22);
     bmp.Bitmap.Canvas.Brush.Color :=  clGray;
     bmp.Bitmap.Canvas.FillRect(Rect( 0,0,bmp.Width,bmp.Height));
     if MiGain > 0 then
-      MiGainS := '+ ' + IntToStr(MoneyGain)
+      MiGainS := '+ ' + IntToStr(MiGain)
         else if MiGain < 0 then
           MiGainS := '- ' + IntToStr(MiGain);
 
     aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clYellow,clBlack,16, MiGainS ,True  );
-    aSprite := SE_RANK.CreateSprite(bmp.bitmap,'money', 1,1,1000,490,40,true);
+    aSprite := SE_GameOver.CreateSprite(bmp.bitmap,'money', 1,1,1000,490,300,true);
     aSprite.Labels.Add(aSpriteLabel);
     aSprite.Priority := 1200;
     bmp.Free;
@@ -14092,7 +14115,17 @@ begin
   SE_Market.HideAllSprites;
   aSprite.Visible := True;
 end;
-
+procedure TForm1.Hide120;
+var
+  aSprite: SE_Sprite;
+begin
+  if MyBrain.Minute >= 120 then begin
+    aSprite := SE_LIVE.FindSprite('btnmenu_tactics');
+    aSprite.Visible := False;
+    aSprite:=SE_LIVE.FindSprite('btnmenu_skillpass' );
+    aSprite.Visible := False;
+  end;
+end;
 // utilities
 {
 procedure TForm1.MovMouseEnter ( Sender : TObject);
