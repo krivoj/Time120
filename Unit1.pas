@@ -5,10 +5,7 @@
   { TODO -cbug :
 
     controllare invio dati dal server corrotto dopo un tot di inattività. o è compressione o è ics o è il mm3 o il brain.
-    fare sprite russian faces
-    fare cognomi russi , un problema sui cognomi maschili e femminili . applicare regola:
 
-    La maggior parte dei cognomi russi cambia al femminile con l'aggiunta della lettera "-a" (Ivanova, Sorokina); si modificano in -skaja nel caso di terminazione in -skij (Moskovskaja) mentre rimangono invariati in caso di finale in "-ich" e "-ko".
   }
   { TODO -ctest :
     check fine partita

@@ -4541,6 +4541,7 @@ Function TFormServer.CreateSurname ( Country:integer ) : String;
 var
   ConnWorld : TMyConnection ;
   MyQuerySU: TMyQuery;
+  tmp: string;
 begin
 
   ConnWorld := TMyConnection.Create(nil);
@@ -4556,7 +4557,29 @@ begin
   MyQuerySU.Execute;
 
 
-  Result :=  MyQuerySU.FieldByName('name').AsString;
+
+  if Country =6 then begin // solo russia cognomi femminili / maschili
+    tmp := MyQuerySU.FieldByName('name').AsString;
+    // La maggior parte dei cognomi russi cambia al femminile con l'aggiunta della lettera "-a" (Ivanova, Sorokina);
+    // si modificano in -skaja nel caso di terminazione in -skij (Moskovskaja) mentre rimangono invariati in caso di finale in "-ich" e "-ko".
+    if RightStr(tmp,4)= 'skij' then begin
+      tmp := LeftStr ( tmp, Length(tmp)-4);
+      tmp := tmp + 'skaja';
+      Result := tmp;
+    end
+    else if RightStr(tmp,3)= 'ich' then begin
+      Result := tmp;
+    end
+    else if RightStr(tmp,2)= 'ko' then begin
+      Result := tmp;
+    end
+    else begin
+      Result := tmp + 'a';
+    end;
+
+  end
+  else Result :=  MyQuerySU.FieldByName('name').AsString;
+
 
   MyQuerySU.Free;
   ConnWorld.Connected := false;

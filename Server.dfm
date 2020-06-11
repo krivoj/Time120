@@ -86,7 +86,7 @@ object FormServer: TFormServer
   end
   object Button3: TButton
     Left = 408
-    Top = 524
+    Top = 493
     Width = 137
     Height = 25
     Caption = 'Update Uniforms'
@@ -223,7 +223,7 @@ object FormServer: TFormServer
   end
   object Button7: TButton
     Left = 408
-    Top = 555
+    Top = 524
     Width = 137
     Height = 25
     Caption = 'LevelUp Talent(FORCETALENT)'
@@ -232,7 +232,7 @@ object FormServer: TFormServer
   end
   object Button8: TButton
     Left = 408
-    Top = 586
+    Top = 555
     Width = 137
     Height = 25
     Caption = 'LevelUp Talent 2 (FORCETALENT)'
@@ -250,7 +250,7 @@ object FormServer: TFormServer
     TabOrder = 20
   end
   object Button4: TButton
-    Left = 233
+    Left = 265
     Top = 483
     Width = 121
     Height = 25
@@ -259,7 +259,7 @@ object FormServer: TFormServer
     OnClick = Button4Click
   end
   object Button9: TButton
-    Left = 233
+    Left = 265
     Top = 514
     Width = 121
     Height = 25
@@ -268,7 +268,7 @@ object FormServer: TFormServer
     OnClick = Button9Click
   end
   object Edit7: TEdit
-    Left = 233
+    Left = 250
     Top = 545
     Width = 65
     Height = 21
@@ -279,7 +279,7 @@ object FormServer: TFormServer
     Text = '0'
   end
   object Edit8: TEdit
-    Left = 304
+    Left = 321
     Top = 545
     Width = 65
     Height = 21
@@ -290,8 +290,8 @@ object FormServer: TFormServer
     Text = '0'
   end
   object Button10: TButton
-    Left = 73
-    Top = 570
+    Left = 265
+    Top = 583
     Width = 121
     Height = 25
     Caption = 'Random Market Sell'
@@ -300,7 +300,7 @@ object FormServer: TFormServer
   end
   object ProgressBar1: TProgressBar
     Left = 408
-    Top = 493
+    Top = 617
     Width = 137
     Height = 17
     TabOrder = 26
@@ -308,15 +308,15 @@ object FormServer: TFormServer
   object Memo2: TMemo
     Left = 574
     Top = 585
-    Width = 75
-    Height = 33
+    Width = 51
+    Height = 60
     Lines.Strings = (
       '')
     TabOrder = 27
   end
   object Button11: TButton
     Left = 408
-    Top = 620
+    Top = 586
     Width = 137
     Height = 25
     Caption = 'Attribute LvlUp'
@@ -324,8 +324,8 @@ object FormServer: TFormServer
     OnClick = Button11Click
   end
   object Button12: TButton
-    Left = 73
-    Top = 601
+    Left = 265
+    Top = 614
     Width = 121
     Height = 25
     Caption = 'Clear Market'
