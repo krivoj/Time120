@@ -1,0 +1,53 @@
+attaccante dribbling 
+	TALENT_ID_DRIBBLING      = 8;  // +1 dribbling
+	TALENT_ID_ADVANCED_DRIBBLING  = 133; // prereq TALENT_ID_DRIBBLING --> +2 totale dribbling
+	
+attaccante/centrocampista dribbling 
+	TALENT_ID_SUPER_DRIBBLING = 138; // prereq almeno 3 ball.control, talent dribbling --> dribbling +3 chance 15%  ( dribbling2 è +1 fisso )
+
+centrocampista mastino 
+	TALENT_ID_BULLDOG        = 9;  // mastino +1 intercept	
+	TALENT_ID_ADVANCED_BULLDOG    = 134;  // prereq TALENT_ID_BULLDOG mastino +2 intercept
+	
+PATREON
+	Hello everyone! We are the MADiSON development team.
+We have been working full time in the game for several months, driven by our passion for videogames and horror.
+Our devotion for game dev and all the hard work and hours invested (friends' and family's too), led us to create a demo we are proud of unveiling to all of you.
+The demo is an experience of a few minutes where we show the mechanics and the potential of the game. For us, letting you play with what we have come up is key to building trust between you and us.
+The plans are to finish the game by mid-2018 and publish it on steam. We still have months of development ahead but we are confident that everything will be more than fine.
+Our main goal today is to be able to deliver a full game experience. We'd love to have your support in this awesome journey.
+With the help of each one of you, we seek to improve the character modeling, voice acting, to pay software licenses, localisations, sound fx and also collaborate with us and our small studio to continue working more effectively.
+
+ABOUT US
+
+Alexis Di Stefano: I have been passionate about horror genre since I was a child, a huge horror videogames and films lover. I am the creator, writer and director of the game and the guy in charge of the game design and all the visuals of the game. 
+This project started off as an assignment while studying video game design. After I graduated last year I understood that MADiSON needed to become real, so I have worked tirelessly on developing the game since then.	
+
+1,22 You have our sincere gratitude. It means a lot to us. Thanks for making MADiSON possible
+
+6.10You have our sincere gratitude.
++ Addition of your name in the special thanks section on our website! 
+30.50You have our sincere gratitude.  
++ Addition of your name in the special thanks section of our website!
+
++ Steam key when launched.
+
++ Your name will appear in an in-game object.
+
++ Get access to the Patreon page and get to help vote to decide about events in the game.
+
+KICKSTARTER
+
+
+
+1-1 44	3-0 18	2-3 6	3-5 1	 
+2-1 39	0-2 15	4-0 5	6-1 1	 
+1-0 35	3-1 13	0-4 4	1-5 1	 
+0-0 34	3-2 12	1-4 4	5-0 1	 
+2-0 28	4-1 11	0-5 2	5-1 1	 
+0-1 27	1-3 10	2-4 2	5-3 1	 
+1-2 24	3-3 10	3-4 1	2-6 1	 
+2-2 20	0-3 8	4-2 1	 
+
+media ammonizioni 4.4 per partita quindi da 0 a 7.2
+media espulsione 4 ogni 38 partite per squadra quindi ...

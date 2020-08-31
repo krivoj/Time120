@@ -8,222 +8,223 @@
   resources were bound to the produced executable.
 */
 
-#define OverbyteIcsCharsetUtils_sThaiWindows 64432
-#define OverbyteIcsCharsetUtils_sTurkishISO 64433
-#define OverbyteIcsCharsetUtils_sTurkishWindows 64434
-#define OverbyteIcsCharsetUtils_sUnicodeUTF7 64435
-#define OverbyteIcsCharsetUtils_sUnicodeUTF8 64436
-#define OverbyteIcsCharsetUtils_sVietnameseWindows 64437
-#define OverbyteIcsCharsetUtils_sWesternEuropeanISO 64438
-#define OverbyteIcsCharsetUtils_sWesternEuropeanWindows 64439
-#define OverbyteIcsCharsetUtils_sChineseSimplifiedGB2312 64448
-#define OverbyteIcsCharsetUtils_sChineseSimplifiedHZ 64449
-#define OverbyteIcsCharsetUtils_sCyrillicISO 64450
-#define OverbyteIcsCharsetUtils_sCyrillicKOI8R 64451
-#define OverbyteIcsCharsetUtils_sCyrillicKOI8U 64452
-#define OverbyteIcsCharsetUtils_sCyrillicWindows 64453
-#define OverbyteIcsCharsetUtils_sEstonianISO 64454
-#define OverbyteIcsCharsetUtils_sGreekISO 64455
-#define OverbyteIcsCharsetUtils_sGreekWindows 64456
-#define OverbyteIcsCharsetUtils_sHebrewISOLogical 64457
-#define OverbyteIcsCharsetUtils_sHebrewISOVisual 64458
-#define OverbyteIcsCharsetUtils_sHebrewWindows 64459
-#define OverbyteIcsCharsetUtils_sJapaneseJIS 64460
-#define OverbyteIcsCharsetUtils_sKorean 64461
-#define OverbyteIcsCharsetUtils_sKoreanEUC 64462
-#define OverbyteIcsCharsetUtils_sLatin9 64463
-#define MyConsts_STimestampFieldRequired 64464
-#define MyConsts_SPrepareNotSupportedC 64465
-#define MyConsts_SPrepareNotSupportedS 64466
-#define MyConsts_SLockTableVsFetchAll 64467
-#define MyConsts_SNoRecordToLock 64468
-#define MyConsts_SInvalidClientVersion 64469
-#define MyConsts_SCannotIntercept 64470
-#define MyConsts_STwoEmbServer 64471
-#define OverbyteIcsCharsetUtils_sArabicISO 64472
-#define OverbyteIcsCharsetUtils_sArabicWindows 64473
-#define OverbyteIcsCharsetUtils_sBalticISO 64474
-#define OverbyteIcsCharsetUtils_sBalticWindows 64475
-#define OverbyteIcsCharsetUtils_sCentralEuropeanISO 64476
-#define OverbyteIcsCharsetUtils_sCentralEuropeanWindows 64477
-#define OverbyteIcsCharsetUtils_sChineseTraditionalBig5 64478
-#define OverbyteIcsCharsetUtils_sChineseSimplifiedGB18030 64479
-#define DAConsts_SInvalidIV 64480
-#define DAConsts_SInvalidKey 64481
-#define DAConsts_SInvalidKeySize 64482
-#define DAConsts_SEncryptionNotSupported 64483
-#define DAConsts_SInvalidEncDataSize 64484
-#define DAConsts_SInvalidEncData 64485
-#define DAConsts_SInvalidHash 64486
-#define DBMonitorClient_SAppStarted 64487
-#define DBMonitorClient_SAppFinished 64488
-#define MyConsts_SFieldNameNotDefined 64489
-#define MyConsts_sMultipleFieldsFound 64490
-#define MyConsts_SNoResultSet 64491
-#define MyConsts_SEServInitErr 64492
-#define MyConsts_SConnectionOpen 64493
-#define MyConsts_SOpenNextPreparedSQL 64494
-#define MyConsts_SOpenNextVsFetchAll 64495
-#define DAConsts_SUpdateObjectEmptySQL 64496
-#define DAConsts_SEmptySQLStatement 64497
-#define DAConsts_SInvalidBlobPosition 64498
-#define DAConsts_SNoConnectionsInTransaction 64499
-#define DAConsts_SConnectionInTransactionNotActive 64500
-#define DAConsts_SUnsupportedIsolationLevel 64501
-#define DAConsts_SIsolationLevelNotSupportedWithMTS 64502
-#define DAConsts_SReadOnlyTransactionNotSupported 64503
-#define DAConsts_SOperationNotSupported 64504
-#define DAConsts_SMultipleTransactionsNotSupported 64505
-#define DAConsts_SInvalidParamsArray 64506
-#define DAConsts_SUnsupportedMetaDataKind 64507
-#define DAConsts_SRestrictionMustBeSet 64508
-#define DAConsts_SMDIsNotMemDataSet 64509
-#define DAConsts_SProtectionCircular 64510
-#define DAConsts_SNotInitialized 64511
-#define DAConsts_SCustomUpdateFailed 64512
-#define DAConsts_SRefreshFailed 64513
-#define DAConsts_SInvalidFetchRows 64514
-#define DAConsts_SNoCorrespondParam 64515
-#define DAConsts_SUnknownParamDataType 64516
-#define DAConsts_SRecordChanged 64517
-#define DAConsts_SStoredProcNotDefined 64518
-#define DAConsts_SCannotPerformIfPooling 64519
-#define DAConsts_SMaxConnectionsReached 64520
-#define DAConsts_SCannotChangeIsUnicode 64521
-#define DAConsts_SNoTimers 64522
-#define DAConsts_sBlobNotCompressed 64523
-#define DAConsts_SCompressorNotLinked 64524
-#define DAConsts_SUncompressorNotLinked 64525
-#define DAConsts_SUpdateComponentCircularReferences 64526
-#define DAConsts_SUpdateComponentInvalidType 64527
-#define DAConsts_SBadUpdatingTable 64528
-#define DAConsts_SKeyFieldNotFound 64529
-#define DAConsts_SInvalidUnComprBlobSize 64530
-#define DAConsts_SInvalidComprBlobSize 64531
-#define DAConsts_SInvalidComprBlobHeader 64532
-#define DAConsts_SInvalidComprBlobData 64533
-#define DAConsts_SDataSetIsNotPrepared 64534
-#define DAConsts_SNotCachedUpdate 64535
-#define DAConsts_SUpdateWrongDB 64536
-#define DAConsts_SConnectionNotDefined 64537
-#define DAConsts_SCannotConnect 64538
-#define DAConsts_SMacroNotFound 64539
-#define DAConsts_SNotInTransaction 64540
-#define DAConsts_SInTransaction 64541
-#define DAConsts_STransactionNotAssigned 64542
-#define DAConsts_SUpdateFailed 64543
-#define System_ZLibConst_sError 64544
-#define DAConsts_SUnknownDataType 64545
-#define DAConsts_SDataTypeNotSupported 64546
-#define DAConsts_SFieldNotFound 64547
-#define DAConsts_SAttributeNotFount 64548
-#define DAConsts_SCannotConvertType 64549
-#define DAConsts_SIllegalFilter 64550
-#define DAConsts_SNeedBlobType 64551
-#define DAConsts_SInvalidSharedObject 64552
-#define DAConsts_SInvalidBlob 64553
-#define DAConsts_SBlobMustBeCached 64554
-#define DAConsts_SKeyFieldsRequired 64555
-#define DAConsts_SKeyFieldsReq 64556
-#define DAConsts_SNoKeyFields 64557
-#define DAConsts_SBadTableInfoName 64558
-#define DAConsts_SBadStatementType 64559
-#define Data_DBConsts_SNestedDataSetClass 64560
-#define Data_DBConsts_STextFalse 64561
-#define Data_DBConsts_STextTrue 64562
-#define Data_DBConsts_SParameterNotFound 64563
-#define Data_DBConsts_SInvalidVersion 64564
-#define Data_DBConsts_SBadFieldType 64565
-#define Data_DBConsts_SProviderSQLNotSupported 64566
-#define Data_DBConsts_SProviderExecuteNotSupported 64567
-#define Data_DBConsts_SDataSetUnidirectional 64568
-#define Data_DBConsts_SUnassignedVar 64569
-#define Data_DBConsts_SRecordNotFound 64570
-#define Data_DBConsts_SBcdOverflow 64571
-#define Data_DBConsts_SInvalidBcdValue 64572
-#define Data_DBConsts_SCouldNotParseTimeStamp 64573
-#define Data_DBConsts_SInvalidSqlTimeStamp 64574
-#define System_ZLibConst_sTargetBufferTooSmall 64575
-#define Data_DBConsts_SFieldRequired 64576
-#define Data_DBConsts_SDataSetMissing 64577
-#define Data_DBConsts_SInvalidCalcType 64578
-#define Data_DBConsts_SFieldReadOnly 64579
-#define Data_DBConsts_SDuplicateIndexName 64580
-#define Data_DBConsts_SNoIndexForFields 64581
-#define Data_DBConsts_SIndexNotFound 64582
-#define Data_DBConsts_SDBDuplicateName 64583
-#define Data_DBConsts_SCircularDataLink 64584
-#define Data_DBConsts_SLookupInfoError 64585
-#define Data_DBConsts_SDataSourceChange 64586
-#define Data_DBConsts_SDataSetOpen 64587
-#define Data_DBConsts_SNotEditing 64588
-#define Data_DBConsts_SDataSetClosed 64589
-#define Data_DBConsts_SDataSetEmpty 64590
-#define Data_DBConsts_SDataSetReadOnly 64591
-#define Data_DBConsts_SInvalidFieldKind 64592
-#define Data_DBConsts_SUnknownFieldType 64593
-#define Data_DBConsts_SFieldNameMissing 64594
-#define Data_DBConsts_SDuplicateFieldName 64595
-#define Data_DBConsts_SFieldNotFound 64596
-#define Data_DBConsts_SFieldAccessError 64597
-#define Data_DBConsts_SFieldValueError 64598
-#define Data_DBConsts_SFieldRangeError 64599
-#define Data_DBConsts_SBcdFieldRangeError 64600
-#define Data_DBConsts_SInvalidIntegerValue 64601
-#define Data_DBConsts_SInvalidBoolValue 64602
-#define Data_DBConsts_SInvalidFloatValue 64603
-#define Data_DBConsts_SFieldTypeMismatch 64604
-#define Data_DBConsts_SFieldSizeMismatch 64605
-#define Data_DBConsts_SInvalidVarByteArray 64606
-#define Data_DBConsts_SFieldOutOfRange 64607
-#define Vcl_Consts_SStyleClassNotFound 64608
-#define Vcl_Consts_SStyleInvalidHandle 64609
-#define Vcl_Consts_SStyleFormatError 64610
-#define Vcl_Consts_SStyleHookClassRegistered 64611
-#define Vcl_Consts_SStyleHookClassNotRegistered 64612
-#define Vcl_Consts_SStyleInvalidParameter 64613
-#define Vcl_Consts_SStyleFeatureNotSupported 64614
-#define Vcl_Consts_SStyleNotRegistered 64615
-#define Vcl_Consts_SStyleUnregisterError 64616
-#define Vcl_Consts_SStyleNotRegisteredNoName 64617
-#define Vcl_Consts_sBeginInvokeNoHandle 64618
-#define EZLib_SZInvalid 64619
-#define EZip_rsELInvalidPassword 64620
-#define DSE_PathPlanner_SMissingStateFactory 64621
-#define DSE_PathPlanner_SInvalidNeighborRequest 64622
-#define Data_DBConsts_SInvalidFieldSize 64623
-#define Vcl_Consts_SPromptArrayTooShort 64624
-#define Vcl_Consts_SPromptArrayEmpty 64625
-#define Vcl_Consts_SUsername 64626
-#define Vcl_Consts_SPassword 64627
-#define Vcl_Consts_SDomain 64628
-#define Vcl_Consts_SLogin 64629
-#define Vcl_Consts_STrayIconRemoveError 64630
-#define Vcl_Consts_SWindowsVistaRequired 64631
-#define Vcl_Consts_STaskDlgButtonCaption 64632
-#define Vcl_Consts_STaskDlgRadioButtonCaption 64633
-#define Vcl_Consts_SInvalidTaskDlgButtonCaption 64634
-#define Vcl_Consts_SStyleLoadError 64635
-#define Vcl_Consts_SStyleLoadErrors 64636
-#define Vcl_Consts_SStyleRegisterError 64637
-#define Vcl_Consts_SStyleClassRegisterError 64638
-#define Vcl_Consts_SStyleNotFound 64639
+#define OverbyteIcsCharsetUtils_sLatin9 64432
+#define OverbyteIcsCharsetUtils_sThaiWindows 64433
+#define OverbyteIcsCharsetUtils_sTurkishISO 64434
+#define OverbyteIcsCharsetUtils_sTurkishWindows 64435
+#define OverbyteIcsCharsetUtils_sUnicodeUTF7 64436
+#define OverbyteIcsCharsetUtils_sUnicodeUTF8 64437
+#define OverbyteIcsCharsetUtils_sVietnameseWindows 64438
+#define OverbyteIcsCharsetUtils_sWesternEuropeanISO 64439
+#define OverbyteIcsCharsetUtils_sWesternEuropeanWindows 64440
+#define OverbyteIcsCharsetUtils_sChineseSimplifiedGB18030 64448
+#define OverbyteIcsCharsetUtils_sChineseSimplifiedGB2312 64449
+#define OverbyteIcsCharsetUtils_sChineseSimplifiedHZ 64450
+#define OverbyteIcsCharsetUtils_sCyrillicISO 64451
+#define OverbyteIcsCharsetUtils_sCyrillicKOI8R 64452
+#define OverbyteIcsCharsetUtils_sCyrillicKOI8U 64453
+#define OverbyteIcsCharsetUtils_sCyrillicWindows 64454
+#define OverbyteIcsCharsetUtils_sEstonianISO 64455
+#define OverbyteIcsCharsetUtils_sGreekISO 64456
+#define OverbyteIcsCharsetUtils_sGreekWindows 64457
+#define OverbyteIcsCharsetUtils_sHebrewISOLogical 64458
+#define OverbyteIcsCharsetUtils_sHebrewISOVisual 64459
+#define OverbyteIcsCharsetUtils_sHebrewWindows 64460
+#define OverbyteIcsCharsetUtils_sJapaneseJIS 64461
+#define OverbyteIcsCharsetUtils_sKorean 64462
+#define OverbyteIcsCharsetUtils_sKoreanEUC 64463
+#define MyConsts_SOpenNextVsFetchAll 64464
+#define MyConsts_STimestampFieldRequired 64465
+#define MyConsts_SPrepareNotSupportedC 64466
+#define MyConsts_SPrepareNotSupportedS 64467
+#define MyConsts_SLockTableVsFetchAll 64468
+#define MyConsts_SNoRecordToLock 64469
+#define MyConsts_SInvalidClientVersion 64470
+#define MyConsts_SCannotIntercept 64471
+#define MyConsts_STwoEmbServer 64472
+#define OverbyteIcsCharsetUtils_sArabicISO 64473
+#define OverbyteIcsCharsetUtils_sArabicWindows 64474
+#define OverbyteIcsCharsetUtils_sBalticISO 64475
+#define OverbyteIcsCharsetUtils_sBalticWindows 64476
+#define OverbyteIcsCharsetUtils_sCentralEuropeanISO 64477
+#define OverbyteIcsCharsetUtils_sCentralEuropeanWindows 64478
+#define OverbyteIcsCharsetUtils_sChineseTraditionalBig5 64479
+#define DAConsts_SNotInitialized 64480
+#define DAConsts_SInvalidIV 64481
+#define DAConsts_SInvalidKey 64482
+#define DAConsts_SInvalidKeySize 64483
+#define DAConsts_SEncryptionNotSupported 64484
+#define DAConsts_SInvalidEncDataSize 64485
+#define DAConsts_SInvalidEncData 64486
+#define DAConsts_SInvalidHash 64487
+#define DBMonitorClient_SAppStarted 64488
+#define DBMonitorClient_SAppFinished 64489
+#define MyConsts_SFieldNameNotDefined 64490
+#define MyConsts_sMultipleFieldsFound 64491
+#define MyConsts_SNoResultSet 64492
+#define MyConsts_SEServInitErr 64493
+#define MyConsts_SConnectionOpen 64494
+#define MyConsts_SOpenNextPreparedSQL 64495
+#define DAConsts_SUpdateComponentInvalidType 64496
+#define DAConsts_SUpdateObjectEmptySQL 64497
+#define DAConsts_SEmptySQLStatement 64498
+#define DAConsts_SInvalidBlobPosition 64499
+#define DAConsts_SNoConnectionsInTransaction 64500
+#define DAConsts_SConnectionInTransactionNotActive 64501
+#define DAConsts_SUnsupportedIsolationLevel 64502
+#define DAConsts_SIsolationLevelNotSupportedWithMTS 64503
+#define DAConsts_SReadOnlyTransactionNotSupported 64504
+#define DAConsts_SOperationNotSupported 64505
+#define DAConsts_SMultipleTransactionsNotSupported 64506
+#define DAConsts_SInvalidParamsArray 64507
+#define DAConsts_SUnsupportedMetaDataKind 64508
+#define DAConsts_SRestrictionMustBeSet 64509
+#define DAConsts_SMDIsNotMemDataSet 64510
+#define DAConsts_SProtectionCircular 64511
+#define DAConsts_SUpdateFailed 64512
+#define DAConsts_SCustomUpdateFailed 64513
+#define DAConsts_SRefreshFailed 64514
+#define DAConsts_SInvalidFetchRows 64515
+#define DAConsts_SNoCorrespondParam 64516
+#define DAConsts_SUnknownParamDataType 64517
+#define DAConsts_SRecordChanged 64518
+#define DAConsts_SStoredProcNotDefined 64519
+#define DAConsts_SCannotPerformIfPooling 64520
+#define DAConsts_SMaxConnectionsReached 64521
+#define DAConsts_SCannotChangeIsUnicode 64522
+#define DAConsts_SNoTimers 64523
+#define DAConsts_sBlobNotCompressed 64524
+#define DAConsts_SCompressorNotLinked 64525
+#define DAConsts_SUncompressorNotLinked 64526
+#define DAConsts_SUpdateComponentCircularReferences 64527
+#define DAConsts_SBadStatementType 64528
+#define DAConsts_SBadUpdatingTable 64529
+#define DAConsts_SKeyFieldNotFound 64530
+#define DAConsts_SInvalidUnComprBlobSize 64531
+#define DAConsts_SInvalidComprBlobSize 64532
+#define DAConsts_SInvalidComprBlobHeader 64533
+#define DAConsts_SInvalidComprBlobData 64534
+#define DAConsts_SDataSetIsNotPrepared 64535
+#define DAConsts_SNotCachedUpdate 64536
+#define DAConsts_SUpdateWrongDB 64537
+#define DAConsts_SConnectionNotDefined 64538
+#define DAConsts_SCannotConnect 64539
+#define DAConsts_SMacroNotFound 64540
+#define DAConsts_SNotInTransaction 64541
+#define DAConsts_SInTransaction 64542
+#define DAConsts_STransactionNotAssigned 64543
+#define System_ZLibConst_sTargetBufferTooSmall 64544
+#define System_ZLibConst_sError 64545
+#define DAConsts_SUnknownDataType 64546
+#define DAConsts_SDataTypeNotSupported 64547
+#define DAConsts_SFieldNotFound 64548
+#define DAConsts_SAttributeNotFount 64549
+#define DAConsts_SCannotConvertType 64550
+#define DAConsts_SIllegalFilter 64551
+#define DAConsts_SNeedBlobType 64552
+#define DAConsts_SInvalidSharedObject 64553
+#define DAConsts_SInvalidBlob 64554
+#define DAConsts_SBlobMustBeCached 64555
+#define DAConsts_SKeyFieldsRequired 64556
+#define DAConsts_SKeyFieldsReq 64557
+#define DAConsts_SNoKeyFields 64558
+#define DAConsts_SBadTableInfoName 64559
+#define Data_DBConsts_SDataSetReadOnly 64560
+#define Data_DBConsts_SNestedDataSetClass 64561
+#define Data_DBConsts_STextFalse 64562
+#define Data_DBConsts_STextTrue 64563
+#define Data_DBConsts_SParameterNotFound 64564
+#define Data_DBConsts_SInvalidVersion 64565
+#define Data_DBConsts_SBadFieldType 64566
+#define Data_DBConsts_SProviderSQLNotSupported 64567
+#define Data_DBConsts_SProviderExecuteNotSupported 64568
+#define Data_DBConsts_SDataSetUnidirectional 64569
+#define Data_DBConsts_SUnassignedVar 64570
+#define Data_DBConsts_SRecordNotFound 64571
+#define Data_DBConsts_SBcdOverflow 64572
+#define Data_DBConsts_SInvalidBcdValue 64573
+#define Data_DBConsts_SCouldNotParseTimeStamp 64574
+#define Data_DBConsts_SInvalidSqlTimeStamp 64575
+#define Data_DBConsts_SFieldOutOfRange 64576
+#define Data_DBConsts_SFieldRequired 64577
+#define Data_DBConsts_SDataSetMissing 64578
+#define Data_DBConsts_SInvalidCalcType 64579
+#define Data_DBConsts_SFieldReadOnly 64580
+#define Data_DBConsts_SDuplicateIndexName 64581
+#define Data_DBConsts_SNoIndexForFields 64582
+#define Data_DBConsts_SIndexNotFound 64583
+#define Data_DBConsts_SDBDuplicateName 64584
+#define Data_DBConsts_SCircularDataLink 64585
+#define Data_DBConsts_SLookupInfoError 64586
+#define Data_DBConsts_SDataSourceChange 64587
+#define Data_DBConsts_SDataSetOpen 64588
+#define Data_DBConsts_SNotEditing 64589
+#define Data_DBConsts_SDataSetClosed 64590
+#define Data_DBConsts_SDataSetEmpty 64591
+#define Data_DBConsts_SInvalidFieldSize 64592
+#define Data_DBConsts_SInvalidFieldKind 64593
+#define Data_DBConsts_SUnknownFieldType 64594
+#define Data_DBConsts_SFieldNameMissing 64595
+#define Data_DBConsts_SDuplicateFieldName 64596
+#define Data_DBConsts_SFieldNotFound 64597
+#define Data_DBConsts_SFieldAccessError 64598
+#define Data_DBConsts_SFieldValueError 64599
+#define Data_DBConsts_SFieldRangeError 64600
+#define Data_DBConsts_SBcdFieldRangeError 64601
+#define Data_DBConsts_SInvalidIntegerValue 64602
+#define Data_DBConsts_SInvalidBoolValue 64603
+#define Data_DBConsts_SInvalidFloatValue 64604
+#define Data_DBConsts_SFieldTypeMismatch 64605
+#define Data_DBConsts_SFieldSizeMismatch 64606
+#define Data_DBConsts_SInvalidVarByteArray 64607
+#define Vcl_Consts_SStyleNotFound 64608
+#define Vcl_Consts_SStyleClassNotFound 64609
+#define Vcl_Consts_SStyleInvalidHandle 64610
+#define Vcl_Consts_SStyleFormatError 64611
+#define Vcl_Consts_SStyleHookClassRegistered 64612
+#define Vcl_Consts_SStyleHookClassNotRegistered 64613
+#define Vcl_Consts_SStyleInvalidParameter 64614
+#define Vcl_Consts_SStyleFeatureNotSupported 64615
+#define Vcl_Consts_SStyleNotRegistered 64616
+#define Vcl_Consts_SStyleUnregisterError 64617
+#define Vcl_Consts_SStyleNotRegisteredNoName 64618
+#define Vcl_Consts_sBeginInvokeNoHandle 64619
+#define EZLib_SZInvalid 64620
+#define EZip_rsELInvalidPassword 64621
+#define DSE_PathPlanner_SMissingStateFactory 64622
+#define DSE_PathPlanner_SInvalidNeighborRequest 64623
+#define Vcl_Consts_SDockZoneVersionConflict 64624
+#define Vcl_Consts_SPromptArrayTooShort 64625
+#define Vcl_Consts_SPromptArrayEmpty 64626
+#define Vcl_Consts_SUsername 64627
+#define Vcl_Consts_SPassword 64628
+#define Vcl_Consts_SDomain 64629
+#define Vcl_Consts_SLogin 64630
+#define Vcl_Consts_STrayIconRemoveError 64631
+#define Vcl_Consts_SWindowsVistaRequired 64632
+#define Vcl_Consts_STaskDlgButtonCaption 64633
+#define Vcl_Consts_STaskDlgRadioButtonCaption 64634
+#define Vcl_Consts_SInvalidTaskDlgButtonCaption 64635
+#define Vcl_Consts_SStyleLoadError 64636
+#define Vcl_Consts_SStyleLoadErrors 64637
+#define Vcl_Consts_SStyleRegisterError 64638
+#define Vcl_Consts_SStyleClassRegisterError 64639
 #define Vcl_Consts_SmkcShift 64640
 #define Vcl_Consts_SmkcCtrl 64641
 #define Vcl_Consts_SmkcAlt 64642
 #define Vcl_Consts_SOutOfRange 64643
 #define Vcl_Consts_sAllFilter 64644
-#define Vcl_Consts_SIconToClipboard 64645
-#define Vcl_Consts_SCannotOpenClipboard 64646
-#define Vcl_Consts_SInvalidMemoSize 64647
-#define Vcl_Consts_SInvalidPrinterOp 64648
-#define Vcl_Consts_SNoDefaultPrinter 64649
-#define Vcl_Consts_SDuplicateMenus 64650
-#define Vcl_Consts_SDockedCtlNeedsName 64651
-#define Vcl_Consts_SDockTreeRemoveError 64652
-#define Vcl_Consts_SDockZoneNotFound 64653
-#define Vcl_Consts_SDockZoneHasNoCtl 64654
-#define Vcl_Consts_SDockZoneVersionConflict 64655
+#define Vcl_Consts_SInsertLineError 64645
+#define Vcl_Consts_SIconToClipboard 64646
+#define Vcl_Consts_SCannotOpenClipboard 64647
+#define Vcl_Consts_SInvalidMemoSize 64648
+#define Vcl_Consts_SInvalidPrinterOp 64649
+#define Vcl_Consts_SNoDefaultPrinter 64650
+#define Vcl_Consts_SDuplicateMenus 64651
+#define Vcl_Consts_SDockedCtlNeedsName 64652
+#define Vcl_Consts_SDockTreeRemoveError 64653
+#define Vcl_Consts_SDockZoneNotFound 64654
+#define Vcl_Consts_SDockZoneHasNoCtl 64655
 #define Vcl_Consts_SMsgDlgClose 64656
 #define Vcl_Consts_SmkcBkSp 64657
 #define Vcl_Consts_SmkcTab 64658
@@ -1106,6 +1107,7 @@
 #define EStrConsts_rsELMSDialog_SendButtonCaptionVal 65535
 STRINGTABLE
 BEGIN
+	OverbyteIcsCharsetUtils_sLatin9,	L"Latin 9 (ISO)"
 	OverbyteIcsCharsetUtils_sThaiWindows,	L"Thai (Windows)"
 	OverbyteIcsCharsetUtils_sTurkishISO,	L"Turkish (ISO)"
 	OverbyteIcsCharsetUtils_sTurkishWindows,	L"Turkish (Windows)"
@@ -1114,6 +1116,7 @@ BEGIN
 	OverbyteIcsCharsetUtils_sVietnameseWindows,	L"Vietnamese (Windows)"
 	OverbyteIcsCharsetUtils_sWesternEuropeanISO,	L"Western European (ISO)"
 	OverbyteIcsCharsetUtils_sWesternEuropeanWindows,	L"Western European (Windows)"
+	OverbyteIcsCharsetUtils_sChineseSimplifiedGB18030,	L"Chinese Simplified (GB18030)"
 	OverbyteIcsCharsetUtils_sChineseSimplifiedGB2312,	L"Chinese Simplified (GB2312)"
 	OverbyteIcsCharsetUtils_sChineseSimplifiedHZ,	L"Chinese Simplified (HZ)"
 	OverbyteIcsCharsetUtils_sCyrillicISO,	L"Cyrillic (ISO)"
@@ -1129,7 +1132,7 @@ BEGIN
 	OverbyteIcsCharsetUtils_sJapaneseJIS,	L"Japanese (JIS)"
 	OverbyteIcsCharsetUtils_sKorean,	L"Korean"
 	OverbyteIcsCharsetUtils_sKoreanEUC,	L"Korean (EUC)"
-	OverbyteIcsCharsetUtils_sLatin9,	L"Latin 9 (ISO)"
+	MyConsts_SOpenNextVsFetchAll,	L"OpenNext is not compatible with FetchAll = True"
 	MyConsts_STimestampFieldRequired,	L"Timestamp field required"
 	MyConsts_SPrepareNotSupportedC,	L"Prepare/UnPrepare is not supported by this MySQL client version"
 	MyConsts_SPrepareNotSupportedS,	L"Prepare/UnPrepare is not supported by this MySQL server version"
@@ -1145,7 +1148,7 @@ BEGIN
 	OverbyteIcsCharsetUtils_sCentralEuropeanISO,	L"Central European (ISO)"
 	OverbyteIcsCharsetUtils_sCentralEuropeanWindows,	L"Central European (Windows)"
 	OverbyteIcsCharsetUtils_sChineseTraditionalBig5,	L"Chinese Traditional (Big5)"
-	OverbyteIcsCharsetUtils_sChineseSimplifiedGB18030,	L"Chinese Simplified (GB18030)"
+	DAConsts_SNotInitialized,	L"%s is not initialized. Set Key first"
 	DAConsts_SInvalidIV,	L"Invalid Initialization Vector"
 	DAConsts_SInvalidKey,	L"Key is invalid. Set Key or Password first"
 	DAConsts_SInvalidKeySize,	L"Length from Encryption key is invalid.\r\nKeysize for %s must be %d-%d bytes"
@@ -1161,7 +1164,7 @@ BEGIN
 	MyConsts_SEServInitErr,	L"A call to an mysql_server_init failed"
 	MyConsts_SConnectionOpen,	L"Cannot perform this operation on an open connection"
 	MyConsts_SOpenNextPreparedSQL,	L"Cannot OpenNext if statement is Prepared"
-	MyConsts_SOpenNextVsFetchAll,	L"OpenNext is not compatible with FetchAll = True"
+	DAConsts_SUpdateComponentInvalidType,	L"Only %s and %s objects are allowed in update properties"
 	DAConsts_SUpdateObjectEmptySQL,	L"SQL property of InsertObject, ModifyObject, DeleteObject or RefreshObject cannot be empty"
 	DAConsts_SEmptySQLStatement,	L"No SQL statement provided"
 	DAConsts_SInvalidBlobPosition,	L"Invalid BLOB position"
@@ -1177,7 +1180,7 @@ BEGIN
 	DAConsts_SRestrictionMustBeSet,	L"%s restriction must be set"
 	DAConsts_SMDIsNotMemDataSet,	L"Master dataset must be inherited from TMemDataSet"
 	DAConsts_SProtectionCircular,	L"Circular Protection detected, Protection Object is invalid"
-	DAConsts_SNotInitialized,	L"%s is not initialized. Set Key first"
+	DAConsts_SUpdateFailed,	L"Update failed. Found %d records"
 	DAConsts_SCustomUpdateFailed,	L"Update failed"
 	DAConsts_SRefreshFailed,	L"Refresh failed. Found %d records"
 	DAConsts_SInvalidFetchRows,	L"FetchRows must be 1..65535"
@@ -1193,7 +1196,7 @@ BEGIN
 	DAConsts_SCompressorNotLinked,	L"Compressor function is not linked"
 	DAConsts_SUncompressorNotLinked,	L"Uncompressor function is not linked"
 	DAConsts_SUpdateComponentCircularReferences,	L"Circular references are not allowed between TCustomDADataset and TCustomDAUpdateSQL objects"
-	DAConsts_SUpdateComponentInvalidType,	L"Only %s and %s objects are allowed in update properties"
+	DAConsts_SBadStatementType,	L"Bad statement type"
 	DAConsts_SBadUpdatingTable,	L"Wrong UpdatingTable value - table %s is unknown"
 	DAConsts_SKeyFieldNotFound,	L"%s: Key field '%s' not found"
 	DAConsts_SInvalidUnComprBlobSize,	L"Invalid uncompressed blob size"
@@ -1209,7 +1212,7 @@ BEGIN
 	DAConsts_SNotInTransaction,	L"Can't perform operation on inactive transaction"
 	DAConsts_SInTransaction,	L"Can't perform operation on active transaction"
 	DAConsts_STransactionNotAssigned,	L"Transaction not assigned"
-	DAConsts_SUpdateFailed,	L"Update failed. Found %d records"
+	System_ZLibConst_sTargetBufferTooSmall,	L"ZLib error: target buffer may be too small"
 	System_ZLibConst_sError,	L"Error"
 	DAConsts_SUnknownDataType,	L"Unknown data type"
 	DAConsts_SDataTypeNotSupported,	L"Data type is not supported"
@@ -1225,7 +1228,7 @@ BEGIN
 	DAConsts_SKeyFieldsReq,	L"Unique keyfields required"
 	DAConsts_SNoKeyFields,	L"Key fields not found"
 	DAConsts_SBadTableInfoName,	L"TableInfo name must be provided"
-	DAConsts_SBadStatementType,	L"Bad statement type"
+	Data_DBConsts_SDataSetReadOnly,	L"Cannot modify a read-only dataset"
 	Data_DBConsts_SNestedDataSetClass,	L"Nested dataset must inherit from %s"
 	Data_DBConsts_STextFalse,	L"False"
 	Data_DBConsts_STextTrue,	L"True"
@@ -1241,7 +1244,7 @@ BEGIN
 	Data_DBConsts_SInvalidBcdValue,	L"%s is not a valid BCD value"
 	Data_DBConsts_SCouldNotParseTimeStamp,	L"Could not parse SQL TimeStamp string"
 	Data_DBConsts_SInvalidSqlTimeStamp,	L"Invalid SQL date/time values"
-	System_ZLibConst_sTargetBufferTooSmall,	L"ZLib error: target buffer may be too small"
+	Data_DBConsts_SFieldOutOfRange,	L"Value of field '%s' is out of range"
 	Data_DBConsts_SFieldRequired,	L"Field '%s' must have a value"
 	Data_DBConsts_SDataSetMissing,	L"Field '%s' has no dataset"
 	Data_DBConsts_SInvalidCalcType,	L"Field '%s' cannot be a calculated or lookup field"
@@ -1257,7 +1260,7 @@ BEGIN
 	Data_DBConsts_SNotEditing,	L"Dataset not in edit or insert mode"
 	Data_DBConsts_SDataSetClosed,	L"Cannot perform this operation on a closed dataset"
 	Data_DBConsts_SDataSetEmpty,	L"Cannot perform this operation on an empty dataset"
-	Data_DBConsts_SDataSetReadOnly,	L"Cannot modify a read-only dataset"
+	Data_DBConsts_SInvalidFieldSize,	L"Invalid field size"
 	Data_DBConsts_SInvalidFieldKind,	L"Invalid FieldKind"
 	Data_DBConsts_SUnknownFieldType,	L"Field '%s' is of an unknown type"
 	Data_DBConsts_SFieldNameMissing,	L"Field name missing"
@@ -1273,7 +1276,7 @@ BEGIN
 	Data_DBConsts_SFieldTypeMismatch,	L"Type mismatch for field '%s', expecting: %s actual: %s"
 	Data_DBConsts_SFieldSizeMismatch,	L"Size mismatch for field '%s', expecting: %d actual: %d"
 	Data_DBConsts_SInvalidVarByteArray,	L"Invalid variant type or size for field '%s'"
-	Data_DBConsts_SFieldOutOfRange,	L"Value of field '%s' is out of range"
+	Vcl_Consts_SStyleNotFound,	L"Style '%s' not found"
 	Vcl_Consts_SStyleClassNotFound,	L"Style class '%s' not found"
 	Vcl_Consts_SStyleInvalidHandle,	L"Invalid style handle"
 	Vcl_Consts_SStyleFormatError,	L"Invalid style format"
@@ -1289,7 +1292,7 @@ BEGIN
 	EZip_rsELInvalidPassword,	L"ZIP: Invalid Password"
 	DSE_PathPlanner_SMissingStateFactory,	L"Unable to start search, missing factory"
 	DSE_PathPlanner_SInvalidNeighborRequest,	L"Invalid neighbor request, index out of range"
-	Data_DBConsts_SInvalidFieldSize,	L"Invalid field size"
+	Vcl_Consts_SDockZoneVersionConflict,	L"Error loading dock zone from the stream. Expecting version %d, but found %d."
 	Vcl_Consts_SPromptArrayTooShort,	L"Length of value array must be >= length of prompt array"
 	Vcl_Consts_SPromptArrayEmpty,	L"Prompt array must not be empty"
 	Vcl_Consts_SUsername,	L"&Username"
@@ -1305,12 +1308,12 @@ BEGIN
 	Vcl_Consts_SStyleLoadErrors,	L"Unable to load styles: %s"
 	Vcl_Consts_SStyleRegisterError,	L"Style '%s' already registered"
 	Vcl_Consts_SStyleClassRegisterError,	L"Style class '%s' already registered"
-	Vcl_Consts_SStyleNotFound,	L"Style '%s' not found"
 	Vcl_Consts_SmkcShift,	L"Shift+"
 	Vcl_Consts_SmkcCtrl,	L"Ctrl+"
 	Vcl_Consts_SmkcAlt,	L"Alt+"
 	Vcl_Consts_SOutOfRange,	L"Value must be between %d and %d"
 	Vcl_Consts_sAllFilter,	L"All"
+	Vcl_Consts_SInsertLineError,	L"Unable to insert a line"
 	Vcl_Consts_SIconToClipboard,	L"Clipboard does not support Icons"
 	Vcl_Consts_SCannotOpenClipboard,	L"Cannot open clipboard: %s"
 	Vcl_Consts_SInvalidMemoSize,	L"Text exceeds memo capacity"
@@ -1321,7 +1324,6 @@ BEGIN
 	Vcl_Consts_SDockTreeRemoveError,	L"Error removing control from dock tree"
 	Vcl_Consts_SDockZoneNotFound,	L" - Dock zone not found"
 	Vcl_Consts_SDockZoneHasNoCtl,	L" - Dock zone has no control"
-	Vcl_Consts_SDockZoneVersionConflict,	L"Error loading dock zone from the stream. Expecting version %d, but found %d."
 	Vcl_Consts_SMsgDlgClose,	L"&Close"
 	Vcl_Consts_SmkcBkSp,	L"BkSp"
 	Vcl_Consts_SmkcTab,	L"Tab"

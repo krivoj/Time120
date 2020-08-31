@@ -7,7 +7,7 @@ procedure DeleteDirData;
 procedure CreateRewards;
 
 implementation
-uses unit1,soccerbrainv3;
+uses unit1,soccerbrainv3,utilities;
 FUNCTION PolygonCentroid(CONST Polygon:  TpointArray4; VAR Area:  DOUBLE):  TPoint;
 
     VAR

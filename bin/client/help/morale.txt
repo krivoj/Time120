@@ -1,0 +1,1 @@
+All'inizio delle partite in casa, il un Morale alto di un giocatore ha il 20% di probabilità di incrementarne alcuni attributi per quella partita. Un Morale basso hail 20% di decrementarli. Il morale di un giocatore incremente quando il giocatore gioca, decrementa quando non gioca. Non si applica al portiere.

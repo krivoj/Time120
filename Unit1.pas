@@ -4,43 +4,104 @@
 
   { TODO -cbug :
 
-    controllare invio dati dal server corrotto dopo un tot di inattività. o è compressione o è ics o è il mm3 o il brain.
-    Estendere il concettp Hide120 anche a free e stay
-
+    pvp controllare invio dati dal server corrotto dopo un tot di inattività. o è compressione o è ics o è il mm3 o il brain.
   }
   { TODO -ctest :
-    check fine partita
-    bug lastman. ricalcolare le condizioni . anche la nuova versione forse non va bene. c'è sicuro errore perchè compare al 44' di una partita
-    islastman diventa islastman ( aplayer, ballplayer)
+
+    pvp = test sul server di AUTO --> AUTO mi deve essere passato dal server. in base al dato setto lo sprite, non lo faccio io direttamente come nel pve
+    devA e devT partono uguali per tutti in pvp. dipendono dalla quantità di azioni giocate. es. +1% ogni 20 palle giocate
+
+
+    aGK deve usare stamina. costo in gkpos gkprs -2 -1 COST  in exec_freekinck exec_corner,cro,pos,prs,lop
+    devireserve in settml durante la partita incrementa xpdevi dei panchinari ( escludere chi è stato sosituito, espulso o injured)
+    check fine partita sul client
+    pvp testare sell/buy sembra andare bene
+    AI Hide120 anche  free e stay pass sono ok fare anche per tactics. le sub si possono fare
 
     verificare in spritereset e ovunque la palla sempre in movimento, tanto corner e freekick settano la palla
     Server, gender bonus. controllare anche AI.
   }
-  { TODO -ctodoreali :
-    cl_splash.gameover aggiungere miGain, rank e stelle in showgameover
+  { TODO -ctodo prima del rilascio patreon :
 
-    server = dopo rank1 comincia il campionato a 38 gare per i punti. se ne fa 70, vince la coppa ( hall of fame )
-    client = hall of fame
-    creazione team aggiungere frecce doppie a nuovo team
+    face paint shop pro 9 blackpencil 80 30  ufficiale
 
-    fare comparire nome skill in basso sul mouseover della skill se_skills
+    FARE:
+    //      CompleteDivisions;
+//      createnewseason;
 
-    ischeatingball è  da rifare. Isolare la palla tenendo conto dle fatto che i Gk può finire il turno con la palla tra le mani.
-    .tmp da mettere come variabili gender  TALENT_ID_ADVANCED_CROSSING ha bisogno di +2 dal fondo
 
-    standings, icone mappamondo, country, fra il team. you e il team. il team è la somma di tutti i team come il tuo. refresh ogni 24 ore.
-    anzi alcune query ogni settimana. tutto su dbforge in mantanaince
-    il team non ha classifica tra il team stesso. 3 icona a sinistra , 2 a destra
+
+    usare tsspeaker
+    showmatchinfo finire bene.
+
+    fareachtung fatta bene e anche yes no, con titolo verificare.
+    finire le skill sia effetto che help
+
+    la skill -16 o +16 dove si settano? sono subspritemainsk . vanno bene, ma dove vengono settate x e y ?
+    fare ? per help su ogni btnmenu_ e dove c'è bisogno. apre l'help se_help   btnhelp_attributes _talents
+
+    bug lastman. ricalcolare le condizioni . anche la nuova versione forse non va bene. c'è sicuro errore perchè compare al 44' di una partita
+    islastman diventa islastman ( aplayer, ballplayer)
+
+    testare gameover e fare nextMF usare minute per continuare
+    FARE AIthinkdev Animazioni per sviluppo attributo o talento.
+
 
     creare più formazioni , forse bug nella fatigue
 
+
+    migliorare icone
+    stadi diversi , ambienti più caldi con pubblico più grande
+
+    ischeatingball è  da rifare. Isolare la palla tenendo conto dle fatto che i Gk può finire il turno con la palla tra le mani.
+    verificare se il gk può ricevere un shp e applicare il concetto di palla infuocata  --> non puoi giocare 3 mosse move +1 il gk da via la palla.
+    il Gk si deve liberare subito della palla. massimo una mossa.
+
     icona skill short.passing piede+palla
+
+    // --------------------- PVP ----------------------------
+    pvp cl_splash.gameover aggiungere miGain, rank e stelle in showgameover
+
+    pvp server = dopo rank1 comincia il campionato a 38 gare per i punti. se ne fa 70, vince la coppa ( hall of fame )
+    client = hall of fame
+
+    pvp = per il momento non cambiare. LOADAML fare tutte le nuove coords spritelabel
+
+
+    .tmp da mettere come variabili gender  TALENT_ID_ADVANCED_CROSSING ha bisogno di +2 dal fondo
+
+    pvp standings, icone mappamondo, country, fra il team. you e il team. il team è la somma di tutti i team come il tuo. refresh ogni 24 ore.
+      anzi alcune query ogni settimana. tutto su dbforge in mantanaince
+      il team non ha classifica tra il team stesso. 3 icona a sinistra , 2 a destra
+
+
   }
   { TODO -csviluppo :
-    campionato a 32 squadre, 16, 8 etc.... ?
-    implementare versione locale o campionati in rete indipendente ?
-    ordinare per performance  i cmd dal client ?
-    gestire incrossbarposition, ingolposition con nextsound? per liberarlo dai pixel precisi.
+    campi bagnati -passaggio e controllo di palla, caldo + fatica, freddo + infortuni
+     v.2 scommesse o investire su altre squadre
+    // coppe solo nella versione 2.0   tempi supplementari regola del 120+!!!
+    classifica marcatori deve mostrare la squadra a cui appartiene
+    premio fine anno per miglior marcatore
+    injured % div 100 durante movimento. un player si può fare male da solo, non solo in contrasto es. injured 23% --> 0,23%
+    quindi rndgenerate(1000) piu' o meno
+
+    pve coppe e nazionali
+    tempi supplementari regola del 120+
+    pve switch veloce fra simulazione e play sarebbe il massimno
+
+    fare mouseclick .di nuovo mouseclick chiude. se_simulation = mostra matchinfo  (gol). e lo fa anche nella standings.c'è già sTAG matchinfo
+    tipo aSprite := SE_Standings.FindSprite('matchinfo')
+    una specie di clientloadmatchinfo ma spostata
+
+    aggiungere info. seaseon round: risultato partita e sell/buy/dismiss. history players. con frecce doppie. il file è un semplice textfile con readln e writeln
+    caricato in una Tstringlist. Forse i giornali LUCKY POINT
+
+   fare thinkmarket nuovo  GetPlayerVOTE ( aPlayer, Division ): Vote.Role=D Role.Vote 10 ( ottimo difensore ecc... certi talenti alzano di 1 o 0,5 il voto )
+
+   const CrossingRangeMin     = 2; PROVARE 3 , a 2 funziona lo stesso ma si applica shot invece di heading, a parte freekick e corner
+
+   pvp ordinare per performance  i cmd dal client ?
+   gestire incrossbarposition, ingolposition con nextsound? per liberarlo dai pixel precisi.
 
     ssl con passwordrandom
     Aggiorno classifica cannonieri ?
@@ -55,12 +116,27 @@
 
 
     funzione aggiungi amico
+    si può assegnare un terzo talento con i punti allenatore o gold.
+    profondità 3 talenti forse che si attiva in certe situazioni di gioco.
+
+
            }
 
       // procedure importanti:
       //    procedure tcpDataAvailable <--- input dal server
       //    procedure ClientLoadBrainMM  ( incMove: Byte ) Carica il brain arrivato dal server
       //    procedure Anim --> esegue realmente l'animazione
+
+      //    procedure pveSinch è la versione pve di ClientLoadBrainMM
+
+      // gestione file .120
+      // SaveTeamStream MyTeam array22 e brain overload  in utilities   WRITE crea il team da zero o lo sovrascrive partendo da un brain
+      // ClientLoadformation                             in unit1       READ  carica graficamente il file .120
+      // pveCreateformationTeam                          in utilities   READ  elabora in memoria la formazione in commatext
+      // WriteTeamFormation                              in utilities   READ/WRITE cambia le celle
+      // pveCreateMatch                                  in unit1       READ legge le celle cambiate in writeformation
+      // pvpCreateMatch                                  in server      READ  nulla qui
+      //  function pveGetDBPlayer ( fm , guid, GuidTeam  ): TBasePlayer;  READ
 
 interface
 uses
@@ -70,7 +146,7 @@ uses
   Vcl.StdCtrls, Vcl.ExtCtrls, Winapi.MMSystem,    // Delphi libraries
 
   SoccerBrainv3,   // il cuore del gioco, si occupa della singola partita
-
+  utilities,
 
   DSE_Random ,     // DSE Package
   DSE_PathPlanner,
@@ -81,7 +157,8 @@ uses
   DSE_misc,
   DSE_SearchFiles,
   DSE_Panel,
-
+  DSE_List,
+  pashelp,
 
   CnButtons,CnSpin,CnAAFont, CnAACtrls, // CnVCLPack
 
@@ -91,6 +168,8 @@ uses
 
 
 
+const xBtnMenuHelp = 70;
+const yBtnMenuHelp = 40;
 const GCD_DEFAULT = 200;        // global cooldown, minimo 200 ms tra un input verso il server e l'altro ( anti-cheating )
 const DEFAULT_SPEED_BALL = 10;
 const SPEED_BALL_SHP = 4;
@@ -108,7 +187,6 @@ const ShowFaultLifeSpan = 1600; // ms notifica in caso di fallo
 const msSplashTurn = 1600;
 const STANDARD_MP_MS = 50;
 const EndOfLine = 'ENDSOCCER';  // tutti i pacchetti Tcp tra server e client finiscono con questo marker
-type TArray8192 = array [0..8191] of AnsiChar; // i buf[0..255] of  TArray8192 contengono il buffer Tcp in entrata
 const ScaleSprites = 0;        // riduzione generica di tutto gli sprite player
 const ScaleSpritesBarrier = 85;        // riduzione generica dei player in barriera
 const ScaleSpritesFace = 50;        // riduzione face
@@ -121,25 +199,44 @@ Const PixelsCrossbarY = 18;
 Const PixelsGKBounce = 32;
 Const PixelsGKTake = 24;
 // market
-  const XSurname = 72; XFitness = 290; XPrice = 1300; XSpeed = 380; XDefense = 460; XPassing =540; XBallControl = 620; XShot = 700; XHeading = 780;
-  const XTalents = 870; XAge = 990; XMatchsLeft = 1050;
-  const WSurname = 130; WFitness = 80; WPrice = 64; WSpeed = 80; WDefense = 80; WPassing =80; WBallControl = 80; WShot = 80; WHeading = 80;
   const WTalents = 80; WAge = 30; WMatchsLeft = 60;     LY = 4;  FontNameMarket = 'Calibri'; FontSizeMarket = 14;
 //AML
   const XUsername0 = 0; XFlag0 = 250; XTeamName0 = 280;  XScore = 640;  XTeamName1 = 660; XFlag1 = 940; XUsername1 = 970; XTV = 1280; XMinute = 1240;
   const WUsername = 250;              WTeamName = 280; WScore = 60; WMinute = 60;
+
+  const CREATEFORMATION_FORCEYOUNG = 20;
+  const xpDeva_THRESHOLD = 20;
+  const xpDevt_THRESHOLD = 20;
+  const xpDevi_THRESHOLD = 240; // 2 partita senza giocare, poi si resetta a 0
+  const MIN_DEVA = 5;
+  const MIN_DEVT = 5;
+  const MIN_DEVI = 5;
+  const MAX_DEVA = 30;
+  const MAX_DEVT = 30;
+  const MAX_DEVI = 30;
+
+
 type TStringAlignment = ( TStringCenter, TStringRight);
 type TSpriteArrowDirection = record  // le frecce durante waitforSomething
   offset : TPoint;
   angle : single;
 end;
 // Schermate di gioco, es. ScreenWatchLive quando guardo una partita di altri giocatori.
-type TGameScreen =(ScreenLogin, ScreenSelectCountry, ScreenSelectTeam,
+
+type TGameScreen =(ScreenMain, ScreenLogin,
+
+                  ScreenSelectCountry, ScreenSelectTeam,
                   ScreenFormation,ScreenPlayerDetails,
                   ScreenWaitingFormation, ScreenWaitingLive, ScreenWaitingSpectator,
                   ScreenSpectator,ScreenLive,
                   ScreenTactics, ScreenSubs, ScreenCorner, ScreenFreeKick, ScreenPenalty,
-                  ScreenAml, ScreenMarket );
+                  ScreenAml, ScreenMarket,
+
+                  ScreenWaitingCreationSeason, ScreenPreMatch, ScreenWaitingCreationRound, ScreenStandings,
+
+                  ScreenWaitingSimulation, ScreenSimulation
+
+                   );
 
   type TMouseWaitFor = (WaitForGreen, WaitForNone, WaitForAuth, // in attesa di autenticazione login
   WaitForXY_ShortPass, WaitForXY_LoftedPass, WaitForXY_Crossing,
@@ -163,7 +260,7 @@ Type TAnimationScript = class // letta dal TForm1.mainThreadTimer. Produce l'ani
   wait: integer;                // tempo di attesa prima di procedere al prossimo elemento di Ts
   memo: Tmemo;                  // utile per log
   Constructor Create;
-  Destructor destroy;
+  Destructor destroy;// override;
   procedure Reset;
   procedure TsAdd ( v: string );
 end;
@@ -206,23 +303,12 @@ type
       CnSpinEdit1: TCnSpinEdit;
       editN1: TEdit;
       EditN2: TEdit;
-
-    PanelLogin: SE_panel;
-      lbl_username: TLabel;
-      lbl_Password: TLabel;
-      Edit1: TEdit;
-      Edit2: TEdit;
+    PanelMain: SE_Panel;
       FolderDialog1: TFolderDialog;
-      btnLogin: TcnSpeedButton;
       btnReplay: TcnSpeedButton;
-      lbl_ConnectionStatus: TLabel;
-
-    PanelError: SE_panel;
-      lbl_Error: TLabel;
-      BtnErrorOK: TCnSpeedButton;
 
     mainThread: SE_ThreadTimer;
-    ThreadCurMove: SE_ThreadTimer;
+    ThreadCurrentIncMove: SE_ThreadTimer;
     Timer1: TTimer;
 
     tcp: TWSocket;
@@ -259,7 +345,6 @@ type
       edtSell: TEdit;
       BtnBackSell: TCnSpeedButton;
     ToolSpin: TCnSpinEdit;
-      BtnExit: TCnSpeedButton;
     PanelDismiss: SE_Panel;
       BtnConfirmDismiss: TCnSpeedButton;
       BtnBackDismiss: TCnSpeedButton;
@@ -284,14 +369,50 @@ type
     lbl_GameOver3: TLabel;
     Image1: TImage;
     SE_GameOver: SE_Engine;
+    btnSinglePlayer: TCnSpeedButton;
+    btnMultiPlayer: TCnSpeedButton;
+    BtnExit: TCnSpeedButton;
+    SE_Standings: SE_Engine;
+    PanelLogin: SE_Panel;
+    Label2: TLabel;
+    btnLogin: TCnSpeedButton;
+    lbl_username: TLabel;
+    lbl_Password: TLabel;
+    lbl_ConnectionStatus: TLabel;
+    Edit1: TEdit;
+    Edit2: TEdit;
+    PanelSinglePlayer: SE_Panel;
+    btnContinue: TCnSpeedButton;
+    btnRestart: TCnSpeedButton;
+    btnSinglePlayerBAck: TCnSpeedButton;
+    btnMultiPlayerBAck: TCnSpeedButton;
+    SE_YesNo: SE_Engine;
+    SE_PreMatch: SE_Engine;
+    SE_Help: SE_Engine;
+    Button1: TButton;
+    Button11: TButton;
+    SE_Simulation: SE_Engine;
+    ComboBox1: TComboBox;
+    lbl_language: TLabel;
+    SE_InfoError: SE_Engine;
+    SE_matchInfo: SE_Engine;
+    sfSaves: SE_SearchFiles;
+    SE_Circles: SE_Engine;
 
 // General
+    function ChangeResolution(XResolution, YResolution, Depth: DWORD): boolean;
+    procedure DeleteSaves;
 
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
-    procedure btnErrorOKClick(Sender: TObject);
     procedure BtnLoginClick(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+    procedure onAppMessage(var Msg: TMsg; var Handled: Boolean);
+    procedure CompleteAllMatches;
+    procedure pveFinalizeAllbrain;
+    procedure AdvanceMFRound; // aggiunge round o MF
+    procedure pveFinalizeBrain  ( aBrain : TSoccerBrain ) ;
+    procedure AllOtherTeamsThinkMarket ( fm :Char; Perc: integer );
 
 // Tcp
     procedure tcpSessionConnected(Sender: TObject; ErrCode: Word);
@@ -302,8 +423,11 @@ type
 // Threads And timers
     procedure mainThreadTimer(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
-    procedure ThreadCurMoveTimer(Sender: TObject);
+    procedure ThreadCurrentIncMoveTimer(Sender: TObject);
     procedure LoadAnimationScript; // tsScript arriva dal server e contiene l'animazione da realizzare qui sul client
+
+// Help
+    procedure ClientLoadHelp ( help : string );
 
 // Tools
     procedure CheckBoxAI0Click(Sender: TObject);
@@ -320,8 +444,7 @@ type
     procedure Edit2KeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 
 // Mouse on Theater
-    procedure SE_Theater1TheaterMouseDown(Sender: TObject; VisibleX, VisibleY, VirtualX, VirtualY: Integer; Button: TMouseButton;
-      Shift: TShiftState);
+    procedure SE_Theater1TheaterMouseDown(Sender: TObject; VisibleX, VisibleY, VirtualX, VirtualY: Integer; Button: TMouseButton; Shift: TShiftState);
     procedure SE_Theater1MouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure SE_Theater1SpriteMouseMove(Sender: TObject; lstSprite: TObjectList<DSE_theater.SE_Sprite>; Shift: TShiftState; Var Handled: boolean);
     procedure SE_Theater1SpriteMouseDown(Sender: TObject; lstSprite: TObjectList<DSE_theater.SE_Sprite>; Button: TMouseButton; Shift: TShiftState);
@@ -329,17 +452,22 @@ type
         function CreateSurnameSubSprite (aPlayer: TSoccerPlayer): SE_Bitmap;
 
       procedure ScreenFormation_SE_MainInterface ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
+                procedure PveResetFormation;
+
+      procedure ScreenPreMatch_SE_PreMatch  ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
       procedure ScreenFormation_SE_Uniform ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
       procedure ScreenPlayerDetails_SE_PlayerDetails ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
       procedure ScreenAML_SE_AML ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
       procedure ScreenMarket_SE_Market ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
       procedure ScreenSelectCountryTeam_SE_CountryTeam ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
+      procedure ScreenStandings_SE_Standings ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
       procedure ScreenSpectator_SE_Spectator ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
       procedure ScreenWaitingLive_SE_Loading ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
       procedure ScreenLive_SE_Skills ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
-
       procedure ScreenLive_SE_GameOver ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
       procedure ScreenSpectator_SE_GameOver ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
+      procedure ScreenAll_SE_YesNo ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
+      procedure ScreenAll_SE_InfoError ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
 
       procedure ScreenLive_SE_Green ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
       procedure ScreenLive_SE_Players ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
@@ -350,6 +478,7 @@ type
       procedure ScreenTacticsSubs_SE_Players ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
 
       procedure ScreenFreeKick_SE_Players ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
+
 
     procedure SE_Theater1SpriteMouseUp(Sender: TObject; lstSprite: TObjectList<DSE_theater.SE_Sprite>; Button: TMouseButton; Shift: TShiftState);
     procedure SE_Theater1TheaterMouseMove(Sender: TObject; VisibleX, VisibleY, VirtualX, VirtualY: Integer; Shift: TShiftState);
@@ -363,11 +492,12 @@ type
     Function Translate ( aString : string  ): String;
     procedure ShowLevelUpT ( TS: string);
     procedure ShowLevelUpA ( TS: string );
-    procedure ShowError ( AString: string);
-    procedure ShowInfo ( AString: string);
     procedure ShowGameOver( MoneyStarVisible: Boolean ) ;
+    procedure pveForceGameOver;
     procedure FocusMarketPlayer ( aSprite: SE_Sprite);
 
+    procedure CreateYesNo ( param1,param2, paramSpecial: string );
+    procedure CreateInfoError ( param1,param2,paramSpecial: string );
 
     procedure Hide120;
     procedure SetBallRotation ( X1,Y1,X2,Y2: integer ) ;
@@ -381,7 +511,6 @@ type
     procedure ClearInterface;
 
     procedure RenewUniform ( ha: Integer );
-    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure Button5Click(Sender: TObject);
     procedure btnConfirmSellClick(Sender: TObject);
     procedure BtnBackSellClick(Sender: TObject);
@@ -398,13 +527,30 @@ type
     procedure CheckBox9Click(Sender: TObject);
     procedure SE_ballSpritePartialMove(ASprite: SE_Sprite; Partial: Byte);
     procedure Button9Click(Sender: TObject);
+    procedure btnMultiPlayerClick(Sender: TObject);
+    procedure btnSinglePlayerClick(Sender: TObject);
+    procedure btnSinglePlayerBAckClick(Sender: TObject);
+    procedure btnContinueClick(Sender: TObject);
+    procedure btnRestartClick(Sender: TObject);
+    procedure btnMultiPlayerBAckClick(Sender: TObject);
+    procedure SE_Theater1MouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
+    procedure Button1Click(Sender: TObject);
+    procedure Button11Click(Sender: TObject);
+    procedure SE_Theater1AfterVisibleRender(Sender: TObject; VirtualBitmap, VisibleBitmap: SE_Bitmap);
+    procedure FormKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure ComboBox1KeyPress(Sender: TObject; var Key: Char);
+    procedure ComboBox1CloseUp(Sender: TObject);
+    procedure ComboBox1KeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure sfSavesValidateFile(Sender: TObject; ValidMaskInclude, ValidMaskExclude, ValidAttributes: Boolean; var Accept: Boolean);
 
   private
     { Private declarations }
     fSelectedPlayer : TSoccerPlayer;
-    procedure ShowFace ( aPlayer: TSoccerPlayer );
+    fGameMode : TGameMode;
+    procedure ShowFace ( aPlayer: TSoccerPlayer ); deprecated;
     procedure AddFace ( aPlayer: TSoccerPlayer );
     procedure SetSelectedPlayer ( aPlayer: TSoccerPlayer);
+    procedure SetGamemode ( aMode : TGameMode );
     function FieldGuid2Cell (guid:string): Tpoint;
 
     procedure ArrowShowShpIntercept( CellX, CellY : Integer; ToEmptyCell: boolean);
@@ -417,6 +563,8 @@ type
     // Score
     procedure i_Tml ( MovesLeft,team: string );  // animazione internal mosse rimaste
     procedure i_tuc ( team: string );          // animazione internal turn change
+    procedure CirclePlayers ( team: integer );
+
     procedure RefreshTML;
     procedure RefreshTML_direct (TeamMovesLeft, Team, ShpFree : integer ) ;
     procedure Refresh_teamnames;
@@ -427,7 +575,7 @@ type
 
     // interface
     procedure CreateSplash (x,y,w,h: Integer; aString: string; msLifespan, FontSize: integer; FontColor,BackColor: TColor; Transparent: boolean) ;
-    procedure RemoveChancesAndInfo  ;
+    procedure RemoveChancesAndInfo  ; deprecated;
     procedure CornerSetBall;
     procedure PenaltySetBall;
     procedure CornerSetPlayer ( aPlayer: TsoccerPlayer);
@@ -435,18 +583,19 @@ type
     procedure Logmemo ( ScriptLine : string );
 
     // highlight field cell
-    procedure HHFP_GK;
+    procedure HHFP_GK; deprecated;
     procedure HideFP_GK;
     procedure HHFP_Special (CellX, CellY, LifeSpan : integer  );
     procedure HHFP ( CellX, CellY, LifeSpan : integer );
     procedure HHFP_Friendly ( aPlayer: TSoccerPlayer; cells: char );
     procedure HideFP_Friendly;
     procedure HideFP_Special;
-    procedure HHFP_Reserve ( aPlayer: TSoccerPlayer );
+    procedure HHFP_Reserve ( aPlayer: TSoccerPlayer ); deprecated;
     procedure HideFP_Reserve;
     procedure HideFP_Friendly_ALL;
 
     // Animation
+    procedure pveSynchBrain; deprecated;
     procedure ClientLoadBrainMM ( incMove: Byte) ;  // carica il brain e lo script
     function ClientLoadScript ( incMove: Byte) : Integer;               // riempe TAnimationScript
     procedure Anim ( Script: string );                                  // esegue TAnimationScript
@@ -461,6 +610,8 @@ type
     procedure FirstShowRoll;
 
     procedure SelectedPlayerPopupSkill ( CellX, CellY: integer);
+    procedure ShowSingleSkill;
+
     procedure HideHH_Skill ;
     procedure HH_Skill ( SkillMouseMove: string );
 
@@ -471,36 +622,45 @@ type
     function inCrossBarPosition ( PixelPosition: Tpoint ): Boolean;
     function inGKCenterPosition ( PixelPosition: Tpoint ): Boolean;
 
-    function isTvCellFormation ( Team, CellX, CellY: integer ): boolean;
+    function isTvCellFormation ( Team, CellX, CellY: integer ): boolean; deprecated;
     procedure LoadTranslations ;
 
     function Capitalize ( aString : string  ): String;
 
-    procedure CreatePopupSkill; // obsolete
     // Screen init
     procedure LoadAllGraphic;
       procedure LoadBackgrounds;
       procedure LoadDoors;
       procedure LoadCountryTeam;
       procedure LoadMainInterface;
+      procedure LoadPreMatch;
       procedure LoadMainStats;
       procedure LoadPlayerDetails;
       procedure LoadLogin;
       procedure LoadUniform;
       procedure LoadMarket;
       procedure LoadAml;
+      procedure LoadStandings;
       procedure LoadSpectator;
       procedure LoadScore;
       procedure LoadLive;
       procedure LoadGreen;
       procedure LoadTacticsSubs;
 
+      procedure LoadHelp;
 
+      procedure ClientLoadPreMatch;
       procedure ClientLoadMarket;
+
+      procedure pveClientLoadMarket; // riempe globale mmMarket, ssMarket, datastrmarket
+      procedure pveRefreshMarket ( indexMarket: integer ); // attenzione al size del market del singolo player
+
       procedure ClientLoadAML;
       procedure ClientLoadCountries ( index: Integer);
       procedure ClientLoadTeams ( index: Integer);
       procedure ClientLoadMatchInfo;  // dinamico. rimuove e ricrea sprites. Troppe informazioni. Fa uso di SE_score
+      procedure ShowMatchInfo ( posX,posY: Integer; MatchInfoString: string) ;  // dinamico. rimuove e ricrea sprites. Troppe informazioni. Fa uso di SE_MatchInfo
+      procedure ClientLoadStandings ( Season, Country, Division : integer ) ; // parametri utili per display di altre nazione ecc...; // solo pve ;
       procedure ShowLoading;
 
     procedure CreateFieldPoints;
@@ -508,6 +668,7 @@ type
     procedure ShowPlayerDetails ( aPlayer: TSoccerPlayer );
     procedure HideStadiumAndPlayers;
     procedure ShowStadiumAndPlayers( Stadium : integer )  ;
+
 
 
 
@@ -520,7 +681,7 @@ type
 
     function GetAttributeColor ( value: integer  ): TColor;
     function GetAttributeColorSpeed ( value: integer  ): TColor;
-    function GetXLabel ( bmp: TBitmap; aString: String; FrameWidth: integer; StringAlignment : TStringAlignment ): Integer;
+
 
       procedure ColorizeFault( Team:Byte;  var FaultBitmap: SE_Bitmap);
       procedure ColorizeArrowCircle( Team:Byte;   ShapeBitmap: SE_Bitmap);
@@ -541,11 +702,19 @@ type
     procedure CreateArrowDirection ( Player1 : TSoccerPlayer;  CellX, CellY: integer ); overload;
     procedure CreateCircle(  Player : TSoccerPlayer  ); overload;
     procedure CreateCircle(  Team,  CellX, CellY: integer  );overload;
-    procedure CreateBaseAttribute ( CellX, CellY, Value: Integer );
+    procedure CreateBaseAttribute ( CellX, CellY, Value: Integer );deprecated;
 
     procedure SetGameScreen (const aGameScreen:TGameScreen);
+    procedure HideAllEnginesExcept ( SE_Engine1,SE_Engine2,SE_Engine3,SE_Engine4,SE_Engine5: SE_engine );
 
-    procedure GetTooltipStrings ( bmp: TBitmap; aString: string; var ts: Tstringlist );
+    procedure GetTooltipStrings ( bmp: TBitmap; aString: string; var ts: Tstringlist );// deprecated;
+
+    procedure StartAllMatches ( Gender:char; Season, Country, Round: integer; simulation: boolean );
+    procedure pveCreateMatch ( aSeason, aCountry, aRound: Integer; t0,n0,t1,n1 : string; var Brain:TSoccerBrain );
+              procedure GetUniforms ( GuidTeam: string; var ts: TStringList  );
+
+
+  procedure AllBrainThink;
 
   public
     { Public declarations }
@@ -564,24 +733,24 @@ type
     procedure SetTcpFormation;
 
     property  SelectedPlayer: TSoccerPlayer read fSelectedPlayer write SetSelectedPlayer;
+    property  GameMode : TGameMode read fGameMode write setGameMode;
 
 end;
 
 var
   Form1: TForm1;
-  aScript, OldScript : string;
+
 
   xpNeedTal: array [1..NUM_TALENT] of integer;  // come i talenti sul db game.talents. xp necessaria per trylevelup del talento
   MutexAnimation : Cardinal;
   oldCellXMouseMove, oldCellYMouseMove: Integer;
-  MyBrain: TSoccerBrain;
+  oldbrain,MyBrain: TSoccerBrain;
   MyBrainFormation: TSoccerBrain;
   RandGen: TtdBasePRNG;
   GCD: Integer; // global cooldown temporaneo per braininput
-  dir_log, dir_tmp, dir_stadium, dir_ball, dir_player, dir_interface, dir_skill, dir_data, dir_sound, dir_attributes, dir_help, dir_talent: string;
+  dir_saves, dir_log, dir_tmp, dir_stadium, dir_ball, dir_player, dir_interface, dir_skill, dir_data, dir_sound, dir_attributes, dir_help, dir_talent: string;
   LastSpriteMouseMoveGuid,Language:string;
   lastMouseMovePlayer:TSoccerPlayer;
-  WAITING_GETFORMATION, WAITING_STOREFORMATION: boolean;
 
   // il client si mette in attesa di una rispoosta dal server:
 
@@ -594,7 +763,6 @@ var
   TalentEditing : boolean;
   AnimationScript : TAnimationScript;
   BIndex: Integer;
-  FormationsPreset: TList<TFormation>;
   ADVSKoldCol, ADVSKoldRow: integer;
   tsCoa: Tstringlist;
   tsCod: Tstringlist;
@@ -619,9 +787,17 @@ var
   ViewReplay: Boolean; // sto guardando un reaply locale
   LiveMatch: Boolean;  // sono in livematch 1vs1
 
+
+  ActiveSeason : Integer;    // pve
+  ActiveRound : Integer;    // pve
+  NextMF : Char;
+  MyDivision: Integer;        // pve
   MyGuidTeam: Integer;       // identificatore assoluto del mio team sul DB game.teams
-  MyGuidTeamName: string;    // il nome del team che corrisponde ad una squadra del cuore reale
-  MyActiveGender : string;
+  MyTeamName: string;    // il nome del team che corrisponde ad una squadra del cuore reale
+  MyGuidCountry: Integer;
+  MyCountryName :string;
+  MyActiveGender : char;
+  MyTeamRecord : TTeam;
   LocalSeconds: Integer;     // Quando i 120 seocndi si esauriscono, il turno termina
   LastGuidTurn: Integer;
   lastStrError: string;
@@ -634,8 +810,19 @@ var
   MarkingMoveAll: Boolean;
 
   FirstLoadOK: Boolean; // Primo caricamento della partita avvenuto. Avviene anche durante un reconnect
-
+  LastMoveBrain: Byte;
   TsWorldCountries, TsNationTeams : TStringList;
+  mfaces : array[1..6] of Integer;
+  ffaces : array[1..6] of Integer;
+
+  // gestione market
+  MMMarket : TMemoryStream;
+  SSMarket : TStringStream;
+  dataStrMarket: string;
+  lstPLayerMarket : TList<TBasePlayer>;
+  IndexMarket: integer;
+  BufMarket : TArray32768;
+  //-----------------
 
   Buf3 : array [0..255] of TArray8192;    // array globali. vengono riempiti in Tcp.dataavailable. una partita non va oltre 255 turni, di solito 120 + recupero
   MM3 : array [0..255] of TMemoryStream;  // copia di cui sopra ma in formato stream, per un accesso rapido a certe informazioni
@@ -643,9 +830,10 @@ var
   LastTcpincMove,CurrentIncMove: byte;
   incMoveAllProcessed : array [0..255] of boolean;
   incMoveReadTcp : array [0..255] of boolean;
+ // ScriptProcessed : array [0..255] of boolean;
 
   TSUniforms: array [0..1] of Tstringlist;
-  UniformBitmapBW,FaultBitmapBW,InOutBitmap : SE_Bitmap;
+  FaultBitmapBW,InOutBitmap : SE_Bitmap;
 
   // Team General
   NextHa: Byte;                 // prossima partita in cas o fuori (home,away)
@@ -653,7 +841,7 @@ var
   points: Integer;              // punti
   MatchesPlayedTeam: Integer;   // totale partite giocate
   Money: Integer;               // Denaro
-  TotMarket: Integer;           // Valore totale dei player
+  TotMarket: Integer;           // totale dei player in vendita sul mercato
 
 
 
@@ -668,11 +856,8 @@ var
 
 
   // coordinate subsprites e labels del mainstats.bmp
-  CoordsMainStatsNameCenterX: Integer;
-  CoordsMainStatsName,CoordsMainStatsFace : TPoint;
-  CoordsMainStatsSpeedlbl,CoordsMainStatsDefenselbl,CoordsMainStatsPassinglbl, CoordsMainStatsBallControllbl, CoordsMainStatsShotlbl, CoordsMainStatsHeadinglbl: TPoint;
-  CoordsMainStatsSpeed,CoordsMainStatsDefense,CoordsMainStatsPassing, CoordsMainStatsBallControl, CoordsMainStatsShot, CoordsMainStatsHeading: TPoint;
-  CoordsMainStatsTalent1Spr,CoordsMainStatsTalent2Spr,CoordsMainStatsStaminaSpr,CoordsMainStatsStaminaBar : TPoint;
+  CoordsMainStatsFace : TPoint;
+  CoordsMainStatsTalent1Spr,CoordsMainStatsTalent2Spr,CoordsMainStatsStaminaSpr : TPoint;
 
 
   CoordsBtnMenu, CoordsBtnTactics : TPoint;
@@ -680,6 +865,13 @@ var
   CoordsBtnSellMarket: TPoint;
 
   IndexCT : Integer;
+  Index_WheelSkill: Integer;
+  LockSkill : Boolean;
+  GameScreenBeforehelp: TGameScreen;
+
+  IndexRound : Integer;
+  MaxDisplayRound: Integer;
+
   TsColors : TStringList;
   CrossBarN : array [0..2] of Integer;
   FormationChanged: Boolean;
@@ -691,6 +883,11 @@ var
 
   PopupSkill : array [0..1,0..8] of TPoint; // menu skill a comparsa round attorno al player    // obsolete
   StarFontColor : array [1..6] of TColor;
+
+  lstbrain : TObjectList<TSoccerBrain>;
+
+  oldWidth, oldHeight: Integer; // old resolution video
+  BuildString : string;
 
   procedure RoundCornerOf(Control: TWinControl) ;
 implementation
@@ -841,9 +1038,33 @@ begin
 end;
 
 
+procedure TForm1.btnMultiPlayerBAckClick(Sender: TObject);
+var
+  pbSprite : SE_SpriteProgressBar;
+begin
+  GameMode := pve;
+  pbSprite := SE_SpriteProgressBar ( SE_Score.FindSprite('scorebartime'));
+  pbSprite.Visible := false;
+
+  Timer1.Enabled := false;
+  MakeDelay(1000);
+  PanelLogin.Visible := False;
+  PanelMain.Visible := True;
+  PanelMain.BringToFront;
+
+end;
+
+procedure TForm1.btnMultiPlayerClick(Sender: TObject);
+begin
+
+  GameMode := pvp;
+  PanelLogin.Visible := True;
+  PanelMain.Visible := false;
+end;
+
 procedure TForm1.btnReplayClick(Sender: TObject);
 var
-  i,b: Integer;
+  b: Integer;
   sf : SE_SearchFiles;
 begin
   {$ifdef tools}
@@ -875,7 +1096,7 @@ begin
     if FileExists( FolderDialog1.Directory  + '\' + sf.ListFiles[0] ) then begin
       for b := Length( FolderDialog1.Directory) downto 1 do begin
         if midstr( FolderDialog1.Directory , b,1) = '\' then begin
-          MyActiveGender :=  midStr(FolderDialog1.Directory,b+1,1);
+          MyActiveGender :=  midStr(FolderDialog1.Directory,b+1,1)[1];
           break;
         end;
       end;
@@ -888,7 +1109,7 @@ begin
       SE_players.ProcessSprites(2000); //<-- forza l'inserimento in lstsprites da lstnewsprite o dopo il remove non li troverà
       CurrentIncMove :=  0;
       ClientLoadScript( 0 );
-      if Mybrain.tsScript.Count = 0 then begin
+      if Mybrain.tsScript[0].Count = 0 then begin
         ClientLoadBrainMM ( 0  ); // sempre true durante replay
       end
       else
@@ -901,6 +1122,41 @@ begin
   sf.Free;
 
   {$endif tools}
+
+end;
+
+procedure TForm1.btnRestartClick(Sender: TObject);
+begin
+  CreateYesNo ( Translate('lbl_RestartAdvice'),'','restartgame');
+
+end;
+
+procedure TForm1.btnSinglePlayerBAckClick(Sender: TObject);
+begin
+  PanelSinglePlayer.Visible := false;
+  PanelMain.Visible := True;
+  PanelMain.BringToFront;
+end;
+
+procedure TForm1.btnSinglePlayerClick(Sender: TObject);
+begin
+
+  GameMode := pve;
+  PanelMain.Visible := False;
+  PanelLogin.Visible := False;
+  if MyGuidTeam <> 0 then begin   // team già assegnato
+    PanelSinglePlayer.Visible := true;
+    PanelSinglePlayer.BringToFront;
+    btnContinue.Visible := true;
+    btnRestart.Visible := true;
+  end
+  else begin
+    btnContinueClick(btnContinue);
+    //btnContinue.Visible := true;
+    //btnRestart.Visible := false;  // team non assegnato
+  end;
+
+  Timer1.Enabled := false;
 
 end;
 
@@ -922,6 +1178,111 @@ begin
 // ClientNotifyFileData (Dir_Data + Format('%.*d',[3, brainServer.incMove]) + '.ini');
   CopyFile(PChar(brainserver.Dir_Data + Format('%.*d',[3, brainServer.incMove]) + '.ini'),PChar(Dir_Data + Format('%.*d',[3, brainServer.incMove]) + '.ini'), false);
  inc(brainServer.incMove);}
+
+end;
+
+procedure TForm1.Button11Click(Sender: TObject);
+var
+  g: integer;
+  Const GenderS ='fm';
+begin
+  ShowLoading;
+//  SE_Theater1.thrdAnimate.OnTimer(SE_Theater1.thrdAnimate);
+//    SE_loading.ProcessSprites(2000);
+  SE_Theater1.thrdAnimate.OnTimer(SE_Theater1.thrdAnimate);
+  for g := 1 to 2 do begin
+    AllOtherTeamsThinkMarket ( GenderS[g] , 100 );
+  end;
+  GameScreen := ScreenFormation;
+end;
+
+procedure TForm1.Button1Click(Sender: TObject);
+var
+  i,D,G,Cur,TotalMarket,TotalDivision,MediaDivision: integer;
+  MinDivision, MaxDivision : integer;
+
+  lstPlayersDB : TObjectlist<TSoccerPlayer>;
+  MM : TMemoryStream;
+  aTeamRecord : TTeam;
+  buf3: TArray8192;
+  DivisionTotalMarket :array[1..2,1..5] of SE_IntegerList;
+  const  GenderS = 'fm';
+begin
+
+  {$ifdef tools}
+  lstPlayersDB := TObjectlist<TSoccerPlayer>.create;
+
+  for G := 1 to 2 do begin
+    for I := 1 to 5 do begin
+      DivisionTotalMarket[g][i] :=  SE_IntegerList.Create;
+    end;
+  end;
+
+  for G := 1 to 2 do begin
+
+    lstPlayersDB.Clear;
+    MM := TMemoryStream.Create;
+    MM.LoadFromFile( dir_Saves + GenderS[G] + 'teams.120' );
+    CopyMemory( @Buf3, MM.Memory, MM.Size  ); // metto nel buffer per i comandi non compressi
+    MM.Position := 0;
+
+    Cur := 0;
+
+    while Cur < MM.Size do begin
+
+      aTeamRecord.guid := PDWORD(@buf3 [ cur ])^;
+      Cur := Cur + 4;
+      aTeamRecord.Money := PDWORD(@buf3 [ cur ])^;
+      Cur := Cur + 4;
+      aTeamRecord.Division := ord ( buf3 [ cur ]);
+      Cur := Cur + 1;
+      aTeamRecord.YoungQueue := ord ( buf3 [ cur ]);
+      Cur := Cur + 1;
+
+      TotalMarket := 0;
+      pveLoadTeam ( dir_Saves + Genders[G] + IntToStr(aTeamRecord.guid) + '.120' , Genders[G], aTeamRecord.guid, lstPlayersDB );//uguale a ClientLoadFormation ma senza grafica
+      for I := lstPlayersDB.Count -1 downto 0 do begin
+        TotalMarket :=  TotalMarket + lstPlayersDB[i].MarketValue;
+      end;
+
+      DivisionTotalMarket[G][aTeamRecord.Division].Add(TotalMarket);
+
+
+    end;
+
+    MM.Free;
+  end;
+
+  lstPlayersDB.free;
+
+  Memo1.Clear;
+  for G := 1 to 2 do begin
+    for D := 1 to 5 do begin
+      TotalDivision := 0;
+      MinDivision := MaxInt;
+      MaxDivision := 0;
+      for i := 0 to DivisionTotalMarket[G][D].Count -1 do begin
+        TotalDivision := TotalDivision + DivisionTotalMarket[G][D].Items[i];
+        if DivisionTotalMarket[G][D].Items[i] > MaxDivision  then
+          MaxDivision := DivisionTotalMarket[G][D].Items[i];
+        if DivisionTotalMarket[G][D].Items[i] < MinDivision  then
+          MinDivision := DivisionTotalMarket[G][D].Items[i];
+
+      end;
+      MediaDivision := TotalDivision div  DivisionTotalMarket[G][D].Count;
+      memo1.lines.add  ( GenderS[G] +  IntTostr(D) + ' Media: ' + IntTostr (MediaDivision) );
+      memo1.lines.add  ( GenderS[G] +  IntTostr(D) + ' Min: ' + IntTostr (MinDivision) );
+      memo1.lines.add  ( GenderS[G] +  IntTostr(D) + ' Max: ' + IntTostr (MaxDivision) );
+    end;
+  end;
+
+  for G := 1 to 2 do begin
+    for D := 1 to 5 do begin
+      DivisionTotalMarket[g][D].Free;
+    end;
+  end;
+
+  {$endif tools}
 
 end;
 
@@ -953,12 +1314,12 @@ procedure TForm1.Button3Click(Sender: TObject);
 begin
   {$ifdef tools}
   CheckBox3.Enabled := False;
-  ThreadCurMove.Enabled := False;
+  ThreadCurrentIncMove.Enabled := False;
   if  CnSpinEdit1.Value > 0 then
    ClientLoadBrainMM ( trunc( CnSpinEdit1.Value - 1) );
   CurrentIncMove :=  trunc( CnSpinEdit1.Value);
   ClientLoadScript( trunc( CnSpinEdit1.Value)  );
-  if Mybrain.tsScript.Count = 0 then begin
+  if Mybrain.tsScript[MyBrain.incMove].Count = 0 then begin
     ClientLoadBrainMM ( trunc( CnSpinEdit1.Value) );
   end
   else
@@ -984,9 +1345,17 @@ end;
 procedure TForm1.Button6Click(Sender: TObject);
 begin
 {$ifdef tools}
-  if GCD <= 0 then begin
-    tcp.SendStr( 'setball,' + EditN1.Text + ',' +  EditN2.Text + EndOfLine ) ;
-    GCD := GCD_DEFAULT;
+  if GameMode = pvp then begin
+    if GCD <= 0 then begin
+      tcp.SendStr( 'setball,' + EditN1.Text + ',' +  EditN2.Text + EndOfLine ) ;
+      GCD := GCD_DEFAULT;
+    end;
+  end
+  else begin
+    MyBrain.Ball.CellX :=  StrToInt(EditN1.Text);
+    MyBrain.Ball.CellY :=  StrToInt(EditN2.Text);
+    ClientLoadBrainMM(CurrentIncMove);
+//    pveSynchBrain;
   end;
  {$endif tools}
 end;
@@ -1010,20 +1379,19 @@ begin
     bmp.Bitmap.Canvas.Brush.Color := clRed;
     bmp.Bitmap.Canvas.Ellipse(0,0,32,32);
     for i:= 0 to ShotCells.Count -1 do begin
-          if (ShotCells[i].DoorTeam <> SelectedPlayer.Team) and
-            (ShotCells[i].CellX = SelectedPlayer.CellX) and (ShotCells[i].CellY = SelectedPlayer.CellY) then begin
-          // sono sopra questa shotcell
-          // tra le celle adiacenti, solo la X attuale e ciclo per le Y
-           //   aShotCell := brain.ShotCells[I];
+      if (ShotCells[i].DoorTeam <> SelectedPlayer.Team) and
+        (ShotCells[i].CellX = SelectedPlayer.CellX) and (ShotCells[i].CellY = SelectedPlayer.CellY) then begin
+      // sono sopra questa shotcell
+      // tra le celle adiacenti, solo la X attuale e ciclo per le Y
+       //   aShotCell := brain.ShotCells[I];
 
-          for c := 0 to  ShotCells[i].subCell.Count -1 do begin
-            aPoint := ShotCells[i].subCell.Items [c];
-            aFieldPoint := SE_FieldPoints.FindSprite(IntToStr (aPoint.X ) + '.' + IntToStr (aPoint.Y ));
+        for c := 0 to  ShotCells[i].subCell.Count -1 do begin
+          aPoint := ShotCells[i].subCell.Items [c];
+          aFieldPoint := SE_FieldPoints.FindSprite(IntToStr (aPoint.X ) + '.' + IntToStr (aPoint.Y ));
 
-            aSprite := SE_ShotCells.CreateSprite  ( bmp.Bitmap , 'shotcell'+inttostr(c),1,1,100, aFieldPoint.Position.X ,aFieldPoint.Position.Y,true);
-            aSprite.Priority := 30;
-            //anOpponent := Brain.GetSoccerPlayer(aPoint.X ,aPoint.Y );
-          end;
+          aSprite := SE_ShotCells.CreateSprite  ( bmp.Bitmap , 'shotcell'+inttostr(c),1,1,100, aFieldPoint.Position.X ,aFieldPoint.Position.Y,true,30);
+          //anOpponent := Brain.GetSoccerPlayer(aPoint.X ,aPoint.Y );
+        end;
       end;
     end;
     bmp.Free;
@@ -1052,7 +1420,150 @@ begin
 {$endif tools}
 
 end;
+procedure TForm1.onAppMessage(var Msg: TMsg; var Handled: Boolean);
+var
+  //msgStr: String;
+  i: integer;
+begin
+// coem in TcpDataavailable BEGINBRAIN . Qui il brain viene copiato in MM3[MyBrain.incMove] e @Buf3[MyBrain.incMove]. viene messo in fila come in tcp
+  if Msg.hwnd = Application.Handle then  begin
+    if Msg.message = $2CCC then begin
+      Handled := True;
 
+
+      {$IFDEF  tools}
+      MemoC.Lines.Add('BEGINBRAIN '+  IntToStr(MyBrain.incMove) );
+      {$endIF  tools}
+      LastMoveBrain :=MyBrain.incMove;
+
+      MM3[MyBrain.incMove].Clear; // MM3[MyBrain.incMove].Clear;
+      MM3[MyBrain.incMove].CopyFrom ( MyBrain.MMbraindata, 0);
+      CopyMemory( @Buf3[MyBrain.incMove], mm3[MyBrain.incMove].Memory , mm3[MyBrain.incMove].size  ); // copia del buf per non essere sovrascritti
+     // ClientLoadScript ( MyBrain.incMove ); // già caricato nel clientloadbrain
+
+      if not FirstLoadOK  then begin   // avvio partita. se è la prima volta
+       SE_players.RemoveAllSprites;
+        if viewMatch then
+          GameScreen:= ScreenSpectator
+        else if LiveMatch then
+          GameScreen:= ScreenLive;
+
+        FirstLoadOK := True;
+        for I := 0 to 255 do begin
+         incMoveAllProcessed [i] := false;
+        end;
+        //for I := 0 to CurrentIncMove do begin
+         // caricato e completamente eseguito
+        // incMoveAllProcessed [i] := true;
+        //end;
+
+
+        //SpriteReset;
+        ThreadCurrentIncMove.Enabled := true;
+      end;
+
+      //WaitForSingleObject(MutexAnimation, INFINITE);
+     // if ( SE_ball.IsAnySpriteMoving  ) or (SE_players.IsAnySpriteMoving ) or ( Animating ) then begin
+     //   Application.ProcessMessages;
+     // end;
+      AllBrainThink; // viene chiamata qui dopo ogni mia mossa e in i_tuc cioè quando la AI deve cominciare a giocare
+      //ReleaseMutex(MutexAnimation);
+      // tutti gli input rispondono qui ( anche subs e tactics o pass) quindi qui agisce l'ai
+    end
+    else if Msg.message = $2EEE then begin // endgame, finalize  , ma riguarda solo MYbrain
+      // se la mia partita è finita, completo tutte le altre, poi finalizzo quando tutti i match sono finiti
+
+        pveForceGameOver;
+        CompleteAllMatches;
+        pveFinalizeAllBrain;
+        lstbrain.Clear;
+        AdvanceMFRound;
+    end;
+
+  end;
+  { for all other messages, Handled remains False }
+  { so that other message handlers can respond }
+end;
+procedure TForm1.AdvanceMFRound;
+var
+  ini : Tinifile;
+begin
+// il mercato si pensa dopo le partite
+  if MyActiveGender = 'm' then begin
+    // se tempo di mercato
+//    ShowLoading;
+//    AllOtherTeamsThinkMarket;
+
+    NextMF := 'f'
+  end
+  else Begin
+    // se tempo di mercato
+//    ShowLoading;
+//    AllOtherTeamsThinkMarket;
+
+    NextMF :='m';
+
+    ActiveRound := ActiveRound + 1;
+    if ActiveRound > DivisionMatchCount[Mydivision] then begin
+      ActiveSeason := ActiveSeason + 1;
+//      CompleteDivisions;
+//      createnewseason;
+    end;
+  End;
+
+  ini := TIniFile.Create( dir_saves + 'index.ini' );
+  ini.WriteInteger('setup','season',ActiveSeason);
+  ini.WriteInteger('setup','round',ActiveRound);
+  ini.WriteInteger('setup','division',MyDivision);
+  ini.WriteString('setup','nextmf',NextMF);
+  ini.Free;
+
+
+end;
+procedure TForm1.ComboBox1CloseUp(Sender: TObject);
+var
+  ini : TIniFile;
+begin
+  language := LeftStr(ComboBox1.Items[ComboBox1.itemindex],2);
+  LoadTranslations;
+  ini := TIniFile.Create  ( ExtractFilePath(Application.ExeName) + 'client.ini');
+  ini.WriteString('LANGUAGE','Text',Language);
+  ini.Free;
+
+  ShowMessage(Translate ('lbl_warningrestart') );
+
+end;
+
+procedure TForm1.ComboBox1KeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+Key:=0;
+end;
+
+procedure TForm1.ComboBox1KeyPress(Sender: TObject; var Key: Char);
+begin
+  Key:= #0;
+end;
+
+procedure TForm1.CompleteAllMatches;
+var
+  i: Integer;
+begin
+  for I := lstbrain.Count -1 downto 0 do begin
+    while not lstbrain[i].Finished do begin
+      lstbrain[i].AI_Think( lstbrain[i].TeamTurn );
+    end;
+  end;
+
+end;
+procedure TForm1.pveFinalizeAllbrain;
+var
+  i: Integer;
+begin
+  for I := lstbrain.Count -1 downto 0 do begin
+    pveFinalizeBrain ( lstbrain[i] );
+  end;
+
+end;
 procedure TForm1.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
   Timer1.Enabled := False;
@@ -1062,21 +1573,16 @@ procedure TForm1.FormCreate(Sender: TObject);
 var
   I: Integer;
   ini : TIniFile;
-  apoint :TPoint;
-  aShortPoint :TShortPoint;
 begin
+  BuildString := 'Build: ' + kfVersionInfo;
 
-{  apoint.X:=8;
-  apoint.Y:=9;
+  oldWidth := Screen.Width;
+  oldHeight := Screen.Height;
 
-  ashortpoint.X:=8;
-  ashortpoint.Y:=9;
+  if ( oldWidth <> 1440 ) or ( oldHeight <> 900 ) then
+    ChangeResolution(1440, 900, 32);
 
-  if apoint.x < 0 then
-    caption:='ciao';
-  if aShortpoint.x < 0 then
-    caption:='ciao';   }
-
+  Application.OnMessage := onAppMessage;
   BarrierPosition [0] := Point(-24,-24 );
   BarrierPosition [1] := Point(-24,+24 );
   BarrierPosition [2] := Point(+24,-24 );
@@ -1117,7 +1623,8 @@ begin
   xpNeedTal[TALENT_ID_HEADING] := 50;
   xpNeedTal[TALENT_ID_FINISHING] := 50;
   xpNeedTal[TALENT_ID_DIVING] := 50;
-  MyBrain := TSoccerBrain.Create('m') ;
+  oldbrain := TSoccerBrain.Create('old', 'm',0,0,0,0) ;
+  MyBrain := oldbrain;
   createAIfield; // serve per i cross ad esempio inshotcell
   MyBrain.incMove := 0; // +1 nella ricerca .ini
 
@@ -1163,8 +1670,8 @@ begin
 
   FormationsPreset := TList<TFormation>.Create;
   CreateFormationsPreset;
-
-  dir_tmp := ExtractFilePath(application.exename) + 'bmp\tmp\';
+  dir_saves := ExtractFilePath(application.exename) + 'saves\';
+  dir_tmp := ExtractFilePath(application.exename) + 'tmp\';
   dir_stadium := ExtractFilePath(application.exename) + 'bmp\stadium\';
   dir_ball := ExtractFilePath(application.exename) + 'bmp\ball\';
   dir_skill := ExtractFilePath(application.exename) + 'bmp\skill\';
@@ -1176,6 +1683,7 @@ begin
   dir_help := ExtractFilePath(application.exename) + 'help\';
   dir_talent := ExtractFilePath(application.exename) +  'bmp\talent\';
 
+
   ini := TIniFile.Create  ( ExtractFilePath(Application.ExeName) + 'client.ini');
   dir_log := ini.ReadString('directory','log','c:\temp');
   Language := ini.ReadString('LANGUAGE','Text','EN');
@@ -1183,7 +1691,35 @@ begin
   Edit2.text := ini.ReadString('lastlogin','pwd','');
   ini.Free;
 
+  ini := TIniFile.Create(dir_saves + 'index.ini');
+  MyGuidTeam := ini.ReadInteger('setup','guidteam',0);
+  MyTeamName := ini.ReadString('setup','teamname','');
+  MyGuidCountry := ini.ReadInteger('setup','country',0);
+  ActiveSeason := ini.ReadInteger('setup','season',0);
+  ActiveRound := ini.ReadInteger('setup','round',0);
+  MyDivision := ini.ReadInteger('setup','division',0);
+  MyCountryName := ini.ReadString('setup','countryname','');
+  MyActiveGender := ini.ReadString('setup','gender','m')[1];
+  NextMF := ini.ReadString ('setup','nextmf','m')[1];
+  tsUniforms[0].CommaText := Ini.ReadString('setup','uniformh','');
+  tsUniforms[1].CommaText := Ini.ReadString('setup','uniforma','');
+  ini.Free;
+
+
   LoadTranslations;
+
+  // qui molto banali al momento
+  lbl_language.Caption := translate('lbl_language');
+  ComboBox1.AddItem ('EN-English',nil);
+  ComboBox1.AddItem ('IT-Italiano',nil);
+  ComboBox1.AddItem ('RU-русский',nil);
+  for I := 0 to ComboBox1.Items.Count -1 do begin
+    if LeftStr(ComboBox1.Items[i],2) = language  then begin
+      ComboBox1.ItemIndex := i;
+      break;
+    end;
+  end;
+
 
 
   Application.ProcessMessages ;
@@ -1260,9 +1796,14 @@ begin
   btnLogin.Caption := Translate('lbl_Login');
   btnExit.Caption := Translate('lbl_Exit');
 
+  btnContinue.Caption := Translate('lbl_Continue');
+  btnSinglePlayer.Caption := Translate('lbl_SinglePlayer');
+  btnMultiPlayer.Caption := Translate('lbl_MultiPlayer');
+  btnSinglePlayerBACK.Caption := Translate('lbl_Back');
+  btnMultiPlayerBACK.Caption := Translate('lbl_Back');
+  btnRestart.Caption := Translate('lbl_Restart');
 
-  UniformBitmapBW := SE_Bitmap.Create (dir_player + 'bw.bmp');
-  InOutBitmap := SE_Bitmap.Create (dir_interface + 'inout.bmp');
+  InOutBitmap := SE_Bitmap.Create (dir_interface +'subs.bmp');// 'inout.bmp');
   InOutBitmap.Stretch( 40,40 );
 
 
@@ -1270,30 +1811,37 @@ begin
   TsNationTeams:= TStringList.Create;
   TsWorldCountries.StrictDelimiter := True;
   TsNationTeams.StrictDelimiter := True;
-
+  MMMarket := TMemoryStream.Create;
+  SSMarket := TStringStream.Create;
+  lstPLayerMarket := Tlist<TBasePlayer>.create;
 
   DeleteDirData;
 
-  CreatePopupSkill;
 
-  Timer1Timer(Timer1);
-  Timer1.Enabled := True;
+//  Timer1Timer(Timer1);
+//  Timer1.Enabled := True;
   LoadAllGraphic;
-  GameScreen := ScreenLogin;
+  GameScreen := ScreenMain;
 
 
 
+  RoundCornerOf ( PanelMain );
   RoundCornerOf ( PanelLogin );
-  RoundCornerOf ( PanelError );
+  RoundCornerOf ( PanelSinglePlayer );
   RoundCornerOf ( PanelGameOver );
 
   Panel1.Left := 0;
+  lstbrain := TObjectList<TSoccerBrain>.Create(true);
 
 end;
 procedure TForm1.FormDestroy(Sender: TObject);
 var
   i: integer;
 begin
+  if ( oldWidth <> Screen.Width ) or ( oldHeight <> Screen.Height ) then
+    ChangeResolution(1440, 900, 32);
+
+
   for I := 255 downto 0 do begin
     MM3[i].Free;
   end;
@@ -1313,7 +1861,6 @@ begin
   FieldPointsOut.Free;
 
   FaultBitmapBW.Free;
-  UniformBitmapBW.Free;
   tsUniforms[1].Free;
   tsUniforms[0].Free;
 
@@ -1336,44 +1883,51 @@ begin
   TranslateMessages.Free;
   TsWorldCountries.Free;
   TsNationTeams.Free;
+  MMMarket.Free;
+  SSMarket.Free;
+  lstPLayerMarket.Free;
 
   CloseHandle(MutexAnimation);
+  lstbrain.Free;
+
 //  If MyBrainFormation <> nil then MyBrainFormation.free;
 end;
-procedure TForm1.CreatePopupSkill;
+function TForm1.ChangeResolution(XResolution, YResolution, Depth: DWORD): boolean;
+var
+DevMode: TDeviceMode;
+i: Integer;
 begin
-  PopupSkill[0,0] := Point(32,26);
-  PopupSkill[0,1] := Point(4,40);
-  PopupSkill[0,2] := Point(-24,40);
-  PopupSkill[0,3] := Point(-52,26);
-  PopupSkill[0,4] := Point(-52,0);
-  PopupSkill[0,5] := Point(-52,-26);
-  PopupSkill[0,6] := Point(-24,-40);
-  PopupSkill[0,7] := Point(4,-40);
-  PopupSkill[0,8] := Point(32,-26);
+Result := False;
+i := 0;
+while EnumDisplaySettings(nil, i, DevMode) do
+  with DevMode do begin
+    if (dmPelsWidth = XResolution) and(dmPelsHeight = YResolution) and (dmBitsPerPel = Depth) then
 
-  PopupSkill[1,0] := Point(32,12);
-  PopupSkill[1,1] := Point(24,18);
-  PopupSkill[1,2] := Point(18,24);
-  PopupSkill[1,3] := Point(12,0);
-  PopupSkill[1,4] := Point(-12,0);
-  PopupSkill[1,5] := Point(-18,-24);
-  PopupSkill[1,6] := Point(-24,-18);
-  PopupSkill[1,7] := Point(-32,-12);
-  PopupSkill[1,8] := Point(-32,-12);
-
+    if ChangeDisplaySettings(DevMode, CDS_FULLSCREEN) =  DISP_CHANGE_SUCCESSFUL then  begin
+      Result := True;
+      SendMessage(HWND_BROADCAST, WM_DISPLAYCHANGE, SPI_SETNONCLIENTMETRICS, 0);
+      Break;
+    end;
+    Inc(i);
 end;
+end;
+
 
 procedure TForm1.LoadLogin;
 begin
 
+  PanelMain.Left := (SE_Theater1.Width div 2) - (PanelMain.Width div 2);
+  PanelMain.Top := (SE_Theater1.Height div 2) - (PanelMain.Height div 2);
   PanelLogin.Left := (SE_Theater1.Width div 2) - (PanelLogin.Width div 2);
   PanelLogin.Top := (SE_Theater1.Height div 2) - (PanelLogin.Height div 2);
+  PanelSinglePlayer.Left := (SE_Theater1.Width div 2) - (PanelSinglePlayer.Width div 2);
+  PanelSinglePlayer.Top := (SE_Theater1.Height div 2) - (PanelSinglePlayer.Height div 2);
+
 end;
 procedure TForm1.LoadAml;
 var
   bmp: SE_Bitmap;
-  aSprite,aTvSprite, aBtnSprite: SE_Sprite;
+  aSprite, aBtnSprite: SE_Sprite;
   aSpriteLabel: SE_SpriteLabel;
   i,BaseY: Integer;
   const YOffset = 34; FontSize = 14; W=32; H=32;
@@ -1388,13 +1942,12 @@ begin
     bmp := SE_Bitmap.Create ( 1300,H );
     bmp.Bitmap.Canvas.Brush.Color :=  clGray;
     bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
-    aSprite:=SE_Aml.CreateSprite(bmp.Bitmap ,'match'+IntToStr(i) ,1,1,1000,720,BaseY,false );
-    aSprite.Priority := 2;
+    aSprite:=SE_Aml.CreateSprite(bmp.Bitmap ,'match'+IntToStr(i) ,1,1,1000,720,BaseY,false,2 );
     bmp.Free;
     aSprite.Alpha := 230;
     aSprite.BlendMode := SE_BlendAlpha;
-
-    aSpriteLabel := SE_SpriteLabel.create( XUsername0,LY,'Calibri',clBlack,clBlack,FontSize,'',True  ); // username 0
+                                                                                                                       // 1= transparent, 2= opaque );
+    aSpriteLabel := SE_SpriteLabel.create( XUsername0,LY,'Calibri',clBlack,clBlack,FontSize,'',True , 1, dt_Xcenter );    // username 0
     aSprite.Labels.Add(aSpriteLabel);
     // qui bandiera sprite 0
 
@@ -1402,54 +1955,82 @@ begin
     aSprite.AddSubSprite( bmp,'f0',XFlag0,0,false );
     bmp.Free;
 
-    aSpriteLabel := SE_SpriteLabel.create( XTeamName0,LY,'Calibri',clBlack,clBlack,FontSize,'',True  ); // teamname 0
+    aSpriteLabel := SE_SpriteLabel.create( XTeamName0,LY,'Calibri',clBlack,clBlack,FontSize,'',True , 1, dt_Xcenter ); // teamname 0
     aSprite.Labels.Add(aSpriteLabel);
-    aSpriteLabel := SE_SpriteLabel.create( XScore,LY,'Calibri',clBlack,clBlack,FontSize,'',True  ); // risultato gol-gol
+    aSpriteLabel := SE_SpriteLabel.create( XScore,LY,'Calibri',clBlack,clBlack,FontSize,'',True , 1, dt_Xcenter ); // risultato gol-gol
     aSprite.Labels.Add(aSpriteLabel);
-    aSpriteLabel := SE_SpriteLabel.create( XTeamName1,LY,'Calibri',clBlack,clBlack,FontSize,'',True  ); // teamname 1
+    aSpriteLabel := SE_SpriteLabel.create( XTeamName1,LY,'Calibri',clBlack,clBlack,FontSize,'',True, 1, dt_Xcenter  ); // teamname 1
     aSprite.Labels.Add(aSpriteLabel);
     // qui bandiera sprite 1
     bmp := SE_Bitmap.Create ( 40,H ); // la bandiere sono 30 x 22
     aSprite.AddSubSprite(bmp,'f1',XFlag1,0,false);
     bmp.Free;
 
-    aSpriteLabel := SE_SpriteLabel.create( XUsername1,LY,'Calibri',clBlack,clBlack,FontSize,'',True  ); // username 1
+    aSpriteLabel := SE_SpriteLabel.create( XUsername1,LY,'Calibri',clBlack,clBlack,FontSize,'',True , 1, dt_Xcenter ); // username 1
     aSprite.Labels.Add(aSpriteLabel);
     // qui icona tv
-    aTvSprite := SE_Aml.CreateSprite(dir_interface + 'tv.bmp' ,'tv'+IntToStr(i) ,1,1,1000,XTv,BaseY,false );
-    aTvSprite.Priority := 3;
+    SE_Aml.CreateSprite(dir_interface + 'tv.bmp' ,'tv'+IntToStr(i) ,1,1,1000,XTv,BaseY,false,3 );
 
-    aSpriteLabel := SE_SpriteLabel.create( XMinute,LY,'Calibri',clBlack,clBlack,FontSize,'',True  ); // minuto
+    aSpriteLabel := SE_SpriteLabel.create( XMinute,LY,'Calibri',clBlack,clBlack,FontSize,'',True , 1, dt_Xcenter ); // minuto
     aSprite.Labels.Add(aSpriteLabel);
     BaseY := BaseY + YOffset;
   end;
 
 // menu button
   bmp := SE_Bitmap.Create ( dir_interface + 'button.bmp');
-  aBtnSprite:=SE_AML.CreateSprite(bmp.Bitmap ,'btnmenu_back',1,1,1000,100,YMAINBUTTON,true );
-  aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize, Translate('lbl_Back') ,true  );
-  aBtnSprite.Labels.Add( aSpriteLabel);
+  aBtnSprite:=SE_AML.CreateSprite(bmp.Bitmap ,'btnmenu_back',1,1,1000,100,YMAINBUTTON,true,1200 );
   aBtnSprite.TransparentForced := true;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
   aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'sub',90-40,56-40,true );
-  aBtnSprite.Priority := 1200;
 
-  aBtnSprite:=SE_AML.CreateSprite(bmp.Bitmap ,'btnmenu_refresh',1,1,1000,720,YMAINBUTTON,true );
-  aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize, Translate('lbl_Refresh') ,true  );
-  aBtnSprite.Labels.Add( aSpriteLabel);
+  aBtnSprite:=SE_AML.CreateSprite(bmp.Bitmap ,'btnmenu_refresh',1,1,1000,720,YMAINBUTTON,true,1200 );
   aBtnSprite.TransparentForced := true;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
   aBtnSprite.AddSubSprite(dir_interface +'refresh.bmp', 'sub',90-40,56-40,true );
-  aBtnSprite.Priority := 1200;
 
   bmp.Free;
 end;
+procedure TForm1.LoadStandings;
+var
+  bmp :SE_Bitmap;
+  aBtnSprite : SE_Sprite;
+//  aSpriteLabel : SE_SpriteLabel;
+begin
+  // qui cairco solo il menu btn basso.
+  // la procedura + dinamica perchè cambiano i size degli sprite
+// menu button
+  bmp := SE_Bitmap.Create ( dir_interface + 'button.bmp');
+  aBtnSprite:=SE_Standings.CreateSprite(bmp.Bitmap ,'btnmenu_back',1,1,1000,90,YMAINBUTTON,true,1200 );
+//  aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize, Translate('lbl_Back') ,true  );
+//  aBtnSprite.Labels.Add( aSpriteLabel);
+  aBtnSprite.TransparentForced := true;
+  aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
+  aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'sub',90-40,56-40,true );
+
+  aBtnSprite:=SE_Standings.CreateSprite(bmp.Bitmap ,'btnmenu_back1',1,1,1000,(180*2)+90,YMAINBUTTON,true,1200 );
+//  aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize, '<',true  );
+//  aBtnSprite.Labels.Add( aSpriteLabel);
+  aBtnSprite.TransparentForced := true;
+  aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
+  aBtnSprite.AddSubSprite(dir_interface +'backward1.bmp', 'sub',90-40,56-40,true );
+
+  aBtnSprite:=SE_Standings.CreateSprite(bmp.Bitmap ,'btnmenu_forward1',1,1,1000,(180*3)+90,YMAINBUTTON,true,1200 );
+//  aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize, '>', true  );
+//  aBtnSprite.Labels.Add( aSpriteLabel);
+  aBtnSprite.TransparentForced := true;
+  aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
+  aBtnSprite.AddSubSprite(dir_interface +'forward1.bmp', 'sub',90-40,56-40,true );
+
+  bmp.Free;
+
+end;
+
 procedure TForm1.LoadMarket;
 var
   bmp: SE_Bitmap;
   aSprite, aBuySprite, aBtnSprite : SE_Sprite;
   aSpriteLabel: SE_SpriteLabel;
-  i,BaseY,X: Integer;
+  i,BaseY: Integer;
   const YOffset = 34; FontSize = 14; W=32; H=32;
 begin
 //format('Number           = %n', [12345.678]));
@@ -1463,8 +2044,7 @@ begin
   bmp := SE_Bitmap.Create ( 1364,H );
   bmp.Bitmap.Canvas.Brush.Color :=  clBlue;
   bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
-  aSprite:=SE_Market.CreateSprite(bmp.Bitmap ,'columns',1,1,1000,720,BaseY-h,false );
-  aSprite.Priority := 2;
+  aSprite:=SE_Market.CreateSprite(bmp.Bitmap ,'columns',1,1,1000,720,BaseY-h,false,2 );
   aSprite.Alpha := 230;
   aSprite.BlendMode := SE_BlendAlpha;
 
@@ -1472,53 +2052,39 @@ begin
   aSprite.BMP.Canvas.Font.Name := 'Calibri';
   aSprite.BMP.Canvas.Font.Size := FontSizeMArket;
 
-  X :=GetXLabel ( aSprite.BMP.bitmap,Capitalize(Translate('lbl_Surname')),WSurname, TStringCenter );
-  aSpriteLabel := SE_SpriteLabel.create( XSurname+X,LY,'Calibri',clWhite,clBlack,FontSize,Capitalize(Translate('lbl_Surname')),True  );
+  aSpriteLabel := SE_SpriteLabel.create( 72,LY,'Calibri',clWhite-1,clBlack,FontSize,Capitalize(Translate('lbl_Surname')),true , 1, dt_XCenter );
   aSprite.Labels.Add(aSpriteLabel);
 
-  X :=GetXLabel ( aSprite.BMP.bitmap,Capitalize(Translate('lbl_Price')),WPrice, TStringRight );
-  aSpriteLabel := SE_SpriteLabel.create( XPrice+X,LY,'Calibri',clWhite,clBlack,FontSize,Capitalize(Translate('lbl_Price')),True  );
+  aSpriteLabel := SE_SpriteLabel.create( 1300,LY,'Calibri',clWhite-1,clBlack,FontSize,Capitalize(Translate('lbl_Price')),True , 1, dt_XCenter  );
   aSprite.Labels.Add(aSpriteLabel);
 
-  X :=GetXLabel ( aSprite.BMP.bitmap,Capitalize(Translate('attribute_Fitness')),WFitness, TStringCenter );
-  aSpriteLabel := SE_SpriteLabel.create( XFitness+X,LY,'Calibri',clWhite,clBlack,FontSize,Capitalize(Translate('attribute_Fitness')),True  );
+  aSpriteLabel := SE_SpriteLabel.create( 1100,LY,'Calibri',clWhite-1,clBlack,FontSize,Capitalize(Translate('attribute_Fitness')),True , 1, dt_XCenter );
   aSprite.Labels.Add(aSpriteLabel);
 
-  X :=GetXLabel ( aSprite.BMP.bitmap,Capitalize(Translate('attribute_Speed')),WSpeed, TStringCenter );
-  aSpriteLabel := SE_SpriteLabel.create( XSpeed+X,LY,'Calibri',clWhite,clBlack,FontSize,Capitalize(Translate('attribute_Speed')),True  );
+  aSpriteLabel := SE_SpriteLabel.create( 380,LY,'Calibri',clWhite-1,clBlack,FontSize,Capitalize(Translate('attribute_Speed')),True , 1, dt_XCenter  );
   aSprite.Labels.Add(aSpriteLabel);
 
-  X :=GetXLabel ( aSprite.BMP.bitmap,Capitalize(Translate('attribute_Defense')),WDefense, TStringCenter );
-  aSpriteLabel := SE_SpriteLabel.create( XDefense+X,LY,'Calibri',clWhite,clBlack,FontSize,Capitalize(Translate('attribute_Defense')),True  );
+  aSpriteLabel := SE_SpriteLabel.create( 460,LY,'Calibri',clWhite-1,clBlack,FontSize,Capitalize(Translate('attribute_Defense')),True , 1, dt_XCenter  );
   aSprite.Labels.Add(aSpriteLabel);
 
-  X :=GetXLabel ( aSprite.BMP.bitmap,Capitalize(Translate('attribute_Passing')),WPassing, TStringCenter );
-  aSpriteLabel := SE_SpriteLabel.create( XPassing+X,LY,'Calibri',clWhite,clBlack,FontSize,Capitalize(Translate('attribute_Passing')),True  );
+  aSpriteLabel := SE_SpriteLabel.create( 540,LY,'Calibri',clWhite-1,clBlack,FontSize,Capitalize(Translate('attribute_Passing')),True , 1, dt_XCenter  );
   aSprite.Labels.Add(aSpriteLabel);
 
-  X :=GetXLabel ( aSprite.BMP.bitmap,Capitalize(Translate('attribute_Ball.Control')),WBallControl, TStringCenter );
-  aSpriteLabel := SE_SpriteLabel.create( XBallControl+X,LY,'Calibri',clWhite,clBlack,FontSize,Capitalize(Translate('attribute_Ball.Control')),True  );
+  aSpriteLabel := SE_SpriteLabel.create( 620,LY,'Calibri',clWhite-1,clBlack,FontSize,Capitalize(Translate('attribute_Ball.Control')),True , 1, dt_XCenter  );
   aSprite.Labels.Add(aSpriteLabel);
 
-  X :=GetXLabel ( aSprite.BMP.bitmap,Capitalize(Translate('attribute_Shot')),WShot, TStringCenter );
-  aSpriteLabel := SE_SpriteLabel.create( XShot+X,LY,'Calibri',clWhite,clBlack,FontSize,Capitalize(Translate('attribute_Shot')),True  );
+  aSpriteLabel := SE_SpriteLabel.create( 700,LY,'Calibri',clWhite-1,clBlack,FontSize,Capitalize(Translate('attribute_Shot')),True , 1, dt_XCenter  );
   aSprite.Labels.Add(aSpriteLabel);
 
-  X :=GetXLabel ( aSprite.BMP.bitmap,Capitalize(Translate('attribute_Heading')),WHeading, TStringCenter );
-  aSpriteLabel := SE_SpriteLabel.create( XHeading+X,LY,'Calibri',clWhite,clBlack,FontSize,Capitalize(Translate('attribute_Heading')),True  );
+  aSpriteLabel := SE_SpriteLabel.create( 780,LY,'Calibri',clWhite-1,clBlack,FontSize,Capitalize(Translate('attribute_Heading')),True , 1, dt_XCenter  );
   aSprite.Labels.Add(aSpriteLabel);
 
-  X :=GetXLabel ( aSprite.BMP.bitmap,Capitalize(Translate('lbl_Talents')),WPrice, TStringCenter );
-  aSpriteLabel := SE_SpriteLabel.create( XTalents+X,LY,'Calibri',clWhite,clBlack,FontSize,Capitalize(Translate('lbl_Talents')),True  );
+  aSpriteLabel := SE_SpriteLabel.create( 870,LY,'Calibri',clWhite-1,clBlack,FontSize,Capitalize(Translate('lbl_Talents')),True , 1, dt_XCenter  );
   aSprite.Labels.Add(aSpriteLabel);
 
-  X :=GetXLabel ( aSprite.BMP.bitmap,Capitalize(Translate('lbl_Age')),WAge, TStringCenter );
-  aSpriteLabel := SE_SpriteLabel.create( XAge+X,LY,'Calibri',clWhite,clBlack,FontSize,Capitalize(Translate('lbl_Age')),True  );
+  aSpriteLabel := SE_SpriteLabel.create( 990,LY,'Calibri',clWhite-1,clBlack,FontSize,Capitalize(Translate('lbl_Age')),True, 1, dt_XCenter   );
   aSprite.Labels.Add(aSpriteLabel);
 
-  X :=GetXLabel ( aSprite.BMP.bitmap,Capitalize(Translate('lbl_MatchesLeft2')),WMatchsLeft, TStringCenter );
-  aSpriteLabel := SE_SpriteLabel.create( XMatchsLeft+X,LY,'Calibri',clWhite,clBlack,FontSize,Capitalize(Translate('lbl_MatchesLeft2')),True  );
-  aSprite.Labels.Add(aSpriteLabel);
   bmp.Free;
 
   // Lx è dinamico, settato in ClientLoadMarket
@@ -1527,31 +2093,28 @@ begin
     bmp := SE_Bitmap.Create ( 1364,H );
     bmp.Bitmap.Canvas.Brush.Color :=  clGray;
     bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
-    aSprite:=SE_Market.CreateSprite(bmp.Bitmap ,'market'+IntToStr(i) ,1,1,1000,720,BaseY,false );
-    aSprite.Priority := 2;
+    aSprite:=SE_Market.CreateSprite(bmp.Bitmap ,'market'+IntToStr(i) ,1,1,1000,720,BaseY,false,2 );
     bmp.Free;
     aSprite.Alpha := 230;
     aSprite.BlendMode := SE_BlendAlpha;
 
-    aSpriteLabel := SE_SpriteLabel.create( XSurname,LY,'Calibri',clWhite,clBlack,FontSize,'',True  );
+    aSpriteLabel := SE_SpriteLabel.create( 72,LY,'Calibri',clWhite-1,clBlack,FontSize,'',True , 1, dt_Left  );
     aSprite.Labels.Add(aSpriteLabel);
-    aSpriteLabel := SE_SpriteLabel.create( XPrice,LY,'Calibri',clWhite,clBlack,FontSize,'',True  );
+    aSpriteLabel := SE_SpriteLabel.create( 1300,LY,'Calibri',clWhite-1,clBlack,FontSize,'',True  , 1, dt_xRight );
     aSprite.Labels.Add(aSpriteLabel);
-    aSpriteLabel := SE_SpriteLabel.create( XSpeed,LY,'Calibri',clWhite,clBlack,FontSize,'',True  );
+    aSpriteLabel := SE_SpriteLabel.create( 380,LY,'Calibri',clWhite-1,clBlack,FontSize,'',True , 1, dt_xCenter  );
     aSprite.Labels.Add(aSpriteLabel);
-    aSpriteLabel := SE_SpriteLabel.create( XDefense,LY,'Calibri',clWhite,clBlack,FontSize,'',True  );
+    aSpriteLabel := SE_SpriteLabel.create( 460,LY,'Calibri',clWhite-1,clBlack,FontSize,'',True , 1, dt_xCenter  );
     aSprite.Labels.Add(aSpriteLabel);
-    aSpriteLabel := SE_SpriteLabel.create( XPassing,LY,'Calibri',clWhite,clBlack,FontSize,'',True  );
+    aSpriteLabel := SE_SpriteLabel.create( 540,LY,'Calibri',clWhite-1,clBlack,FontSize,'',True , 1, dt_xCenter  );
     aSprite.Labels.Add(aSpriteLabel);
-    aSpriteLabel := SE_SpriteLabel.create( XBallControl,LY,'Calibri',clWhite,clBlack,FontSize,'',True  );
+    aSpriteLabel := SE_SpriteLabel.create( 620,LY,'Calibri',clWhite-1,clBlack,FontSize,'',True , 1, dt_xCenter  );
     aSprite.Labels.Add(aSpriteLabel);
-    aSpriteLabel := SE_SpriteLabel.create( XShot,LY,'Calibri',clWhite,clBlack,FontSize,'',True  );
+    aSpriteLabel := SE_SpriteLabel.create( 700,LY,'Calibri',clWhite-1,clBlack,FontSize,'',True , 1, dt_xCenter  );
     aSprite.Labels.Add(aSpriteLabel);
-    aSpriteLabel := SE_SpriteLabel.create( XHeading,LY,'Calibri',clWhite,clBlack,FontSize,'',True  );
+    aSpriteLabel := SE_SpriteLabel.create( 780,LY,'Calibri',clWhite-1,clBlack,FontSize,'',True , 1, dt_xCenter  );
     aSprite.Labels.Add(aSpriteLabel);
-    aSpriteLabel := SE_SpriteLabel.create( XAge,LY,'Calibri',clWhite,clBlack,FontSize,'',True  );
-    aSprite.Labels.Add(aSpriteLabel);
-    aSpriteLabel := SE_SpriteLabel.create( XMatchsLeft,LY,'Calibri',clWhite,clBlack,FontSize,'',True  );
+    aSpriteLabel := SE_SpriteLabel.create( 990,LY,'Calibri',clWhite-1,clBlack,FontSize,'',True, 1, dt_xCenter   );
     aSprite.Labels.Add(aSpriteLabel);
 
     // li creo dinamicamente in clientloadmarket
@@ -1564,29 +2127,50 @@ begin
   end;
 
 // menu button
-  aBtnSprite:=SE_Market.CreateSprite(dir_interface + 'button.bmp' ,'btnmenu_back',1,1,1000,90,YMAINBUTTON,true );
-  aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize, Translate('lbl_Back') ,true  );
-  aBtnSprite.Labels.Add( aSpriteLabel);
+  aBtnSprite:=SE_Market.CreateSprite(dir_interface + 'button.bmp' ,'btnmenu_back',1,1,1000,90,YMAINBUTTON,true,1200 );
   aBtnSprite.TransparentForced := true;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
   aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'sub',90-40,56-40,true );
-  aBtnSprite.Priority := 1200;
 
-  aBtnSprite:=SE_Market.CreateSprite(dir_interface + 'button.bmp' ,'btnmenu_refresh',1,1,1000,720,YMAINBUTTON,true );
-  aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize, Translate('lbl_Refresh') ,true  );
-  aBtnSprite.Labels.Add( aSpriteLabel);
-  aBtnSprite.TransparentForced := true;
-  aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite( dir_interface +'refresh.bmp', 'sub',90-40,56-40,true );
-  aBtnSprite.Priority := 1200;
+  if GameMode = pvp then begin
+    aBtnSprite:=SE_Market.CreateSprite(dir_interface + 'button.bmp' ,'btnmenu_refresh',1,1,1000,(180*2)+90,YMAINBUTTON,true,1200 );
+    aBtnSprite.TransparentForced := true;
+    aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
+    aBtnSprite.AddSubSprite( dir_interface +'refresh.bmp', 'sub',90-40,56-40,true );
+  end
+  else if GameMode = pve then begin
+    aBtnSprite:=SE_Market.CreateSprite(dir_interface + 'button.bmp' ,'btnmenu_back2',1,1,1000,(180)+90,YMAINBUTTON,true,1200 );
+    aBtnSprite.TransparentForced := true;
+    aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
+    aBtnSprite.AddSubSprite(dir_interface +'backward2.bmp', 'sub',90-40,56-40,true );
 
-  aSprite := SE_Market.CreateSprite(dir_interface + 'money.bmp','gold', 1,1,1000,260,YMAINBUTTON,true);
-  bmp := SE_Bitmap.Create (300,22);
+    aBtnSprite:=SE_Market.CreateSprite(dir_interface + 'button.bmp','btnmenu_back1',1,1,1000,(180*2)+90,YMAINBUTTON,true,1200 );
+    aBtnSprite.TransparentForced := true;
+    aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
+    aBtnSprite.AddSubSprite(dir_interface +'backward1.bmp', 'sub',90-40,56-40,true );
+
+    aBtnSprite:=SE_Market.CreateSprite(dir_interface + 'button.bmp','btnmenu_forward1',1,1,1000,(180*3)+90,YMAINBUTTON,true,1200 );
+    aBtnSprite.TransparentForced := true;
+    aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
+    aBtnSprite.AddSubSprite(dir_interface +'forward1.bmp', 'sub',90-40,56-40,true );
+
+    aBtnSprite:=SE_Market.CreateSprite(dir_interface + 'button.bmp' ,'btnmenu_forward2',1,1,1000,(180*4)+90,YMAINBUTTON,true,1200 );
+    aBtnSprite.TransparentForced := true;
+    aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
+    aBtnSprite.AddSubSprite(dir_interface +'forward2.bmp', 'sub',90-40,56-40,true );
+  end;
+
+  aSprite := SE_Market.CreateSprite(dir_interface + 'money.bmp','gold', 1,1,1000,1300,YMAINBUTTON,true,1200);
+
+  //money := 257600000;
+  bmp := SE_Bitmap.Create (240,26);
   bmp.Bitmap.Canvas.Brush.Color :=  clGray;
   bmp.Bitmap.Canvas.FillRect(Rect( 0,0,bmp.Width,bmp.Height));
-  aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,14,FloatToStrF(Money, ffCurrency, 10, 0) ,True  );// money qui è 0.
-  aSprite := SE_Market.CreateSprite(bmp.bitmap,'money', 1,1,1000,450,YMAINBUTTON,true);
+  aSprite := SE_Market.CreateSprite(bmp.bitmap,'money', 1,1,1000,1140,YMAINBUTTON,true,1201);
+  aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite-1,clBlack,20,FloatToStrF(Money, ffCurrency, 10, 0) ,True , 1, dt_Right  );// money qui è 0.
   aSprite.Labels.Add(aSpriteLabel);
+  aSpriteLabel.lFontQuality := fqDefault;
+
   bmp.Free;
 
 
@@ -1597,79 +2181,67 @@ var
   i,BaseX,BaseY: Integer;
   bmp: SE_Bitmap;
   aSprite, aBtnSprite,aBarSprite: SE_Sprite;
-  aSpriteLabel : SE_SpriteLabel;
   Const FontSize = 14;
 begin
-  aSprite:=SE_Uniform.CreateSprite(dir_interface + 'bguniform.bmp' ,'frameback',1,1,1000,300,0 ,false );
+  aSprite:=SE_Uniform.CreateSprite(dir_interface + 'bguniform.bmp' ,'frameback',1,1,1000,300,0 ,false,1 );
   aSprite.PositionY := 900-(112+(aSprite.bmp.Height div 2));
-  aSprite.Priority := 1;
 
-  aBtnSprite:=SE_Uniform.CreateSprite(dir_interface + 'home2.bmp' ,'btn_uniformhome',1,1,1000,145,620,true );
+  aBtnSprite:=SE_Uniform.CreateSprite(dir_interface + 'home2.bmp' ,'btn_uniformhome',1,1,1000,145,620,true,2 );
   aBtnSprite.BlendMode := SE_BlendAlpha;
   aBtnSprite.Alpha := 255;
-  aBtnSprite.Priority := 2;
 //  aSpriteLabel := SE_SpriteLabel.create( -1,0,'Calibri',clWhite,clBlack,FontSize,Translate('lbl_Home'),True  );
 //  aBtnSprite.Labels.Add(aSpriteLabel);
 
-  aBtnSprite:=SE_Uniform.CreateSprite(dir_interface + 'away.bmp' ,'btn_uniformaway',1,1,1000,225,620,true );
+  aBtnSprite:=SE_Uniform.CreateSprite(dir_interface + 'away.bmp' ,'btn_uniformaway',1,1,1000,225,620,true,2 );
   aBtnSprite.BlendMode := SE_BlendAlpha;
   aBtnSprite.Alpha := 80;
-  aBtnSprite.Priority := 2;
 //  aSpriteLabel := SE_SpriteLabel.create( -1,0,'Calibri',clWhite,clBlack,FontSize,Translate('lbl_Away'),true  );
 // aBtnSprite.Labels.Add(aSpriteLabel);
 
-  aBtnSprite:=SE_Uniform.CreateSprite(dir_interface + 'jersey1.bmp' ,'btn_Jersey1',1,1,1000,340,620,true );
+  aBtnSprite:=SE_Uniform.CreateSprite(dir_interface + 'jersey1.bmp' ,'btn_Jersey1',1,1,1000,340,620,true,2 );
   aBtnSprite.BlendMode := SE_BlendAlpha;
   aBtnSprite.Alpha := 255;
-  aBtnSprite.Priority := 2;
 //  aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,FontSize,Translate('lbl_Jersey')+' 1',True  );
 //  aBtnSprite.Labels.Add(aSpriteLabel);
 
-  aBtnSprite:=SE_Uniform.CreateSprite(dir_interface + 'jersey2.bmp' ,'btn_Jersey2',1,1,1000,400,620,true );
+  aBtnSprite:=SE_Uniform.CreateSprite(dir_interface + 'jersey2.bmp' ,'btn_Jersey2',1,1,1000,400,620,true,2 );
   aBtnSprite.BlendMode := SE_BlendAlpha;
   aBtnSprite.Alpha := 80;
-  aBtnSprite.Priority := 2;
 //  aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,FontSize,Translate('lbl_Jersey')+' 2',True  );
 //  aBtnSprite.Labels.Add(aSpriteLabel);
 
-  aBtnSprite:=SE_Uniform.CreateSprite(dir_interface + 'shorts.bmp' ,'btn_Shorts',1,1,1000,460,625,true );
+  aBtnSprite:=SE_Uniform.CreateSprite(dir_interface + 'shorts.bmp' ,'btn_Shorts',1,1,1000,460,625,true,2 );
   aBtnSprite.BlendMode := SE_BlendAlpha;
   aBtnSprite.Alpha := 80;
-  aBtnSprite.Priority := 2;
 //  aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,FontSize,Translate('lbl_Shorts'),True  );
 //  aBtnSprite.Labels.Add(aSpriteLabel);
 
-  aBtnSprite:=SE_Uniform.CreateSprite(dir_player + 'schema0.bmp' ,'btn_schema0',1,1,1000,170,746,true );
+  aBtnSprite:=SE_Uniform.CreateSprite(dir_player + 'schema0.bmp' ,'btn_schema0',1,1,1000,170,746,true,2 );
   aBtnSprite.sTag := '0';
   aBtnSprite.BlendMode := SE_BlendAlpha;
   aBtnSprite.Alpha := 80;
-  aBtnSprite.Priority := 2;
 
-  aBtnSprite:=SE_Uniform.CreateSprite(dir_player + 'schema1.bmp' ,'btn_schema1',1,1,1000,250,746,true );
+  aBtnSprite:=SE_Uniform.CreateSprite(dir_player + 'schema1.bmp' ,'btn_schema1',1,1,1000,250,746,true,2 );
   aBtnSprite.sTag := '1';
   aBtnSprite.BlendMode := SE_BlendAlpha;
   aBtnSprite.Alpha := 80;
-  aBtnSprite.Priority := 2;
 
-  aBtnSprite:=SE_Uniform.CreateSprite(dir_player + 'schema2.bmp' ,'btn_schema2',1,1,1000,330,746,true );
+  aBtnSprite:=SE_Uniform.CreateSprite(dir_player + 'schema2.bmp' ,'btn_schema2',1,1,1000,330,746,true,2 );
   aBtnSprite.sTag := '2';
   aBtnSprite.BlendMode := SE_BlendAlpha;
   aBtnSprite.Alpha := 80;
-  aBtnSprite.Priority := 2;
 
-  aBtnSprite:=SE_Uniform.CreateSprite(dir_player + 'schema3.bmp' ,'btn_schema3',1,1,1000,410,746,true );
+  aBtnSprite:=SE_Uniform.CreateSprite(dir_player + 'schema3.bmp' ,'btn_schema3',1,1,1000,410,746,true,2 );
   aBtnSprite.sTag := '3';
   aBtnSprite.BlendMode := SE_BlendAlpha;
   aBtnSprite.Alpha := 80;
-  aBtnSprite.Priority := 2;
 
   BaseX := 150; BaseY:= 680;
   for I := 0 to TsColors.Count -1 do begin
     bmp := SE_Bitmap.Create ( 24, 24 );
     bmp.Bitmap.Canvas.Brush.Color :=  StrToInt( TsColors[i] ) ;
     bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
-    aSprite:=SE_Uniform.CreateSprite(bmp.Bitmap ,'color' + IntToStr(i),1,1,1000,BaseX,BaseY,false );
-    aSprite.Priority := 2;
+    aSprite:=SE_Uniform.CreateSprite(bmp.Bitmap ,'color' + IntToStr(i),1,1,1000,BaseX,BaseY,false,2 );
     aSprite.sTag := IntToStr(i);
     bmp.Free;
     BaseX := BaseX + 24;
@@ -1679,13 +2251,12 @@ begin
 
 
   bmp := SE_Bitmap.Create ( dir_interface + 'button.bmp');
-  aBtnSprite:=SE_Uniform.CreateSprite(bmp.Bitmap ,'btn_uniformclose',1,1,1000,180+90,YMAINBUTTON,true );
+  aBtnSprite:=SE_Uniform.CreateSprite(bmp.Bitmap ,'btn_uniformclose',1,1,1000,180+90,YMAINBUTTON,true,2 );
   //aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize, Translate('lbl_Close') ,true  );
   //aBtnSprite.Labels.Add( aSpriteLabel);
   aBtnSprite.TransparentForced := true;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
   aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'sub',90-40,56-40,true );
-  aBtnSprite.Priority := 2;
   bmp.Free;
 
 
@@ -1698,66 +2269,48 @@ var
   pbSprite : SE_SpriteProgressBar;
   Const FontSize = 14;
 begin
+  SE_live.RemoveAllSprites;
+  SE_Score.ProcessSprites(2000);
+
   bmp := SE_Bitmap.Create ( 46, 22 );
   bmp.Bitmap.Canvas.Brush.Color :=  $800000;
   bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
-  aBtnSprite:=SE_Score.CreateSprite(bmp.Bitmap ,'scoreminute',1,1,1000,23,11,false );
-  aBtnSprite.Priority := 2;
+  aBtnSprite:=SE_Score.CreateSprite(bmp.Bitmap ,'scoreminute',1,1,1000,23,11,false,2 );
   bmp.Free;
-  aSpriteLabel := SE_SpriteLabel.create( -1,0,'Calibri',clYellow,clBlack,FontSize,'',True  );
+  aSpriteLabel := SE_SpriteLabel.create( -1,0,'Calibri',clYellow,clBlack,FontSize,'',True , 1, dt_Left  );
   aBtnSprite.Labels.Add(aSpriteLabel);
 
 
   bmp := SE_Bitmap.Create ( 236, 22 );
   bmp.Bitmap.Canvas.Brush.Color :=  $800000;
   bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
-  aBtnSprite:=SE_Score.CreateSprite(bmp.Bitmap ,'scorenick0',1,1,1000,46+118,11,false );
-  aBtnSprite.Priority := 2;
+  aBtnSprite:=SE_Score.CreateSprite(bmp.Bitmap ,'scorenick0',1,1,1000,46+118,11,false,2 );
   bmp.Free;
-  aSpriteLabel := SE_SpriteLabel.create( -1,0,'Calibri',clWhite,clBlack,FontSize,'',True  );
+  aSpriteLabel := SE_SpriteLabel.create( -1,0,'Calibri',clWhite,clBlack,FontSize,'',True , 1, dt_Left  );
   aBtnSprite.Labels.Add(aSpriteLabel);
 
   bmp := SE_Bitmap.Create ( 46, 22 );  // deve essere uno sprite per il mouseover
   bmp.Bitmap.Canvas.Brush.Color :=  $800000;
   bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
-  aBtnSprite:=SE_Score.CreateSprite(bmp.Bitmap ,'scorescore',1,1,1000,46+236+23,11,false );
-  aBtnSprite.Priority := 2;
+  aBtnSprite:=SE_Score.CreateSprite(bmp.Bitmap ,'scorescore',1,1,1000,46+236+23,11,false,2 );
   bmp.Free;
-  aSpriteLabel := SE_SpriteLabel.create( -1,0,'Calibri',clWhite,clBlack,FontSize,'',True  );
+  aSpriteLabel := SE_SpriteLabel.create( -1,0,'Calibri',clWhite,clBlack,FontSize,'',True , 1, dt_Left  );
   aBtnSprite.Labels.Add(aSpriteLabel);
 
   bmp := SE_Bitmap.Create ( 236, 22 );
   bmp.Bitmap.Canvas.Brush.Color :=  $800000;
   bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
-  aBtnSprite:=SE_Score.CreateSprite(bmp.Bitmap ,'scorenick1',1,1,1000,564-118,11,false );
-  aBtnSprite.Priority := 2;
+  aBtnSprite:=SE_Score.CreateSprite(bmp.Bitmap ,'scorenick1',1,1,1000,564-118,11,false,2 );
   bmp.Free;
-  aSpriteLabel := SE_SpriteLabel.create( -1,0,'Calibri',clWhite,clBlack,FontSize,'',True  );
+  aSpriteLabel := SE_SpriteLabel.create( -1,0,'Calibri',clWhite,clBlack,FontSize,'',True , 1, dt_Left  );
   aBtnSprite.Labels.Add(aSpriteLabel);
 
   // la progressbar che indica i secondi rimanenti alla fine del turno
-  pbSprite := SE_Score.CreateSpriteProgressBar( 'scorebartime',720,830,16+( 44*5) ,22,'Calibri',clWhite,clBlue,clBlack,FontSize,'',0,false );
-  pbSprite.Visible := true;
-  pbSprite.Priority := 1001;
+  if GameMode = pvp then begin
+    pbSprite := SE_Score.CreateSpriteProgressBar( 'scorebartime',720,830,16+( 44*5) ,22,'Calibri',clWhite,clBlue,clBlack,FontSize,'',0,false,1001 );
+    pbSprite.Visible := true;
+  end;
 
-  // le 2 Spritelabel che indicano il team del turno attuale. In alto e in basso vicino alla progressbar
-  bmp := SE_Bitmap.Create ( 236, 22 );
-  bmp.Bitmap.Canvas.Brush.Color :=  clBlack;
-  bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
-  aBtnSprite:=SE_Score.CreateSprite(bmp.Bitmap ,'teamname0',1,1,1000,720,830-22,false );
-  aBtnSprite.Priority := 2;
-  bmp.Free;
-  aSpriteLabel := SE_SpriteLabel.create( -1,0,'Calibri',clWhite,clBlack,FontSize,'',True  );
-  aBtnSprite.Labels.Add(aSpriteLabel);
-
-  bmp := SE_Bitmap.Create ( 236, 22 );
-  bmp.Bitmap.Canvas.Brush.Color :=  clBlack;
-  bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
-  aBtnSprite:=SE_Score.CreateSprite(bmp.Bitmap ,'teamname1',1,1,1000,720,830-22,false );
-  aBtnSprite.Priority := 2;
-  bmp.Free;
-  aSpriteLabel := SE_SpriteLabel.create( -1,0,'Calibri',clWhite,clBlack,FontSize,'',True  );
-  aBtnSprite.Labels.Add(aSpriteLabel);
 end;
 procedure TForm1.LoadCountryTeam;
 var
@@ -1773,45 +2326,42 @@ begin
   BaseY := 100;
   for I := 0 to 19 do begin
     bmp := SE_Bitmap.Create ( 1300,22 );
-    bmp.Bitmap.Canvas.Brush.Color :=  clGray;
+    bmp.Bitmap.Canvas.Brush.Color :=  $007B5139;
     bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
-    aSprite:=SE_CountryTeam.CreateSprite(bmp.Bitmap ,'countryteam'+IntToStr(i) ,1,1,1000,705,BaseY,false );
-    aSprite.Priority := 2;
+    aSprite:=SE_CountryTeam.CreateSprite(bmp.Bitmap ,'countryteam'+IntToStr(i) ,1,1,1000,705,BaseY,false,2 );
     bmp.Free;
-    aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,FontSize,'',True  ); // country o team
+    aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,FontSize,'',True , 1, dt_Center  ); // country o team
     aSprite.Labels.Add(aSpriteLabel);
 
-    aSprite:=SE_CountryTeam.CreateSprite( dir_interface + 'select.bmp' ,'ctselect'+IntToStr(i) ,1,1,1000,1260,BaseY,true );
-    aSprite.Priority := 3;
     BaseY := BaseY + YOffset;
   end;
 
 // menu button
   bmp := SE_Bitmap.Create ( dir_interface + 'button.bmp');
-  aBtnSprite:=SE_CountryTeam.CreateSprite(bmp.Bitmap ,'btnmenu_back',1,1,1000,100,YMAINBUTTON,true );
-  aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize, Translate('lbl_Back') ,true  );
-  aBtnSprite.Labels.Add( aSpriteLabel);
-  aBtnSprite.Priority := 1200;
+  aBtnSprite:=SE_CountryTeam.CreateSprite(bmp.Bitmap ,'btnmenu_back',1,1,1000,90,YMAINBUTTON,true,1200 );
+  aBtnSprite.TransparentForced := true;
+  aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
+  aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'sub',90-40,56-40,true );
 
-  aBtnSprite:=SE_CountryTeam.CreateSprite(bmp.Bitmap ,'btnmenu_back2',1,1,1000,300,YMAINBUTTON,true );
-  aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize, '<<' ,true  );
-  aBtnSprite.Labels.Add( aSpriteLabel);
-  aBtnSprite.Priority := 1200;
+  aBtnSprite:=SE_CountryTeam.CreateSprite(bmp.Bitmap ,'btnmenu_back2',1,1,1000,180+90,YMAINBUTTON,true,1200 );
+  aBtnSprite.TransparentForced := true;
+  aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
+  aBtnSprite.AddSubSprite(dir_interface +'backward2.bmp', 'sub',90-40,56-40,true );
 
-  aBtnSprite:=SE_CountryTeam.CreateSprite(bmp.Bitmap ,'btnmenu_back1',1,1,1000,500,YMAINBUTTON,true );
-  aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize, '<',true  );
-  aBtnSprite.Labels.Add( aSpriteLabel);
-  aBtnSprite.Priority := 1200;
+  aBtnSprite:=SE_CountryTeam.CreateSprite(bmp.Bitmap ,'btnmenu_back1',1,1,1000,(180*2)+90,YMAINBUTTON,true,1200 );
+  aBtnSprite.TransparentForced := true;
+  aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
+  aBtnSprite.AddSubSprite(dir_interface +'backward1.bmp', 'sub',90-40,56-40,true );
 
-  aBtnSprite:=SE_CountryTeam.CreateSprite(bmp.Bitmap ,'btnmenu_forward1',1,1,1000,700,YMAINBUTTON,true );
-  aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize, '>', true  );
-  aBtnSprite.Labels.Add( aSpriteLabel);
-  aBtnSprite.Priority := 1200;
+  aBtnSprite:=SE_CountryTeam.CreateSprite(bmp.Bitmap ,'btnmenu_forward1',1,1,1000,(180*3)+90,YMAINBUTTON,true,1200 );
+  aBtnSprite.TransparentForced := true;
+  aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
+  aBtnSprite.AddSubSprite(dir_interface +'forward1.bmp', 'sub',90-40,56-40,true );
 
-  aBtnSprite:=SE_CountryTeam.CreateSprite(bmp.Bitmap ,'btnmenu_forward2',1,1,1000,900,YMAINBUTTON,true );
-  aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize, '>>' ,true  );
-  aBtnSprite.Labels.Add( aSpriteLabel);
-  aBtnSprite.Priority := 1200;
+  aBtnSprite:=SE_CountryTeam.CreateSprite(bmp.Bitmap ,'btnmenu_forward2',1,1,1000,(180*4)+90,YMAINBUTTON,true,1200 );
+  aBtnSprite.TransparentForced := true;
+  aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
+  aBtnSprite.AddSubSprite(dir_interface +'forward2.bmp', 'sub',90-40,56-40,true );
 
   bmp.Free;
 
@@ -1822,31 +2372,30 @@ var
   aSprite, aBtnSprite,aBarSprite: SE_Sprite;
   aSpriteLabel : SE_SpriteLabel;
   pbSprite : SE_SpriteProgressBar;
+  bmpQuestion : SE_Bitmap;
   BaseY,i : Integer;
   const WGenericInfo = 366;LabelpointsX = 470 ; BarYOffset = 5;  BarYOffsetTalent = 12; LabelX = 280; BarX = 500; BarAttributesW = 300; BarAttributesH=20; BarTalentH= 16; YOffset = 25;
   const  YOffsetTalent = 18;FontSize = 14; FontSizeTalent = 10; AttributeValuesX = 670;
 begin
+  bmpQuestion := SE_Bitmap.Create ( dir_interface + 'question.bmp');
 
   bmp := SE_Bitmap.Create ( 1010,50 );
   bmp.Bitmap.Canvas.Brush.Color :=  clAqua;
   bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
-  aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'playerdetailssurname',1,1,1000,720,140,false );
+  aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'playerdetailssurname',1,1,1000,720,140,false,2 );
   aSprite.BlendMode := SE_BlendAverage;
-  aSprite.Priority := 2;
   bmp.Free;
-  aSpriteLabel := SE_SpriteLabel.create( -1,8,'Calibri',clBlack,clBlack,18,'',True  );
+  aSpriteLabel := SE_SpriteLabel.create( -1,8,'Calibri',clBlack,clBlack,18,'',True, 1, dt_center   );
   aSprite.Labels.Add(aSpriteLabel);
 
   bmp := SE_Bitmap.Create ( 1010,80 );
   bmp.Bitmap.Canvas.Brush.Color :=  clgray;
   bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
-  aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'playerdetailstooltip',1,1,1000,705,40,true );
-  aSprite.Priority := 1;
+  SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'playerdetailstooltip',1,1,1000,705,40,true,1  );
   bmp.Free;
 
   bmp := SE_Bitmap.Create ( 100,100 );
-  aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'playerdetailsportrait',1,1,1000,1100,140,true );
-  aSprite.Priority := 3;
+  SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'playerdetailsportrait',1,1,1000,1100,140,true,3 );
   bmp.Free;
 
   // Attributi base  Btn, Progress bar e Text
@@ -1855,24 +2404,22 @@ begin
   bmp := SE_Bitmap.Create ( 120,20 );
   bmp.Bitmap.Canvas.Brush.Color :=  clBlue;
   bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
-  aBtnSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btn_speed',1,1,1000,LabelX,BaseY,true );
+  aBtnSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btn_speed',1,1,1000,LabelX,BaseY,true,1000 );
   aBtnSprite.BlendMode := SE_BlendAverage;
-  aBtnSprite.Priority := 1000;
   bmp.Free;
-  aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,FontSize,Translate('attribute_Speed'),True  );
+  aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,FontSize,Translate('attribute_Speed'),True, 1, dt_Left   );
   aBtnSprite.Labels.Add(aSpriteLabel);
+  SE_PlayerDetails.CreateSprite(bmpQuestion.Bitmap ,'btnhelp_speed',1,1,1000,LabelX - (aBtnSprite.BMP.Width div 2) - (bmpQuestion.Width div 2) ,BaseY ,true,1201 );
 
-  pbSprite := SE_PlayerDetails.CreateSpriteProgressBar( 'bar_speed',BarX,BaseY, BarAttributesW,BarAttributesH,'Calibri',clWhite,clBlue,clBlack,FontSize,'',0,false );
+  pbSprite := SE_PlayerDetails.CreateSpriteProgressBar( 'bar_speed',BarX,BaseY, BarAttributesW,BarAttributesH,'Calibri',clWhite,clBlue,clBlack,FontSize,'',0,false,1001 );
   pbSprite.Visible := False;
-  pbSprite.Priority := 1001;
 
   bmp := SE_Bitmap.Create ( 20,BarAttributesH );
   bmp.Canvas.Brush.Color := clBlack;
   bmp.Canvas.FillRect( Rect(0,0,bmp.Width,bmp.Height) );
-  aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'playerdetailsspeed',1,1,1000,AttributeValuesX ,BaseY,true );
-  aSpriteLabel := SE_SpriteLabel.create( -1,0,'Calibri',clWhite,clBlack,FontSize,'',True  );
+  aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'playerdetailsspeed',1,1,1000,AttributeValuesX ,BaseY,true,3 );
+  aSpriteLabel := SE_SpriteLabel.create( -1,0,'Calibri',clWhite,clBlack,FontSize,'',True , 1, dt_Left  );
   aSprite.Labels.Add( aSpriteLabel);
-  aSprite.Priority := 3;
   bmp.Free;
   BaseY := BaseY + YOffset;
 
@@ -1880,24 +2427,21 @@ begin
   bmp := SE_Bitmap.Create ( 120,20 );
   bmp.Bitmap.Canvas.Brush.Color :=  clBlue;
   bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
-  aBtnSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btn_defense',1,1,1000,LabelX,BaseY,true );
-  aBtnSprite.BlendMode := SE_BlendAverage;
-  aBtnSprite.Priority := 1002;
+  aBtnSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btn_defense',1,1,1000,LabelX,BaseY,true,1002 );
   bmp.Free;
-  aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,FontSize,Translate('attribute_Defense'),True  );
+  aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,FontSize,Translate('attribute_Defense'),True , 1, dt_Left  );
   aBtnSprite.Labels.Add(aSpriteLabel);
+  SE_PlayerDetails.CreateSprite(bmpQuestion.Bitmap ,'btnhelp_defense',1,1,1000,LabelX  - (aBtnSprite.BMP.Width div 2) - (bmpQuestion.Width div 2) ,BaseY ,true,1201 );
 
-  pbSprite := SE_PlayerDetails.CreateSpriteProgressBar( 'bar_defense',BarX,BaseY, BarAttributesW,BarAttributesH,'Calibri',clWhite,clBlue,clBlack,FontSize,'',0,false );
+  pbSprite := SE_PlayerDetails.CreateSpriteProgressBar( 'bar_defense',BarX,BaseY, BarAttributesW,BarAttributesH,'Calibri',clWhite,clBlue,clBlack,FontSize,'',0,false,1003 );
   pbSprite.Visible := False;
-  pbSprite.Priority := 1003;
 
   bmp := SE_Bitmap.Create ( 20,BarAttributesH );
   bmp.Canvas.Brush.Color := clBlack;
   bmp.Canvas.FillRect( Rect(0,0,bmp.Width,bmp.Height) );
-  aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'playerdetailsdefense',1,1,1000,AttributeValuesX ,BaseY,true );
-  aSpriteLabel := SE_SpriteLabel.create( -1,0,'Calibri',clWhite,clBlack,FontSize,'',True  );
+  aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'playerdetailsdefense',1,1,1000,AttributeValuesX ,BaseY,true,3 );
+  aSpriteLabel := SE_SpriteLabel.create( -1,0,'Calibri',clWhite,clBlack,FontSize,'',True , 1, dt_Left  );
   aSprite.Labels.Add( aSpriteLabel);
-  aSprite.Priority := 3;
   bmp.Free;
   BaseY := BaseY + YOffset;
 
@@ -1905,24 +2449,21 @@ begin
   bmp := SE_Bitmap.Create ( 120,20 );
   bmp.Bitmap.Canvas.Brush.Color :=  clBlue;
   bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
-  aBtnSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btn_passing',1,1,1000,LabelX,BaseY,true );
-  aBtnSprite.BlendMode := SE_BlendAverage;
-  aBtnSprite.Priority := 1004;
+  aBtnSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btn_passing',1,1,1000,LabelX,BaseY,true,1004 );
   bmp.Free;
-  aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,FontSize,Translate('attribute_Passing'),True  );
+  aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,FontSize,Translate('attribute_Passing'),True, 1, dt_Left   );
   aBtnSprite.Labels.Add(aSpriteLabel);
+  SE_PlayerDetails.CreateSprite(bmpQuestion.Bitmap ,'btnhelp_passing',1,1,1000,LabelX  - (aBtnSprite.BMP.Width div 2) - (bmpQuestion.Width div 2) ,BaseY ,true,1201 );
 
-  pbSprite := SE_PlayerDetails.CreateSpriteProgressBar( 'bar_passing',BarX,BaseY, BarAttributesW,BarAttributesH,'Calibri',clWhite,clBlue,clBlack,FontSize,'',0,false );
+  pbSprite := SE_PlayerDetails.CreateSpriteProgressBar( 'bar_passing',BarX,BaseY, BarAttributesW,BarAttributesH,'Calibri',clWhite,clBlue,clBlack,FontSize,'',0,false,1005 );
   pbSprite.Visible := False;
-  pbSprite.Priority := 1005;
 
   bmp := SE_Bitmap.Create ( 20,BarAttributesH );
   bmp.Canvas.Brush.Color := clBlack;
   bmp.Canvas.FillRect( Rect(0,0,bmp.Width,bmp.Height) );
-  aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'playerdetailspassing',1,1,1000,AttributeValuesX ,BaseY,true );
-  aSpriteLabel := SE_SpriteLabel.create( -1,0,'Calibri',clWhite,clBlack,FontSize,'',True  );
+  aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'playerdetailspassing',1,1,1000,AttributeValuesX ,BaseY,true,3 );
+  aSpriteLabel := SE_SpriteLabel.create( -1,0,'Calibri',clWhite,clBlack,FontSize,'',True , 1, dt_Left  );
   aSprite.Labels.Add( aSpriteLabel);
-  aSprite.Priority := 3;
   bmp.Free;
   BaseY := BaseY + YOffset;
 
@@ -1930,24 +2471,21 @@ begin
   bmp := SE_Bitmap.Create ( 120,20 );
   bmp.Bitmap.Canvas.Brush.Color :=  clBlue;
   bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
-  aBtnSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btn_ballcontrol',1,1,1000,LabelX,BaseY,true );
-  aBtnSprite.BlendMode := SE_BlendAverage;
-  aBtnSprite.Priority := 1006;
+  aBtnSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btn_ballcontrol',1,1,1000,LabelX,BaseY,true,1006 );
   bmp.Free;
-  aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,FontSize,Translate('attribute_Ball.Control'),True  );
+  aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,FontSize,Translate('attribute_Ball.Control'),True, 1, dt_Left   );
   aBtnSprite.Labels.Add(aSpriteLabel);
+  SE_PlayerDetails.CreateSprite(bmpQuestion.Bitmap ,'btnhelp_ballcontrol',1,1,1000,LabelX  - (aBtnSprite.BMP.Width div 2) - (bmpQuestion.Width div 2) ,BaseY ,true,1201 );
 
-  pbSprite := SE_PlayerDetails.CreateSpriteProgressBar( 'bar_ballcontrol',BarX,BaseY, BarAttributesW,BarAttributesH,'Calibri',clWhite,clBlue,clBlack,FontSize,'',0,false );
+  pbSprite := SE_PlayerDetails.CreateSpriteProgressBar( 'bar_ballcontrol',BarX,BaseY, BarAttributesW,BarAttributesH,'Calibri',clWhite,clBlue,clBlack,FontSize,'',0,false,1007 );
   pbSprite.Visible := False;
-  pbSprite.Priority := 1007;
 
   bmp := SE_Bitmap.Create ( 20,BarAttributesH );
   bmp.Canvas.Brush.Color := clBlack;
   bmp.Canvas.FillRect( Rect(0,0,bmp.Width,bmp.Height) );
-  aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'playerdetailsballcontrol',1,1,1000,AttributeValuesX ,BaseY,true );
-  aSpriteLabel := SE_SpriteLabel.create( -1,0,'Calibri',clWhite,clBlack,FontSize,'',True  );
+  aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'playerdetailsballcontrol',1,1,1000,AttributeValuesX ,BaseY,true,3 );
+  aSpriteLabel := SE_SpriteLabel.create( -1,0,'Calibri',clWhite,clBlack,FontSize,'',True , 1, dt_Left  );
   aSprite.Labels.Add( aSpriteLabel);
-  aSprite.Priority := 3;
   bmp.Free;
   BaseY := BaseY + YOffset;
 
@@ -1955,24 +2493,22 @@ begin
   bmp := SE_Bitmap.Create ( 120,20 );
   bmp.Bitmap.Canvas.Brush.Color :=  clBlue;
   bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
-  aBtnSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btn_shot',1,1,1000,LabelX,BaseY,true );
-  aBtnSprite.BlendMode := SE_BlendAverage;
-  aBtnSprite.Priority := 1008;
-  bmp.Free;
-  aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,FontSize,Translate('attribute_Shot'),True  );
-  aBtnSprite.Labels.Add(aSpriteLabel);
+  aBtnSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btn_shot',1,1,1000,LabelX,BaseY,true,1008 );
 
-  pbSprite := SE_PlayerDetails.CreateSpriteProgressBar( 'bar_shot',BarX,BaseY, BarAttributesW,BarAttributesH,'Calibri',clWhite,clBlue,clBlack,FontSize,'',0,false );
+  bmp.Free;
+  aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,FontSize,Translate('attribute_Shot'),True , 1, dt_Left  );
+  aBtnSprite.Labels.Add(aSpriteLabel);
+  SE_PlayerDetails.CreateSprite(bmpQuestion.Bitmap ,'btnhelp_shot',1,1,1000,LabelX  - (aBtnSprite.BMP.Width div 2) - (bmpQuestion.Width div 2) ,BaseY ,true,1201 );
+
+  pbSprite := SE_PlayerDetails.CreateSpriteProgressBar( 'bar_shot',BarX,BaseY, BarAttributesW,BarAttributesH,'Calibri',clWhite,clBlue,clBlack,FontSize,'',0,false,1009 );
   pbSprite.Visible := False;
-  pbSprite.Priority := 1009;
 
   bmp := SE_Bitmap.Create ( 20,BarAttributesH );
   bmp.Canvas.Brush.Color := clBlack;
   bmp.Canvas.FillRect( Rect(0,0,bmp.Width,bmp.Height) );
-  aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'playerdetailsshot',1,1,1000,AttributeValuesX ,BaseY,true );
-  aSpriteLabel := SE_SpriteLabel.create( -1,0,'Calibri',clWhite,clBlack,FontSize,'',True  );
+  aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'playerdetailsshot',1,1,1000,AttributeValuesX ,BaseY,true,3 );
+  aSpriteLabel := SE_SpriteLabel.create( -1,0,'Calibri',clWhite,clBlack,FontSize,'',True , 1, dt_Left  );
   aSprite.Labels.Add( aSpriteLabel);
-  aSprite.Priority := 3;
   bmp.Free;
   BaseY := BaseY + YOffset;
 
@@ -1980,24 +2516,21 @@ begin
   bmp := SE_Bitmap.Create ( 120,20 );
   bmp.Bitmap.Canvas.Brush.Color :=  clBlue;
   bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
-  aBtnSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btn_heading',1,1,1000,LabelX,BaseY,true );
-  aBtnSprite.BlendMode := SE_BlendAverage;
-  aBtnSprite.Priority := 1010;
+  aBtnSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btn_heading',1,1,1000,LabelX,BaseY,true,1010 );
   bmp.Free;
-  aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,FontSize,Translate('attribute_Heading'),True  );
+  aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,FontSize,Translate('attribute_Heading'),True , 1, dt_Left  );
   aBtnSprite.Labels.Add(aSpriteLabel);
+  SE_PlayerDetails.CreateSprite(bmpQuestion.Bitmap ,'btnhelp_heading',1,1,1000,LabelX  - (aBtnSprite.BMP.Width div 2) - (bmpQuestion.Width div 2) ,BaseY ,true,1201 );
 
-  pbSprite := SE_PlayerDetails.CreateSpriteProgressBar( 'bar_heading',BarX,BaseY, BarAttributesW,BarAttributesH,'Calibri',clWhite,clBlue,clBlack,FontSize,'',0,false );
+  pbSprite := SE_PlayerDetails.CreateSpriteProgressBar( 'bar_heading',BarX,BaseY, BarAttributesW,BarAttributesH,'Calibri',clWhite,clBlue,clBlack,FontSize,'',0,false,1011 );
   pbSprite.Visible := False;
-  pbSprite.Priority := 1011;
 
   bmp := SE_Bitmap.Create ( 20,BarAttributesH );
   bmp.Canvas.Brush.Color := clBlack;
   bmp.Canvas.FillRect( Rect(0,0,bmp.Width,bmp.Height) );
-  aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'playerdetailsheading',1,1,1000,AttributeValuesX ,BaseY,true );
-  aSpriteLabel := SE_SpriteLabel.create( -1,0,'Calibri',clWhite,clBlack,FontSize,'',True  );
+  aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'playerdetailsheading',1,1,1000,AttributeValuesX ,BaseY,true,3 );
+  aSpriteLabel := SE_SpriteLabel.create( -1,0,'Calibri',clWhite,clBlack,FontSize,'',True , 1, dt_Left  );
   aSprite.Labels.Add( aSpriteLabel);
-  aSprite.Priority := 3;
   bmp.Free;
   BaseY := BaseY + YOffset;
 
@@ -2010,20 +2543,20 @@ begin
     bmp.Bitmap.Canvas.Brush.Style := bsSolid;
     bmp.Bitmap.Canvas.Brush.Color :=  clBlue;// clyellow tutto ok ma con giallino , modifica la bar dopo
     bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
-    aBtnSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btntalent_'+ stringTalents[i],1,1,1000,LabelX,BaseY,true );
+    aBtnSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btntalent_'+ stringTalents[i],1,1,1000,LabelX,BaseY,true,500+i );
     aBtnSprite.sTag := IntToStr(I);
-    aBtnSprite.BlendMode := SE_BlendAverage;
-    aBtnSprite.Priority := 500+i;
     bmp.Free;
 
-    aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,FontSizeTalent,Translate(Capitalize('talent_'+stringTalents[i])),True  );
+    aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,FontSizeTalent,Translate(Capitalize('talent_'+stringTalents[i])),True, 1, dt_Left   );
     aBtnSprite.Labels.Add(aSpriteLabel);
 
+    if i = 1 then
+      SE_PlayerDetails.CreateSprite(bmpQuestion.Bitmap ,'btnhelp_xptalents',1,1,1000,LabelX  - (aBtnSprite.BMP.Width div 2) - (bmpQuestion.Width div 2) ,BaseY ,true,1201 );
 
-    pbSprite := SE_PlayerDetails.CreateSpriteProgressBar( 'bartalent_'+stringTalents[i],BarX,BaseY, 300,BarTalentH,'Calibri',clWhite,clBlue,clBlack,FontSizeTalent,'',0,false );
+
+    pbSprite := SE_PlayerDetails.CreateSpriteProgressBar( 'bartalent_'+stringTalents[i],BarX,BaseY, 300,BarTalentH,'Calibri',clWhite,clBlue,clBlack,FontSizeTalent,'',0,false,2000+i );
     pbSprite.sTag := IntToStr(i);
     pbSprite.Visible := False;
-    pbSprite.Priority := 2000+i;
 
 
     BaseY := BaseY + YOffsetTalent;
@@ -2031,37 +2564,31 @@ begin
 
 //Menu button
   bmp := SE_Bitmap.Create ( dir_interface + 'button.bmp' );
-  aBtnSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btnmenu_back',1,1,1000,90,YMAINBUTTON,true );
-  aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize, Translate('lbl_Back') ,true  );
-  aBtnSprite.Labels.Add( aSpriteLabel);
+  aBtnSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btnmenu_back',1,1,1000,90,YMAINBUTTON,true,1200 );
   aBtnSprite.TransparentForced := true;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
   aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'sub',90-40,56-40,true );
-  aBtnSprite.Priority := 1200;
 
-  aBtnSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btnmenu_sell',1,1,1000,180+90,YMAINBUTTON,true );
-  aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize,Translate('lbl_Sell'),true  );
-  aBtnSprite.Labels.Add( aSpriteLabel);
+  aBtnSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btnmenu_sell',1,1,1000,180+90,YMAINBUTTON,true ,1200);
   aBtnSprite.TransparentForced := true;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.Priority := 1200;
+  aBtnSprite.AddSubSprite(dir_interface +'sell.bmp', 'sub',90-40,56-40,true );
+  SE_PlayerDetails.CreateSprite(bmpQuestion.Bitmap ,'btnhelp_sellcanceldismiss',1,1,1000,(180*4)+90+xBtnMenuHelp ,YMAINBUTTON,true,1201 );
+
   // Panel Sell e Dismiss
   PanelSell.left := aBtnSprite.Position.X + (aBtnSprite.BMPCurrentFrame.Width div 2);
   PanelSell.Top := aBtnSprite.Position.Y - (aBtnSprite.BMPCurrentFrame.Height div 2);
 
-  aBtnSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btnmenu_cancelsell',1,1,1000,(180*2)+90,YMAINBUTTON,true );
-  aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize,Translate('lbl_CancelSell'),true  );
-  aBtnSprite.Labels.Add( aSpriteLabel);
+  aBtnSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btnmenu_cancelsell',1,1,1000,(180*2)+90,YMAINBUTTON,true,1200 );
   aBtnSprite.TransparentForced := true;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.Priority := 1200;
+  aBtnSprite.AddSubSprite(dir_interface +'cancelsell.bmp', 'sub',90-40,56-40,true );
 
-  aBtnSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btnmenu_dismiss',1,1,1000,(180*3)+90,YMAINBUTTON,true );
-  aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize,Translate('lbl_Dismiss'),true  );
-  aBtnSprite.Labels.Add( aSpriteLabel);
+  aBtnSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btnmenu_dismiss',1,1,1000,(180*3)+90,YMAINBUTTON,true ,1200);
   aBtnSprite.TransparentForced := true;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.Priority := 1200;
+  aBtnSprite.AddSubSprite(dir_interface +'dismiss.bmp', 'sub',90-40,56-40,true );
+
   // Panel Sell e Dismiss
   PanelDismiss.left := aBtnSprite.Position.X + (aBtnSprite.BMPCurrentFrame.Width div 2);
   PanelDismiss.Top := aBtnSprite.Position.Y - (aBtnSprite.BMPCurrentFrame.Height div 2);
@@ -2070,106 +2597,147 @@ begin
   bmp := SE_Bitmap.Create ( WGenericInfo,22 );
   bmp.Canvas.Brush.Color := clBlue;
   bmp.Canvas.FillRect( Rect(0,0,bmp.Width,bmp.Height) );
-  aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btn_country',1,1,1000,1040,200,true );
-  aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,FontSize,Translate('lbl_Country'),true  );
+  aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btn_country',1,1,1000,1040,200,true,1200 );
+  aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,FontSize,Translate('lbl_Country'),true , 1, dt_Left  );
   aSprite.Labels.Add( aSpriteLabel);
-  aSprite.BlendMode := SE_BlendAverage;
-  aSprite.Priority := 1200;
   bmp.Free;
 
   bmp := SE_Bitmap.Create ( WGenericInfo,22 );
   bmp.Canvas.Brush.Color := clBlue;
   bmp.Canvas.FillRect( Rect(0,0,bmp.Width,bmp.Height) );
-  aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btn_age',1,1,1000,1040,232,true );
-  aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,FontSize,Translate('lbl_Age'),true  );
+  aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btn_age',1,1,1000,1040,232,true ,1200);
+  aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,FontSize,Translate('lbl_Age'),true , 1, dt_Left  );
   aSprite.Labels.Add( aSpriteLabel);
-  aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,FontSize,'',true  );   // il valore
+  aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,FontSize,'',true  , 1, dt_Right );   // il valore
   aSprite.Labels.Add( aSpriteLabel);
-  aSprite.BlendMode := SE_BlendAverage;
-  aSprite.Priority := 1200;
+  bmp.Free;
+  SE_PlayerDetails.CreateSprite(bmpQuestion.Bitmap ,'btnhelp_age',1,1,1000,aSprite.Position.X + (aSprite.BMP.Width div 2) + (bmpQuestion.Width div 2) , 232  ,true,1201 );
+
+
+
+  if GameMode = pvp then begin
+    bmp := SE_Bitmap.Create ( WGenericInfo,22 );
+    bmp.Canvas.Brush.Color := clBlue;
+    bmp.Canvas.FillRect( Rect(0,0,bmp.Width,bmp.Height) );
+    aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btn_matchesleft',1,1,1000,1040,264,true,1200 );
+    aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,FontSize,Translate('lbl_MatchesLeft'),true , 1, dt_Left  );
+    aSprite.Labels.Add( aSpriteLabel);
+    aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,FontSize,'',true , 1, dt_Right );   // il valore
+    aSprite.Labels.Add( aSpriteLabel);
+    bmp.Free;
+  end;
+
+  bmp := SE_Bitmap.Create ( WGenericInfo,22 );
+  bmp.Canvas.Brush.Color := clBlue;
+  bmp.Canvas.FillRect( Rect(0,0,bmp.Width,bmp.Height) );
+  aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btn_marketvalue',1,1,1000,1040,296,true,1200 );
+  aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,FontSize,Translate('lbl_MarketValue'),true , 1, dt_Left  );
+  aSprite.Labels.Add( aSpriteLabel);
+  aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,FontSize,'',true,1, dt_Right  );   // il valore
+  aSprite.Labels.Add( aSpriteLabel);
   bmp.Free;
 
   bmp := SE_Bitmap.Create ( WGenericInfo,22 );
   bmp.Canvas.Brush.Color := clBlue;
   bmp.Canvas.FillRect( Rect(0,0,bmp.Width,bmp.Height) );
-  aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btn_matchesleft',1,1,1000,1040,264,true );
-  aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,FontSize,Translate('lbl_MatchesLeft'),true  );
+  aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btn_fitness',1,1,1000,1040,328,true ,1200 );
+  aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,FontSize,Translate('attribute_Fitness'),true, 1, dt_Left  );
   aSprite.Labels.Add( aSpriteLabel);
-  aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,FontSize,'',true  );   // il valore
-  aSprite.Labels.Add( aSpriteLabel);
-  aSprite.BlendMode := SE_BlendAverage;
-  aSprite.Priority := 1200;
   bmp.Free;
 
   bmp := SE_Bitmap.Create ( WGenericInfo,22 );
   bmp.Canvas.Brush.Color := clBlue;
   bmp.Canvas.FillRect( Rect(0,0,bmp.Width,bmp.Height) );
-  aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btn_marketvalue',1,1,1000,1040,296,true );
-  aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,FontSize,Translate('lbl_MarketValue'),true  );
+  aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btn_morale',1,1,1000,1040,360,true,1200  );
+  aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,FontSize,Translate('attribute_Morale'),true , 1, dt_Left );
   aSprite.Labels.Add( aSpriteLabel);
-  aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,FontSize,'',true  );   // il valore
-  aSprite.Labels.Add( aSpriteLabel);
-  aSprite.BlendMode := SE_BlendAverage;
-  aSprite.Priority := 1200;
   bmp.Free;
 
   bmp := SE_Bitmap.Create ( WGenericInfo,22 );
   bmp.Canvas.Brush.Color := clBlue;
   bmp.Canvas.FillRect( Rect(0,0,bmp.Width,bmp.Height) );
-  aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btn_fitness',1,1,1000,1040,328,true );
-  aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,FontSize,Translate('attribute_Fitness'),true  );
+  aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btn_talents',1,1,1000,1040,392,true,1200 );
+  aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,FontSize,Translate('lbl_Talents'),true , 1, dt_Left  );
   aSprite.Labels.Add( aSpriteLabel);
-  aSprite.BlendMode := SE_BlendAverage;
-  aSprite.Priority := 1200;
-  bmp.Free;
-
-  bmp := SE_Bitmap.Create ( WGenericInfo,22 );
-  bmp.Canvas.Brush.Color := clBlue;
-  bmp.Canvas.FillRect( Rect(0,0,bmp.Width,bmp.Height) );
-  aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btn_morale',1,1,1000,1040,360,true );
-  aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,FontSize,Translate('attribute_Morale'),true  );
-  aSprite.Labels.Add( aSpriteLabel);
-  aSprite.BlendMode := SE_BlendAverage;
-  aSprite.Priority := 1200;
-  bmp.Free;
-
-  bmp := SE_Bitmap.Create ( WGenericInfo,22 );
-  bmp.Canvas.Brush.Color := clBlue;
-  bmp.Canvas.FillRect( Rect(0,0,bmp.Width,bmp.Height) );
-  aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btn_talents',1,1,1000,1040,392,true );
-  aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,FontSize,Translate('lbl_Talents'),true  );
-  aSprite.Labels.Add( aSpriteLabel);
-  aSprite.BlendMode := SE_BlendAverage;
-  aSprite.Priority := 1200;
   bmp.Free;
 
   // i 2 talenti
   bmp := SE_Bitmap.Create ( 32,32 );
-  aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'playerdetailstalent1',1,1,1000,(1440-(1440-1010) div 2)-16,392,true );
-  aSprite.Priority := 3;
+  SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'playerdetailstalent1',1,1,1000,(1440-(1440-1010) div 2)-16,392,true,3 );
   bmp.Free;
+  SE_PlayerDetails.CreateSprite(bmpQuestion.Bitmap ,'btnhelp_talents',1,1,1000,aSprite.Position.X + (aSprite.BMP.Width div 2) + (bmpQuestion.Width div 2) , 392   ,true,1201 );
+
   bmp := SE_Bitmap.Create ( 32,32 );
-  aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'playerdetailstalent2',1,1,1000,(1440-(1440-1010) div 2 )-64,392,true );
-  aSprite.Priority := 3;
+  SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'playerdetailstalent2',1,1,1000,(1440-(1440-1010) div 2 )-64,392,true,3 );
   bmp.Free;
 
   // fitness e morale
   bmp := SE_Bitmap.Create ( 32,32 );
-  aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'playerdetailsfitness',1,1,1000,(1440-(1440-1010) div 2 )-16,328,true );
-  aSprite.Priority := 3;
+  aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'playerdetailsfitness',1,1,1000,(1440-(1440-1010) div 2 )-16,328,true,3 );
   bmp.Free;
+  SE_PlayerDetails.CreateSprite(bmpQuestion.Bitmap ,'btnhelp_fitness',1,1,1000,aSprite.Position.X + (aSprite.BMP.Width div 2) + (bmpQuestion.Width div 2) , 328  ,true,1201 );
+
   bmp := SE_Bitmap.Create ( 32,32 );
-  aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'playerdetailsmorale',1,1,1000,(1440-(1440-1010) div 2 )-16,360,true );
-  aSprite.Priority := 3;
+  aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'playerdetailsmorale',1,1,1000,(1440-(1440-1010) div 2 )-16,360,true,3 );
   bmp.Free;
+  SE_PlayerDetails.CreateSprite(bmpQuestion.Bitmap ,'btnhelp_morale',1,1,1000,aSprite.Position.X + (aSprite.BMP.Width div 2) + (bmpQuestion.Width div 2) , 360  ,true,1201 );
 
 
   bmp := SE_Bitmap.Create ( 40,32 );
-  aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'playerdetailscountry',1,1,1000,(1440-(1440-1010) div 2 )-20,200,true );
-  aSprite.Priority := 3;
+  SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'playerdetailscountry',1,1,1000,(1440-(1440-1010) div 2 )-20,200,true,3 );
   bmp.Free;
 
 
+
+  // deva
+  bmp := SE_Bitmap.Create ( WGenericInfo,22 );
+  bmp.Canvas.Brush.Color := clBlue;
+  bmp.Canvas.FillRect( Rect(0,0,bmp.Width,bmp.Height) );
+  aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btn_trainingchance',1,1,1000,1040,424,true,1200 );
+  aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,FontSize,Translate('lbl_TrainingChance'),true , 1, dt_Left  );
+  aSprite.Labels.Add( aSpriteLabel);
+  aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,FontSize,'',true ,1, dt_Right );   // il valore
+  aSprite.Labels.Add( aSpriteLabel);
+  bmp.Free;
+  SE_PlayerDetails.CreateSprite(bmpQuestion.Bitmap ,'btnhelp_traininga',1,1,1000,aSprite.Position.X + (aSprite.BMP.Width div 2) + (bmpQuestion.Width div 2) , 424 ,true,1201 );
+
+  // devt
+  bmp := SE_Bitmap.Create ( WGenericInfo,22 );
+  bmp.Canvas.Brush.Color := clBlue;
+  bmp.Canvas.FillRect( Rect(0,0,bmp.Width,bmp.Height) );
+  aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btn_trainingtalentchance',1,1,1000,1040,456,true,1200 );
+  aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,FontSize,Translate('lbl_TrainingTalentChance'),true , 1, dt_Left  );
+  aSprite.Labels.Add( aSpriteLabel);
+  aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,FontSize,'',true, 1, dt_Right );   // il valore
+  aSprite.Labels.Add( aSpriteLabel);
+  bmp.Free;
+  SE_PlayerDetails.CreateSprite(bmpQuestion.Bitmap ,'btnhelp_trainingt',1,1,1000,aSprite.Position.X + (aSprite.BMP.Width div 2) + (bmpQuestion.Width div 2) , 456 ,true,1201 );
+  // devi
+  bmp := SE_Bitmap.Create ( WGenericInfo,22 );
+  bmp.Canvas.Brush.Color := clBlue;
+  bmp.Canvas.FillRect( Rect(0,0,bmp.Width,bmp.Height) );
+  aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btn_injuredchance',1,1,1000,1040,488,true,1200 );
+  aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,FontSize,Translate('lbl_InjuredChance'),true , 1, dt_Left  );
+  aSprite.Labels.Add( aSpriteLabel);
+  aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,FontSize,'',true, 1, dt_Right );   // il valore
+  aSprite.Labels.Add( aSpriteLabel);
+  bmp.Free;
+  SE_PlayerDetails.CreateSprite(bmpQuestion.Bitmap ,'btnhelp_injured',1,1,1000,aSprite.Position.X + (aSprite.BMP.Width div 2) + (bmpQuestion.Width div 2) , 488 ,true,1201 );
+
+  // stamina
+  bmp := SE_Bitmap.Create ( WGenericInfo,22 );
+  bmp.Canvas.Brush.Color := clBlue;
+  bmp.Canvas.FillRect( Rect(0,0,bmp.Width,bmp.Height) );
+  aSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btn_stamina',1,1,1000,1040,520,true,1200 );
+  aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite-1,clBlack,FontSize,Translate('attribute_stamina'),true , 1, dt_Left  );
+  aSprite.Labels.Add( aSpriteLabel);
+  aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite-1,clBlack,FontSize,'',true, 1, dt_Right );   // il valore
+  aSprite.Labels.Add( aSpriteLabel);
+  bmp.Free;
+  SE_PlayerDetails.CreateSprite(bmpQuestion.Bitmap ,'btnhelp_stamina',1,1,1000,aSprite.Position.X + (aSprite.BMP.Width div 2) + (bmpQuestion.Width div 2) , 520 ,true,1201 );
+
+
+  bmpQuestion.Free;
   // in futuro e forse anche history
 
   {
@@ -2223,14 +2791,16 @@ procedure TForm1.LoadTacticsSubs;
 var
   bmp: SE_Bitmap;
   aBtnSprite: SE_Sprite;
-  aSpriteLabel : SE_SpriteLabel;
 const FontSize = 14;
 begin
+
   bmp := SE_Bitmap.Create ( dir_interface + 'button.bmp' );
-  aBtnSprite:=SE_TacticsSubs.CreateSprite(bmp.Bitmap ,'btnmenu_back',1,1,1000,100,YMAINBUTTON,true );
-  aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize, Translate('lbl_Back') ,true  );
-  aBtnSprite.Labels.Add( aSpriteLabel);
-  aBtnSprite.Priority := 1200;
+  aBtnSprite:=SE_TacticsSubs.CreateSprite(bmp.Bitmap ,'btnmenu_back',1,1,1000,100,YMAINBUTTON,true ,1200);
+  aBtnSprite.TransparentForced := true;
+  aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
+  aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'sub',90-40,56-40,true );
+//  aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize, Translate('lbl_Back') ,true  );
+//  aBtnSprite.Labels.Add( aSpriteLabel);
   bmp.Free;
 
 end;
@@ -2238,51 +2808,111 @@ procedure TForm1.LoadGreen;
 var
   aSprite: SE_Sprite;
 begin
-   aSprite := SE_Green.CreateSprite( dir_interface + 'GreenCheckMark.bmp', 'green',1,1,1000,0,0 ,true);
+   aSprite := SE_Green.CreateSprite( dir_interface + 'GreenCheckMark.bmp', 'green',1,1,1000,0,0 ,true,0);
    aSprite.Alpha := 200;
    aSprite.BlendMode := SE_BlendAlpha;
 
 end;
 
+procedure TForm1.LoadHelp;
+var
+  bmp: SE_Bitmap;
+  aSprite,aBtnSprite: SE_Sprite;
+begin
+
+  bmp := SE_Bitmap.Create ( SE_Theater1.Width, YMAINBUTTON - 56);
+  bmp.Bitmap.Canvas.Brush.Color :=  clGray;
+  bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
+  aSprite:= SE_Help.CreateSprite(bmp.Bitmap ,'help_frameback'  ,1,1,1000, SE_Theater1.width div 2 , (SE_Theater1.Height div 2) -56,false,2 );
+  aSprite.BlendMode := SE_BlendAlpha;
+  aSprite.Alpha := 200;
+  bmp.Free;
+
+//btnmenu
+  bmp := SE_Bitmap.Create ( dir_interface + 'button.bmp' );
+  aBtnSprite:=SE_Help.CreateSprite(bmp.Bitmap ,'btnmenu_closehelp',1,1,1000,90,YMAINBUTTON,true,1200 );
+  aBtnSprite.TransparentForced := True;
+  aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
+  aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'sub',90-40,56-40,true );
+  bmp.Free;
+
+end;
 procedure TForm1.LoadLive;
 var
   bmp: SE_Bitmap;
   aBtnSprite: SE_Sprite;
   aSpriteLabel : SE_SpriteLabel;
+  aSubSprite: SE_SubSprite;
+  xBtnExit, Xbtntactics , XbtnSubs,  XbtnPass , xBtnAuto , xbtncolor : Integer;
 const FontSize = 14;
 begin
+
+  SE_live.RemoveAllSprites;
+  SE_Live.ProcessSprites(2000);
+
+  if GameMode = pvp  then begin
+    xBtnAuto := 90;
+    Xbtntactics := (180)+90;
+    XbtnSubs := (180*5)+90;
+    XbtnPass:= (180*6)+90;
+    xbtncolor := (180*7)+90;
+  end
+  else begin
+    XbtnExit := 90;
+    xBtnAuto := (180)+90;
+    Xbtntactics := (180*2)+90;
+    XbtnSubs := (180*5)+90;
+    XbtnPass:= (180*6)+90;
+    xbtncolor := (180*7)+90;
+  end;
 // menu button
   bmp := SE_Bitmap.Create ( dir_interface + 'button.bmp' );
 
-  aBtnSprite:=SE_Live.CreateSprite(bmp.Bitmap ,'btnmenu_tactics',1,1,1000,90,YMAINBUTTON,true );
-//  aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize, Translate('lbl_Tactics') ,true  );
-//  aBtnSprite.Labels.Add( aSpriteLabel);
+  aBtnSprite:=SE_LIVE.CreateSprite(dir_interface + 'button.bmp' , 'btnmenu_auto',1,1,1000,xBtnAuto,YMAINBUTTON,true,1200 );
+  aBtnSprite.TransparentForced := True;
+  aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
+  aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON-20,'Calibri',clWhite,clBlack,FontSize, UpperCase(Translate('lbl_Automatic'))  ,true ,1, dt_center );
+  aBtnSprite.Labels.Add( aSpriteLabel);
+  aBtnSprite.AddSubSprite(dir_interface +'autooff.bmp', 'autooff',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'autoon.bmp', 'autoon',90-40,56-40,true );
+  aSubSprite := aBtnSprite.FindSubSprite('autoon');
+  aSubSprite.lVisible := False;
+
+  aBtnSprite:=SE_Live.CreateSprite(bmp.Bitmap ,'btnmenu_tactics',1,1,1000,Xbtntactics,YMAINBUTTON,true,1200 );
   aBtnSprite.TransparentForced := True;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
   aBtnSprite.AddSubSprite(dir_interface +'tactics.bmp', 'sub',90-40,56-40,true );
-  aBtnSprite.Priority := 1200;
 
 
-  aBtnSprite:=SE_Live.CreateSprite(bmp.Bitmap ,'btnmenu_subs',1,1,1000,(180)+90,YMAINBUTTON,true );
-  aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize, Translate('lbl_Substitutions') ,true  );
-  aBtnSprite.Labels.Add( aSpriteLabel);
-  aBtnSprite.Priority := 1200;
+  aBtnSprite:=SE_Live.CreateSprite(bmp.Bitmap ,'btnmenu_subs',1,1,1000,XbtnSubs,YMAINBUTTON,true,1200 );
+  aBtnSprite.TransparentForced := True;
+  aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
+  aBtnSprite.AddSubSprite(dir_interface +'subs.bmp', 'sub',90-40,56-40,true );
 
-  aBtnSprite:=SE_LIVE.CreateSprite(dir_interface + 'button.bmp' , 'btnmenu_skillpass',1,1,1000,(180*2)+90,YMAINBUTTON,true );
-  aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize, Translate('skill_Pass')  ,true  );
-  aBtnSprite.Labels.Add( aSpriteLabel);
-  aBtnSprite.Priority := 1200;
+  aBtnSprite:=SE_LIVE.CreateSprite(dir_interface + 'button.bmp' , 'btnmenu_skillpass',1,1,1000,XbtnPass,YMAINBUTTON,true,1200 );
+  aBtnSprite.TransparentForced := True;
+  aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
+  aBtnSprite.AddSubSprite(dir_skill +'pass.bmp', 'sub',90-40,56-40,true );
+
+  if GameMode = Pve then begin
+
+    aBtnSprite:=SE_Live.CreateSprite(bmp.Bitmap ,'btnmenu_back',1,1,1000,XbtnExit,YMAINBUTTON,true,1200 );
+    aBtnSprite.TransparentForced := True;
+    aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
+    aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'sub',90-40,56-40,true );
+
+  end;
 
 
-  aBtnSprite:=SE_Live.CreateSprite(bmp.Bitmap ,'btnmenu_overridecolor',1,1,1000,(180*6)+90,YMAINBUTTON,true );
-  aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize, Translate('lbl_Uniform1')  ,true  );
-  aBtnSprite.Labels.Add( aSpriteLabel);
-  aBtnSprite.Priority := 1200;
-
-  aBtnSprite:=SE_Live.CreateSprite(bmp.Bitmap ,'btnmenu_overridecolornormal',1,1,1000,(180*7)+90,YMAINBUTTON,true );
-  aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize, Translate('lbl_UniformNormal')  ,true  );
-  aBtnSprite.Labels.Add( aSpriteLabel);
-  aBtnSprite.Priority := 1200;
+  aBtnSprite:=SE_Live.CreateSprite(bmp.Bitmap ,'btnmenu_overridecolor',1,1,1000,xbtncolor,YMAINBUTTON,true,1200 );
+  aBtnSprite.TransparentForced := True;
+  aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
+  if FileExists( dir_tmp + 'color1.bmp') then begin
+    aBtnSprite.AddSubSprite(dir_tmp + 'color1.bmp','overridecolor',90-40,56-40,true  ); // all'inizio crea un dummy
+  end
+  else begin
+    aBtnSprite.AddSubSprite(dir_interface + 'color1.bmp','overridecolor',90-40,56-40,true  ); // all'inizio crea un dummy
+  end;
 
   bmp.free;
 
@@ -2297,39 +2927,31 @@ const FontSize = 14;
 begin
 // menu button
   bmp := SE_Bitmap.Create ( dir_interface + 'button.bmp' );
-  aBtnSprite:=SE_Spectator.CreateSprite(bmp.Bitmap ,'btnmenu_exit',1,1,1000,90,YMAINBUTTON,true );
-  aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize, Translate('lbl_Exit') ,true  );
-  aBtnSprite.Labels.Add( aSpriteLabel);
+  aBtnSprite:=SE_Spectator.CreateSprite(bmp.Bitmap ,'btnmenu_exit',1,1,1000,90,YMAINBUTTON,true ,1200);
   aBtnSprite.TransparentForced := true;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
   aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'sub',90-40,56-40,true );
-  aBtnSprite.Priority := 1200;
 
-  aBtnSprite:=SE_Spectator.CreateSprite(bmp.Bitmap ,'btnmenu_overridecolor',1,1,1000,(180*6)+90,YMAINBUTTON,true );
-  aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize, Translate('lbl_Uniform1') ,true  );
-  aBtnSprite.Labels.Add( aSpriteLabel);
-  aBtnSprite.TransparentForced := true;
+  aBtnSprite:=SE_Spectator.CreateSprite(bmp.Bitmap ,'btnmenu_overridecolor',1,1,1000, (180*7)+90,YMAINBUTTON,true,1200 );
+  aBtnSprite.TransparentForced := True;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.Priority := 1200;
 
-  aBtnSprite:=SE_Spectator.CreateSprite(bmp.Bitmap ,'btnmenu_overridecolornormal',1,1,1000,(180*7)+90,YMAINBUTTON,true );
-  aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize, Translate('lbl_UniformNormal') ,true  );
-  aBtnSprite.Labels.Add( aSpriteLabel);
-  aBtnSprite.TransparentForced := true;
-  aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.Priority := 1200;
+  if FileExists( dir_tmp + 'color1.bmp') then begin
+    aBtnSprite.AddSubSprite(dir_tmp + 'color1.bmp','overridecolor',90-40,56-40,true  ); // all'inizio crea un dummy
+  end
+  else begin
+    aBtnSprite.AddSubSprite(dir_interface + 'color1.bmp','overridecolor',90-40,56-40,true  ); // all'inizio crea un dummy
+  end;
 
-  bmp.free;
+    bmp.free;
 
 end;
 procedure TForm1.LoadDoors;
 var
   aSprite: SE_Sprite;
 begin
-  aSprite := SE_Ball.CreateSprite( dir_interface + 'door2.bmp' , 'door0',1,1,1000,255 ,444, true );
-  aSprite.Priority := 2;// la palla priority 1
-  aSprite := SE_Ball.CreateSprite( dir_interface + 'door2.bmp' , 'door1',1,1,1000,1176 ,444, true );
-  aSprite.Priority := 2;
+  SE_Ball.CreateSprite( dir_interface + 'door2.bmp' , 'door0',1,1,1000,255 ,444, true,2 ); // la palla priority 1
+  aSprite := SE_Ball.CreateSprite( dir_interface + 'door2.bmp' , 'door1',1,1,1000,1176 ,444, true,2 );
   aSprite.Flipped := True;
   CrossBarN[0] := -18;
   CrossBarN[1] := 0;
@@ -2342,35 +2964,35 @@ begin
 
   bmp := SE_Bitmap.Create ( dir_interface + 'bgmanager.bmp' );
   bmp.Stretch(  1440, 900);
-  SE_BackGround.CreateSprite(bmp.Bitmap ,'backgroundlogin',1,1,1000,SE_Theater1.Width div 2, SE_Theater1.Height div 2,false );
+  SE_BackGround.CreateSprite(bmp.Bitmap ,'backgroundlogin',1,1,1000,SE_Theater1.Width div 2, SE_Theater1.Height div 2,false,0 );
   bmp.Free;
 
   bmp := SE_Bitmap.Create ( dir_interface + 'bgmanager.bmp' );
   bmp.Stretch(  1440, 900);
-  SE_BackGround.CreateSprite(bmp.Bitmap ,'backgroundplayerdetails',1,1,1000,SE_Theater1.Width div 2, SE_Theater1.Height div 2,false );
+  SE_BackGround.CreateSprite(bmp.Bitmap ,'backgroundplayerdetails',1,1,1000,SE_Theater1.Width div 2, SE_Theater1.Height div 2,false,0 );
   bmp.Free;
 
   // 1440x900
   bmp := SE_Bitmap.Create ( dir_interface + 'field.bmp' );
   bmp.Stretch(  1440, 900);
-  SE_BackGround.CreateSprite( bmp.Bitmap , 'field',1,1,1000, SE_Theater1.Width div 2, SE_Theater1.Height div 2, false );
+  SE_BackGround.CreateSprite( bmp.Bitmap , 'field',1,1,1000, SE_Theater1.Width div 2, SE_Theater1.Height div 2, false,0 );
   bmp.Free;
 
   bmp := SE_Bitmap.Create ( dir_interface + 'fieldf.bmp' );
   bmp.Stretch(  1440, 900);
-  SE_BackGround.CreateSprite( bmp.Bitmap , 'fieldf',1,1,1000, SE_Theater1.Width div 2, SE_Theater1.Height div 2, false );
+  SE_BackGround.CreateSprite( bmp.Bitmap , 'fieldf',1,1,1000, SE_Theater1.Width div 2, SE_Theater1.Height div 2, false,0 );
   bmp.Free;
 
   // 1440x900
   bmp := SE_Bitmap.Create ( dir_interface + 'bgmanager.bmp' );
   bmp.Stretch(  1440, 900);
-  SE_BackGround.CreateSprite( bmp.Bitmap , 'backgroundmarket',1,1,1000, SE_Theater1.Width div 2, SE_Theater1.Height div 2, false );
+  SE_BackGround.CreateSprite( bmp.Bitmap , 'backgroundmarket',1,1,1000, SE_Theater1.Width div 2, SE_Theater1.Height div 2, false,0 );
   bmp.Free;
 
   // 1440x900
   bmp := SE_Bitmap.Create ( dir_interface + 'bgmanager.bmp' );
   bmp.Stretch(  1440, 900);
-  SE_BackGround.CreateSprite( bmp.Bitmap , 'backgroundaml',1,1,1000, SE_Theater1.Width div 2, SE_Theater1.Height div 2, false );
+  SE_BackGround.CreateSprite( bmp.Bitmap , 'backgroundaml',1,1,1000, SE_Theater1.Width div 2, SE_Theater1.Height div 2, false,0 );
   bmp.Free;
 
   SE_BackGround.HideAllSprites;
@@ -2380,165 +3002,185 @@ procedure TForm1.LoadMainStats;
 var
   bmp: SE_Bitmap;
   pbSprite: SE_SpriteProgressBar;
-  FaceSprite :SE_Sprite;
   const FontSize = 14;
 begin
   bmp := SE_Bitmap.Create ( dir_interface + 'mainstats.bmp' );
   // 1440x900
-  SE_MainStats.CreateSprite(bmp.Bitmap ,'mainstats',1,1,1000,0,0,false );
+  SE_MainStats.CreateSprite(bmp.Bitmap ,'mainstats',1,1,1000,0,0,false ,0);
   bmp.Free;
 
-  SE_MainStats.CreateSprite(dir_interface + 'mainstats2.bmp' ,'mainstats2',1,1,1000,0,0 ,false );
+  SE_MainStats.CreateSprite(dir_interface + 'mainstats2.bmp' ,'mainstats2',1,1,1000,0,0 ,false,0 );
 
   CoordsMainStatsTalent1Spr := Point (8,8);
   CoordsMainStatsTalent2Spr := Point (60,8);
   CoordsMainStatsFace:= Point (132,0);
 
-  CoordsMainStatsNameCenterX := 210;
-  CoordsMainStatsName := Point ( 100, 0 ); // -1 centerX
-
-  // Anche le labels degli attibuti sono tutti implicitamente CenterX
-  CoordsMainStatsSpeedlbl := Point ( 360,0 );
-  CoordsMainStatsDefenselbl := Point ( 460,0 );
-  CoordsMainStatsPassinglbl := Point ( 560,0 );
-  CoordsMainStatsBallControllbl := Point ( 650,0 );
-  CoordsMainStatsShotlbl := Point ( 740,0 );
-  CoordsMainStatsHeadinglbl := Point ( 830,0 );
-
-  CoordsMainStatsSpeed := Point ( 360,18 );
-  CoordsMainStatsDefense := Point ( 460,18 );
-  CoordsMainStatsPassing := Point ( 560,18 );
-  CoordsMainStatsBallControl := Point ( 650,18 );
-  CoordsMainStatsShot := Point ( 740,18 );
-  CoordsMainStatsHeading := Point ( 830,18 );
-
   CoordsMainStatsStaminaSpr := Point (100,24);
-  CoordsMainStatsStaminaBar := Point (800,40);
 
-  pbSprite := SE_MainStats.CreateSpriteProgressBar( 'staminabar',CoordsMainStatsStaminaBar.X,CoordsMainStatsStaminaBar.Y, 180,12,'Calibri',clWhite,clBlue,clBlack,0,'',0,false );
-  pbSprite.Priority := 1200;
-
+  pbSprite := SE_MainStats.CreateSpriteProgressBar( 'staminabar',800,40, 180,12,'Calibri',clWhite,clBlue,clBlack,10,'',0,false,1200 );
+  pbSprite.pbHAlignment := dt_XRight;
 
 end;
 procedure TForm1.LoadMainInterface;
 var
-  i: Integer;
-  bmp: SE_Bitmap;
+  bmp,bmpQuestion: SE_Bitmap;
   aBtnSprite: SE_Sprite;
   aSpriteLabel : SE_SpriteLabel;
-  pbSprite: SE_SpriteProgressBar;
   const FontSize = 14;
 begin
+  SE_MainInterface.RemoveAllSprites;
+  SE_MainInterface.ProcessSprites(2000);
+
+  bmpQuestion := SE_Bitmap.Create ( dir_interface + 'question.bmp');
+
 //Menu button
   bmp := SE_Bitmap.Create ( dir_interface + 'button.bmp');
-  aBtnSprite:=SE_MainInterface.CreateSprite(bmp.Bitmap ,'btnmenu_exit',1,1,1000,90,YMAINBUTTON,true );
+  aBtnSprite:=SE_MainInterface.CreateSprite(bmp.Bitmap ,'btnmenu_exit',1,1,1000,90,YMAINBUTTON,true,1200 );
   //aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize, Translate('lbl_Exit') ,true  );
   //aBtnSprite.Labels.Add( aSpriteLabel);
   aBtnSprite.TransparentForced := True;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
   aBtnSprite.AddSubSprite(dir_interface +'exit.bmp', 'sub',90-40,56-40,true );
-  aBtnSprite.Priority := 1200;
   bmp.Free;
 
   bmp := SE_Bitmap.Create ( dir_interface + 'button.bmp');
-  aBtnSprite:=SE_MainInterface.CreateSprite(bmp.Bitmap ,'btnmenu_uniform',1,1,1000,(180)+90,YMAINBUTTON,true );
-//  aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize,Translate('lbl_Uniform'),true  );
-//  aBtnSprite.Labels.Add( aSpriteLabel);
+  aBtnSprite:=SE_MainInterface.CreateSprite(bmp.Bitmap ,'btnmenu_uniform',1,1,1000,(180)+90,YMAINBUTTON,true,1200 );
   aBtnSprite.TransparentForced := True;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.Priority := 1200;
+  SE_MainInterface.CreateSprite(bmpQuestion.Bitmap ,'btnhelp_uniform',1,1,1000,(180)+90+xBtnMenuHelp ,YMAINBUTTON+yBtnMenuHelp,true,1201 );
 
-  aBtnSprite:=SE_MainInterface.CreateSprite(bmp.Bitmap ,'btnmenu_reset',1,1,1000,(180*2)+90,YMAINBUTTON,true );
-//  aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize,Translate('lbl_Reset'),true  );
-//  aBtnSprite.Labels.Add( aSpriteLabel);
+  // in pve crea un 4-4-2
+  aBtnSprite:=SE_MainInterface.CreateSprite(bmp.Bitmap ,'btnmenu_reset',1,1,1000,(180*2)+90,YMAINBUTTON,true ,1200);
   aBtnSprite.TransparentForced := True;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
   aBtnSprite.AddSubSprite( dir_interface +'reset.bmp', 'sub',90-40,56-40,true );
-  aBtnSprite.Priority := 1200;
+  SE_MainInterface.CreateSprite(bmpQuestion.Bitmap ,'btnhelp_reset',1,1,1000,(180*2)+90+xBtnMenuHelp ,YMAINBUTTON+yBtnMenuHelp,true,1201 );
 
 
 
-  aBtnSprite:=SE_MainInterface.CreateSprite(bmp.Bitmap ,'btnmenu_market',1,1,1000,(180*3)+90,YMAINBUTTON,true );
-//  aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize,Translate('lbl_Market'),true  );
-//  aBtnSprite.Labels.Add( aSpriteLabel);
+  aBtnSprite:=SE_MainInterface.CreateSprite(bmp.Bitmap ,'btnmenu_market',1,1,1000,(180*3)+90,YMAINBUTTON,true ,1200);
   aBtnSprite.TransparentForced := True;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
   aBtnSprite.AddSubSprite ( dir_interface +'market.bmp', 'sub',90-40,56-40,true );
-  aBtnSprite.Priority := 1200;
+  SE_MainInterface.CreateSprite(bmpQuestion.Bitmap ,'btnhelp_market',1,1,1000,(180*3)+90+xBtnMenuHelp ,YMAINBUTTON+yBtnMenuHelp,true,1201 );
 
-  aBtnSprite:=SE_MainInterface.CreateSprite(bmp.Bitmap ,'btnmenu_watchlive',1,1,1000,(180*4)+90,YMAINBUTTON,true );
-  //aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize,Translate('lbl_watchlive'),true  );
-  //aBtnSprite.Labels.Add( aSpriteLabel);
-  aBtnSprite.TransparentForced := True;
-  aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite( dir_interface +'watchlive.bmp', 'sub',90-40,56-40,true );
-  aBtnSprite.Priority := 1200;
+  if GameMode = pvp then begin
+    aBtnSprite:=SE_MainInterface.CreateSprite(bmp.Bitmap ,'btnmenu_watchlive',1,1,1000,(180*4)+90,YMAINBUTTON,true,1200 );
+    aBtnSprite.TransparentForced := True;
+    aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
+    aBtnSprite.AddSubSprite( dir_interface +'watchlive.bmp', 'sub',90-40,56-40,true );
+    SE_MainInterface.CreateSprite(bmpQuestion.Bitmap ,'btnhelp_watchlive',1,1,1000,(180*4)+90+xBtnMenuHelp ,YMAINBUTTON+yBtnMenuHelp,true,1201 );
+  end;
 
-  aBtnSprite:=SE_MainInterface.CreateSprite(bmp.Bitmap ,'btnmenu_standings',1,1,1000,(180*5)+90,YMAINBUTTON,true );
+  aBtnSprite:=SE_MainInterface.CreateSprite(bmp.Bitmap ,'btnmenu_standings',1,1,1000,(180*5)+90,YMAINBUTTON,true,1200 );
 //  aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize,Translate('lbl_Standings'),true  );
 //  aBtnSprite.Labels.Add( aSpriteLabel);
   aBtnSprite.TransparentForced := True;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
   aBtnSprite.AddSubSprite(dir_interface +'standings.bmp', 'sub',90-40,56-40,true );
-  aBtnSprite.Priority := 1200;
+  SE_MainInterface.CreateSprite(bmpQuestion.Bitmap ,'btnhelp_standings',1,1,1000,(180*5)+90+xBtnMenuHelp ,YMAINBUTTON+yBtnMenuHelp,true,1201 );
 
-  aBtnSprite:=SE_MainInterface.CreateSprite(bmp.Bitmap ,'btnmenu_info',1,1,1000,(180*6)+90,YMAINBUTTON,true );
-  aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize,Translate('lbl_Info'),true  );
-  aBtnSprite.Labels.Add( aSpriteLabel);
-  aBtnSprite.TransparentForced := True;
-  aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.Priority := 1200;
-  bmp.Free;
+//  aBtnSprite:=SE_MainInterface.CreateSprite(bmp.Bitmap ,'btnmenu_info',1,1,1000,(180*6)+90,YMAINBUTTON,true,1200 );
+//  aBtnSprite.TransparentForced := True;
+//  aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
+//  bmp.Free;
 
   // btn_play e btn_confirmformation
-  bmp := SE_Bitmap.Create ( dir_interface + 'button.bmp');
-  aBtnSprite:=SE_MainInterface.CreateSprite(bmp.Bitmap ,'btnmenu_play',1,1,1000,(180*7)+90,YMAINBUTTON,true );
+  aBtnSprite:=SE_MainInterface.CreateSprite(bmp.Bitmap ,'btnmenu_play',1,1,1000,(180*7)+90,YMAINBUTTON,true,1200 );
  // aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize,Translate('lbl_Play'),true  );
  // aBtnSprite.Labels.Add( aSpriteLabel);
   aBtnSprite.TransparentForced := True;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
   aBtnSprite.AddSubSprite(dir_interface +'play.bmp', 'sub',90-40,56-40,true );
-  aBtnSprite.Priority := 1200;
-  bmp.Free;
+  SE_MainInterface.CreateSprite(bmpQuestion.Bitmap ,'btnhelp_play',1,1,1000,(180*7)+90+xBtnMenuHelp ,YMAINBUTTON+yBtnMenuHelp,true,1201 );
 
-  bmp := SE_Bitmap.Create ( dir_interface + 'button.bmp');
-  aBtnSprite:=SE_MainInterface.CreateSprite(bmp.Bitmap ,'btnmenu_confirmformation',1,1,1000,(180*7)+90,YMAINBUTTON,true );
- // aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize,Translate('lbl_Confirm'),true  );
- // aBtnSprite.Labels.Add( aSpriteLabel);
+
+  aBtnSprite:=SE_MainInterface.CreateSprite(bmp.Bitmap ,'btnmenu_confirmformation',1,1,1000,(180*7)+90,YMAINBUTTON,true,1200 );
   aBtnSprite.TransparentForced := True;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
   aBtnSprite.AddSubSprite(dir_interface +'GreenCheckMark.bmp', 'sub',90-32,56-32,true );
-  aBtnSprite.Priority := 1200;
+  SE_MainInterface.CreateSprite(bmpQuestion.Bitmap ,'btnhelp_confirmformation',1,1,1000,(180*7)+90+xBtnMenuHelp ,YMAINBUTTON+yBtnMenuHelp,true,1201 );
   bmp.Free;
+
 
   // male female un po' in alto
   bmp := SE_Bitmap.Create ( 120,44);
   bmp.Bitmap.Canvas.Brush.Color :=  $00FF8000;
   bmp.Bitmap.Canvas.RoundRect(0,0,bmp.Width,bmp.Height,5,5);
 
-  aBtnSprite:=SE_MainInterface.CreateSprite(bmp.Bitmap ,'btnmenu_m',1,1,1000,720-60,YMAINBUTTON-80,true );
-  aSpriteLabel := SE_SpriteLabel.create( -1,6,'Calibri',clWhite-1,clBlack,FontSize+6,Translate('lbl_M'),true  );
+  aBtnSprite:=SE_MainInterface.CreateSprite(bmp.Bitmap ,'btnmenu_m',1,1,1000,720-60,YMAINBUTTON-80,true,1200 );
+  aSpriteLabel := SE_SpriteLabel.create( -1,6,'Calibri',clWhite-1,clBlack,FontSize+6,Translate('lbl_M'),true ,1, dt_center );
   aBtnSprite.Labels.Add( aSpriteLabel);
-  aBtnSprite.Priority := 1200;
   aBtnSprite.Alpha := 255;
   aBtnSprite.BlendMode := SE_BlendAlpha;
   // male female un po' in alto
   bmp.Bitmap.Canvas.Brush.Color :=  $00FF80FF;
   bmp.Bitmap.Canvas.RoundRect(0,0,bmp.Width,bmp.Height,5,5);
 
-  aBtnSprite:=SE_MainInterface.CreateSprite(bmp.Bitmap ,'btnmenu_f',1,1,1000,720+60,YMAINBUTTON-80,true );
-  aSpriteLabel := SE_SpriteLabel.create( -1,6,'Calibri',clWhite-1,clBlack,FontSize+6,Translate('lbl_F'),true  );
+  aBtnSprite:=SE_MainInterface.CreateSprite(bmp.Bitmap ,'btnmenu_f',1,1,1000,720+60,YMAINBUTTON-80,true,1200 );
+  aSpriteLabel := SE_SpriteLabel.create( -1,6,'Calibri',clWhite-1,clBlack,FontSize+6,Translate('lbl_F'),true ,1, dt_center );
   aBtnSprite.Labels.Add( aSpriteLabel);
-  aBtnSprite.Priority := 1200;
   aBtnSprite.Alpha := 255;
   aBtnSprite.BlendMode := SE_BlendAlpha;
 
   bmp.Free;
 
+  SE_MainInterface.CreateSprite(bmpQuestion.Bitmap ,'btnhelp_fm',1,1,1000,720 ,YMAINBUTTON-80-yBtnMenuHelp,true,1201 );
+  bmpQuestion.Free;
+
+
+end;
+procedure TForm1.LoadPreMatch;
+var
+  bmp: SE_Bitmap;
+  aBtnSprite: SE_Sprite;
+  aSpriteLabel : SE_SpriteLabel;
+  const FontSize = 14;
+begin
+  overridecolor := false;
+//  bmp :=SE_Bitmap.Create ( 500, 200 );
+//  bmp.Bitmap.Canvas.Brush.Color :=  clGray;
+//  bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
+ // SE_YesNo.CreateSprite( bmp.Bitmap , 'baseprematch',1,1,1000, (form1.Width div 2), (form1.height div 2) ,true,1 ); // non visibile. in futuro immagine.
+ // bmp.Free;
+
+
+  // GIORNATA - MEN - WOMAN e Bologna-Atalanta sono riempite in ClientLoadPreMatch
+
+
+//Menu button
+  bmp := SE_Bitmap.Create ( dir_interface + 'button.bmp');
+  aBtnSprite:=SE_PreMatch.CreateSprite(bmp.Bitmap ,'btnmenu_back',1,1,1000,90,YMAINBUTTON,true,1200 );
+  aBtnSprite.TransparentForced := True;
+  aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
+  aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'sub',90-40,56-40,true );
+  bmp.Free;
+
+
+  bmp := SE_Bitmap.Create ( dir_interface + 'button.bmp');
+  aBtnSprite:=SE_PreMatch.CreateSprite(bmp.Bitmap ,'btnmenu_simulate',1,1,1000,(180*6)+90,YMAINBUTTON,true ,1200);
+  aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize,Translate('lbl_Simulate'),true ,1, dt_center );
+  aBtnSprite.Labels.Add( aSpriteLabel);
+  aBtnSprite.TransparentForced := True;
+  aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
+  aBtnSprite.AddSubSprite ( dir_interface +'simulate.bmp', 'sub',90-40,56-40,true );
+  bmp.Free;
+
+
+
+  // btn_play e btn_confirmformation
+  bmp := SE_Bitmap.Create ( dir_interface + 'button.bmp');
+  aBtnSprite:=SE_PreMatch.CreateSprite(bmp.Bitmap ,'btnmenu_play',1,1,1000,(180*7)+90,YMAINBUTTON,true,1200 );
+ // aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize,Translate('lbl_Play'),true  );
+ // aBtnSprite.Labels.Add( aSpriteLabel);
+  aBtnSprite.TransparentForced := True;
+  aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
+  aBtnSprite.AddSubSprite(dir_interface +'play.bmp', 'sub',90-40,56-40,true );
+  bmp.Free;
 
 end;
 
-procedure TForm1.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+procedure TForm1.FormKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
 {$IFDEF  tools}
  if Key = VK_F1 then
@@ -2552,12 +3194,28 @@ begin
    end;
 {$ENDIF}
 
+  if LockSkill then exit;
+  if SE_Skills.Visible then begin
 
-{  if Key = 84 then begin
-    if not SE_TheaterPassive.visible then
-      ShowTheaterPassive
-  end;}
+    if (Key = VK_DOWN) or (Key = VK_RIGHT) then begin // freccia giù
+      inc(Index_WheelSkill);
+
+      if Index_WheelSkill > SelectedPlayer.ActiveSkills.Count -1 then
+        Index_WheelSkill :=0;
+    end
+    else if (Key = VK_UP) or  (Key = VK_LEFT) then begin
+      dec(Index_WheelSkill);
+      if Index_WheelSkill < 0 then
+      Index_WheelSkill := SelectedPlayer.ActiveSkills.Count -1;
+
+    end;
+
+    ShowSingleSkill;
+
+  end;
+
 end;
+
 procedure TForm1.LoadAllGraphic ;
 begin
   se_theater1.Visible:= False;
@@ -2578,19 +3236,22 @@ begin
   LoadLogin;
   LoadUniform;
   LoadCountryTeam;
-  LoadMainInterface;
+//  LoadMainInterface; la carico in SetGameMode  in quanto diversa tra pvp e pve
+  LoadPreMatch;
   LoadMainStats;
   CreateFieldPoints;
   LoadDoors;
   LoadPlayerDetails;
   LoadAml;
+  LoadStandings;
   LoadMarket;
   LoadSpectator;
-  LoadLive;
+  //LoadLive;   la carico in SetGameMode  in quanto diversa tra pvp e pve
   LoadGreen;
   LoadTacticsSubs;
-  LoadScore;
-
+  // LoadScore;   la carico in SetGameMode  in quanto diversa tra pvp e pve
+  LoadHelp;
+  GameMode := pvNull;
 end;
 
 
@@ -2668,7 +3329,7 @@ var
   pbSprite : SE_SpriteProgressBar;
   bmp : SE_Bitmap;
   aSpriteLabel: SE_SpriteLabel;
-  cx,cy,w,NewX: Integer;
+  cx,cy: Integer;
 begin
   SE_MainStats.Visible := True;
   MainStatsSpr:= SE_MainStats.FindSprite('mainstats');
@@ -2705,76 +3366,48 @@ begin
   MainStatsSpr.BMP.Canvas.Font.Name := 'Calibri';
   MainStatsSpr.BMP.Canvas.Font.Size := 14;
 
+  // le coordinate sono riferite a MainStatsSpr
   if CheckBox1.Checked then
-  w:= MainStatsSpr.BMP.Canvas.TextWidth( aPlayer.ids + ' ' +  aPlayer.SurName)
-  else w:= MainStatsSpr.BMP.Canvas.TextWidth(  aPlayer.SurName);
-  NewX := CoordsMainStatsNameCenterX - (w div 2);
-
-  if CheckBox1.Checked then
-  aSpriteLabel := SE_SpriteLabel.create(NewX,CoordsMainStatsName.Y,'Calibri',clWhite,clBlack,14,aPlayer.ids + ' ' + aPlayer.SurName,True )
-  else aSpriteLabel := SE_SpriteLabel.create(NewX,CoordsMainStatsName.Y,'Calibri',clWhite,clBlack,14, aPlayer.SurName,True );
+  aSpriteLabel := SE_SpriteLabel.create(170,7,'Calibri',clWhite,clBlack,14,aPlayer.ids + ' ' + aPlayer.SurName,True ,1, dt_left)
+  else aSpriteLabel := SE_SpriteLabel.create(170,7,'Calibri',clWhite,clBlack,14, aPlayer.SurName,True,1, dt_left );
 
   MainStatsSpr.Labels.Add(aSpriteLabel);
 
 
-  w:= MainStatsSpr.BMP.Canvas.TextWidth(Translate('attribute_Speed'));
-  NewX := CoordsMainStatsSpeedlbl.X - (w div 2);
-  aSpriteLabel := SE_SpriteLabel.create(NewX,CoordsMainStatsSpeedlbl.Y,'Calibri',clWhite,clBlack,14,Translate('attribute_Speed'),True );
+  aSpriteLabel := SE_SpriteLabel.create(380 ,0,'Calibri',clWhite,clBlack,14,Translate('attribute_Speed'),True,1, dt_XCenter );
   MainStatsSpr.Labels.Add(aSpriteLabel);
 
-  w:= MainStatsSpr.BMP.Canvas.TextWidth(Translate('attribute_Defense'));
-  NewX := CoordsMainStatsDefenselbl.X - (w div 2);
-  aSpriteLabel := SE_SpriteLabel.create(NewX,CoordsMainStatsDefenselbl.Y,'Calibri',clWhite,clBlack,14,Translate('attribute_Defense'),True );
+  aSpriteLabel := SE_SpriteLabel.create(460 ,0,'Calibri',clWhite,clBlack,14,Translate('attribute_Defense'),True,1, dt_XCenter );
   MainStatsSpr.Labels.Add(aSpriteLabel);
 
-  w:= MainStatsSpr.BMP.Canvas.TextWidth(Translate('attribute_Passing'));
-  NewX := CoordsMainStatsPassinglbl.X - (w div 2);
-  aSpriteLabel := SE_SpriteLabel.create(NewX,CoordsMainStatsPassinglbl.Y,'Calibri',clWhite,clBlack,14,Translate('attribute_Passing'),True );
+  aSpriteLabel := SE_SpriteLabel.create(540 ,0,'Calibri',clWhite,clBlack,14,Translate('attribute_Passing'),True,1, dt_XCenter );
   MainStatsSpr.Labels.Add(aSpriteLabel);
 
-  w:= MainStatsSpr.BMP.Canvas.TextWidth(Translate('attribute_Ball.Control'));
-  NewX := CoordsMainStatsBallControllbl.X - (w div 2);
-  aSpriteLabel := SE_SpriteLabel.create(NewX,CoordsMainStatsBallControllbl.Y,'Calibri',clWhite,clBlack,14,Translate('attribute_Ball.Control'),True );
+  aSpriteLabel := SE_SpriteLabel.create(620 ,0,'Calibri',clWhite,clBlack,14,Translate('attribute_Ball.Control'),True,1, dt_XCenter );
   MainStatsSpr.Labels.Add(aSpriteLabel);
 
-  w:= MainStatsSpr.BMP.Canvas.TextWidth(Translate('attribute_Shot'));
-  NewX := CoordsMainStatsShotlbl.X - (w div 2);
-  aSpriteLabel := SE_SpriteLabel.create(NewX,CoordsMainStatsShotlbl.Y,'Calibri',clWhite,clBlack,14,Translate('attribute_Shot'),True );
+  aSpriteLabel := SE_SpriteLabel.create(700 ,0,'Calibri',clWhite,clBlack,14,Translate('attribute_Shot'),True,1, dt_XCenter );
   MainStatsSpr.Labels.Add(aSpriteLabel);
 
-  w:= MainStatsSpr.BMP.Canvas.TextWidth(Translate('attribute_Heading'));
-  NewX := CoordsMainStatsHeadinglbl.X - (w div 2);
-  aSpriteLabel := SE_SpriteLabel.create(NewX,CoordsMainStatsHeadinglbl.Y,'Calibri',clWhite,clBlack,14,Translate('attribute_Heading'),True );
+  aSpriteLabel := SE_SpriteLabel.create(780 ,0,'Calibri',clWhite,clBlack,14,Translate('attribute_Heading'),True ,1, dt_XCenter);
   MainStatsSpr.Labels.Add(aSpriteLabel);
 
-  w:= MainStatsSpr.BMP.Canvas.TextWidth(IntToStr(aPlayer.Speed));
-  NewX := CoordsMainStatsSpeed.X - (w div 2);
-  aSpriteLabel := SE_SpriteLabel.create(NewX,CoordsMainStatsSpeed.Y,'Calibri',clWhite,clBlack,18,IntToStr(aPlayer.Speed),True );
+  aSpriteLabel := SE_SpriteLabel.create(380,18,'Calibri',clWhite,clBlack,18,IntToStr(aPlayer.Speed),True,1, dt_XCenter );
   MainStatsSpr.Labels.Add(aSpriteLabel);
 
-  w:= MainStatsSpr.BMP.Canvas.TextWidth(IntToStr(aPlayer.Defense));
-  NewX := CoordsMainStatsDefense.X - (w div 2);
-  aSpriteLabel := SE_SpriteLabel.create(NewX,CoordsMainStatsDefense.Y,'Calibri',clWhite,clBlack,18,IntToStr(aPlayer.Defense),True );
+  aSpriteLabel := SE_SpriteLabel.create(460,18,'Calibri',clWhite,clBlack,18,IntToStr(aPlayer.Defense),True ,1, dt_XCenter);
   MainStatsSpr.Labels.Add(aSpriteLabel);
 
-  w:= MainStatsSpr.BMP.Canvas.TextWidth(IntToStr(aPlayer.Passing));
-  NewX := CoordsMainStatsPassing.X - (w div 2);
-  aSpriteLabel := SE_SpriteLabel.create(NewX,CoordsMainStatsPassing.Y,'Calibri',clWhite,clBlack,18,IntToStr(aPlayer.Passing),True );
+  aSpriteLabel := SE_SpriteLabel.create(540,18,'Calibri',clWhite,clBlack,18,IntToStr(aPlayer.Passing),True ,1, dt_XCenter);
   MainStatsSpr.Labels.Add(aSpriteLabel);
 
-  w:= MainStatsSpr.BMP.Canvas.TextWidth(IntToStr(aPlayer.BallControl));
-  NewX := CoordsMainStatsBallControl.X - (w div 2);
-  aSpriteLabel := SE_SpriteLabel.create(NewX,CoordsMainStatsBallControl.Y,'Calibri',clWhite,clBlack,18,IntToStr(aPlayer.BallControl),True );
+  aSpriteLabel := SE_SpriteLabel.create(620,18,'Calibri',clWhite,clBlack,18,IntToStr(aPlayer.BallControl),True ,1, dt_XCenter);
   MainStatsSpr.Labels.Add(aSpriteLabel);
 
-  w:= MainStatsSpr.BMP.Canvas.TextWidth(IntToStr(aPlayer.Shot));
-  NewX := CoordsMainStatsShot.X - (w div 2);
-  aSpriteLabel := SE_SpriteLabel.create(NewX,CoordsMainStatsShot.Y,'Calibri',clWhite,clBlack,18,IntToStr(aPlayer.Shot),True );
+  aSpriteLabel := SE_SpriteLabel.create(700,18,'Calibri',clWhite,clBlack,18,IntToStr(aPlayer.Shot),True,1, dt_XCenter );
   MainStatsSpr.Labels.Add(aSpriteLabel);
 
-  w:= MainStatsSpr.BMP.Canvas.TextWidth(IntToStr(aPlayer.Heading));
-  NewX := CoordsMainStatsHeading.X - (w div 2);
-  aSpriteLabel := SE_SpriteLabel.create(NewX,CoordsMainStatsHeading.Y,'Calibri',clWhite,clBlack,18,IntToStr(aPlayer.Heading),True );
+  aSpriteLabel := SE_SpriteLabel.create(780,18,'Calibri',clWhite,clBlack,18,IntToStr(aPlayer.Heading),True,1, dt_XCenter );
   MainStatsSpr.Labels.Add(aSpriteLabel);
 
   bmp := SE_Bitmap.Create ( dir_interface + 'stamina.bmp' );
@@ -2783,16 +3416,32 @@ begin
 
   pbSprite := SE_SpriteProgressBar( SE_MainStats.FindSprite('staminabar'));
   pbSprite.Value := (aPlayer.Stamina * 100 ) div 120;
+ // pbSprite.Value := 18;
+ // pbSprite.Text := IntTostr(pbSprite.Value);
+ // aPlayer.Stamina := 18;
   case aPlayer.Stamina of
-    60..120:pbSprite.BarColor := clLime;
-    41..59 :pbSprite.BarColor := $0080FF;
-    21..40 :pbSprite.BarColor := clred;
-    0..20  :pbSprite.BarColor := $800080;
+    60..120: begin
+              pbSprite.BarColor := clLime;
+              pbSprite.lFontColor := $008000;
+             end;
+    41..59 : begin
+              pbSprite.BarColor := $0080FF;
+              pbSprite.lFontColor := clGray;
+             end;
+    21..40 : begin
+              pbSprite.BarColor := clred;
+              pbSprite.lFontColor := clWhite-1;
+             end;
+    0..20  : begin
+              pbSprite.BarColor := $800080;
+              pbSprite.lFontColor := clWhite-1;
+             end;
   end;
   pbSprite.Visible := True;
 
+  MainStatsSpr2.Visible := false;
   // 5 tipi diversi di buff / debuff . non in screenformation
-  if GameScreen = ScreenFormation then begin
+  if GameScreen <> ScreenFormation then begin
 
     if (aPlayer.BuffHome <> 0) or (aPlayer.BuffMorale <> 0) or (aPlayer.BonusbuffD <> 0) or (aPlayer.BonusbuffM <> 0)  or (aPlayer.BonusbuffF <> 0)
     then begin
@@ -2875,15 +3524,15 @@ begin
   for I := 0 to SE_PlayerDetails.SpriteCount -1 do begin
     SE_PlayerDetails.Sprites[i].Visible := False;
   end;
-  // mostro i btnmenu
+  // mostro i btnmenu e gli bnthelp
   for I := 0 to SE_PlayerDetails.SpriteCount -1 do begin
-    if LeftStr(SE_PlayerDetails.Sprites[i].Guid,8) = 'btnmenu_' then
+    if (LeftStr(SE_PlayerDetails.Sprites[i].Guid,8) = 'btnmenu_') or (LeftStr(SE_PlayerDetails.Sprites[i].Guid,8) = 'btnhelp_') then
       SE_PlayerDetails.Sprites[i].Visible := true;
   end;
 
   if MyBrain.Gender = 'f' then
-    Diff := 3
-    else Diff := 4;
+    Diff := F_DEFENSESHOT
+    else Diff := M_DEFENSESHOT;
 
   aSprite := SE_PlayerDetails.FindSprite('playerdetailssurname');
   aSprite.Visible := True;
@@ -2925,13 +3574,12 @@ begin
 
   if not ((aPlayer.DefaultSpeed >= MyBrainFormation.MAX_DEFAULT_SPEED) or (aPlayer.Age > 24)
        or (aPlayer.History_Speed > 0) )  then begin
-     // dopo i 24 anni non incrementa più in speed.speed incrementa solo una volta e al amssimo a 4
+     // dopo i 24 anni non incrementa più in speed.speed incrementa solo una volta e al massimo a 4
     pbSprite.Visible := true;
   { button levelup talent e stat }
     if aPlayer.xp_Speed >= xp_SPEED_POINTS then begin
-      AnimBallSprite :=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'levelup_speed',6,1,40,pbSprite.Position.X + (pbSprite.BMP.Width div 2) ,pbSprite.Position.Y,true );
+      AnimBallSprite :=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'levelup_speed',6,1,40,pbSprite.Position.X + (pbSprite.BMP.Width div 2) ,pbSprite.Position.Y,true,4000 );
       AnimBallSprite.sTag := '0';
-      AnimBallSprite.Priority := 4000;
     end;
   end;
 
@@ -2949,9 +3597,8 @@ begin
   if (aPlayer.DefaultDefense < MyBrainFormation.MAX_DEFAULT_DEFENSE) and Not (aPlayer.DefaultShot >= Diff) then  // difesa / shot  // 3 oppure 4 nel caso male
     pbSprite.Visible := true;
    if (pbSprite.Visible) and (aPlayer.xp_Defense >= xp_DEFENSE_POINTS) then begin
-    AnimBallSprite :=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'levelup_defense',6,1,40,pbSprite.Position.X + (pbSprite.BMP.Width div 2) ,pbSprite.Position.Y,true );
+    AnimBallSprite :=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'levelup_defense',6,1,40,pbSprite.Position.X + (pbSprite.BMP.Width div 2) ,pbSprite.Position.Y,true,4000 );
     AnimBallSprite.sTag := '1';
-    AnimBallSprite.Priority := 4000;
   end;
 
 
@@ -2968,9 +3615,8 @@ begin
   if (aPlayer.DefaultPassing < MyBrainFormation.MAX_DEFAULT_PASSING) then
     pbSprite.Visible := true;
   if (pbSprite.Visible) and (aPlayer.xp_passing >= xp_PASSING_POINTS) then begin
-    AnimBallSprite :=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'levelup_passing',6,1,40,pbSprite.Position.X + (pbSprite.BMP.Width div 2) ,pbSprite.Position.Y,true );
+    AnimBallSprite :=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'levelup_passing',6,1,40,pbSprite.Position.X + (pbSprite.BMP.Width div 2) ,pbSprite.Position.Y,true,4000 );
     AnimBallSprite.sTag := '2';
-    AnimBallSprite.Priority := 4000;
   end;
 
   if aPlayer.TalentId1 = TALENT_ID_GOALKEEPER then goto skipforGK2;
@@ -2990,9 +3636,8 @@ begin
     pbSprite.Visible := true;
 
    if (pbSprite.Visible) and  (aPlayer.xp_BallControl >= xp_BALLCONTROL_POINTS) then begin
-    AnimBallSprite :=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'levelup_ballcontrol',6,1,40,pbSprite.Position.X + (pbSprite.BMP.Width div 2) ,pbSprite.Position.Y,true );
+    AnimBallSprite :=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'levelup_ballcontrol',6,1,40,pbSprite.Position.X + (pbSprite.BMP.Width div 2) ,pbSprite.Position.Y,true ,4000);
     AnimBallSprite.sTag := '3';
-    AnimBallSprite.Priority := 4000;
   end;
 
   aSprite := SE_PlayerDetails.FindSprite('btn_shot');
@@ -3009,9 +3654,8 @@ begin
   if (aPlayer.DefaultShot < MyBrainFormation.MAX_DEFAULT_SHOT) and not( aPlayer.DefaultDefense >= Diff)  then // difesa / shot
   pbSprite.Visible := true;
   if (aPlayer.xp_Shot >= xp_SHOT_POINTS) then begin
-    AnimBallSprite :=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'levelup_shot',6,1,40,pbSprite.Position.X + (pbSprite.BMP.Width div 2) ,pbSprite.Position.Y,true );
+    AnimBallSprite :=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'levelup_shot',6,1,40,pbSprite.Position.X + (pbSprite.BMP.Width div 2) ,pbSprite.Position.Y,true,4000 );
     AnimBallSprite.sTag := '4';
-    AnimBallSprite.Priority := 4000;
   end;
 
 //  aPlayer.xp_Heading := 25; // debug
@@ -3024,15 +3668,15 @@ begin
   pbSprite :=  SE_SpriteProgressBar (  SE_PlayerDetails.FindSprite('bar_heading'));
   pbSprite.Text :=  IntToStr( aPlayer.xp_heading) + ' / ' + IntToStr(xp_HEADING_POINTS) ;
   pbSprite.Value := trunc (aPlayer.xp_heading * 100) div xp_HEADING_POINTS;
-  pbSprite.Visible := false;
-  if (aPlayer.DefaultHeading < MyBrainFormation.MAX_DEFAULT_HEADING) and ( aPlayer.History_Heading = 0) then begin
-    // Heading incrementa solo una volta
+ //heading ora è libero
+ // pbSprite.Visible := false;
+//  if (aPlayer.DefaultHeading < MyBrainFormation.MAX_DEFAULT_HEADING) and ( aPlayer.History_Heading < 2) then begin
+    // Heading incrementa solo 2 volte
     pbSprite.Visible := true;
-  end;
+//  end;
     if (pbSprite.Visible) and (aPlayer.xp_Heading >= xp_HEADING_POINTS) then begin
-      AnimBallSprite :=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'levelup_heading',6,1,40,pbSprite.Position.X + (pbSprite.BMP.Width div 2) ,pbSprite.Position.Y,true );
+      AnimBallSprite :=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'levelup_heading',6,1,40,pbSprite.Position.X + (pbSprite.BMP.Width div 2) ,pbSprite.Position.Y,true,4000 );
       AnimBallSprite.sTag := '5';
-      AnimBallSprite.Priority := 4000;
     end;
 
 
@@ -3052,15 +3696,18 @@ skipforGK2:
 
       { button levelup talent e stat }
       if aPlayer.xpTal[I] >= xpNeedTal[I] then begin
-        AnimBallSprite :=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'talentup'+ stringTalents[i],6,1,40,pbSprite.Position.X + (pbSprite.BMP.Width div 2) ,pbSprite.Position.Y,true );
+        AnimBallSprite :=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'talentup'+ stringTalents[i],6,1,40,pbSprite.Position.X + (pbSprite.BMP.Width div 2) ,pbSprite.Position.Y,true ,4000);
         AnimBallSprite.sTag := IntToStr(i);
-        AnimBallSprite.Priority := 4000;
       end;
 
     end
   end;
 
   bmp.Free;
+
+  if GameMode = pve then begin
+    aPlayer.OnMarket := pveOnMarket (MyActiveGender, aPlayer.ids , dir_saves);
+  end;
 
   if aPlayer.OnMarket then begin
     aSprite := SE_PlayerDetails.FindSprite('btnmenu_sell' );
@@ -3116,21 +3763,33 @@ skipforGK2:
   aSprite.BMP.Bitmap.Canvas.Font.Name := 'Calibri';
   aSprite.BMP.Bitmap.Canvas.Font.Size := FontSize;
   aSprite.Labels[1].lText :=  IntToStr(aPlayer.age) ;         // [1] contiene il valore [0] età
-  aSprite.Labels[1].lX := GetXLabel (aSprite.BMP.Bitmap,aSprite.Labels[1].lText , aSprite.BMP.Width, TStringRight);
   aSprite.Visible:= True;
+  if aPlayer.Age = 32 then begin
+    aSprite.Labels[0].lFontColor := clRed;
+    aSprite.Labels[0].lFontStyle := [fsBold];
+    aSprite.Labels[1].lFontColor := clRed;
+    aSprite.Labels[1].lFontStyle := [fsBold];
+  end
+  else begin
+    aSprite.Labels[0].lFontColor := clWhite-1;
+    aSprite.Labels[0].lFontStyle := [];
+    aSprite.Labels[1].lFontColor := clWhite-1;
+    aSprite.Labels[1].lFontStyle := [];
+  end;
 
-  aSprite := SE_PlayerDetails.FindSprite('btn_matchesleft' );
-  aSprite.BMP.Bitmap.Canvas.Font.Name := 'Calibri';
-  aSprite.BMP.Bitmap.Canvas.Font.Size := FontSize;
-  aSprite.Labels[1].lText :=  IntToStr(aPlayer.MatchesLeft) ;         // [1] contiene il valore [0] età
-  aSprite.Labels[1].lX := GetXLabel (aSprite.BMP.Bitmap,aSprite.Labels[1].lText , aSprite.BMP.Width, TStringRight);
-  aSprite.Visible:= True;
+
+  if GameMode = Pvp then begin
+    aSprite := SE_PlayerDetails.FindSprite('btn_matchesleft' );
+    aSprite.BMP.Bitmap.Canvas.Font.Name := 'Calibri';
+    aSprite.BMP.Bitmap.Canvas.Font.Size := FontSize;
+    aSprite.Labels[1].lText :=  IntToStr(aPlayer.MatchesLeft) ;         // [1] contiene il valore [0] età
+    aSprite.Visible:= True;
+  end;
 
   aSprite := SE_PlayerDetails.FindSprite('btn_marketvalue' );
   aSprite.BMP.Bitmap.Canvas.Font.Name := 'Calibri';
   aSprite.BMP.Bitmap.Canvas.Font.Size := FontSize;
   aSprite.Labels[1].lText :=  FloatToStrF(aPlayer.MarketValue, ffCurrency, 10, 0);        // [1] contiene il valore
-  aSprite.Labels[1].lX := GetXLabel (aSprite.BMP.Bitmap,aSprite.Labels[1].lText , aSprite.BMP.Width, TStringRight);
   aSprite.Visible:= True;
 
   aSprite := SE_PlayerDetails.FindSprite('btn_fitness' );
@@ -3153,13 +3812,25 @@ skipforGK2:
   aSprite := SE_PlayerDetails.FindSprite('btn_talents' );
   aSprite.Visible:= True;
 
+  aSprite := SE_PlayerDetails.FindSprite('btn_trainingchance' );
+  aSprite.Labels[1].lText :=  IntToStr(aPlayer.devA ) ;
+  {$IFdef tools} aSprite.Labels[1].lText := aSprite.Labels[1].lText + '% (+' + IntToStr(aPlayer.xpDevA ) +')';{$endif Tools}
+  aSprite.Visible:= True;
+  aSprite := SE_PlayerDetails.FindSprite('btn_trainingtalentchance' );
+  aSprite.Labels[1].lText :=  IntToStr(aPlayer.devT ) ;
+  {$IFdef tools} aSprite.Labels[1].lText := aSprite.Labels[1].lText + '% (+' + IntToStr(aPlayer.xpDevT ) +')';{$endif Tools}
+  aSprite.Visible:= True;
+  aSprite := SE_PlayerDetails.FindSprite('btn_injuredchance' );
+  aSprite.Labels[1].lText :=  IntToStr(aPlayer.devi ) ;
+  {$IFdef tools} aSprite.Labels[1].lText := aSprite.Labels[1].lText + '% (+' + IntToStr(aPlayer.xpDevI ) +')';{$endif Tools}
+  aSprite.Visible:= True;
 
+  aSprite := SE_PlayerDetails.FindSprite('btn_stamina' );
+  aSprite.Labels[1].lText :=  IntToStr(aPlayer.stamina ) ;
+  aSprite.Visible := True;
 
 end;
 procedure TForm1.HideStadiumAndPlayers;
-var
-  aBallSprite: SE_Sprite;
-  i: Integer;
 begin
   SE_players.Visible := False;
   SE_MainInterface.Visible := False;
@@ -3171,7 +3842,6 @@ end;
 procedure TForm1.ShowStadiumAndPlayers ( Stadium : integer )  ;
 var
   aStadium: SE_Sprite;
-  i: Integer;
 begin
   SE_BackGround.HideAllSprites;
   if Stadium = 0 then begin
@@ -3182,7 +3852,6 @@ begin
     aStadium := SE_background.FindSprite('field');
     aStadium.Visible := True;
   end;
-
 
   SE_players.Visible := true;
   SE_ball.Visible := True;
@@ -3474,6 +4143,8 @@ var
   aColor: TColor;
   IndexTal: Integer;
   LocalHA : string;
+  ini : TIniFile;
+  ts2: TStringList;
 procedure setupBMp (bmp:TBitmap; aColor: Tcolor);
 begin
   BMP.Canvas.Font.Size := 8;
@@ -3497,46 +4168,54 @@ begin
   // MM3 e buf3 contengono il buffer del team
   TotMarket := 0;
 
+  // nel pvp la stringa in Tcp contiene info team  + players
+  // nel pve le info team sono nel file ini e qui ci sono solo i players preceduti dal byte recordcount e da infoteam ridotto (money).
+  if GameMode = pvp then begin
 
-  SS:= TStringStream.Create;
-  SS.Size := MM3[0].Size;
-  Mm3[0].Position := 0;
-  SS.CopyFrom( MM3[0], MM3[0].size );
-  dataStr := SS.DataString;
-  SS.Free;
-
-  Cur := 0;
-  MyGuidTeam:= PDWORD(@buf3 [0][ cur ])^;
-  Cur := Cur + 4;
-  lenteamName :=  Ord( buf3[0] [ cur ]);
-  MyGuidteamName := MidStr( dataStr, cur + 2  , lenteamName );// ragiona in base 1  e l'elemento 0 è la len della stringa quindi + 2
-  cur  := cur + lenteamName + 1;
-
-  lenUniformH :=  Ord( buf3[0] [ cur ]);
-  tmps := MidStr( dataStr, cur + 2  , lenUniformH );
-  TsUniforms[0].CommaText := tmps;
+    SS:= TStringStream.Create;
+    SS.Size := MM3[0].Size;
+    Mm3[0].Position := 0;
+    SS.CopyFrom( MM3[0], MM3[0].size );
+    dataStr := SS.DataString;
+    SS.Free;
 
 
-  cur  := cur + lenUniformH + 1;
-  lenUniformA :=  Ord( buf3[0] [ cur ]);
-  tmps := MidStr( dataStr, cur + 2  , lenUniformA );
-  TsUniforms[1].CommaText := tmps;
+    Cur := 0;
+    MyGuidTeam:= PDWORD(@buf3 [0][ cur ])^;
+    Cur := Cur + 4;
+    lenteamName :=  Ord( buf3[0] [ cur ]);
+    MyTeamName := MidStr( dataStr, cur + 2  , lenteamName );// ragiona in base 1  e l'elemento 0 è la len della stringa quindi + 2
+    cur  := cur + lenteamName + 1;
 
-  cur  := cur + lenUniformA + 1;
-  NextHa :=  Ord( buf3[0] [ cur ]); // prossima partita in cas o fuori (home,away)
-  Cur := Cur + 1;
-  mi :=  PDWORD(@buf3[0] [ cur ])^; // media inglese
-  Cur := Cur + 4;
-  points :=  PDWORD(@buf3[0] [ cur ])^; // punti classifica
-  Cur := Cur + 4;
-  MatchesPlayedTeam :=  PDWORD(@buf3[0] [ cur ])^; // totale partite giocate
-  Cur := Cur + 4;
-  Money :=  PDWORD(@buf3[0] [ cur ])^; // denaro del team
-  Cur := Cur + 4;
-  Rank :=  Ord( buf3[0] [ cur ]);     // rank del team
-  Cur := Cur + 1;
-  MyBrain.gender :=  Char( buf3[0] [ cur ]);     // Gender del team
-  Cur := Cur + 1;
+    lenUniformH :=  Ord( buf3[0] [ cur ]);
+    tmps := MidStr( dataStr, cur + 2  , lenUniformH );
+    TsUniforms[0].CommaText := tmps;
+
+
+    cur  := cur + lenUniformH + 1;
+    lenUniformA :=  Ord( buf3[0] [ cur ]);
+    tmps := MidStr( dataStr, cur + 2  , lenUniformA );
+    TsUniforms[1].CommaText := tmps;
+
+    cur  := cur + lenUniformA + 1;
+    NextHa :=  Ord( buf3[0] [ cur ]); // prossima partita in cas o fuori (home,away)
+    Cur := Cur + 1;
+    mi :=  PDWORD(@buf3[0] [ cur ])^; // media inglese
+    Cur := Cur + 4;
+    points :=  PDWORD(@buf3[0] [ cur ])^; // punti classifica
+    Cur := Cur + 4;
+    MatchesPlayedTeam :=  PDWORD(@buf3[0] [ cur ])^; // totale partite giocate
+    Cur := Cur + 4;
+    Money :=  PDWORD(@buf3[0] [ cur ])^; // denaro del team
+    Cur := Cur + 4;
+    Rank :=  Ord( buf3[0] [ cur ]);     // rank del team
+    Cur := Cur + 1;
+    MyBrain.gender :=  Char( buf3[0] [ cur ]);     // Gender del team
+    Cur := Cur + 1;
+  end;
+
+  if GameMode = pve then
+    MyTeamRecord := pveGetTeamInfo (MyactiveGender,MyGuidTeam ,dir_saves);
 
 
   PreLoadUniform(0, StrToInt( tsUniforms[0][3] ));  // crea 4 schemas bmp ma salva come color quello selezionato
@@ -3554,6 +4233,17 @@ begin
     MyBrain.Score.FontColor[1]:= GetContrastColor(  StrToInt(TsUniforms[1][0]) )
     else MyBrain.Score.FontColor[1]:= StrToInt( TsUniforms[1][1] );
 
+  if gamemode = pve then begin
+    MM3[0].LoadFromFile( dir_saves + MyActiveGender + IntToStr(MyGuidTeam) + '.120' );
+    CopyMemory( @Buf3, MM3[0].Memory, MM3[0].Size  ); // metto nel buffer per i comandi non compressi
+    SS:= TStringStream.Create;
+    SS.Size := MM3[0].Size;
+    Mm3[0].Position := 0;
+    SS.CopyFrom( MM3[0], MM3[0].size );
+    dataStr := SS.DataString;
+    SS.Free;
+    Cur:= 0;
+  end;
 
   count := ord (buf3[0] [ cur ]);   // quanti player
   Cur := Cur + 1; //
@@ -3565,10 +4255,14 @@ begin
       Surname := MidStr( dataStr, cur + 2  , lenSurname );// ragiona in base 1  e l'elemento 0 è la len della stringa quindi + 2
       cur  := cur + lenSurname + 1;
 
-      Matches_Played := PWORD(@buf3[0] [ cur ])^;  // partite giocate dle player
-      Cur := Cur + 2 ;
-      Matches_Left := PWORD(@buf3[0] [ cur ])^;    // partite rimanenti prima di finire la carriera
-      Cur := Cur + 2 ;
+      if GameMode = pvp then begin
+
+        Matches_Played := PWORD(@buf3[0] [ cur ])^;  // partite giocate dle player
+        Cur := Cur + 2 ;
+        Matches_Left := PWORD(@buf3[0] [ cur ])^;    // partite rimanenti prima di finire la carriera
+        Cur := Cur + 2 ;
+      end;
+
       Age :=  Ord( buf3[0] [ cur ]);               // età
       Cur := Cur + 1 ;
       TalentID1 := Ord( buf3[0] [ cur ]);           // identificativo talento
@@ -3576,8 +4270,8 @@ begin
       TalentID2 := Ord( buf3[0] [ cur ]);           // identificativo talento
       Cur := Cur + 1;
 
-      Stamina := Ord( buf3[0] [ cur ]);
-      Cur := Cur + 1;
+      Stamina := PWORD(@buf3[0] [ cur ])^;
+      Cur := Cur + 2;
 
       DefaultSpeed := Ord( buf3[0] [ cur ]);
       Cur := Cur + 1;
@@ -3604,8 +4298,10 @@ begin
       Cur := Cur + 1;
       disqualified := Ord( buf3[0] [ cur ]);
       Cur := Cur + 1;
-      onmarket := Ord( buf3[0] [ cur ]);
-      Cur := Cur + 1;
+      if GameMode= pvp then begin
+        onmarket := Ord( buf3[0] [ cur ]);
+        Cur := Cur + 1;
+      end;
       face :=  PDWORD(@buf3[0] [ cur ])^; // face bmp viso
       Cur := Cur + 4;
       fitness:= Ord( buf3[0] [ cur ]);
@@ -3616,7 +4312,18 @@ begin
       Cur := Cur + 2;
 
 
+
       aPlayer:= TSoccerPlayer.create(0,MyGuidTeam,Matches_Played,IntToStr(guid),'',surname,Attributes,TalentID1,TalentID2);
+      if Gamemode = pve then
+        aPlayer.Age := age;
+
+      aPlayer.devA:= PWORD(@buf3[0] [ cur ])^;
+      Cur := Cur + 2;
+      aPlayer.devT:= PWORD(@buf3[0] [ cur ])^;
+      Cur := Cur + 2;
+      aPlayer.devI:= PWORD(@buf3[0] [ cur ])^;
+      Cur := Cur + 2;
+
       aPlayer.TalentId1 := TalentID1;
       aPlayer.TalentId2 := TalentID2;
       aPlayer.GuidTeam := MyguidTeam;
@@ -3647,26 +4354,33 @@ begin
       end;
 
       aPlayer.DefaultCells := aPlayer.Cells;
+   //   if aPlayer.SurName='Girardi' then asm int 3 ; end;
+
 
       aPlayer.Injured := injured;
       aPlayer.yellowcard := yellowcard;
       aPlayer.Disqualified := Disqualified;
-      aPlayer.onmarket := Boolean( onmarket);
-      TotMarket := TotMarket + onmarket;
+
+      If GameMode = pvp then begin
+        aPlayer.onmarket := Boolean( onmarket);
+        TotMarket := TotMarket + onmarket;
+      end;
+
       aPlayer.face := face;
       aPlayer.Fitness := fitness;
       aPlayer.morale := morale;
       aPlayer.Country := country;
 
       if aPlayer.TalentId1 <> TALENT_ID_GOALKEEPER then
-        aPlayer.SE_Sprite := se_Players.CreateSprite(UniformBitmap.Bitmap , aPlayer.Ids,1,1,1000,0,0,true)
+        aPlayer.SE_Sprite := se_Players.CreateSprite(UniformBitmap.Bitmap , aPlayer.Ids,1,1,1000,0,0,true,StrToInt(aPlayer.ids))
       else
-        aPlayer.SE_Sprite := se_Players.CreateSprite(UniformBitmapGK.Bitmap , aPlayer.Ids,1,1,1000,0,0,true);
+        aPlayer.SE_Sprite := se_Players.CreateSprite(UniformBitmapGK.Bitmap , aPlayer.Ids,1,1,1000,0,0,true,StrToInt(aPlayer.ids));
 
       aPlayer.SE_Sprite.Scale := ScaleSprites;
       aPlayer.SE_Sprite.MoverData.Speed := DEFAULT_SPEED_PLAYER_FORMATION;
       AddFace ( aPlayer );
-      aPlayer.se_sprite.Priority := StrToInt(aPlayer.ids);
+
+
 
       tsHistory := TStringList.Create;
       LenHistory :=  Ord( buf3[0] [ cur ]);
@@ -3688,18 +4402,26 @@ begin
       cur  := cur + LenXP + 1;
 
       // rispettare esatto ordine dei talenti sul db
-      aPlayer.xp_Speed         := aPlayer.xp_Speed + StrToInt( tsXP[0]);
-      aPlayer.xp_Defense       := aPlayer.xp_Defense + StrToInt( tsXP[1]);
-      aPlayer.xp_Passing       := aPlayer.xp_Passing + StrToInt( tsXP[2]);
-      aPlayer.xp_BallControl   := aPlayer.xp_BallControl + StrToInt( tsXP[3]);
-      aPlayer.xp_Shot          := aPlayer.xp_Shot + StrToInt( tsXP[4]);
-      aPlayer.xp_Heading       := aPlayer.xp_Heading + StrToInt( tsXP[5]);
+      aPlayer.xp_Speed         := StrToInt( tsXP[0]);
+      aPlayer.xp_Defense       := StrToInt( tsXP[1]);
+      aPlayer.xp_Passing       := StrToInt( tsXP[2]);
+      aPlayer.xp_BallControl   := StrToInt( tsXP[3]);
+      aPlayer.xp_Shot          := StrToInt( tsXP[4]);
+      aPlayer.xp_Heading       := StrToInt( tsXP[5]);
 
       for IndexTal := 1 to NUM_TALENT do begin
-        aPlayer.xpTal[IndexTal]:=aPlayer.xpTal[IndexTal] + StrToInt( tsXP[IndexTal+5])
+        aPlayer.xpTal[IndexTal]:= StrToInt( tsXP[IndexTal+5]);
       end;
 
       tsXP.Free;
+
+
+      aPlayer.xpDevA:= PWORD(@buf3[0] [ cur ])^;
+      Cur := Cur + 2;
+      aPlayer.xpDevT:= PWORD(@buf3[0] [ cur ])^;
+      Cur := Cur + 2;
+      aPlayer.xpDevI:= PWORD(@buf3[0] [ cur ])^;
+      Cur := Cur + 2;
 
 
       MyBrainFormation.lstSoccerPlayerALL.add(aPlayer); // uso anche questa lista per trovare gli sprite inKeyDown
@@ -3737,33 +4459,59 @@ begin
         setupBMp (aSubSprite.lBmp.Bitmap , clBlack );
         aSubSprite.lBmp.Bitmap.Canvas.TextOut(3,0, IntToStr(aPlayer.Injured));
       end;
+
     end;
 
     UniformBitmap.Free;
 
     RefreshCheckFormationMemory;
+
     // da qui in poi sol oparte grafica
     aSprite:=SE_MainInterface.FindSprite ('btnmenu_uniform' );
     aSprite.AddSubSprite(dir_tmp + 'color0.bmp','sub',90-32,56-32,true);   // sono 64x64, non 80x80
 
+
     // qui GuidTeam e rank. SE_Rank contiene solo questi 2 sprites e non è cliccabile. non ci sono mousedown o mousemove
     SE_RANK.removeallSprites;
     SE_RANK.ProcessSprites(2000);
-    bmp := SE_Bitmap.Create (440,32);
+    bmp := SE_Bitmap.Create (440,40);
     bmp.Bitmap.Canvas.Brush.Color :=  clGray;
     bmp.Bitmap.Canvas.FillRect(Rect( 0,0,bmp.Width,bmp.Height));
-    aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,24,Capitalize(MyGuidteamName ),True  );
+    aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,24,Capitalize(MyTeamName ),True  ,1, dt_left);
 
-    aSprite := SE_RANK.CreateSprite(bmp.bitmap,'teamname', 1,1,1000,500,128,true);
+    aSprite := SE_RANK.CreateSprite(bmp.bitmap,'teamname', 1,1,1000,500,128,true,1);
     aSprite.Labels.Add(aSpriteLabel);
     bmp.Free;
+
+    // Money si sposta
+    if MyActiveGender = 'm' then
+       SE_RANK.CreateSprite(dir_interface + 'money.bmp','token', 1,1,1000,300,YMAINBUTTON-80,true,1)
+      else SE_RANK.CreateSprite(dir_interface + 'money.bmp','token', 1,1,1000,1140,YMAINBUTTON-80,true,1);
+
+    bmp := SE_Bitmap.Create (240,26);
+    bmp.Bitmap.Canvas.Brush.Color :=  clGray;
+    bmp.Bitmap.Canvas.FillRect(Rect( 0,0,bmp.Width,bmp.Height));
+    if MyActiveGender = 'm' then begin
+      aSprite := SE_RANK.CreateSprite(bmp.bitmap,'money', 1,1,1000,332 + (bmp.Width div 2),YMAINBUTTON-80-6,true,1);
+      aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite-1,clBlack,20,FloatToStrF( MyTeamRecord.money, ffCurrency, 10, 0) ,True,1, dt_left  );
+    end
+    else begin
+      aSprite := SE_RANK.CreateSprite(bmp.bitmap,'money', 1,1,1000,1140-32-(bmp.Width div 2),YMAINBUTTON-80-6,true,1);
+      aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite-1,clBlack,20,FloatToStrF( MyTeamRecord.money, ffCurrency, 10, 0) ,true,1, dt_right  );
+    end;
+    aSprite.Labels.Add(aSpriteLabel);
+    bmp.Free;
+    aSpriteLabel.lFontQuality := fqDefault;
+
+
+  if GameMode = pvp then begin
 
     bmp2:= SE_Bitmap.Create ( dir_interface + '\star\24\star0.bmp');
     bmp := SE_Bitmap.Create (bmp2.Width*15,bmp2.Height);
     for i := 0 to 14 do begin
       bmp2.CopyRectTo(bmp,0,0,i*bmp2.Width,0,bmp2.Width-1,bmp2.Height,False,0);
     end;
-    aSprite := SE_RANK.CreateSprite(bmp.bitmap,'stars0', 1,1,1000,720 + (bmp.Width div 2),134,true);
+    aSprite := SE_RANK.CreateSprite(bmp.bitmap,'stars0', 1,1,1000,720 + (bmp.Width div 2),134,true,1);
     bmp2.Free;
 
     bmp2:= SE_Bitmap.Create ( dir_interface + '\star\24\star' +IntToStr(rank) +'.bmp');
@@ -3777,9 +4525,9 @@ begin
     bmp := SE_Bitmap.Create (112,22);
     bmp.Bitmap.Canvas.Brush.Color :=  clGray;
     bmp.Bitmap.Canvas.FillRect(Rect( 0,0,bmp.Width,bmp.Height));
-    aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,14,Capitalize(Translate('lbl_rank' ) ) + ' ' + IntToStr(rank) ,True  );
+    aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,14,Capitalize(Translate('lbl_rank' ) ) + ' ' + IntToStr(rank) ,True ,1, dt_center );
 
-    aSprite := SE_RANK.CreateSprite(bmp.bitmap,'rank', 1,1,1000,aSprite.Position.X  + (aSprite.BMP.Width div 2)+(bmp.Width div 2)+4 ,137,False);
+    aSprite := SE_RANK.CreateSprite(bmp.bitmap,'rank', 1,1,1000,aSprite.Position.X  + (aSprite.BMP.Width div 2)+(bmp.Width div 2)+4 ,137,False,1);
     aSprite.Labels.Add(aSpriteLabel);
     bmp.Free;
     //debug
@@ -3796,20 +4544,17 @@ begin
       1: aSprite.Labels[0].lFontColor := clRed;
     end;
 
-    // Money e nextha
-    aSprite := SE_RANK.CreateSprite(dir_interface + 'money.bmp','gold', 1,1,1000,305,40,true);
-    bmp := SE_Bitmap.Create (300,22);
-    bmp.Bitmap.Canvas.Brush.Color :=  clGray;
-    bmp.Bitmap.Canvas.FillRect(Rect( 0,0,bmp.Width,bmp.Height));
-    aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,14,FloatToStrF(Money, ffCurrency, 10, 0) ,True  );
-    aSprite := SE_RANK.CreateSprite(bmp.bitmap,'money', 1,1,1000,490,40,true);
-    aSprite.Labels.Add(aSpriteLabel);
-    bmp.Free;
-
     if NextHa = 0 then
-      aSprite := SE_RANK.CreateSprite(dir_interface + 'home.bmp','nextturn', 1,1,1000,320,90,true)
+      SE_RANK.CreateSprite(dir_interface + 'home.bmp','nextturn', 1,1,1000,320,90,true,1)
       else
-        aSprite := SE_RANK.CreateSprite(dir_interface + 'away.bmp','nextturn', 1,1,1000,325,95,true);
+        SE_RANK.CreateSprite(dir_interface + 'away.bmp','nextturn', 1,1,1000,325,95,true,1);
+
+  end;
+
+  //qui anche PVE ( Money )
+    // Money e nextha
+
+
 
 
 end;
@@ -3828,17 +4573,19 @@ begin
   bmp.Bitmap.Canvas.Brush.Color :=  clGray;
   bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
 
-  aSprite:=SE_Loading.CreateSprite( bmp.Bitmap , 'loading' ,1,1, 1000, (SE_Theater1.VirtualWidth div 2), (SE_Theater1.Virtualheight div 2) ,false );
-  aSpriteLabel := SE_SpriteLabel.create( -1,SE_Theater1.Virtualheight div 2,'Calibri',clYellow,clBlack,14,Capitalize(Translate( 'lbl_loading')),True  );
+  aSprite:=SE_Loading.CreateSprite( bmp.Bitmap , 'loading' ,1,1, 1000, (SE_Theater1.VirtualWidth div 2), (SE_Theater1.Virtualheight div 2) ,false,1 );
+  aSpriteLabel := SE_SpriteLabel.create( -1,SE_Theater1.Virtualheight div 2,'Calibri',clYellow,clBlack,14,Capitalize(Translate( 'lbl_loading')),True ,1, dt_center );
   aSprite.Labels.Add(aSpriteLabel);
   bmp.Free;
 
-  if (GameScreen = ScreenWaitingLive) or (GameScreen = ScreenWaitingLive) then begin
-    aBtnSprite:=SE_Loading.CreateSprite(dir_interface + 'button.bmp' ,'btnmenu_cancelqueue',1,1,1000,720,YMAINBUTTON,true );
-    aBtnSprite.TransparentForced := True;
-    aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-    aBtnSprite.AddSubSprite( dir_interface +'arrowl.bmp', 'sub',90-40,56-40,true );
-    aBtnSprite.Priority := 1200;
+  if GameMode = pvp then begin
+
+    if (GameScreen = ScreenWaitingLive)  then begin
+      aBtnSprite:=SE_Loading.CreateSprite(dir_interface + 'button.bmp' ,'btnmenu_cancelqueue',1,1,1000,720,YMAINBUTTON,true,1200 );
+      aBtnSprite.TransparentForced := True;
+      aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
+      aBtnSprite.AddSubSprite( dir_interface +'arrowl.bmp', 'sub',90-40,56-40,true );
+    end;
   end;
 
 end;
@@ -4013,32 +4760,32 @@ begin
   end;
 
   for I := 0 to FieldPoints.Count -1 do begin
-    AFieldSprite := se_FieldPoints.CreateSprite( bmp.Bitmap, IntToStr(FieldPoints[i].cell.X )+ '.'+IntToStr(FieldPoints[i].cell.Y )  , 24,1 ,50, FieldPoints[i].Pixel.X, FieldPoints[i].Pixel.Y, true );
+    AFieldSprite := se_FieldPoints.CreateSprite( bmp.Bitmap, IntToStr(FieldPoints[i].cell.X )+ '.'+IntToStr(FieldPoints[i].cell.Y )  , 24,1 ,50, FieldPoints[i].Pixel.X, FieldPoints[i].Pixel.Y, true,0 );
     AFieldSprite.BlendMode := SE_BlendAverage;
     AFieldSprite.Visible := false;
   end;
 
   for I := 0 to FieldPointsReserve.Count -1 do begin
-    AFieldSprite := SE_FieldPointsReserve.CreateSprite( bmp.Bitmap, IntToStr(FieldPointsReserve[i].cell.X )+'.-1', 24,1 ,50, FieldPointsReserve[i].Pixel.X, FieldPointsReserve[i].Pixel.Y, true );
+    AFieldSprite := SE_FieldPointsReserve.CreateSprite( bmp.Bitmap, IntToStr(FieldPointsReserve[i].cell.X )+'.-1', 24,1 ,50, FieldPointsReserve[i].Pixel.X, FieldPointsReserve[i].Pixel.Y, true,0 );
     AFieldSprite.BlendMode := SE_BlendAverage;
     AFieldSprite.Visible := false;
   end;
 //  FieldPointsSpriteSpecial si usa durante i corner, calci di punizione
   for I := 0 to FieldPointsPenalty.Count -1 do begin
     AFieldSprite := SE_FieldPointsSpecial.CreateSprite( bmp.Bitmap, IntToStr(FieldPointsPenalty[i].cell.X )+'.' + IntToStr(FieldPointsPenalty[i].cell.Y ),
-       24,1 ,50, FieldPointsPenalty[i].Pixel.X, FieldPointsPenalty[i].Pixel.Y, true );
+       24,1 ,50, FieldPointsPenalty[i].Pixel.X, FieldPointsPenalty[i].Pixel.Y, true,0 );
     AFieldSprite.BlendMode := SE_BlendAverage;
     AFieldSprite.Visible := false;
   end;
   for I := 0 to FieldPointsCorner.Count -1 do begin
     AFieldSprite := SE_FieldPointsSpecial.CreateSprite( bmp.Bitmap, IntToStr(FieldPointsCorner[i].cell.X )+'.' + IntToStr(FieldPointsCorner[i].cell.Y ),
-       24,1 ,50, FieldPointsCorner[i].Pixel.X, FieldPointsCorner[i].Pixel.Y, true );
+       24,1 ,50, FieldPointsCorner[i].Pixel.X, FieldPointsCorner[i].Pixel.Y, true,0 );
     AFieldSprite.BlendMode := SE_BlendAverage;
     AFieldSprite.Visible := false;
   end;
   for I := 0 to FieldPointsOut.Count -1 do begin
     AFieldSprite := SE_FieldPointsOut.CreateSprite( bmp.Bitmap, IntToStr(FieldPointsOut[i].cell.X )+'.' + IntToStr(FieldPointsOut[i].cell.Y ),
-       24,1 ,50, FieldPointsOut[i].Pixel.X, FieldPointsOut[i].Pixel.Y, true );
+       24,1 ,50, FieldPointsOut[i].Pixel.X, FieldPointsOut[i].Pixel.Y, true ,0);
     AFieldSprite.BlendMode := SE_BlendAverage;
     AFieldSprite.Visible := false;
   end;
@@ -4085,43 +4832,43 @@ end;
 
 procedure TForm1.RoundBorder (bmp: TBitmap);
 var
-x,y,w,h: Integer;
+w,h: Integer;
 begin
   w := bmp.Width;
   h := bmp.Height;
 
-  bmp.Canvas.Pixels [0,0]:= $7B5139;
-  bmp.Canvas.Pixels [0,1]:= $7B5139;
-  bmp.Canvas.Pixels [0,2]:= $7B5139;
-  bmp.Canvas.Pixels [1,0]:= $7B5139;
-  bmp.Canvas.Pixels [2,0]:= $7B5139;
+  bmp.Canvas.Pixels [0,0]:= clwhite;
+  bmp.Canvas.Pixels [0,1]:= clwhite;
+  bmp.Canvas.Pixels [0,2]:= clwhite;
+  bmp.Canvas.Pixels [1,0]:= clwhite;
+  bmp.Canvas.Pixels [2,0]:= clwhite;
 
-  bmp.Canvas.Pixels [w-3,0]:= $7B5139;
-  bmp.Canvas.Pixels [w-2,0]:= $7B5139;
-  bmp.Canvas.Pixels [w-1,0]:= $7B5139;
-  bmp.Canvas.Pixels [w-1,1]:= $7B5139;
-  bmp.Canvas.Pixels [w-1,2]:= $7B5139;
+  bmp.Canvas.Pixels [w-3,0]:= clwhite;
+  bmp.Canvas.Pixels [w-2,0]:= clwhite;
+  bmp.Canvas.Pixels [w-1,0]:= clwhite;
+  bmp.Canvas.Pixels [w-1,1]:= clwhite;
+  bmp.Canvas.Pixels [w-1,2]:= clwhite;
 
-  bmp.Canvas.Pixels [w-3,h-1]:= $7B5139;
-  bmp.Canvas.Pixels [w-2,h-1]:= $7B5139;
-  bmp.Canvas.Pixels [w-1,h-1]:= $7B5139;
-  bmp.Canvas.Pixels [w-1,h-2]:= $7B5139;
-  bmp.Canvas.Pixels [w-1,h-3]:= $7B5139;
+  bmp.Canvas.Pixels [w-3,h-1]:= clwhite;
+  bmp.Canvas.Pixels [w-2,h-1]:= clwhite;
+  bmp.Canvas.Pixels [w-1,h-1]:= clwhite;
+  bmp.Canvas.Pixels [w-1,h-2]:= clwhite;
+  bmp.Canvas.Pixels [w-1,h-3]:= clwhite;
 
-  bmp.Canvas.Pixels [0,h-3]:= $7B5139;
-  bmp.Canvas.Pixels [0,h-2]:= $7B5139;
-  bmp.Canvas.Pixels [0,h-1]:= $7B5139;
-  bmp.Canvas.Pixels [1,h-1]:= $7B5139;
-  bmp.Canvas.Pixels [2,h-1]:= $7B5139;
+  bmp.Canvas.Pixels [0,h-3]:= clwhite;
+  bmp.Canvas.Pixels [0,h-2]:= clwhite;
+  bmp.Canvas.Pixels [0,h-1]:= clwhite;
+  bmp.Canvas.Pixels [1,h-1]:= clwhite;
+  bmp.Canvas.Pixels [2,h-1]:= clwhite;
 
-  for x := 0 to bmp.Width -1 do begin
-      bmp.Canvas.Pixels [x,0]:= $7B5139;
-      bmp.Canvas.Pixels [x,bmp.Height -1]:= $7B5139;
-  end;
-  for y := 0 to bmp.height -1 do begin
-      bmp.Canvas.Pixels [0,y]:= $7B5139;
-      bmp.Canvas.Pixels [bmp.width-1,y]:= $7B5139;
-  end;
+ // for x := 0 to bmp.Width -1 do begin
+ //     bmp.Canvas.Pixels [x,0]:= $7B5139;
+ //     bmp.Canvas.Pixels [x,bmp.Height -1]:= $7B5139;
+ // end;
+ // for y := 0 to bmp.height -1 do begin
+ //     bmp.Canvas.Pixels [0,y]:= $7B5139;
+ //     bmp.Canvas.Pixels [bmp.width-1,y]:= $7B5139;
+ // end;
 
 
 end;
@@ -4158,7 +4905,7 @@ begin
 
     posX := Player.se_sprite.Position.X + ArrowDirection.offset.X;
     posY := Player.se_sprite.Position.Y + ArrowDirection.offset.Y;
-    Circle := SE_interface.CreateSprite(filename,'Circle', 1,1,1000,  posX,posY, true);
+    Circle := SE_interface.CreateSprite(filename,'Circle', 1,1,1000,  posX,posY, true,1);
     ColorizeArrowCircle ( Player.team,   Circle.BMP );
     Circle.Scale := 10;
 
@@ -4186,7 +4933,7 @@ begin
     aFieldPointSpr := SE_FieldPoints.FindSprite( IntToStr(CellX) + '.' + IntToStr(CellY) );
     posX := aFieldPointSpr.Position.X + ArrowDirection.offset.X;
     posY := aFieldPointSpr.Position.Y + ArrowDirection.offset.Y;
-    Circle := SE_interface.CreateSprite(filename,'Circle', 1,1,1000,  posX,posY, true);
+    Circle := SE_interface.CreateSprite(filename,'Circle', 1,1,1000,  posX,posY, true,1);
     Circle.Scale := 10;
     ColorizeArrowCircle ( team,   Circle.BMP );
 
@@ -4247,7 +4994,7 @@ begin
   posY := Player1.se_sprite.Position.Y + ArrowDirection.offset.Y;
 
 
-  Arrow := SE_interface.CreateSprite(filename,'arrow', 1,1,1000,  posX,posY, true);
+  Arrow := SE_interface.CreateSprite(filename,'arrow', 1,1,1000,  posX,posY, true,1);
   ColorizeArrowCircle ( Player1.team,   Arrow.BMP );
   Arrow.Scale := 72;
   Arrow.Angle := ArrowDirection.angle ;
@@ -4305,7 +5052,7 @@ begin
   posX := Player1.se_sprite.Position.X + ArrowDirection.offset.X;
   posY := Player1.se_sprite.Position.Y + ArrowDirection.offset.Y;
 
-  Arrow := SE_interface.CreateSprite(dir_interface + 'arrow.bmp','arrow', 1,1,1000,  posX,posY, true);
+  Arrow := SE_interface.CreateSprite(dir_interface + 'arrow.bmp','arrow', 1,1,1000,  posX,posY, true,1);
   ColorizeArrowCircle ( Player1.team,   Arrow.BMP );
   Arrow.Scale := 72;
   Arrow.Angle := ArrowDirection.angle ;
@@ -4314,27 +5061,26 @@ end;
 
 procedure TForm1.PrsMouseEnter;
 var
-  i,ii,c : Integer;
+  ii,c : Integer;
   anOpponent,aGK: TSoccerPlayer;
   aPoint : TPoint;
-  Modifier,BaseShot: Integer;
+//  Modifier,BaseShot: Integer;
   aDoor, BarrierCell: TPoint;
-  aFieldPointSpr: SE_Sprite;
 begin
   hidechances;
 
 
   if SelectedPlayer = nil then Exit;
-  Modifier := 0;
+//  Modifier := 0;
   aDoor := Mybrain.GetOpponentDoor ( SelectedPlayer );
   if absDistance (SelectedPlayer.CellX , SelectedPlayer.CellY, adoor.X, adoor.Y  ) > PowerShotRange then exit;
 
 
   if MyBrain.w_FreeKick3 then begin
     aGK := Mybrain.GetOpponentGK ( SelectedPlayer.Team );
-    BaseShot :=  SelectedPlayer.DefaultShot + Mybrain.MalusPrecisionShot[SelectedPlayer.CellX] +1 +
-                  Abs(Integer(  (SelectedPlayer.TalentId1 = TALENT_ID_FREEKICKS) or (SelectedPlayer.TalentId2 = TALENT_ID_FREEKICKS) ));  // . il +1 è importante al shot. è una freekick3
-    if BaseShot <= 0 then BaseShot := 1;
+    // :=  SelectedPlayer.DefaultShot + Mybrain.MalusPrecisionShot[SelectedPlayer.CellX] +1 +
+           //       Abs(Integer(  (SelectedPlayer.TalentId1 = TALENT_ID_FREEKICKS) or (SelectedPlayer.TalentId2 = TALENT_ID_FREEKICKS) ));  // . il +1 è importante al shot. è una freekick3
+   // if BaseShot <= 0 then BaseShot := 1;
     //CreateBaseAttribute (  selectedPlayer.CellX, SelectedPlayer.CellY, BaseShot) ;
   // mostro le 4 chance in barriera
     BarrierCell := MyBrain.GetBarrierCell( MyBrain.TeamFreeKick , MyBrain.Ball.CellX, MyBrain.Ball.CellY  ) ;
@@ -4360,15 +5106,15 @@ begin
 //    CreateBaseAttribute (  selectedPlayer.CellX, SelectedPlayer.CellY, BaseShot) ;
 
     // il pos non ha quel +1 ma ha la respinta
-    if BaseShot <= 0 then BaseShot := 1;
+   // if BaseShot <= 0 then BaseShot := 1;
   // mostro la chance el portiere e la mia
     aGK := Mybrain.GetOpponentGK ( SelectedPlayer.Team );
     CreateCircle( aGK );
 //    CreateBaseAttribute (  aGK.CellX,aGK.CellY, aGK.Defense) ;
   end
   else begin
-    BaseShot :=  SelectedPlayer.Shot + Mybrain.MalusPrecisionShot[SelectedPlayer.CellX];
-    if BaseShot <= 0 then BaseShot := 1;
+    //BaseShot :=  SelectedPlayer.Shot + Mybrain.MalusPrecisionShot[SelectedPlayer.CellX];
+   // if BaseShot <= 0 then BaseShot := 1;
   //  CreateBaseAttribute (  selectedPlayer.CellX, SelectedPlayer.CellY, BaseShot) ;
 
     for Ii := 0 to ShotCells.Count -1 do begin
@@ -4381,7 +5127,7 @@ begin
           anOpponent := MyBrain.GetSoccerPlayer(aPoint.X ,aPoint.Y );
           if  anOpponent = nil then continue;
           if Mybrain.GetSoccerPlayer(aPoint.X ,aPoint.Y ).Team <> SelectedPlayer.Team then begin
-            if SelectedPlayer.CellX = anOpponent.cellX then Modifier := MyBrain.modifier_defenseShot else Modifier :=0;
+//            if SelectedPlayer.CellX = anOpponent.cellX then Modifier := MyBrain.modifier_defenseShot else Modifier :=0;
             CreateArrowDirection( anOpponent, SelectedPlayer );
             //CreateBaseAttribute (  aPoint.x, aPoint.y, anOpponent.Defense) ;
           end;
@@ -4419,13 +5165,13 @@ begin
     else sebmp.Bitmap.Canvas.TextOut( 22,18, IntToStr(Value));
 
 
-  se_interface.CreateSprite( sebmp.bitmap, 'numbers', 1, 1, 100, aFieldPointSpr.Position.X  , aFieldPointSpr.Position.Y , true );
+  se_interface.CreateSprite( sebmp.bitmap, 'numbers', 1, 1, 100, aFieldPointSpr.Position.X  , aFieldPointSpr.Position.Y , true,1 );
   sebmp.Free;
 
 end;
 procedure TForm1.mainThreadTimer(Sender: TObject);
 var
-  FirstTickCount: longint;
+//  FirstTickCount: longint;
   aSprite: SE_Sprite;
 begin
 
@@ -4485,6 +5231,7 @@ begin
       toolSpin.Visible := false;
     {$endif tools}
       Animating:= True;
+      SE_Circles.Visible := false;
       if GameScreen = ScreenLive then begin
         SE_TacticsSubs.visible := False;
         aSprite := SE_LIVE.FindSprite('btnmenu_tactics');
@@ -4529,17 +5276,14 @@ begin
         Hide120;
       end;
 
-      //      FirstTickCount := GetTickCount;   // margine di sicurezza o il successivo ClientLoadBrainMM svuota la lstSoccerPlayer
-//       repeat
-//         Application.ProcessMessages;
-//       until ((GetTickCount-FirstTickCount) >= Longint(2000));
+      ClientLoadBrainMM ( CurrentIncMove );  // <-- false, gli sprite e le liste non saranno mai svuotate
+      //else if GameMode = pve then
+      //  pveSynchBrain;
 
-//      ClientLoadBrainMM ( CurrentIncMove, false ) ; // <-- false, gli sprite e le liste non saranno mai svuotate
-      ClientLoadBrainMM ( CurrentIncMove ) ; // <-- false, gli sprite e le liste non saranno mai svuotate
       SpriteReset;
 //      UpdateSubSprites;
       incMoveAllProcessed [CurrentIncMove] := True; // caricato e completamente eseguito
-  //    inc ( CurrentIncMove );
+    //    inc ( CurrentIncMove );
     end;
 
   end;
@@ -4565,14 +5309,14 @@ var
 begin
   hidechances ;
   if SelectedPlayer = nil then Exit;
-  Modifier := 0;
+//  Modifier := 0;
   aDoor := Mybrain.GetOpponentDoor ( SelectedPlayer );
   if absDistance (SelectedPlayer.CellX , SelectedPlayer.CellY, adoor.X, adoor.Y  ) > PowerShotRange then exit;
 
   if MyBrain.w_FreeKick3 then begin
     aGK := Mybrain.GetOpponentGK ( SelectedPlayer.Team );
-    BaseShot :=  SelectedPlayer.DefaultShot + Mybrain.MalusPrecisionShot[SelectedPlayer.CellX] +1 +
-                  Abs(Integer(  (SelectedPlayer.TalentId1 = TALENT_ID_FREEKICKS) or (SelectedPlayer.TalentId2 = TALENT_ID_FREEKICKS) ));  // . il +1 è importante al shot. è una freekick3    if BaseShot <= 0 then BaseShot := 1;
+//    BaseShot :=  SelectedPlayer.DefaultShot + Mybrain.MalusPrecisionShot[SelectedPlayer.CellX] +1 +
+//                  Abs(Integer(  (SelectedPlayer.TalentId1 = TALENT_ID_FREEKICKS) or (SelectedPlayer.TalentId2 = TALENT_ID_FREEKICKS) ));  // . il +1 è importante al shot. è una freekick3    if BaseShot <= 0 then BaseShot := 1;
    // CreateBaseAttribute (  SelectedPlayer.CellX,SelectedPlayer.CellY, BaseShot) ;
   // mostro le 4 chance in barriera
     BarrierCell := MyBrain.GetBarrierCell( MyBrain.TeamFreeKick , MyBrain.Ball.CellX, MyBrain.Ball.CellY  ) ;
@@ -4593,8 +5337,8 @@ begin
    // CreateBaseAttribute (  aGK.CellX,aGK.CellY, aGK.Defense) ;
   end
   else begin
-    BaseShot :=  SelectedPlayer.Shot + Mybrain.MalusPowerShot[SelectedPlayer.CellX]  ;
-    if BaseShot <= 0 then BaseShot := 1;
+  //  BaseShot :=  SelectedPlayer.Shot + Mybrain.MalusPowerShot[SelectedPlayer.CellX]  ;
+  //  if BaseShot <= 0 then BaseShot := 1;
    // CreateBaseAttribute (  SelectedPlayer.CellX,SelectedPlayer.CellY, BaseShot) ;
 
     for Ii := 0 to ShotCells.Count -1 do begin
@@ -4607,7 +5351,7 @@ begin
           anOpponent := Mybrain.GetSoccerPlayer(aPoint.X ,aPoint.Y );
           if  anOpponent = nil then continue;
           if Mybrain.GetSoccerPlayer(aPoint.X ,aPoint.Y ).Team <> SelectedPlayer.Team then begin
-            if SelectedPlayer.CellX = anOpponent.cellX then Modifier := MyBrain.modifier_defenseShot else Modifier :=0;
+      //      if SelectedPlayer.CellX = anOpponent.cellX then Modifier := MyBrain.modifier_defenseShot else Modifier :=0;
             CreateArrowDirection( anOpponent, SelectedPlayer );
            // CreateBaseAttribute (  aPoint.x, aPoint.y, anOpponent.defense );
 
@@ -4636,7 +5380,7 @@ end;
 procedure TForm1.CheckBox3Click(Sender: TObject);
 begin
 
-  ThreadCurMove.Enabled := CheckBox3.Checked;
+  ThreadCurrentIncMove.Enabled := CheckBox3.Checked;
 
 end;
 procedure TForm1.CheckBox5Click(Sender: TObject);
@@ -4781,12 +5525,10 @@ begin
 end;
 procedure TForm1.FixDuplicateFormationMemory;
 var
-  i,i2,pcount,pdisq: Integer;
+  i,i2: Integer;
   CellPoint : TPointBoolean;
   lstCellPoint: TList<TPointBoolean>;
-  DupFound: Boolean;
   aPoint : TPointBoolean;
-  apPointB: pPointBoolean;
   label retry;
 begin
   (* controlla in locale memoria *)
@@ -4996,7 +5738,7 @@ begin
 //  SetGlobalCursor( crHandPoint);
     Mybrain.Ball.SE_Sprite.AnimationInterval := ANIMATION_BALL_LOW ;
 
-
+  refresh_teamnames;
 end;
 procedure TForm1.CornerSetBall;
 var
@@ -5083,7 +5825,7 @@ begin
   TextSize:= bmp.Bitmap.Canvas.TextExtent (aString);
   bmp.Bitmap.Canvas.TextOut( (bmp.Bitmap.Width div 2)  - (TextSize.cx div 2), (bmp.Bitmap.Height div 2)  - (TextSize.cy div 2)    ,aString );
 
-  aSprite := SE_LifeSpan.CreateSprite(bmp.Bitmap, aString, 1,1, 20,x,y, Transparent  );
+  aSprite := SE_LifeSpan.CreateSprite(bmp.Bitmap, aString, 1,1, 20,x,y, Transparent ,1 );
   aSprite.LifeSpan := msLifespan;
   bmp.Free;
 
@@ -5120,8 +5862,8 @@ var
   lentsscript: word;
 begin
   BIndex := 0;
-  AnimationScript.Reset ;
-  Mybrain.tsScript.Clear ;
+ // AnimationScript.Reset ;
+  Mybrain.tsScript[incMove].Clear ;
 
 {
   str:= AnsiString  ( tsScript.CommaText );
@@ -5141,11 +5883,351 @@ begin
   // se non c'è tsscript la stringa è lunga 0
   lentsscript := PWORD(@buf3[incMove][ StartScript ])^;
   if lentsscript > 0 then
-    Mybrain.tsScript.CommaText := midStr ( SS.DataString , StartScript +1+2, lentsscript ); //+1 ragiona in base 1  +2 per len della stringa
+    Mybrain.tsScript[incMove].CommaText := midStr ( SS.DataString , StartScript +1+2, lentsscript ); //+1 ragiona in base 1  +2 per len della stringa
 
   SS.Free;
   incMoveReadTcp [incMove ] := True; // Letto e caricato
-  result := Mybrain.tsScript.Count;
+  result := Mybrain.tsScript[incMove].Count;
+end;
+procedure TForm1.pveSynchBrain;
+var
+  aFieldPointSpr, aSprite: se_Sprite;
+  i : Integer;
+  aPlayer: TSoccerPlayer;
+//  aCell: TSoccerCell;
+  bmp: se_Bitmap;
+  PenaltyCell: TPoint;
+  CornerMap: TCornerMap;
+  ACellBarrier: TPoint;
+  UniformBitmap : array[0..1] of SE_Bitmap;
+  UniformBitmapGK: SE_bitmap;
+begin
+
+  SE_Skills.Visible := False;
+  se_players.RemoveAllSprites ;
+  SE_players.ProcessSprites(2000);
+ // CurrentIncMove  := MyBrain.incMove;
+  LastTcpincMove  := MyBrain.incMove;
+  BIndex := 0;
+
+  TsUniforms[0].CommaText := MyBrain.Score.Uniform [0] ; // in formazione casa/trasferta
+  TsUniforms[1].CommaText := MyBrain.Score.Uniform [1] ;
+
+  PreLoadUniform (0, StrToInt( TsUniforms[0][3]));
+  UniformBitmap[0] := SE_Bitmap.Create (dir_tmp + 'color0.bmp');
+  PreLoadUniform (1, StrToInt( TsUniforms[1][3]));
+  UniformBitmap[1] := SE_Bitmap.Create (dir_tmp + 'color1.bmp');
+  PreLoadUniformGK (0, StrToInt( TsUniforms[0][3] ));   // i gk sono tuuti uguali
+  PreLoadUniformGK (1, StrToInt( TsUniforms[1][3] ));
+  UniformBitmapGK := SE_Bitmap.Create (dir_tmp + 'colorgk.bmp');
+  MyBrain.Score.DominantColor[0]:=  StringToColor( TsColors [ StrToInt( TsUniforms[0][0] )]);
+  MyBrain.Score.DominantColor[1]:= StringToColor( TsColors [ StrToInt( TsUniforms[1][0] ) ]);
+  i_tml ( IntToStr( MyBrain.FTeamMovesLeft ) ,  IntToStr( MyBrain.TeamTurn ) )  ;
+
+  aSprite := SE_Score.FindSprite('scorenick0');
+  aSprite.Labels[0].lText :=  UpperCase( MyBrain.Score.Team [0]);
+  aSprite := SE_Score.FindSprite('scorenick1');
+  aSprite.Labels[0].lText :=  UpperCase( MyBrain.Score.Team [1]);
+  aSprite := SE_Score.FindSprite('scorescore');
+  aSprite.Labels[0].lText := IntToStr(Mybrain.Score.gol [0]) +'-'+ IntToStr(Mybrain.Score.gol [1]);
+  aSprite := SE_Score.FindSprite('scoreminute');
+  aSprite.Labels[0].lText := IntToStr(MyBrain.Minute) +'''';
+
+  for I := 0 to MyBrain.lstSoccerPlayer.count -1 do begin
+
+    aPlayer := MyBrain.lstSoccerPlayer[i];
+
+    if aPlayer.TalentId1 <> TALENT_ID_GOALKEEPER then
+      aPlayer.Se_Sprite := se_players.CreateSprite( UniformBitmap[aPlayer.Team].bitmap ,aPlayer.Ids,1,1,100,0,0,true,StrToInt(aPlayer.ids) )
+    else
+      aPlayer.Se_Sprite := se_Players.CreateSprite(UniformBitmapGK.Bitmap , aPlayer.Ids,1,1,1000,0,0,true,StrToInt(aPlayer.ids));
+    aPlayer.Se_Sprite.Scale:= ScaleSprites;
+    AddFace ( aPlayer );
+    aPlayer.Se_Sprite.MoverData.Speed := DEFAULT_SPEED_PLAYER;
+
+    if (overridecolor) and (aPlayer.Team = 1)  then  begin
+      aPlayer.se_sprite.BlendMode := SE_BlendAverage;
+    end;
+
+    aFieldPointSpr := SE_FieldPoints.FindSprite(IntToStr (aPlayer.CellX ) + '.' + IntToStr (aPlayer.CellY ));
+    aPlayer.Se_Sprite.Position := aFieldPointSpr.position  ;
+    aPlayer.Se_Sprite.MoverData.Destination := aFieldPointSpr.Position;
+
+    if GameScreen = ScreenSubs then
+      aPlayer.Se_Sprite.Visible := True
+      else aPlayer.Se_Sprite.Visible := false;
+
+
+    if MyBrain.w_FreeKick3  then begin
+      if aPlayer.isFKD3 then begin
+        ACellBarrier  := MyBrain.GetBarrierCell ( MyBrain.TeamFreeKick, MyBrain.Ball.CellX, MyBrain.Ball.cellY)  ; // la cella barriera !!!!
+        aFieldPointSpr := SE_FieldPoints.FindSprite(  IntToStr(ACellBarrier.X ) + '.' + IntToStr(ACellBarrier.Y ));
+        aPlayer.se_sprite.Scale := ScaleSpritesBarrier;
+        aPlayer.SE_Sprite.MoverData.Destination := Point (aFieldPointSpr.Position.X + BarrierPosition[BIndex].X, aFieldPointSpr.Position.Y + BarrierPosition[BIndex].Y);
+        inc( BIndex) ;
+      end;
+    end
+
+    else if MyBrain.w_FreeKick4  then begin
+      if aPlayer.isFK4 then begin
+        PenaltySetPlayer(aPlayer);
+      end;
+    end
+
+    else if MyBrain.w_CornerSetup then begin
+      if aPlayer.isCOF then begin
+        CornerSetPlayer( aPlayer );
+      end;
+    end;
+
+    aPlayer.SE_Sprite.Visible := True;
+
+  end;
+
+  // aggiungo la palla graficamente DOPO avere caricato i player o Mybrain.Ball.Player = nil sempre
+//  MyBrain.Ball.CellX :=  Ord( buf3[CurrentincMove][ cur ]);
+//  cur := cur + 1 ;
+//  MyBrain.Ball.CellY :=  Ord( buf3[CurrentincMove][ cur ]);
+//  cur := cur + 1 ;
+
+  // non devo caricare la palla dal Mybrain attuale che è l'ultimo, ma devo leggere dalla memoria
+  SE_ball.RemoveAllSprites ('ball');
+  se_ball.ProcessSprites(2000);
+  aFieldPointSpr := SE_Fieldpoints.FindSprite(IntToStr (MyBrain.Ball.CellX ) + '.' + IntToStr (MyBrain.Ball.CellY ));
+  // la palla potrebbe essere anche fuori, quindi in FieldPointsOut o FieldPointsSpecial
+   bmp:= SE_Bitmap.Create (dir_interface + 'animball.bmp');
+  bmp.Stretch(40*6,40);
+  // setto la palla con i dati del mybrain currentIncmove. poi l'ultimo buf3 mi setterà il mybrain attuale
+  if Mybrain.Ball.Player <> nil then begin
+    case Mybrain.Ball.Player.team of
+      0: Mybrain.Ball.SE_Sprite := se_Ball.CreateSprite(bmp.Bitmap,'ball',6,1,40, aFieldPointSpr.Position.X+ abs(Ball0X), aFieldPointSpr.Position.Y , true,1);
+      1: Mybrain.Ball.SE_Sprite := se_Ball.CreateSprite(bmp.Bitmap,'ball',6,1,40, aFieldPointSpr.Position.X- abs(Ball0X), aFieldPointSpr.Position.Y , true,1);
+    end;
+  end
+  else Mybrain.Ball.SE_Sprite := se_Ball.CreateSprite(bmp.Bitmap,'ball',6,1,40,
+                                     aFieldPointSpr.Position.X   , aFieldPointSpr.Position.Y , true, 1 );
+
+
+  Mybrain.Ball.SE_Sprite.MoverData.Speed:= DEFAULT_SPEED_BALL;
+  Mybrain.Ball.SE_Sprite.PositionY := Mybrain.Ball.SE_Sprite.Position.Y ;
+  Mybrain.Ball.SE_Sprite.MoverData.Destination := Mybrain.Ball.Se_sprite.Position;
+  bmp.Free;
+
+  for I := 0 to MyBrain.lstSoccerReserve.count -1 do begin
+
+    aPlayer := MyBrain.lstSoccerReserve[i];
+
+    if aPlayer.TalentId1 <> TALENT_ID_GOALKEEPER then
+      aPlayer.SE_sprite := se_players.CreateSprite( UniformBitmap[aPlayer.Team].bitmap ,aPlayer.Ids,1,1,100,0,0,true,StrToInt(aPlayer.ids))
+    else
+      aPlayer.SE_sprite := se_Players.CreateSprite(UniformBitmapGK.Bitmap , aPlayer.Ids,1,1,1000,0,0,true,StrToInt(aPlayer.ids));
+    aPlayer.SE_sprite.Scale:= ScaleSprites;
+    AddFace ( aPlayer );
+    aPlayer.SE_sprite.MoverData.Speed := DEFAULT_SPEED_PLAYER;
+    if (overridecolor) and (aPlayer.Team = 1)  then  begin
+      aPlayer.se_sprite.BlendMode := SE_BlendAverage;
+    end;
+
+
+    MyBrain.ReserveSlot [aPlayer.Team, aPlayer.AIFormationCellX]:= aPlayer.Ids;
+
+    if aPlayer.Team = 0 then
+      aFieldPointSpr := SE_FieldPointsReserve.FindSprite(IntToStr (aPlayer.CellX ) + '.-1')
+      else aFieldPointSpr := SE_FieldPointsReserve.FindSprite(IntToStr (aPlayer.CellX +11 ) + '.-1'); // graficamente a destra
+    aPlayer.Se_Sprite.Position := aFieldPointSpr.Position;
+    aPlayer.Se_Sprite.MoverData.Destination := aFieldPointSpr.Position;
+
+    if GameScreen = ScreenSubs then
+      aPlayer.SE_sprite.Visible := True
+      else aPlayer.SE_sprite.Visible := false;
+
+
+  end;
+
+
+  for I := 0 to MyBrain.lstSoccerGameOver.count -1 do begin
+
+    aPlayer := MyBrain.lstSoccerGameOver[i];
+
+    if aPlayer.TalentId1 <> TALENT_ID_GOALKEEPER then
+      aPlayer.SE_sprite := se_players.CreateSprite( UniformBitmap[aPlayer.Team].bitmap ,aPlayer.Ids,1,1,100,0,0,true,StrToInt(aPlayer.ids))
+    else
+      aPlayer.SE_sprite := se_Players.CreateSprite(UniformBitmapGK.Bitmap , aPlayer.Ids,1,1,1000,0,0,true,StrToInt(aPlayer.ids));
+    aPlayer.SE_sprite.Scale:= ScaleSprites;
+    AddFace ( aPlayer );
+    aPlayer.SE_sprite.MoverData.Speed := DEFAULT_SPEED_PLAYER;
+    if (overridecolor) and (aPlayer.Team = 1)  then  begin
+      aPlayer.se_sprite.BlendMode := SE_BlendAverage;
+    end;
+
+
+    MyBrain.ReserveSlot [aPlayer.Team, aPlayer.AIFormationCellX]:= aPlayer.Ids;
+
+    if aPlayer.Team = 0 then
+      aFieldPointSpr := SE_FieldPointsReserve.FindSprite(IntToStr (aPlayer.CellX ) + '.-1')
+      else aFieldPointSpr := SE_FieldPointsReserve.FindSprite(IntToStr (aPlayer.CellX +11 ) + '.-1'); // graficamente a destra
+    aPlayer.Se_Sprite.Position := aFieldPointSpr.Position;
+    aPlayer.Se_Sprite.MoverData.Destination := aFieldPointSpr.Position;
+
+    if GameScreen = ScreenSubs then
+      aPlayer.SE_sprite.Visible := True
+      else aPlayer.SE_sprite.Visible := false;
+
+
+  end;
+
+  GameScreen := ScreenLive;
+  Refresh_teamnames;
+
+  UniformBitmap[0].Free;
+  UniformBitmap[1].Free;
+  UpdateSubSprites;
+
+  // cur posizionato sull'inizio di tsscript
+
+{
+
+    CLIENTLOADSCRIPT
+
+  str:= AnsiString  ( tsScript.CommaText );
+  LentsScript := Length (str);
+  MMbraindata.Write( @LentsScript, sizeof(integer) );
+  MMbraindata.Write( @str[1] , Length(str) );
+
+}
+
+
+  if MyBrain.w_Fka1 then begin
+    if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
+        HHFP ( MyBrain.ball.cellx,MyBrain.ball.cellY  ,0 );
+        MouseWaitFor :=  WaitForXY_FKF1; //'Scegli chi batterà il fk1';
+        GameScreen := ScreenFreeKick;
+        MyBrain.GetGK(MyBrain.TeamTurn).se_sprite.GrayScaled := True; // i gk non possono battere freekick1
+
+    end;
+  end
+  else if MyBrain.w_FreeKick1  then begin
+    if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
+      SelectedPlayerPopupSkill( MyBrain.Ball.CellX, MyBrain.Ball.cellY );
+    end;
+  end
+  else if MyBrain.w_Fka2 then begin
+    if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
+        HHFP ( MyBrain.ball.cellx,MyBrain.ball.cellY  ,0 );
+        MouseWaitFor := WaitForXY_FKF2; //'Scegli chi batterà il fk2';
+        GameScreen := ScreenFreeKick;
+        MyBrain.GetGK(MyBrain.TeamTurn).se_sprite.GrayScaled := True; // i gk non possono battere freekick2
+    end;
+  end
+  else if MyBrain.w_Fkd2 then begin
+
+    if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
+      CornerMap := MyBrain.GetCorner (MyBrain.TeamTurn , Mybrain.Ball.CellY, FriendlyCorner );
+      HHFP( CornerMap.HeadingCellD [0].X,CornerMap.HeadingCellD [0].Y,0);
+      MouseWaitFor := WaitForXY_FKD2;
+      GameScreen := ScreenFreeKick;
+      MyBrain.GetGK(MyBrain.TeamTurn).se_sprite.GrayScaled := True; // i gk non possono essere cod2
+    end;
+  end
+  else if MyBrain.w_FreeKick2  then begin
+    if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
+      tcp.SendStr( 'CRO2' + endofline);
+    end;
+  end
+  else if MyBrain.w_Fka3 then begin
+    if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
+      HHFP ( MyBrain.ball.cellx,MyBrain.ball.cellY  ,0 );
+      MouseWaitFor := WaitForXY_FKF3; //'Scegli chi batterà il fk3';
+      GameScreen := ScreenFreeKick;
+      MyBrain.GetGK(MyBrain.TeamTurn).se_sprite.GrayScaled := True; // i gk non possono battere freekick3
+    end;
+  end
+  else if MyBrain.w_Fkd3 then begin
+    if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
+      ACellBarrier :=  MyBrain.GetBarrierCell ( MyBrain.TeamFreeKick,MyBrain.Ball.CellX, MyBrain.Ball.cellY)  ; // la cella barriera !!!!
+      HHFP( aCellBarrier.X,  aCellBarrier.Y,0 );
+      MouseWaitFor := WaitForXY_FKD3;
+      GBIndex := 0;
+      GameScreen := ScreenFreeKick;
+      MyBrain.GetGK(MyBrain.TeamTurn).se_sprite.GrayScaled := True; // i gk non possono essere barriera
+    end;
+
+  end
+  else if MyBrain.w_FreeKick3  then begin
+    if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
+      SelectedPlayerPopupSkill( MyBrain.Ball.CellX, MyBrain.Ball.cellY );
+    end;
+  end
+  else if MyBrain.w_Fka4 then begin
+    if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
+      PenaltyCell := MyBrain.GetPenaltyCell ( MyBrain.TeamTurn );
+      PenaltySetBall  ;// la ball è già settata su 10,3 o 1,3
+      HHFP_Special( PenaltyCell.x,PenaltyCell.Y  ,0 );
+      MouseWaitFor := WaitForXY_FKF4; //'Scegli chi batterà il fk4';
+      GameScreen := ScreenFreeKick;
+      MyBrain.GetGK(MyBrain.TeamTurn).se_sprite.GrayScaled := True; // i gk non possono battere i penalty
+    end;
+  end
+  else if MyBrain.w_FreeKick4  then begin
+    if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
+      SelectedPlayerPopupSkill( MyBrain.Ball.CellX, MyBrain.Ball.cellY );
+    end;
+  end
+  else if MyBrain.w_Coa then begin
+    CornerSetBall;
+    if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
+      aFieldPointSpr := SE_FieldPointsSpecial.FindSprite(IntToStr (MyBrain.Ball.CellX ) + '.' + IntToStr (MyBrain.Ball.CellY ));
+      aFieldPointSpr.Visible := True;
+      HHFP_Special ( MyBrain.ball.cellx,MyBrain.ball.cellY  ,0 );
+      MouseWaitFor := WaitForXY_CornerCOF;
+      GameScreen := ScreenFreeKick;
+      MyBrain.GetGK(MyBrain.TeamTurn).se_sprite.GrayScaled := True; // i gk non possono battere i corner
+    end;
+  end
+  else if MyBrain.w_Cod then begin
+    CornerSetBall;
+    if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
+      CornerMap := MyBrain.GetCorner (MyBrain.TeamTurn , Mybrain.Ball.CellY, FriendlyCorner );
+      HHFP( CornerMap.HeadingCellD [0].X,CornerMap.HeadingCellD [0].Y,0);
+      MouseWaitFor := WaitForXY_CornerCOD;
+      GameScreen := ScreenFreeKick;
+      MyBrain.GetGK(MyBrain.TeamTurn).se_sprite.GrayScaled := True; // i gk non possono essere cod sui corner
+    end;
+
+  end
+  else if MyBrain.w_CornerKick  then begin
+    CornerSetBall;
+    if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
+        tcp.SendStr( 'COR' + endofline);
+    end;
+  end;
+
+  //devo farlo qui
+
+  if GameScreen = ScreenLive  then begin
+    aSprite:=SE_LIVE.FindSprite('btnmenu_skillpass' );
+    aSprite.Visible := Mybrain.Score.TeamGuid [  MyBrain.TeamTurn  ]  = MyGuidTeam;
+
+    if MyBrain.w_CornerSetup or MyBrain.w_CornerKick or MyBrain.w_FreeKickSetup1 or MyBrain.w_FreeKickSetup2 or
+      MyBrain.w_FreeKickSetup3 or MyBrain.w_FreeKickSetup4  or (Mybrain.Score.TeamGuid [ Mybrain.TeamTurn ]  <> MyGuidTeam)  then begin
+      SE_TacticsSubs.Visible := False;
+      aSprite := SE_LIVE.FindSprite('btnmenu_tactics');
+      aSprite.Visible := False;
+      aSprite := SE_LIVE.FindSprite('btnmenu_subs');
+      aSprite.Visible := False;
+      aSprite:=SE_LIVE.FindSprite('btnmenu_skillpass' );
+      aSprite.Visible := false;
+    end;
+
+    Hide120;
+
+  end;
+  SetGlobalCursor(crHandPoint );
+
+     //if (not AudioCrowd.Playing) and ( not btnAudioStadium.Down) then begin
+     // AudioCrowd.Play;
+     //end;
+
 end;
 
 procedure Tform1.ClientLoadBrainMM  ( incMove: Byte  );
@@ -5206,18 +6288,22 @@ begin
   dataStr := SS.DataString;
   SS.Free;
 
-  if RightStr(dataStr,2) <> 'IS' then Exit;
+//  if GameMode = pvp then
+    if RightStr(dataStr,2) <> 'IS' then Exit;
 
 
   // a 0 c'è la word che indica dove comincia tsScript
   cur := 2;
-  lenuser0:=  Ord( buf3[incMove] [ cur ]);                 // ragiona in base 0
-  MyBrain.Score.Username [0] := MidStr( dataStr, cur +2  , lenUser0 );// ragiona in base 1
-  cur  := cur + lenuser0 + 1;
-  lenuser1:=  Ord( buf3[incMove][Cur]);                 // ragiona in base 0
-  MyBrain.Score.Username [1] := MidStr( dataStr, Cur + 2, lenUser1 );// ragiona in base 1   uso solo SS
-  cur := Cur + lenUser1 + 1;
+ //if GameMode = pvp then begin
 
+    lenuser0:=  Ord( buf3[incMove] [ cur ]);                 // ragiona in base 0
+    MyBrain.Score.Username [0] := MidStr( dataStr, cur +2  , lenUser0 );// ragiona in base 1
+    cur  := cur + lenuser0 + 1;
+    lenuser1:=  Ord( buf3[incMove][Cur]);                 // ragiona in base 0
+    MyBrain.Score.Username [1] := MidStr( dataStr, Cur + 2, lenUser1 );// ragiona in base 1   uso solo SS
+    cur := Cur + lenUser1 + 1;
+
+//  end;
   lenteamname0 :=  Ord( buf3[incMove][ cur ]);
   MyBrain.Score.Team [0]  := MidStr( dataStr, cur + 2  , lenteamname0 );// ragiona in base 1
   cur  := cur + lenteamname0 + 1;
@@ -5311,7 +6397,6 @@ begin
   MyBrain.TeamTurn :=  Ord( buf3[incMove][ cur ]);
   cur := cur + 1 ;
 
-  Refresh_teamnames;
 
   MyBrain.FTeamMovesLeft :=  Ord( buf3[incMove][ cur ]);
   cur := cur + 1 ;
@@ -5396,16 +6481,12 @@ begin
 
   aSprite := SE_Score.FindSprite('scorenick0');
   aSprite.Labels[0].lText :=  UpperCase( MyBrain.Score.Team [0]);
-  aSprite.Labels[0].lX := GetXLabel (aSprite.BMP.Bitmap,aSprite.Labels[0].lText , aSprite.BMP.Width, TStringCenter);
   aSprite := SE_Score.FindSprite('scorenick1');
   aSprite.Labels[0].lText :=  UpperCase( MyBrain.Score.Team [1]);
-  aSprite.Labels[0].lX := GetXLabel (aSprite.BMP.Bitmap,aSprite.Labels[0].lText , aSprite.BMP.Width, TStringCenter);
   aSprite := SE_Score.FindSprite('scorescore');
   aSprite.Labels[0].lText := IntToStr(Mybrain.Score.gol [0]) +'-'+ IntToStr(Mybrain.Score.gol [1]);
-  aSprite.Labels[0].lX := GetXLabel (aSprite.BMP.Bitmap,aSprite.Labels[0].lText , aSprite.BMP.Width, TStringCenter);
   aSprite := SE_Score.FindSprite('scoreminute');
   aSprite.Labels[0].lText := IntToStr(MyBrain.Minute) +'''';
-  aSprite.Labels[0].lX := GetXLabel (aSprite.BMP.Bitmap,aSprite.Labels[0].lText , aSprite.BMP.Width, TStringCenter);
 
 
   totPlayer :=  Ord( buf3[incMove][ cur ]);
@@ -5423,20 +6504,29 @@ begin
     cur  := cur + lenSurname + 1;
     aTeam := Ord( buf3[incMove][ cur ]);
     Cur := Cur + 1 ;
+
+    if GameMode = pvp then begin
+
+      nMatchesplayed := PWORD(@buf3[incMove][ cur ])^;
+      Cur := Cur + 2 ;
+      nMatchesLeft := PWORD(@buf3[incMove][ cur ])^;
+      Cur := Cur + 2 ;
+    end
+    else begin
+      nMatchesPlayed := 0;
+      nMatchesLeft := 0;
+    end;
+
     aAge :=  Ord( buf3[incMove][ cur ]);
     Cur := Cur + 1 ;
 
-    nMatchesplayed := PWORD(@buf3[incMove][ cur ])^;
-    Cur := Cur + 2 ;
-    nMatchesLeft := PWORD(@buf3[incMove][ cur ])^;
-    Cur := Cur + 2 ;
     TalentID1 := Ord( buf3[incMove][ cur ]);
     Cur := Cur + 1;
     TalentID2 := Ord( buf3[incMove][ cur ]);
     Cur := Cur + 1;
 
-    aStamina := Ord( buf3[incMove][ cur ]);
-    Cur := Cur + 1;
+    aStamina := PWORD(@buf3[incMove] [ cur ])^;
+    Cur := Cur + 2;
 
     DefaultSpeed := Ord( buf3[incMove][ cur ]);
     Cur := Cur + 1;
@@ -5462,6 +6552,9 @@ begin
                                  Attributes,
                                  TalentID1,TalentID2  );     // attributes e defaultAttrributes sono uguali
       MyBrain.AddSoccerPlayer(aPlayer);       // lo aggiune per la prima ed unica volta
+      if Gamemode = pve then
+        aPlayer.Age := aAge;
+
     aPlayer.Stamina := aStamina;
     aPlayer.TalentId1:= TalentID1;
     aPlayer.TalentId2:= TalentID2;
@@ -5586,14 +6679,19 @@ begin
     aPlayer.BuffMorale := Ord( buf3[incMove][ cur ]);
     Cur := Cur + 1;
 
+    aPlayer.xpDevA := PWORD(@buf3[incMove][ cur ])^;
+    Cur := Cur + 2;
+    aPlayer.xpDevT := PWORD(@buf3[incMove][ cur ])^;
+    Cur := Cur + 2;
+    aPlayer.xpDevI := PWORD(@buf3[incMove][ cur ])^;
+    Cur := Cur + 2;
 
     if aPlayer.TalentId1 <> TALENT_ID_GOALKEEPER then
-      aPlayer.Se_Sprite := se_players.CreateSprite( UniformBitmap[aTeam].bitmap ,aPlayer.Ids,1,1,100,0,0,true)
+      aPlayer.Se_Sprite := se_players.CreateSprite( UniformBitmap[aTeam].bitmap ,aPlayer.Ids,1,1,100,0,0,true,StrToInt(aPlayer.ids) )
     else
-      aPlayer.Se_Sprite := se_Players.CreateSprite(UniformBitmapGK.Bitmap , aPlayer.Ids,1,1,1000,0,0,true);
+      aPlayer.Se_Sprite := se_Players.CreateSprite(UniformBitmapGK.Bitmap , aPlayer.Ids,1,1,1000,0,0,true,StrToInt(aPlayer.ids));
     aPlayer.Se_Sprite.Scale:= ScaleSprites;
     AddFace ( aPlayer );
-    aPlayer.Se_Sprite.Priority :=  StrToInt(aPlayer.ids) ;
     aPlayer.Se_Sprite.MoverData.Speed := DEFAULT_SPEED_PLAYER;
 
     if (overridecolor) and (aPlayer.Team = 1)  then  begin
@@ -5648,18 +6746,17 @@ begin
 
     if Mybrain.Ball.Player <> nil then begin
       case Mybrain.Ball.Player.team of
-        0: Mybrain.Ball.SE_Sprite := se_Ball.CreateSprite(bmp.Bitmap,'ball',6,1,40, aFieldPointSpr.Position.X+ abs(Ball0X), aFieldPointSpr.Position.Y , true);
-        1: Mybrain.Ball.SE_Sprite := se_Ball.CreateSprite(bmp.Bitmap,'ball',6,1,40, aFieldPointSpr.Position.X- abs(Ball0X), aFieldPointSpr.Position.Y , true);
+        0: Mybrain.Ball.SE_Sprite := se_Ball.CreateSprite(bmp.Bitmap,'ball',6,1,40, aFieldPointSpr.Position.X+ abs(Ball0X), aFieldPointSpr.Position.Y , true,1);
+        1: Mybrain.Ball.SE_Sprite := se_Ball.CreateSprite(bmp.Bitmap,'ball',6,1,40, aFieldPointSpr.Position.X- abs(Ball0X), aFieldPointSpr.Position.Y , true,1);
       end;
     end
     else Mybrain.Ball.SE_Sprite := se_Ball.CreateSprite(bmp.Bitmap,'ball',6,1,40,
-                                       aFieldPointSpr.Position.X   , aFieldPointSpr.Position.Y , true);
+                                       aFieldPointSpr.Position.X   , aFieldPointSpr.Position.Y , true, 1 );
 
 
     Mybrain.Ball.SE_Sprite.MoverData.Speed:= DEFAULT_SPEED_BALL;
     Mybrain.Ball.SE_Sprite.PositionY := Mybrain.Ball.SE_Sprite.Position.Y ;
     Mybrain.Ball.SE_Sprite.MoverData.Destination := Mybrain.Ball.Se_sprite.Position;
-    Mybrain.Ball.SE_Sprite.Priority := 1;
     bmp.Free;
 
   totReserve :=  Ord( buf3[incMove][ cur ]);
@@ -5677,20 +6774,28 @@ begin
     cur  := cur + lenSurname + 1;
     aTeam := Ord( buf3[incMove][ cur ]);
     Cur := Cur + 1 ;
+
+    if GameMode = pvp then begin
+      nMatchesPlayed := PWORD(@buf3[incMove][ cur ])^;
+      Cur := Cur + 2 ;
+      nMatchesLeft := PWORD(@buf3[incMove][ cur ])^;
+      Cur := Cur + 2 ;
+    end
+    else begin
+      nMatchesPlayed := 0;
+      nMatchesLeft := 0;
+    end;
+
     aAge :=  Ord( buf3[incMove][ cur ]);
     Cur := Cur + 1 ;
 
-    nMatchesPlayed := PWORD(@buf3[incMove][ cur ])^;
-    Cur := Cur + 2 ;
-    nMatchesLeft := PWORD(@buf3[incMove][ cur ])^;
-    Cur := Cur + 2 ;
     TalentID1 := Ord( buf3[incMove][ cur ]);
     Cur := Cur + 1;
     TalentID2 := Ord( buf3[incMove][ cur ]);
     Cur := Cur + 1;
 
-    aStamina := Ord( buf3[incMove][ cur ]);
-    Cur := Cur + 1;
+    aStamina := PWORD(@buf3[incMove] [ cur ])^;
+    Cur := Cur + 2;
 
     DefaultSpeed := Ord( buf3[incMove][ cur ]);
     Cur := Cur + 1;
@@ -5716,6 +6821,8 @@ begin
                                  Attributes,
                                  TalentID1,TalentID2  );     // attributes e defaultAttrributes sono uguali
       MyBrain.AddSoccerReserve(aPlayer);
+      if Gamemode = pve then
+        aPlayer.Age := aAge;
 
     aPlayer.Stamina := aStamina;
     aPlayer.TalentId1:= TalentID1;
@@ -5778,15 +6885,22 @@ begin
     Cur := Cur + 2;
 
 
+
+    aPlayer.xpDevA := PWORD(@buf3[incMove][ cur ])^;
+    Cur := Cur + 2;
+    aPlayer.xpDevT := PWORD(@buf3[incMove][ cur ])^;
+    Cur := Cur + 2;
+    aPlayer.xpDevI := PWORD(@buf3[incMove][ cur ])^;
+    Cur := Cur + 2;
+
                     // fare preloadBrain, diverso da formation
 
       if aPlayer.TalentId1 <> TALENT_ID_GOALKEEPER then
-        aPlayer.SE_sprite := se_players.CreateSprite( UniformBitmap[aTeam].bitmap ,aPlayer.Ids,1,1,100,0,0,true)
+        aPlayer.SE_sprite := se_players.CreateSprite( UniformBitmap[aTeam].bitmap ,aPlayer.Ids,1,1,100,0,0,true,StrToInt(aPlayer.ids))
       else
-        aPlayer.SE_sprite := se_Players.CreateSprite(UniformBitmapGK.Bitmap , aPlayer.Ids,1,1,1000,0,0,true);
+        aPlayer.SE_sprite := se_Players.CreateSprite(UniformBitmapGK.Bitmap , aPlayer.Ids,1,1,1000,0,0,true,StrToInt(aPlayer.ids));
       aPlayer.SE_sprite.Scale:= ScaleSprites;
       AddFace ( aPlayer );
-      aPlayer.SE_sprite.Priority := StrToInt(aPlayer.ids) ;
       aPlayer.SE_sprite.MoverData.Speed := DEFAULT_SPEED_PLAYER;
       if (overridecolor) and (aPlayer.Team = 1)  then  begin
         aPlayer.se_sprite.BlendMode := SE_BlendAverage;
@@ -5823,20 +6937,23 @@ begin
     cur  := cur + lenSurname + 1;
     aTeam := Ord( buf3[incMove][ cur ]);
     Cur := Cur + 1 ;
+
+    if GameMode = pvp then begin
+      nMatchesPlayed := PWORD(@buf3[incMove][ cur ])^;
+      Cur := Cur + 2 ;
+      nMatchesLeft := PWORD(@buf3[incMove][ cur ])^;
+      Cur := Cur + 2 ;
+    end;
     aAge :=  Ord( buf3[incMove][ cur ]);
     Cur := Cur + 1 ;
 
-    nMatchesPlayed := PWORD(@buf3[incMove][ cur ])^;
-    Cur := Cur + 2 ;
-    nMatchesLeft := PWORD(@buf3[incMove][ cur ])^;
-    Cur := Cur + 2 ;
     TalentID1 := Ord( buf3[incMove][ cur ]);
     Cur := Cur + 1;
     TalentID2 := Ord( buf3[incMove][ cur ]);
     Cur := Cur + 1;
 
-    aStamina := Ord( buf3[incMove][ cur ]);
-    Cur := Cur + 1;
+    aStamina := PWORD(@buf3[incMove] [ cur ])^;
+    Cur := Cur + 2;
 
     DefaultSpeed := Ord( buf3[incMove][ cur ]);
     Cur := Cur + 1;
@@ -5862,6 +6979,8 @@ begin
                                  Attributes,
                                  TalentID1,TalentID2  );     // attributes e defaultAttrributes sono uguali
       MyBrain.AddSoccerGameOver(aPlayer);
+      if Gamemode = pve then
+        aPlayer.Age := aAge;
 
     aPlayer.Stamina := aStamina;
     aPlayer.TalentId1:= TalentID1;
@@ -5923,16 +7042,21 @@ begin
     aPlayer.country := PWORD(@buf3[incMove][ cur ])^;
     Cur := Cur + 2;
 
+    aPlayer.xpDevA := PWORD(@buf3[incMove][ cur ])^;
+    Cur := Cur + 2;
+    aPlayer.xpDevT := PWORD(@buf3[incMove][ cur ])^;
+    Cur := Cur + 2;
+    aPlayer.xpDevI := PWORD(@buf3[incMove][ cur ])^;
+    Cur := Cur + 2;
 
                     // fare preloadBrain, diverso da formation
 
       if aPlayer.TalentId1 <> TALENT_ID_GOALKEEPER then
-        aPlayer.SE_sprite := se_players.CreateSprite( UniformBitmap[aTeam].bitmap ,aPlayer.Ids,1,1,100,0,0,true)
+        aPlayer.SE_sprite := se_players.CreateSprite( UniformBitmap[aTeam].bitmap ,aPlayer.Ids,1,1,100,0,0,true,StrToInt(aPlayer.ids))
       else
-        aPlayer.SE_sprite := se_Players.CreateSprite(UniformBitmapGK.Bitmap , aPlayer.Ids,1,1,1000,0,0,true);
+        aPlayer.SE_sprite := se_Players.CreateSprite(UniformBitmapGK.Bitmap , aPlayer.Ids,1,1,1000,0,0,true,StrToInt(aPlayer.ids));
       aPlayer.SE_sprite.Scale:= ScaleSprites;
       AddFace ( aPlayer );
-      aPlayer.SE_sprite.Priority := StrToInt(aPlayer.ids) ;
       aPlayer.SE_sprite.MoverData.Speed := DEFAULT_SPEED_PLAYER;
       if (overridecolor) and (aPlayer.Team = 1)  then  begin
         aPlayer.se_sprite.BlendMode := SE_BlendAverage;
@@ -6098,13 +7222,24 @@ begin
 
   end;
   SetGlobalCursor(crHandPoint );
+  Refresh_teamnames;
 
      //if (not AudioCrowd.Playing) and ( not btnAudioStadium.Down) then begin
      // AudioCrowd.Play;
      //end;
 
 end;
+procedure Tform1.SetGamemode ( aMode : TGameMode );
+begin
+  fGameMode := aMode;
+  LoadMainInterface;
+  LoadLive;
+  LoadScore;
+  if aMode = pvp then
+    Timer1.Enabled := true
+    else Timer1.Enabled := False;
 
+end;
 procedure  Tform1.SetSelectedPlayer ( aPlayer: TSoccerPlayer);
 //var
 //  i,L: Integer;
@@ -6139,10 +7274,10 @@ begin
   SE_Score.RemoveAllSprites('tml');
   SE_Score.ProcessSprites(2000);
   for i := 1 to MyBrain.TeamMovesLeft do begin
-    SE_Score.CreateSprite( dir_ball + 'ball2.bmp','tml'+IntToStr(i),1,1,1000,(620+(i-1)*44),YTML,true );
+    SE_Score.CreateSprite( dir_ball + 'ball2.bmp','tml'+IntToStr(i),1,1,1000,(620+(i-1)*44),YTML,true,1 );
   end;
   if MyBrain.ShpFree > 0 then
-    SE_Score.CreateSprite( dir_interface + 'shpfree.bmp','tmlshpfree',1,1,1000,(620+(4*44)),YTML,true );
+    SE_Score.CreateSprite( dir_interface + 'shpfree.bmp','tmlshpfree',1,1,1000,(620+(4*44)),YTML,true,1 );
   SetTmlAlpha;
 end;
 procedure TForm1.RefreshTML_direct ( TeamMovesLeft, Team, ShpFree : integer ) ;
@@ -6153,10 +7288,10 @@ begin
   SE_Score.RemoveAllSprites('tml');
   SE_Score.ProcessSprites(2000);
   for i := 1 to TeamMovesLeft do begin
-    SE_Score.CreateSprite( dir_ball + 'ball2.bmp','tml'+IntToStr(i),1,1,1000,(620+(i-1)*44),YTML,true );
+    SE_Score.CreateSprite( dir_ball + 'ball2.bmp','tml'+IntToStr(i),1,1,1000,(620+(i-1)*44),YTML,true,1 );
   end;
   if ShpFree > 0 then
-    SE_Score.CreateSprite( dir_interface + 'shpfree.bmp','tmlshpfree',1,1,1000,(620+(4*44)),YTML,true );
+    SE_Score.CreateSprite( dir_interface + 'shpfree.bmp','tmlshpfree',1,1,1000,(620+(4*44)),YTML,true,1 );
 
   SetTmlAlpha;
 
@@ -6170,7 +7305,6 @@ begin
   DontDoPlayers:= False;
   aSprite := SE_Score.FindSprite('scoreminute');
   aSprite.Labels[0].lText := IntToStr(MyBrain.Minute) +'''';
-  aSprite.Labels[0].lX := GetXLabel (aSprite.BMP.Bitmap,aSprite.Labels[0].lText , aSprite.BMP.Width, TStringCenter);
   RefreshTML;
 
 end;
@@ -6179,32 +7313,32 @@ var
   aSprite : SE_Sprite;
   pbSprite : SE_SpriteProgressBar;
 begin
-  if MyBrain.TeamTurn = 0 then begin
-    aSprite := SE_Score.FindSprite('teamname0');
-    aSprite.BMP.Canvas.Brush.Color := GetDominantColor(0);
-    aSprite.BMP.Canvas.FillRect(Rect(0,0,aSprite.BMP.Width,aSprite.BMP.Height));
-    aSprite.Labels[0].lFontColor := GetContrastColor( aSprite.BMP.Canvas.Brush.Color ) ;
-    aSprite.Labels[0].lText :=  MyBrain.Score.Team [0];
-    aSprite.Visible := True;
-    aSprite := SE_Score.FindSprite('teamname1');
-    aSprite.Visible := False;
-  end
-  else begin
-    aSprite := SE_Score.FindSprite('teamname1');
-    aSprite.BMP.Canvas.Brush.Color := GetDominantColor(1);
-    aSprite.BMP.Canvas.FillRect(Rect(0,0,aSprite.BMP.Width,aSprite.BMP.Height));
-    aSprite.Labels[0].lFontColor := GetContrastColor( aSprite.BMP.Canvas.Brush.Color ) ;
-    aSprite.Labels[0].lText :=  MyBrain.Score.Team [1];
-    aSprite.Visible := True;
-    aSprite := SE_Score.FindSprite('teamname0');
-    aSprite.Visible := False;
 
+
+  CirclePlayers ( MyBrain.TeamTurn );
+
+  if GameMode = pvp then begin
+    pbSprite :=  SE_SpriteProgressBar ( SE_Score.FindSprite('scorebartime'));
+    pbSprite.BackColor := MyBrain.Score.DominantColor[MyBrain.TeamTurn];
+    pbSprite.BarColor := GetContrastColor(MyBrain.Score.DominantColor[MyBrain.TeamTurn]);
+    pbSprite.Visible := True;
   end;
-  pbSprite :=  SE_SpriteProgressBar ( SE_Score.FindSprite('scorebartime'));
-  pbSprite.BackColor := MyBrain.Score.DominantColor[MyBrain.TeamTurn];
-  pbSprite.BarColor := GetContrastColor(MyBrain.Score.DominantColor[MyBrain.TeamTurn]);
 
   SetTmlAlpha;
+end;
+procedure TForm1.CirclePlayers ( team: integer );
+var
+  i: Integer;
+begin
+  // solo i titolari
+  SE_Circles.RemoveAllSprites;
+  SE_Circles.ProcessSprites(2000);
+  for I := MyBrain.lstSoccerPlayer.Count -1 downto 0 do begin
+    if MyBrain.lstSoccerPlayer[i].team = team then
+      SE_Circles.CreateSprite(dir_interface + 'acircle.bmp','ac',4,4,50, MyBrain.lstSoccerPlayer[i].se_sprite.Position.X,
+                               MyBrain.lstSoccerPlayer[i].se_sprite.Position.Y, true, 1);
+  end;
+  SE_Circles.Visible := True;
 end;
 procedure Tform1.i_tuc ( team: string );
 var
@@ -6218,9 +7352,11 @@ begin
     application.ProcessMessages ;
   end;
 
-  pbSprite :=  SE_SpriteProgressBar ( SE_Score.FindSprite('scorebartime'));
-  pbSprite.value := 100;
-
+  if GameMode = pvp then begin
+    pbSprite :=  SE_SpriteProgressBar ( SE_Score.FindSprite('scorebartime'));
+    pbSprite.value := 100;
+    pbSprite.Visible := True;
+  end;
 
   Refresh_teamnames;
 
@@ -6260,6 +7396,12 @@ begin
     aSprite.Visible := false;
   end;
 
+  if MyBrain.Score.AI[MyBrain.TeamTurn] then begin
+    WaitForSingleObject(MutexAnimation,INFINITE);
+    AllBrainThink;
+    ReleaseMutex(MutexAnimation);
+
+  end;
 
 end;
 procedure TForm1.SetTmlAlpha;
@@ -6269,17 +7411,12 @@ var
   i: Integer;
 begin
   if (GameScreen = ScreenSpectator) or ((GameScreen = ScreenLive) and ( MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] <> MyGuidTeam )) then begin
-    pbSprite :=  SE_SpriteProgressBar ( SE_Score.FindSprite('scorebartime'));
-    pbSprite.Alpha := 100;
-    pbSprite.BlendMode := SE_BlendAlpha;
-
-    aSprite := SE_Score.FindSprite('teamname0');
-    aSprite.Alpha := 100;
-    aSprite.BlendMode := SE_BlendAlpha;
-
-    aSprite := SE_Score.FindSprite('teamname1');
-    aSprite.Alpha := 100;
-    aSprite.BlendMode := SE_BlendAlpha;
+    if GameMode = pvp then begin
+      pbSprite :=  SE_SpriteProgressBar ( SE_Score.FindSprite('scorebartime'));
+      pbSprite.Alpha := 100;
+      pbSprite.BlendMode := SE_BlendAlpha;
+      pbSprite.Visible := True;
+    end;
 
     for I := 1 to 4 do begin
       aSprite := SE_Score.FindSprite('tml'+IntToStr(i));
@@ -6295,14 +7432,11 @@ begin
     end;
   end
   else if (GameScreen = ScreenLive) and  ( MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam ) then begin
-    pbSprite :=  SE_SpriteProgressBar ( SE_Score.FindSprite('scorebartime'));
-    pbSprite.BlendMode := SE_BlendNormal;
-
-    aSprite := SE_Score.FindSprite('teamname0');
-    aSprite.BlendMode := SE_BlendNormal;
-
-    aSprite := SE_Score.FindSprite('teamname1');
-    aSprite.BlendMode := SE_BlendNormal;
+    if GameMode = pvp then begin
+      pbSprite :=  SE_SpriteProgressBar ( SE_Score.FindSprite('scorebartime'));
+      pbSprite.BlendMode := SE_BlendNormal;
+      pbSprite.Visible := True;
+    end;
 
     for I := 1 to 4 do begin
       aSprite := SE_Score.FindSprite('tml'+IntToStr(i));
@@ -6343,6 +7477,112 @@ begin
 //    aPlayer:= MyBrain.GetSoccerPlayer2(ids);
 
 end;
+procedure TForm1.ShowMatchInfo ( posX,posY: Integer; MatchInfoString: string) ;
+var
+  y: Integer;
+  matchinfo,tmp: TStringList;
+  bmp: SE_Bitmap;
+  aSprite : SE_Sprite;
+  aSpriteLabel : SE_SpriteLabel;
+  BaseY,XScoreFrame,YScoreFrame : integer;
+  const Xbmp = 30; XDescr = 60;
+begin
+  if Length(MatchInfoString) = 0 then
+    Exit;
+
+  SE_matchInfo.RemoveAllSprites;
+
+  MatchInfo := TStringList.Create;
+  MatchInfo.StrictDelimiter := True;
+  MatchInfo.CommaText := MatchInfoString;
+
+  tmp := TStringList.Create;
+  tmp.Delimiter := '.';
+  tmp.StrictDelimiter := True;
+  BaseY :=0;
+
+  bmp := SE_Bitmap.Create ( 250, MatchInfo.Count * 22 );// dinamico con aggiunta di spritelabels
+  bmp.Bitmap.Canvas.Brush.Color :=  clGray;
+  bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
+  aSprite:=SE_matchInfo.CreateSprite(bmp.Bitmap ,'scoreframemf',1,1,1000, posX ,posY ,false,2 );
+  bmp.Free;
+
+  for y:= 5 to MatchInfo.Count -1 do begin         //   es. MatchInfo[y] 19.golprs.454.surname 45.sub.126.durname1.138.surname2
+    tmp.DelimitedText := MatchInfo[y];
+
+    aSpriteLabel := SE_SpriteLabel.create(0,BaseY,'Calibri',clWhite,clblack, 12,tmp[0] + '''',true ,1, dt_left);
+    aSprite.Labels.Add(aSpriteLabel);
+
+    if tmp[1] = 'sub' then begin
+      aSprite.AddSubSprite(dir_interface + 'infoinout.bmp','infoinout'+IntToStr(y),Xbmp,BaseY,True );
+      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, tmp[3] + '--->'+  tmp[5],true ,1, dt_left);
+      aSprite.Labels.Add(aSpriteLabel);
+    end
+    else if ( pos ('gol', tmp[1], 1 ) <> 0) and  (  pos ('4', tmp[1], 1 )  = 0)  then begin // gol normali, prs,pos,prs3pos3,gol.volley,gol.crossing
+      aSprite.AddSubSprite(dir_interface + 'infogolball.bmp','infogolball'+IntToStr(y),Xbmp,BaseY,True );
+      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, tmp[3],true,1, dt_left );
+      aSprite.Labels.Add(aSpriteLabel);
+    end
+    else if ( pos ('gol', tmp[1], 1 ) <> 0) and  (  pos ('4', tmp[1], 1 ) <> 0)  then begin // gol su rigore
+      aSprite.AddSubSprite(dir_interface + 'infopenaltygol.bmp','infopenaltygol'+IntToStr(y),Xbmp,BaseY,True );
+      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, tmp[3],true,1, dt_left );
+      aSprite.Labels.Add(aSpriteLabel);
+    end
+    else if ( pos ('4fail', tmp[1], 1 ) <> 0) then begin // rigore fallito
+      aSprite.AddSubSprite(dir_interface + 'infopenaltyfail.bmp','infopenaltyfail'+IntToStr(y),Xbmp,BaseY,True );
+      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, tmp[3],true,1, dt_left );
+      aSprite.Labels.Add(aSpriteLabel);
+    end
+    else if ( pos ('yc', tmp[1], 1 ) <> 0) then begin
+      aSprite.AddSubSprite(dir_interface + 'infoyellow.bmp','infoyellow'+IntToStr(y),Xbmp,BaseY,True );
+      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, tmp[3],true,1, dt_left );
+      aSprite.Labels.Add(aSpriteLabel);
+    end
+    {$IFDEF  TOOLS}
+    else if ( pos ('crossbar', tmp[1], 1 ) <> 0) then begin
+      aSprite.AddSubSprite(dir_interface + 'infocrossbar.bmp','infocrossbar'+IntToStr(y),Xbmp,BaseY,True);
+      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12,'', true ,1, dt_left);
+      aSprite.Labels.Add(aSpriteLabel);
+    end
+    else if ( pos ('corner', tmp[1], 1 ) <> 0) then begin
+      aSprite.AddSubSprite(dir_interface + 'infocorner.bmp','infocorner'+IntToStr(y),Xbmp,BaseY,True);
+      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12,'', true,1, dt_left );
+      aSprite.Labels.Add(aSpriteLabel);
+    end
+    else if ( pos ('freekick3', tmp[1], 1 ) <> 0) then begin
+      aSprite.AddSubSprite(dir_interface + 'infofreekick3.bmp','infofreekick3'+IntToStr(y),Xbmp,BaseY,True);
+      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, '' ,true,1, dt_left );
+      aSprite.Labels.Add(aSpriteLabel);
+    end
+    else if ( pos ('freekick4', tmp[1], 1 ) <> 0) then begin
+      aSprite.AddSubSprite(dir_interface + 'infofreekick4.bmp','infofreekick4'+IntToStr(y),Xbmp,BaseY,True);
+      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, '' ,true ,1, dt_left);
+      aSprite.Labels.Add(aSpriteLabel);
+    end
+    else if ( pos ('lastman', tmp[1], 1 ) <> 0) then begin
+      aSprite.AddSubSprite(dir_interface + 'infolastman.bmp','infolastman'+IntToStr(y),Xbmp,BaseY,True);
+      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, '',true,1, dt_left );
+      aSprite.Labels.Add(aSpriteLabel);
+    end
+    {$ENDIF TOOLS}
+    else if ( pos ('rc', tmp[1], 1 ) <> 0) then begin
+      aSprite.AddSubSprite(dir_interface + 'infored.bmp','infored'+IntToStr(y),Xbmp,BaseY,True);
+      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, tmp[3],true,1, dt_left);
+      aSprite.Labels.Add(aSpriteLabel);
+    end;
+
+
+
+    BaseY := BaseY + 22;
+
+  end;
+
+  tmp.Free;
+  MatchInfo.free;
+  SE_matchInfo.Visible := true;
+
+end;
+
 procedure TForm1.ClientLoadMatchInfo;
 var
   y: Integer;
@@ -6353,11 +7593,6 @@ var
   BaseY,XScoreFrame,YScoreFrame : integer;
   const Xbmp = 30; XDescr = 60;
 begin
-  if MyBrain.Finished then begin
-    if (MyBrain.Score.TeamGuid[0] = MyGuidTeam) or (MyBrain.Score.TeamGuid[1] = MyGuidTeam) then
-      ShowGameOver ( true )
-      else ShowGameOver ( false );
-  end;
   if MyBrain.MatchInfo.Count = 0 then
     Exit;
 
@@ -6371,8 +7606,7 @@ begin
   bmp := SE_Bitmap.Create ( 250, MyBrain.MatchInfo.Count * 22 );// dinamico con aggiunta di spritelabels
   bmp.Bitmap.Canvas.Brush.Color :=  clBlack;
   bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
-  aSprite:=SE_Score.CreateSprite(bmp.Bitmap ,'scoreframemf',1,1,1000, XScoreFrame ,YScoreFrame+ (bmp.Height div 2),false );
-  aSprite.Priority := 2;
+  aSprite:=SE_Score.CreateSprite(bmp.Bitmap ,'scoreframemf',1,1,1000, XScoreFrame ,YScoreFrame+ (bmp.Height div 2),false,2 );
   bmp.Free;
 
   { parsing della matchinfo }
@@ -6383,64 +7617,64 @@ begin
   for y:= 0 to MyBrain.MatchInfo.Count -1 do begin         // es. MyBrain.MatchInfo[y] 19.golprs.454  45.sub.126.138
     tmp.DelimitedText := MyBrain.MatchInfo[y];
 
-    aSpriteLabel := SE_SpriteLabel.create(0,BaseY,'Calibri',clWhite,clblack, 12,tmp[0] + '''',true );
+    aSpriteLabel := SE_SpriteLabel.create(0,BaseY,'Calibri',clWhite,clblack, 12,tmp[0] + '''',true ,1, dt_left);
     aSprite.Labels.Add(aSpriteLabel);
 
     if tmp[1] = 'sub' then begin
       aSprite.AddSubSprite(dir_interface + 'infoinout.bmp','infoinout'+IntToStr(y),Xbmp,BaseY,True );
-      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, MyBrain.GetSoccerPlayerALL( tmp[2] ).SurName + '--->'+ MyBrain.GetSoccerPlayerALL( tmp[3] ).SurName,true );
+      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, MyBrain.GetSoccerPlayerALL( tmp[2] ).SurName + '--->'+ MyBrain.GetSoccerPlayerALL( tmp[3] ).SurName,true ,1, dt_left);
       aSprite.Labels.Add(aSpriteLabel);
     end
     else if ( pos ('gol', tmp[1], 1 ) <> 0) and  (  pos ('4', tmp[1], 1 )  = 0)  then begin // gol normali, prs,pos,prs3pos3,gol.volley,gol.crossing
       aSprite.AddSubSprite(dir_interface + 'infogolball.bmp','infogolball'+IntToStr(y),Xbmp,BaseY,True );
-      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, MyBrain.GetSoccerPlayerALL( tmp[2] ).SurName,true );
+      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, MyBrain.GetSoccerPlayerALL( tmp[2] ).SurName,true,1, dt_left );
       aSprite.Labels.Add(aSpriteLabel);
     end
     else if ( pos ('gol', tmp[1], 1 ) <> 0) and  (  pos ('4', tmp[1], 1 ) <> 0)  then begin // gol su rigore
       aSprite.AddSubSprite(dir_interface + 'infopenaltygol.bmp','infopenaltygol'+IntToStr(y),Xbmp,BaseY,True );
-      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, MyBrain.GetSoccerPlayerALL( tmp[2] ).SurName,true );
+      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, MyBrain.GetSoccerPlayerALL( tmp[2] ).SurName,true,1, dt_left );
       aSprite.Labels.Add(aSpriteLabel);
     end
     else if ( pos ('4fail', tmp[1], 1 ) <> 0) then begin // rigore fallito
       aSprite.AddSubSprite(dir_interface + 'infopenaltyfail.bmp','infopenaltyfail'+IntToStr(y),Xbmp,BaseY,True );
-      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, MyBrain.GetSoccerPlayerALL( tmp[2] ).SurName,true );
+      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, MyBrain.GetSoccerPlayerALL( tmp[2] ).SurName,true,1, dt_left );
       aSprite.Labels.Add(aSpriteLabel);
     end
     else if ( pos ('yc', tmp[1], 1 ) <> 0) then begin
       aSprite.AddSubSprite(dir_interface + 'infoyellow.bmp','infoyellow'+IntToStr(y),Xbmp,BaseY,True );
-      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, MyBrain.GetSoccerPlayerALL( tmp[2] ).SurName,true );
+      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, MyBrain.GetSoccerPlayerALL( tmp[2] ).SurName,true,1, dt_left );
       aSprite.Labels.Add(aSpriteLabel);
     end
     {$IFDEF  TOOLS}
     else if ( pos ('crossbar', tmp[1], 1 ) <> 0) then begin
       aSprite.AddSubSprite(dir_interface + 'infocrossbar.bmp','infocrossbar'+IntToStr(y),Xbmp,BaseY,True);
-      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12,'', true );
+      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12,'', true ,1, dt_left);
       aSprite.Labels.Add(aSpriteLabel);
     end
     else if ( pos ('corner', tmp[1], 1 ) <> 0) then begin
       aSprite.AddSubSprite(dir_interface + 'infocorner.bmp','infocorner'+IntToStr(y),Xbmp,BaseY,True);
-      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12,'', true );
+      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12,'', true,1, dt_left );
       aSprite.Labels.Add(aSpriteLabel);
     end
     else if ( pos ('freekick3', tmp[1], 1 ) <> 0) then begin
       aSprite.AddSubSprite(dir_interface + 'infofreekick3.bmp','infofreekick3'+IntToStr(y),Xbmp,BaseY,True);
-      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, '' ,true );
+      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, '' ,true,1, dt_left );
       aSprite.Labels.Add(aSpriteLabel);
     end
     else if ( pos ('freekick4', tmp[1], 1 ) <> 0) then begin
       aSprite.AddSubSprite(dir_interface + 'infofreekick4.bmp','infofreekick4'+IntToStr(y),Xbmp,BaseY,True);
-      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, '' ,true );
+      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, '' ,true ,1, dt_left);
       aSprite.Labels.Add(aSpriteLabel);
     end
     else if ( pos ('lastman', tmp[1], 1 ) <> 0) then begin
       aSprite.AddSubSprite(dir_interface + 'infolastman.bmp','infolastman'+IntToStr(y),Xbmp,BaseY,True);
-      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, '',true );
+      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, '',true,1, dt_left );
       aSprite.Labels.Add(aSpriteLabel);
     end
     {$ENDIF TOOLS}
     else if ( pos ('rc', tmp[1], 1 ) <> 0) then begin
       aSprite.AddSubSprite(dir_interface + 'infored.bmp','infored'+IntToStr(y),Xbmp,BaseY,True);
-      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, MyBrain.GetSoccerPlayerALL( tmp[2] ).SurName,true );
+      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, MyBrain.GetSoccerPlayerALL( tmp[2] ).SurName,true,1, dt_left);
       aSprite.Labels.Add(aSpriteLabel);
     end;
 
@@ -6563,7 +7797,7 @@ var
 begin
   tsCmd:= TstringList.Create ;
 
-  tsCmd.CommaText := Mybrain.tsScript [0];
+  tsCmd.CommaText := Mybrain.tsScript [CurrentIncMove][0];
 
   MarkingMoveAll:= False;
   LogMemo ( tsCmd.CommaText );
@@ -6580,7 +7814,7 @@ begin
       AnimationScript.Tsadd ( 'cl_mainskillused,Move,' + tsCmd[1] + ',' + tsCmd[2] + ',' + tsCmd[3] + ',' + tsCmd[4] + ',' + tsCmd[5]) ;
       i:=1;
       while tsCmd[0] <> 'E' do begin
-          tsCmd.CommaText := Mybrain.tsScript [i];
+          tsCmd.CommaText := Mybrain.tsScript [CurrentIncMove][i];
           LogMemo ( tsCmd.CommaText );
 
 
@@ -6642,7 +7876,7 @@ begin
       AnimationScript.Tsadd ('cl_wait.moving.players'); // Attende che tutti i movimenti dei player siano terminati prima di procedere
       AnimationScript.Index := 0;
 
-      Mybrain.tsScript.Clear ;
+      //Mybrain.tsScript.Clear ; da quando è array non devo fare clear
       FirstShowRoll;   // prima mostro i Roll ( tiro dado 1d4 )
 
     end
@@ -6659,7 +7893,7 @@ begin
 
       i:=1;
       while tsCmd[0] <> 'E' do begin
-          tsCmd.CommaText := Mybrain.tsScript [i];
+          tsCmd.CommaText := Mybrain.tsScript[CurrentIncMove] [i];
           LogMemo ( tsCmd.CommaText );
 
         if tsCmd[0]='sc_ball.move' then begin
@@ -6694,7 +7928,7 @@ begin
       AnimationScript.Tsadd ('cl_wait.moving.players'); // Attende che tutti i movimenti dei player siano terminati prima di procedere
       AnimationScript.Index := 0;
 
-      Mybrain.tsScript.Clear ;
+//      Mybrain.tsScript.Clear ;
       FirstShowRoll ;
 
     end
@@ -6715,7 +7949,7 @@ begin
 
       i:=1;
       while tsCmd[0] <> 'E' do begin
-          tsCmd.CommaText := Mybrain.tsScript [i];
+          tsCmd.CommaText := Mybrain.tsScript[CurrentIncMove] [i];
           LogMemo ( tsCmd.CommaText );
 
         if tsCmd[0]= 'sc_tackle.no' then begin   // il tackle non riesce, il player ci prova ma torna nella sua cella
@@ -6915,7 +8149,7 @@ begin
 //      AnimationScript.Tsadd ('cl_wait,' + IntTostr( 1000 ));
       AnimationScript.Index := 0;
 
-      Mybrain.tsScript.Clear ;
+//      Mybrain.tsScript.Clear ;
       FirstShowRoll;
 
 
@@ -6936,7 +8170,7 @@ begin
       i:=1;
       //MainPlayer :=   Mybrain.GetSoccerPlayer ( tsCmd[1]);
       while tsCmd[0] <> 'E' do begin
-          tsCmd.CommaText := Mybrain.tsScript [i];
+          tsCmd.CommaText := Mybrain.tsScript[CurrentIncMove] [i];
           LogMemo ( tsCmd.CommaText );
 
         if tsCmd[0]='sc_ball.move' then begin
@@ -6970,8 +8204,8 @@ begin
           AnimationScript.Tsadd ('cl_player.move,'      +  tsCmd[3] + ',' + tsCmd[8] + ','+tsCmd[9]  +',' + tsCmd[6] + ','+tsCmd[7] );
           AnimationScript.Tsadd ('cl_player.move,'      +  tsCmd[2] + ',' + tsCmd[6]+ ','+tsCmd[7] +',' + tsCmd[8] + ','+tsCmd[9] );
           AnimationScript.Tsadd ('cl_wait.moving.players'); // Attende che tutti i movimenti dei player siano terminati prima di procedere
-          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEEDMAX_BALL) + ',' + tsCmd[4] + ','+tsCmd[5]+ ',' + tsCmd[6] + ','+tsCmd[7]+ ',' + tsCmd[1]+ ','+tsCmd[0] );
-          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[6] + ','+tsCmd[7]+ ',' + tsCmd[10] + ','+tsCmd[11]+ ',' + tsCmd[1]+ ','+tsCmd[0] );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEEDMAX_BALL) + ',' + tsCmd[4] + ','+tsCmd[5]+ ',' + tsCmd[6] + ','+tsCmd[7]+ ',' + tsCmd[1]+ ',0,'+tsCmd[0] );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[6] + ','+tsCmd[7]+ ',' + tsCmd[10] + ','+tsCmd[11]+ ',' + tsCmd[1]+ ',0,'+tsCmd[0] );
 
         end
         else if tsCmd[0] = 'sc_lop.ballcontrol.bounce' then begin
@@ -7088,7 +8322,7 @@ begin
           AnimationScript.Tsadd ('cl_wait.moving.players'); // Attende che tutti i movimenti dei player siano terminati prima di procedere
           AnimationScript.Tsadd ('cl_sound,soundishot');
           AnimationScript.Tsadd ('cl_nextsound,soundbounce');
-          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEEDMAX_BALL) + ',' + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[1]+ ','+tsCmd[0] );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEEDMAX_BALL) + ',' + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[1]+ ',0,'+tsCmd[0] );
           AnimationScript.Tsadd ('cl_nextsound,soundreceive');
           AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[7] + ','+tsCmd[8]+',0,0,'+tsCmd[0]  );
         end
@@ -7104,9 +8338,9 @@ begin
           // 8 celly Ball
 
           AnimationScript.Tsadd ('cl_nextsound,soundbounce');
-          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEEDMAX_BALL) + ',' + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+',0,'+tsCmd[0]  );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEEDMAX_BALL) + ',' + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+',0,0'+tsCmd[0]  );
           AnimationScript.Tsadd ('cl_nextsound,soundreceive');
-          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[7] + ','+tsCmd[8]+',0,'+tsCmd[0]  );
+          AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[7] + ','+tsCmd[8]+',0,0'+tsCmd[0]  );
         end
         else if (tsCmd[0] = 'sc_pos.bounce.gk')  or (tsCmd[0] = 'sc_lop.bounce.gk') then begin  // anche tiro al volo
           // 1 ids aPlayer
@@ -7182,7 +8416,7 @@ begin
       AnimationScript.Tsadd ('cl_wait.moving.players'); // Attende che tutti i movimenti dei player siano terminati prima di procedere
       AnimationScript.Index := 0;
 
-      Mybrain.tsScript.Clear ;
+//      Mybrain.tsScript.Clear ;
       FirstShowRoll;
    end
 
@@ -7216,7 +8450,7 @@ begin
 
       i:=1;
       while tsCmd[0] <> 'E' do begin
-          tsCmd.CommaText := Mybrain.tsScript [i];
+          tsCmd.CommaText := Mybrain.tsScript[CurrentIncMove] [i];
           LogMemo ( tsCmd.CommaText );
 
 //***********************************************************************************************************
@@ -7807,7 +9041,7 @@ begin
 //      AnimationScript.Tsadd ('cl_wait,' + IntTostr( 1000 ));
       AnimationScript.Index := 0;
 
-      Mybrain.tsScript.Clear ;
+//      Mybrain.tsScript.Clear ;
       FirstShowRoll;   // prima tutti i showroll da eseguire in AnimationScript
 
    end
@@ -7816,13 +9050,13 @@ begin
       PrepareAnim;
       i:=1;
       while tsCmd[0] <> 'E' do begin
-          tsCmd.CommaText := Mybrain.tsScript [i];
+          tsCmd.CommaText := Mybrain.tsScript[CurrentIncMove] [i];
           LogMemo ( tsCmd.CommaText );
           AnimCommon ( tsCmd.commatext );
           i := i+1;
       end;
       AnimationScript.Index := 0;
-      Mybrain.tsScript.Clear ;
+//      Mybrain.tsScript.Clear ;
 
 //      if tt = '0' then
 //        AnimationScript.TsAdd  ( 'cl_tuc,' + '1')
@@ -7835,13 +9069,13 @@ begin
       PrepareAnim;
       i:=1;
       while tsCmd[0] <> 'E' do begin
-          tsCmd.CommaText := Mybrain.tsScript [i];
+          tsCmd.CommaText := Mybrain.tsScript[CurrentIncMove] [i];
           LogMemo ( tsCmd.CommaText );
           AnimCommon ( tsCmd.commatext );
           i := i+1;
       end;
       AnimationScript.Index := 0;
-      Mybrain.tsScript.Clear ;
+//      Mybrain.tsScript.Clear ;
    end
 
 
@@ -7852,7 +9086,7 @@ begin
       PrepareAnim;
       i:=1;
       while tsCmd[0] <> 'E' do begin
-        tsCmd.CommaText := Mybrain.tsScript [i];
+        tsCmd.CommaText := Mybrain.tsScript[CurrentIncMove] [i];
         LogMemo ( tsCmd.CommaText );
 
         if tsCmd[0] = 'COA.IS' then begin
@@ -7866,7 +9100,7 @@ begin
       AnimationScript.Index := 0;
       MouseWaitFor := WaitForXY_CornerCOD;
 
-      Mybrain.tsScript.Clear ;
+//      Mybrain.tsScript.Clear ;
    end
    else if tsCmd[0] = 'SERVER_COD.IS' then begin
 
@@ -7875,7 +9109,7 @@ begin
 
       i:=1;
       while tsCmd[0] <> 'E' do begin
-        tsCmd.CommaText := Mybrain.tsScript [i];
+        tsCmd.CommaText := Mybrain.tsScript[CurrentIncMove] [i];
         LogMemo ( tsCmd.CommaText );
 
         if tsCmd[0] = 'COD.IS' then begin
@@ -7890,14 +9124,14 @@ begin
       AnimationScript.Index := 0;
 
 
-      Mybrain.tsScript.Clear ;
+//      Mybrain.tsScript.Clear ;
    end
    else if tsCmd[0] = 'SERVER_FKA1.IS' then begin
       PrepareAnim;
       i:=1;
       while tsCmd[0] <> 'E' do begin
 
-          tsCmd.CommaText := Mybrain.tsScript [i];
+          tsCmd.CommaText := Mybrain.tsScript[CurrentIncMove] [i];
           LogMemo ( tsCmd.CommaText );
           if tsCmd[0] = 'FKA1.IS' then begin
             tsCmd.Delete(0);
@@ -7911,14 +9145,14 @@ begin
       AnimationScript.Index := 0;
       MouseWaitFor := WaitForNone;
 
-      Mybrain.tsScript.Clear ;
+//      Mybrain.tsScript.Clear ;
    end
    else if tsCmd[0] = 'SERVER_FKA2.IS' then begin   // fka2 + swapstring
       PrepareAnim;
       i:=1;
       while tsCmd[0] <> 'E' do begin
 
-        tsCmd.CommaText := Mybrain.tsScript [i];
+        tsCmd.CommaText := Mybrain.tsScript[CurrentIncMove] [i];
         LogMemo ( tsCmd.CommaText );
 
         if tsCmd[0] = 'FKA2.IS' then begin
@@ -7932,7 +9166,7 @@ begin
       AnimationScript.Index := 0;
       MouseWaitFor := WaitForXY_FKD2;
 
-      Mybrain.tsScript.Clear ;
+//      Mybrain.tsScript.Clear ;
    end
 
    else if tsCmd[0] = 'SERVER_FKD2.IS' then begin
@@ -7942,7 +9176,7 @@ begin
 
       i:=1;
       while tsCmd[0] <> 'E' do begin
-        tsCmd.CommaText := Mybrain.tsScript [i];
+        tsCmd.CommaText := Mybrain.tsScript[CurrentIncMove] [i];
         LogMemo ( tsCmd.CommaText );
 
         if tsCmd[0] = 'FKD2.IS' then begin
@@ -7957,13 +9191,13 @@ begin
       MouseWaitFor := WaitForNone;
 
 
-      Mybrain.tsScript.Clear ;
+//      Mybrain.tsScript.Clear ;
    end
    else if tsCmd[0] = 'SERVER_FKA3.IS' then begin   // fkf3 + swapstring
       PrepareAnim;
       i:=1;
       while tsCmd[0] <> 'E' do begin
-        tsCmd.CommaText := Mybrain.tsScript [i];
+        tsCmd.CommaText := Mybrain.tsScript[CurrentIncMove] [i];
         LogMemo ( tsCmd.CommaText );
 
         if tsCmd[0] = 'FKA3.IS' then begin
@@ -7977,7 +9211,7 @@ begin
       AnimationScript.Index := 0;
       MouseWaitFor := WaitForXY_FKD3;
 
-      Mybrain.tsScript.Clear ;
+//      Mybrain.tsScript.Clear ;
    end
 
    else if tsCmd[0] = 'SERVER_FKD3.IS' then begin // barriera
@@ -7986,7 +9220,7 @@ begin
       i:=1;
 
       while tsCmd[0] <> 'E' do begin
-        tsCmd.CommaText := Mybrain.tsScript [i];
+        tsCmd.CommaText := Mybrain.tsScript[CurrentIncMove] [i];
         LogMemo ( tsCmd.CommaText );
 
         if tsCmd[0] = 'FKD3.IS' then begin
@@ -8006,14 +9240,14 @@ begin
       AnimationScript.Index := 0;
 
 
-      Mybrain.tsScript.Clear ;
+//      Mybrain.tsScript.Clear ;
    end
 
    else if tsCmd[0] = 'SERVER_FKA4.IS' then begin   // fkf4 + swapstring
       PrepareAnim;
       i:=1;
       while tsCmd[0] <> 'E' do begin
-        tsCmd.CommaText := Mybrain.tsScript [i];
+        tsCmd.CommaText := Mybrain.tsScript[CurrentIncMove] [i];
         LogMemo ( tsCmd.CommaText );
 
         if tsCmd[0] = 'FKA4.IS' then begin
@@ -8028,7 +9262,7 @@ begin
       AnimationScript.Index := 0;
       MouseWaitFor := WaitForNone;
 
-      Mybrain.tsScript.Clear ;
+//      Mybrain.tsScript.Clear ;
    end
 
 
@@ -8039,7 +9273,7 @@ begin
       PrepareAnim;
       i:=1;
       while tsCmd[0] <> 'E' do begin
-        tsCmd.CommaText := Mybrain.tsScript [i];
+        tsCmd.CommaText := Mybrain.tsScript[CurrentIncMove] [i];
         LogMemo ( tsCmd.CommaText );
         if tsCmd[0] = 'sc_tactic' then begin
           AnimationScript.Tsadd ('cl_tactic,' +  tsCmd[1] + ',' + tsCmd[2] + ',' + tsCmd[3] +  ',' + tsCmd[4]+ ',' + tsCmd[5]  ); // ids , defaultcellx, defaultcelly , newdefx, newdefy
@@ -8050,7 +9284,7 @@ begin
       end;
 
       AnimationScript.Index := 0;
-      Mybrain.tsScript.Clear ;
+//      Mybrain.tsScript.Clear ;
    end
    else if tsCmd[0]= 'SERVER_SUB' then begin
       // il player è già posizionato
@@ -8058,7 +9292,7 @@ begin
       PrepareAnim;
       i:=1;
       while tsCmd[0] <> 'E' do begin
-        tsCmd.CommaText := Mybrain.tsScript [i];
+        tsCmd.CommaText := Mybrain.tsScript[CurrentIncMove] [i];
         LogMemo ( tsCmd.CommaText );
         if tsCmd[0] = 'sc_sub' then begin
           AnimationScript.Tsadd ('cl_sub,' +  tsCmd[1] + ',' + tsCmd[2] ); // ids1 , ids2
@@ -8070,7 +9304,7 @@ begin
       end;
 
       AnimationScript.Index := 0;
-      Mybrain.tsScript.Clear ;
+//      Mybrain.tsScript.Clear ;
    end
    else if tsCmd[0]= 'SERVER_STAY' then begin
       // il player è già posizionato
@@ -8079,14 +9313,14 @@ begin
       AnimationScript.Tsadd ('cl_wait,' + IntTostr(1300));
       i:=1;
       while tsCmd[0] <> 'E' do begin
-        tsCmd.CommaText := Mybrain.tsScript [i];
+        tsCmd.CommaText := Mybrain.tsScript[CurrentIncMove] [i];
         LogMemo ( tsCmd.CommaText );
           AnimCommon ( tsCmd.commatext );
           i := i+1;
       end;
 
       AnimationScript.Index := 0;
-      Mybrain.tsScript.Clear ;
+//      Mybrain.tsScript.Clear ;
    end
    else if tsCmd[0]= 'SERVER_FREE' then begin
       // il player è già posizionato
@@ -8095,7 +9329,7 @@ begin
       AnimationScript.Tsadd ('cl_wait,' + IntTostr(1300));
       i:=1;
       while tsCmd[0] <> 'E' do begin
-        tsCmd.CommaText := Mybrain.tsScript [i];
+        tsCmd.CommaText := Mybrain.tsScript[CurrentIncMove] [i];
         LogMemo ( tsCmd.CommaText );
 
           AnimCommon ( tsCmd.commatext );
@@ -8103,7 +9337,7 @@ begin
       end;
 
       AnimationScript.Index := 0;
-      Mybrain.tsScript.Clear ;
+//      Mybrain.tsScript.Clear ;
    end
 
 
@@ -8122,7 +9356,7 @@ begin
       AnimationScript.Tsadd ('cl_pressing,' + tsCmd[1] );
       i:=1;
       while tsCmd[0] <> 'E' do begin
-          tsCmd.CommaText := Mybrain.tsScript [i];
+          tsCmd.CommaText := Mybrain.tsScript[CurrentIncMove] [i];
           LogMemo ( tsCmd.CommaText );
         if tsCmd[0]= 'sc_dribbling.ok' then begin
           // 1 ids dribbling
@@ -8159,7 +9393,7 @@ begin
       AnimationScript.Index := 0;
 
 
-      Mybrain.tsScript.Clear ;
+//      Mybrain.tsScript.Clear ;
    end
 
    else if tsCmd[0]= 'SERVER_PRO' then begin
@@ -8171,7 +9405,7 @@ begin
 
 
       while tsCmd[0] <> 'E' do begin
-          tsCmd.CommaText := Mybrain.tsScript [i];
+          tsCmd.CommaText := Mybrain.tsScript[CurrentIncMove] [i];
           LogMemo ( tsCmd.CommaText );
           AnimCommon ( tsCmd.commatext );
           i := i+1;
@@ -8182,7 +9416,7 @@ begin
       AnimationScript.Index := 0;
 
 
-      Mybrain.tsScript.Clear ;
+//      Mybrain.tsScript.Clear ;
    end;
 
 
@@ -8557,7 +9791,7 @@ begin
     //RoundBorder ( bmp.Bitmap );
    // if aPlayer.Team = 1 then
     aPlayer.se_sprite.AddSubSprite( dir_skill + Ts[1]+'.bmp'  ,'mainskill',
-      (aPlayer.se_sprite.BmpCurrentFrame.Width div 2) - 16 , (aPlayer.se_sprite.BmpCurrentFrame.Height div 2), true ) ;
+      (aPlayer.se_sprite.BmpCurrentFrame.Width div 2) , (aPlayer.se_sprite.BmpCurrentFrame.Height div 2), true ) ;
   //  else
   //  aMainSkillSubSprite := SE_SubSprite.create( bmp  ,'mainskill',
    //   (aPlayer.se_sprite.BmpCurrentFrame.Width div 2) - (bmp.Width div 2) , (aPlayer.se_sprite.BmpCurrentFrame.Height div 2), true,true );
@@ -8603,7 +9837,7 @@ begin
    // sono veramente già swappati quindi la sefield è di aplayer2 , quello che verrà sostituito
 
     aFieldPointSpr := SE_FieldPoints.FindSprite( IntToStr(aPlayer2.CellX )+ '.' + IntToStr(aPlayer2.CellY ) );
-    seSprite:= SE_interface.CreateSprite(InOutBitmap.BITMAP ,'inout',1,1,10,aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y,true  );
+    seSprite:= SE_interface.CreateSprite(InOutBitmap.BITMAP ,'inout',1,1,10,aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y,true ,1 );
     seSprite.LifeSpan := ShowFaultLifeSpan;
 
     BackColor := MyBrain.Score.DominantColor[aPlayer.team];
@@ -8639,14 +9873,14 @@ begin
   else if ts[0]= 'cl_fault' then begin    //  team a favore, cellx, celly
 // TsScript.add ('sc_fault,' + aPlayer.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
     aFieldPointSpr := SE_FieldPoints.FindSprite( ts[2]+'.'+ts[3] );
-    seSprite:= SE_LifeSpan.CreateSprite(dir_interface + 'faul.bmp' ,'fault',1,1,10,aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y,true  );
+    seSprite:= SE_LifeSpan.CreateSprite(dir_interface + 'faul.bmp' ,'fault',1,1,10,aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y,true ,1 );
     seSprite.LifeSpan := ShowFaultLifeSpan;
     playsound ( pchar (dir_sound +  'faul.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
 
   end
   else if ts[0]= 'cl_fault.cheatballgk' then begin   // TeamFavour, cerco il portiere avversario
     aFieldPointSpr := SE_FieldPoints.FindSprite( ts[2]+'.'+ts[3] );
-    seSprite:= SE_LifeSpan.CreateSprite(dir_interface + 'faulred.bmp' ,'fault',1,1,10,aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y,true  );
+    seSprite:= SE_LifeSpan.CreateSprite(dir_interface + 'faulred.bmp' ,'fault',1,1,10,aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y,true ,1 );
     seSprite.LifeSpan := ShowFaultLifeSpan;
     playsound ( pchar (dir_sound +  'faul.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
 
@@ -8655,7 +9889,7 @@ begin
   end
   else if ts[0]= 'cl_fault.cheatball' then begin  // TeamFavour, cerco la cella della palla
     aFieldPointSpr := SE_FieldPoints.FindSprite( ts[2]+'.'+ts[3] );
-    seSprite:= SE_LifeSpan.CreateSprite(dir_interface + 'faulred.bmp' ,'fault',1,1,10,aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y,true  );
+    seSprite:= SE_LifeSpan.CreateSprite(dir_interface + 'faulred.bmp' ,'fault',1,1,10,aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y,true ,1 );
     seSprite.LifeSpan := ShowFaultLifeSpan;
     playsound ( pchar (dir_sound +  'faul.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
 // sul server:  TsScript.add ('sc_fault.cheatball,' + intTostr(TeamFaultFavour) + ',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
@@ -8666,7 +9900,7 @@ begin
 
   //  aPlayer:= MyBrain.GetSoccerPlayer3(ts[1]);
     aFieldPointSpr := SE_FieldPoints.FindSprite( ts[2]+'.'+ts[3] );
-    seSprite:= SE_LifeSpan.CreateSprite(dir_interface + 'faulred.bmp' ,'fault',1,1,10,aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y,true  );
+    seSprite:= SE_LifeSpan.CreateSprite(dir_interface + 'faulred.bmp' ,'fault',1,1,10,aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y,true,1  );
     seSprite.LifeSpan := ShowFaultLifeSpan;
     i_red(ts[1]);
 
@@ -8678,7 +9912,7 @@ begin
   else if ts[0] = 'cl_yellow' then begin    // ids cellx celly
   //  aPlayer:= MyBrain.GetSoccerPlayer3(ts[1]);
     aFieldPointSpr := SE_FieldPoints.FindSprite( ts[2]+'.'+ts[3] );
-    seSprite:= SE_LifeSpan.CreateSprite(dir_interface + 'faulyellow.bmp' ,'fault',1,1,10,aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y,true  );
+    seSprite:= SE_LifeSpan.CreateSprite(dir_interface + 'faulyellow.bmp' ,'fault',1,1,10,aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y,true ,1 );
     seSprite.LifeSpan := ShowFaultLifeSpan;
     i_Yellow(ts[1]);
   end
@@ -8686,7 +9920,7 @@ begin
     // qui doppio cartellino sprite
   //  aPlayer:= MyBrain.GetSoccerPlayer3(ts[1]);
     aFieldPointSpr := SE_FieldPoints.FindSprite( ts[2]+'.'+ts[3] );
-    seSprite:= SE_LifeSpan.CreateSprite(dir_interface + 'faulyellowred.bmp' ,'fault',1,1,10,aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y,true  );
+    seSprite:= SE_LifeSpan.CreateSprite(dir_interface + 'faulyellowred.bmp' ,'fault',1,1,10,aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y,true ,1 );
     seSprite.LifeSpan := ShowFaultLifeSpan;
     i_red(ts[1]);
 
@@ -8696,7 +9930,8 @@ begin
       se_Theater1.thrdAnimate.OnTimer (se_Theater1.thrdAnimate);
       application.ProcessMessages ;
     end;
-      i_tuc ( ts[1]);
+    i_tuc ( ts[1]);
+
   end
   else if ts[0] = 'cl_tml' then begin
     while (MyBrain.GameStarted ) and  (se_players.IsAnySpriteMoving ) and  (se_Ball.IsAnySpriteMoving ) do begin
@@ -8856,15 +10091,15 @@ begin
     else halfY :=0;
     dstCellX :=  StrToInt(Ts[4]);
     dstCellY :=  StrToInt(Ts[5]);
-    aPlayer := MyBrain.GetSoccerPlayer(dstCellX,dstCellY); // è un difensore
+   // aPlayer := MyBrain.GetSoccerPlayer(dstCellX,dstCellY); // è un difensore  che si è mosso. potrebbe essere nil perchè il brain non lo trova qui
 
     Mybrain.Ball.SE_Sprite.MoverData.Speed := StrToFloat (Ts[1]);
     SetBallRotation ( StrToInt(ts[2]),StrToInt(ts[3]),StrToInt(ts[4]),StrToInt(ts[5]) ) ;
 
-    aFieldPointSpr := SE_FieldPoints.FindSprite(IntToStr (dstCellX ) + '.' + IntToStr (dstCellY ));
-    if aPlayer.Team = 0 then
-      Mybrain.Ball.se_sprite.MoverData.Destination := Point(aFieldPointSpr.Position.X +32, aFieldPointSpr.Position.Y+halfy)
-    else Mybrain.Ball.se_sprite.MoverData.Destination := Point(aFieldPointSpr.Position.X -32, aFieldPointSpr.Position.Y+halfy)
+    //aFieldPointSpr := SE_FieldPoints.FindSprite(IntToStr (dstCellX ) + '.' + IntToStr (dstCellY ));
+   // if aPlayer.Team = 0 then
+   //   Mybrain.Ball.se_sprite.MoverData.Destination := Point(aFieldPointSpr.Position.X +32, aFieldPointSpr.Position.Y+halfy)
+   // else Mybrain.Ball.se_sprite.MoverData.Destination := Point(aFieldPointSpr.Position.X -32, aFieldPointSpr.Position.Y+halfy)
 
 
   end
@@ -9241,10 +10476,10 @@ procedure TForm1.btnConfirmSellClick(Sender: TObject);
   i,tGK: Integer;
   aPlayer: TSoccerPlayer;
 begin
-  if GCD <= 0 then begin
+
     aPlayer:=  MyBrainformation.GetSoccerPlayerALL (IntToStr(SE_BackGround.Tag));
     if StrToIntDef(edtSell.Text,0) < aPlayer.MarketValue then begin
-        ShowError ( Translate ('warning_nosell_lowprice'));
+        CreateInfoError ('Attenzione!', Translate ('warning_nosell_lowprice'),'screenplayerdetails');
         edtSell.Text := IntToStr( aPlayer.MarketValue);
         Exit;
     end;
@@ -9253,42 +10488,56 @@ begin
     PanelSell.Visible := False;
     if aPlayer.TalentId1 = TALENT_ID_GOALKEEPER then begin
       tGK:=0;
-      for I := MyBrainFormation.lstSoccerPlayer.Count -1 downto 0 do begin
-        if MyBrainFormation.lstSoccerPlayer[i].TalentId1 = TALENT_ID_GOALKEEPER then
+      for I := MyBrainFormation.lstSoccerPlayerALL.Count -1 downto 0 do begin
+        if (MyBrainFormation.lstSoccerPlayerALL[i].TalentId1 = TALENT_ID_GOALKEEPER) and ( not MyBrainFormation.lstSoccerPlayerALL[i].OnMarket) then
           tGK := tGK +1;
       end;
-      if (tGK = 1) and (aPlayer.TalentId1 = TALENT_ID_GOALKEEPER) then begin
-        ShowError ( Translate ('warning_nosellgk'));
+      if (tGK = 1) then begin
+        CreateInfoError ( 'Attenzione!', Translate ('warning_nosellgk'),'screenplayerdetails');
         Exit;
       end;
     end;
 
 
-      WAITING_GETFORMATION:= True;
-      tcp.SendStr( 'sell,'+ IntToStr(SE_BackGround.Tag)  + ',' + edtSell.Text + EndofLine); // solo a sinistra in formation
+    if GameMode = pvp then begin
+      if GCD <= 0 then begin
+        tcp.SendStr( 'sell,'+ IntToStr(SE_BackGround.Tag)  + ',' + edtSell.Text + EndofLine); // solo a sinistra in formation
+      end;
+    end
+    else begin
+      pveAddToMarket ( MyActiveGender, IntToStr(SE_BackGround.tag), IntToStr(MyGuidTeam), dir_saves, StrToInt (edtSell.Text)); // guid del player
+      ShowPlayerDetails(aPlayer);
+      Inc(TotMarket);
+      pveClientLoadMarket; // ricarico il market globale
+    end;
+
+
+end;
+
+procedure TForm1.btnContinueClick(Sender: TObject);
+var
+  i: integer;
+  ts2 : TStringList;
+begin
+
+  ts2 := TStringList.Create ;
+  TsWorldCountries.LoadFromFile ( dir_data + 'countries.csv');
+  for I := 1 to 6 do begin
+    ts2.CommaText := TsWorldCountries[i-1];
+    mfaces[i] := StrToInt( ts2[2] );
+    ffaces[i] := StrToInt( ts2[3] );
+  end;
+  ts2.Free;
+
+
+  if MyGuidTeam = 0 then
+    GameScreen := ScreenSelectCountry
+  else begin
+    ClientLoadFormation;
+    TotMarket := pveGetTotMarket(MyActiveGender,IntTostr(MyGuidteam),dir_saves);
   end;
 
-
 end;
-
-procedure TForm1.btnErrorOKClick(Sender: TObject);
-begin
-  PanelError.Visible := False;
-  PanelBuy.Visible := False;
-  PanelSell.Visible := False;
-  PanelDismiss.Visible := False;
-  if lastStrError = 'errorlogin' then
-    PanelLogin.Visible := True
-    else if lastStrError = 'marketbuy_player_not_found' then
-      tcp.SendStr( 'market,' +  IntToStr(MaxInt)  + EndofLine)
-      else tcp.SendStr( 'getformation' + EndofLine);
-
- // if lbl_Error.Caption = ( Uppercase (Translate('lbl_endgame'))) then
- //   GameScreen := ScreenFormation;
-
-end;
-
-
 function TForm1.isTvCellFormation ( Team, CellX, CellY: integer ): boolean;
 begin
   Result := False;
@@ -9566,11 +10815,12 @@ begin
 end;
 procedure Tform1.SelectedPlayerPopupSkill ( CellX, CellY: integer);
 var
-  i,BaseY,BaseX,TotalWidth,visX,visY: integer;
+  BaseY,BaseX,TotalWidth: integer;
   tmp: integer;
   aList : TObjectList<TSoccerPlayer>;
   aSprite: SE_Sprite;
   aSpriteLabel : SE_SpriteLabel;
+  bmp, bmpQuestion :SE_Bitmap;
   label LoadGridSkill,PreloadGridSkill;
 procedure setupBMp (bmp:TBitmap; aColor: Tcolor);
 begin
@@ -9742,7 +10992,7 @@ begin
 PreLoadGridSkill:
 //  SelectedPlayer.ActiveSkills.Add('Pass=0');
   if (SelectedPlayer.Role <> 'G') then begin
-    if MyBrain.Minute < 120 then begin
+    if MyBrain.Minute < 120 then begin  // oltre 120 non aggiungo stay e free per evitare cheating finale
       if SelectedPlayer.stay then SelectedPlayer.ActiveSkills.Add('Free=0')
         else SelectedPlayer.ActiveSkills.Add('Stay=0');
     end;
@@ -9764,62 +11014,117 @@ LoadGridSkill:
      Exit;
 
   // vecchia versione
-  BaseY := 0;
+//  BaseY := 0;
   SE_Skills.RemoveAllSprites;
   SE_Skills.ProcessSprites(2000);
- { for I := 0 to SelectedPlayer.ActiveSkills.count -1 do begin
-    bmp := SE_Bitmap.Create ( 140,22 );
-    bmp.Bitmap.Canvas.Brush.Color :=  clGray;
-    bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
-    aSprite := SE_Skills.CreateSprite ( Bmp.Bitmap,SelectedPlayer.ActiveSkills.Names [i],1,1,1000,
-                SelectedPlayer.SE_Sprite.Position.X,SelectedPlayer.SE_Sprite.Position.Y + (SelectedPlayer.SE_Sprite.BMP.Height div 2 )+10+BaseY,False); // IDS contiene il nome della skill originale (English)
-    aSprite.BlendMode := SE_BlendAlpha;
-    aSprite.Alpha := 200;
-    bmp.Free;
-    //Qui 2 spriteLabel , una con il Translate della Skill, l'altra con il valore . left 0 e un altro fisso
-    aSpriteLabel := SE_SpriteLabel.create(0,0,'Calibri',clWhite,clBlack,12,Translate( 'skill_' + SelectedPlayer.ActiveSkills.Names [i]),True );// tradotta
-    aSprite.Labels.add(aSpriteLabel);
-    if SelectedPlayer.ActiveSkills.ValueFromIndex [i] <> '0' then begin
-      aSpriteLabel := SE_SpriteLabel.create(120,0,'Calibri',clWhite,clBlack,12,SelectedPlayer.ActiveSkills.ValueFromIndex [i],True );// il valore
-      aSprite.Labels.add(aSpriteLabel);
-    end;
-
-    if (aSprite.Guid = 'Stay') or (aSprite.Guid = 'Free') then begin
-      aSprite.Labels[0].lFontColor := clSilver;
-     // aSprite.Labels[1].lFont.Color := clSilver;
-    end;
-    BaseY := BaseY + 22;
-  end;  }
-  SE_Skills.RemoveAllSprites;
-  SE_Skills.ProcessSprites(2000);
-  BaseY := 764;
+//  BaseY := 764;
   BaseX := 1440 div 2;//720
 
   TotalWidth := 32 * SelectedPlayer.ActiveSkills.count;
-  BaseX := BaseX  - (TotalWidth Div 2) + 16;
+//  BaseX := BaseX  - (TotalWidth Div 2) + 16;
 
 
-  for I := 0 to SelectedPlayer.ActiveSkills.count -1 do begin
+//  for I := 0 to SelectedPlayer.ActiveSkills.count -1 do begin
 
-    aSprite := SE_Skills.CreateSprite ( dir_skill + SelectedPlayer.ActiveSkills.Names [i]+'.bmp',SelectedPlayer.ActiveSkills.Names [i],1,1,1000,
-                BaseX,BaseY,true); // IDS contiene il nome della skill originale (English)
+//    aSprite := SE_Skills.CreateSprite ( dir_skill + SelectedPlayer.ActiveSkills.Names [i]+'.bmp',SelectedPlayer.ActiveSkills.Names [i],1,1,1000,
+//                BaseX,BaseY,true,1); // IDS contiene il nome della skill originale (English)
 
-    BaseX := BaseX + 32;//26
-  end;
-  SE_Skills.Visible := True;
+//    BaseX := BaseX + 32;//26
+//  end;
 
   {$IFDEF  tools}
-    aSprite := SE_Skills.CreateSprite (  dir_skill + 'setplayer.bmp','setplayer',1,1,1000, BaseX,BaseY,true);
+    SelectedPlayer.ActiveSkills.Add('setplayer=0');
+//    aSprite := SE_Skills.CreateSprite (  dir_skill + 'setplayer.bmp','setplayer',1,1,1000, BaseX,BaseY,true,1);
+//    aSprite.sTag := 'setplayer';
   {$endif}
 
-end;
+  // la skill
+  Index_WheelSkill := 0;
+  aSprite := SE_Skills.CreateSprite ( dir_skill + SelectedPlayer.ActiveSkills.Names [Index_WheelSkill]+'.bmp','wheelskill',1,1,1000,
+   SelectedPlayer.se_sprite.Position.X  , SelectedPlayer.se_sprite.Position.Y+ 16, true,10 ) ;
+  aSprite.sTag :=  SelectedPlayer.ActiveSkills.Names [Index_WheelSkill];
 
-procedure TForm1.SE_Theater1TheaterMouseDown(Sender: TObject; VisibleX, VisibleY, VirtualX, VirtualY: Integer; Button: TMouseButton;
-  Shift: TShiftState);
+  // la skill name sotto il selectedplayer
+  bmp := SE_Bitmap.Create ( 128,22 );
+  bmp.Bitmap.Canvas.Brush.Color :=  clGray;
+  bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
+  aSprite := SE_Skills.CreateSprite ( bmp.Bitmap,'wheelskillname',1,1,1000,
+   SelectedPlayer.se_sprite.Position.X  , SelectedPlayer.se_sprite.Position.Y + 42 , true,10 ) ;
+  bmp.Free;
+
+  aSpriteLabel := SE_SpriteLabel.create( -1,0,'Calibri',clWhite-1,clBlack,12, Capitalize(Translate( 'skill_' + SelectedPlayer.ActiveSkills.Names[Index_WheelSkill] )  ) ,True  ,1, dt_center);
+  aSprite.Labels.add (aSpriteLabel);
+
+
+  // la skill name in basso nel campo + l'help di fianco
+  ShowSingleSkill;
+
+
+
+  SE_Skills.Visible := True;
+
+
+end;
+procedure Tform1.ShowSingleSkill ( );
+var
+  h: integer;
+  aSprite: SE_Sprite;
+  aSpriteLabel : SE_SpriteLabel;
+  bmp, bmpQuestion :SE_Bitmap;
+  R : Trect;
+  MyText: string;
+begin
+
+  aSprite := SE_Skills.FindSprite('wheelskill');
+  aSprite.ChangeBitmap( dir_skill + SelectedPlayer.ActiveSkills.Names [Index_WheelSkill] + '.bmp',1,1,1000 );
+  aSprite.sTag :=  SelectedPlayer.ActiveSkills.Names [Index_WheelSkill];
+ // Memo1.Lines.Add( 'guid ' + aSprite.guid );
+//  Memo1.Lines.Add( 'stag ' +  aSprite.sTag );
+
+  aSprite := SE_Skills.FindSprite('wheelskillname');
+  aSprite.Labels[0].lText:= Capitalize(Translate( 'skill_' + SelectedPlayer.ActiveSkills.Names[Index_WheelSkill] )  );
+ // Memo1.Lines.Add(  'text ' + aSprite.Labels[0].lText );
+
+
+
+  // la skill name in basso nel campo + l'help di fianco
+  SE_Skills.RemoveAllSprites('wheelskillnamebottom');
+  SE_Skills.RemoveAllSprites('btnhelp_');
+  SE_Skills.ProcessSprites(2000);
+
+
+
+  bmp := SE_Bitmap.Create ( 148,22 );
+  bmp.Bitmap.Canvas.Brush.Color :=  clGray;
+  bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
+  aSprite := SE_Skills.CreateSprite ( bmp.Bitmap,'wheelskillnamebottom',1,1,1000, SE_Theater1.Width div 2 , 764 , true,10 ) ;
+  bmp.Free;
+
+
+  MyText := Capitalize(Translate( 'skill_' + SelectedPlayer.ActiveSkills.Names[Index_WheelSkill] ) );
+  R.Left := 0;
+  R.Top := 0;
+  R.Right := (aSprite.BMP.Width);
+  R.Bottom := (aSprite.BMP.Height);
+  SetBkMode(aSprite.bmp.Canvas.Handle,TRANSPARENT);
+  h:=DrawText(aSprite.bmp.Canvas.handle, PChar(MyText), length(MyText), R, dt_wordbreak or DT_CALCRECT);
+//  DrawText(aSprite.bmp.Canvas.handle, PChar(MyText), length(MyText), R, dt_wordbreak or dt_left or dt_vcenter);
+  aSpriteLabel := SE_SpriteLabel.create( -1,0,'Calibri',clWhite-1,clBlack,12, MyText ,True  ,1, dt_Left);
+  aSprite.Labels.add (aSpriteLabel);
+
+  // qui la concatenazione del nome contine la stringa in inglese così per l'help diventa es. btnhelp_short.passing.txt
+  bmpQuestion := SE_Bitmap.Create ( dir_interface + 'question.bmp');
+  aSprite := SE_Skills.CreateSprite(bmpQuestion.Bitmap ,'btnhelp_' + SelectedPlayer.ActiveSkills.Names[Index_WheelSkill],1,1,1000,
+  aSprite.Position.X  + R.Right , + 764, True, 1201);
+  //                         SE_Theater1.Width div 2 + (aSprite.BMP.Width div 2) - (bmpQuestion.Width div 2) ,764 ,true,1201 );
+  bmpQuestion.free;
+  aSprite.sTag := 'btnhelp_' + SelectedPlayer.ActiveSkills.Names[Index_WheelSkill]; // per il mousemove
+
+end;
+procedure TForm1.SE_Theater1TheaterMouseDown(Sender: TObject; VisibleX, VisibleY, VirtualX, VirtualY: Integer; Button: TMouseButton;  Shift: TShiftState);
 begin
   if GameScreen = ScreenLive then begin
     if Button = MbRight then begin
-
       if SE_DragGuid <> nil then begin
         se_dragGuid.DeleteSubSprite('surname');
         SE_DragGuid := nil;
@@ -9829,9 +11134,12 @@ begin
       hidechances ;
       SE_Green.Visible := false;
       SE_Skills.Visible := False;
+      SE_Skills.RemoveAllSprites;
+      LockSkill := False;
+//      if SelectedPlayer <> nil then
+//        SelectedPlayer.se_sprite.DeleteSubSprite('mainskill' );
 
-      if SelectedPlayer <> nil then
-        SelectedPlayer.se_sprite.DeleteSubSprite('mainskill' );
+      DontDoPlayers:= False;
 
       Exit;
     end;
@@ -9853,7 +11161,7 @@ var
   GlobalFieldPointsSpr: TObjectList<SE_Sprite>;
   aPlayer,aPlayer2: TSoccerPlayer;
   aFieldPointSpr: SE_Sprite;
-  AICell,aCell,aCell2,OldReserveCell: TPoint;
+  AICell,aCell,aCell2: TPoint;
   label reserve;
 begin
 // qui passano solo mouseup da screenformation. è gestita conm proximity. altri mouseup passano da spritemouseup ( tactics e subs )
@@ -10110,10 +11418,140 @@ begin
 //  bmp.free;
 
 end;
+procedure TForm1.ScreenPreMatch_SE_PreMatch ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
+var
+  i,C,FinishedCount,BmpH,M: Integer;
+  bmp:SE_Bitmap;
+  aSpriteLabel : SE_SpriteLabel;
+  aSprite: SE_Sprite;
+  astring: string;
+  const Pix : array[1..5] of Integer =  ( (-40*2), -40 ,0 , +40, (+40*2) );
+  const RowH = 22;
+  label retry;
+begin
+
+  if aSpriteClicked.Guid = 'btnmenu_back' then begin
+    GameScreen := ScreenFormation;
+  end
+  else if aSpriteClicked.Guid = 'btnmenu_play' then begin
+    // start di tutte le division. Solo mia Country. Le altre country in simulate dopo il finalizebrain della mia partita
+    // Dopo il finalizebrain viene caricato l'altro sesso
+    GameScreen := ScreenWaitingLive;
+
+    SE_Theater1.thrdAnimate.OnTimer (SE_Theater1.thrdAnimate);
+     // gamestart
+    StartAllMatches ( MyActiveGender , ActiveSeason, MyGuidCountry, ActiveRound, false  );
+
+  end
+  else if aSpriteClicked.Guid = 'btnmenu_simulate' then begin
+    // STARTSIMULATION
+    GameScreen := ScreenWaitingSimulation; //  --> ShowLoading;
+
+    SE_Loading.CreateSprite( dir_interface + 'circleoff.bmp','circleoff1',1,1,1000,(1440 div 2)-(40*2)  , 720 div 2, true ,1999  );
+    SE_Loading.CreateSprite( dir_interface + 'circleoff.bmp','circleoff2',1,1,1000,(1440 div 2)-(40) , 720 div 2, true  ,1999 );
+    SE_Loading.CreateSprite( dir_interface + 'circleoff.bmp','circleoff3',1,1,1000,1440 div 2 , 720 div 2, true  ,1999 );
+    SE_Loading.CreateSprite( dir_interface + 'circleoff.bmp','circleoff4',1,1,1000,(1440 div 2)+(40) , 720 div 2, true  ,1999 );
+    SE_Loading.CreateSprite( dir_interface + 'circleoff.bmp','circleoff5',1,1,1000,(1440 div 2)+(40*2) , 720 div 2, true ,1999  );
+      { TODO : 6+ countries }
+
+    for C := 1 to 6 do begin  // 6 countries  1 country 1.08   6 country 2.43
+      SE_Loading.CreateSprite( dir_interface + 'circleon.bmp' , 'circleon'+ IntTostr(C),1,1,1000,(1440 div 2)+ pix[C], 720 div 2,true,2000 );
+      SE_Theater1.thrdAnimate.OnTimer (SE_Theater1.thrdAnimate);
+      StartAllMatches ( MyActiveGender , ActiveSeason, C, ActiveRound, true  );
+    end;
+
+
+    GameScreen := ScreenSimulation;
+    SE_Theater1.thrdAnimate.OnTimer (SE_Theater1.thrdAnimate);
+
+          bmpH := ( RowH  * DivisionMatchCount[MyDivision] ) ;
+          bmp := SE_Bitmap.Create ( 360, bmpH);
+          bmp.Bitmap.Canvas.Brush.Color :=  $007B5139;
+          bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
+          RoundBorder (bmp.Bitmap);
+          aSprite:=SE_Simulation.CreateSprite(bmp.Bitmap ,'simulatebackframe' ,1,1,1000, SE_Theater1.Width div 2 , SE_Theater1.Height div 2 ,false,2 );
+
+          aSprite.BlendMode := SE_BlendAlpha;
+          aSprite.Alpha := 200;
+          bmp.Free;
+
+          for M := 0 to  DivisionMatchCount [MyDivision]-1 do begin
+            aSpriteLabel := SE_SpriteLabel.create( 0,m*RowH,'Calibri',clWhite-1,clBlack,12, '',True ,1,dt_left ); // da 1 x N partite
+            aSprite.Labels.Add(aSpriteLabel);
+            aSpriteLabel := SE_SpriteLabel.create( 300,m*RowH,'Calibri',clWhite-1,clBlack,12, '',True ,1,dt_xCenter ); // da 1 x N partite
+            aSprite.Labels.Add(aSpriteLabel);
+            aSpriteLabel := SE_SpriteLabel.create( 320,m*RowH,'Calibri',clWhite-1,clBlack,12, '',True ,1,dt_right ); // da 1 x N partite
+            aSprite.Labels.Add(aSpriteLabel);
+          end;
+
+    // simulazione immediata
+  //  FinishedCount := 0;
+   // while FinishedCount < lstbrain.Count do begin
+  //  FinishedCount := 0;
+retry:
+      M := 0;
+//      aSprite := SE_PreMatch.FindSprite('simulatebackframe');
+      for I := lstbrain.Count -1 downto 0 do begin
+
+
+          if (lstBrain [i].Country = MyGuidCountry) and (lstBrain [i].Division = MyDivision)  then begin // gioco simulato solo mia divisione
+
+         {  visualizzo risultati mia divisione e mia country }
+            if not lstBrain[i].Finished then
+              lstBrain [i].AI_Think(lstBrain [i].TeamTurn);
+             // else inc ( FinishedCount );
+            //  astring := inttostr(M) + ' b:' + inttostr (lstbrain.Count) ;
+            //  OutputDebugString(   PChar   (   astring   )   );
+              aSprite.Labels[M*3].lText := lstbrain[i].Score.Team[0]+'-'+ lstbrain[i].Score.Team[1];
+              aSprite.Labels[M*3+1].lText := IntTostr(lstbrain[i].Score.Gol[0])+'-'+ IntToStr(lstbrain[i].Score.Gol[1]);
+              aSprite.Labels[M*3+2].lText := IntTostr(lstbrain[i].Minute)+'''';
+              SE_Simulation.ProcessSprites(2000);
+              SE_Theater1.thrdAnimate.OnTimer(SE_Theater1.thrdAnimate);
+
+
+            inc (M);
+
+
+          end
+          else begin // non è la mia divisione e la mia country
+            if not(lstBrain [i].Finished)  then begin
+              EmulationBrain (lstBrain [i], dir_saves);   // --> dopo finalizebrain comunque avverrà, qui spargo solo dati in  memoria a brain-lstsoccerplayerALL
+              lstBrain [i].Finished := true;
+            end;
+            //else inc ( FinishedCount );
+          end;
+
+      end;
+
+      FinishedCount := 0;
+      for I := lstbrain.Count -1 downto 0 do begin
+        if lstBrain [i].Finished = true then
+          inc ( FinishedCount )
+          else goto retry;
+      end;
+//      if FinishedCount < lstbrain.Count then
+//        goto retry;
+
+
+  //  end;
+
+    // ho giocato solo la mia divisione. ora c'è la completa EMULAZIONE
+    ShowLoading; //da fare   .gli sprite sono ancora in memoria
+
+
+    //    CompleteAllMatches; sono già completati proprio qui sopra
+    pveFinalizeAllBrain;
+    lstbrain.clear;
+    AdvanceMFRound;
+    GameScreen := ScreenFormation;
+    ClientLoadFormation;
+  end;
+
+
+end;
 
 procedure TForm1.ScreenFormation_SE_MainInterface ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
 var
- bmp: Se_bitmap;
  aSprite : SE_Sprite;
  I: integer;
 begin
@@ -10128,7 +11566,13 @@ begin
     aSpriteClicked.Alpha := 255;
     aSprite := SE_MainInterface.FindSprite('btnmenu_f');
     aSprite.Alpha  := 80;
-    tcp.SendStr( 'switch' + Endofline );
+    if GameMode = pvp then
+      tcp.SendStr( 'switch' + Endofline )
+    else if GameMode = pve then begin
+      MyActiveGender := 'm';
+      ClientLoadFormation;
+      TotMarket := pveGetTotMarket(MyActiveGender,IntTostr(MyGuidteam),dir_saves);
+    end;
   end
   else if aSpriteClicked.Guid = 'btnmenu_f' then begin
     if SE_Uniform.Visible then Exit;
@@ -10137,7 +11581,13 @@ begin
     aSpriteClicked.Alpha := 255;
     aSprite := SE_MainInterface.FindSprite('btnmenu_m');
     aSprite.Alpha  := 80;
-    tcp.SendStr( 'switch'+ Endofline );
+    if GameMode = pvp then
+      tcp.SendStr( 'switch' + Endofline )
+    else if GameMode = pve then begin
+      MyActiveGender := 'f';
+      ClientLoadFormation;
+      TotMarket := pveGetTotMarket(MyActiveGender,IntTostr(MyGuidteam),dir_saves);
+    end;
   end
   else if aSpriteClicked.Guid = 'btnmenu_uniform' then begin
    // PanelUniform.Visible:= True;
@@ -10172,14 +11622,34 @@ begin
     aSprite.visible := False;
     aSprite := SE_MainInterface.FindSprite('btnmenu_standings' ); // tornano visible con CLose su Uniform
     aSprite.visible := False;
-    aSprite := SE_MainInterface.FindSprite('btnmenu_info' ); // tornano visible con CLose su Uniform
-    aSprite.visible := False;
+//    aSprite := SE_MainInterface.FindSprite('btnmenu_info' ); // tornano visible con CLose su Uniform
+//    aSprite.visible := False;
     aSprite := SE_MainInterface.FindSprite('btnmenu_play' ); // tornano visible con CLose su Uniform
     aSprite.visible := False;
     aSprite := SE_MainInterface.FindSprite('btnmenu_confirmformation' ); // tornano visible con CLose su Uniform
     aSprite.visible := False;
-    aSprite := SE_MainInterface.FindSprite('btnmenu_watchlive' ); // tornano visible con CLose su Uniform
+    aSprite := SE_MainInterface.FindSprite('btnhelp_uniform' ); // tornano visible con CLose su Uniform
     aSprite.visible := False;
+    aSprite := SE_MainInterface.FindSprite('btnhelp_reset' ); // tornano visible con CLose su Uniform
+    aSprite.visible := False;
+    aSprite := SE_MainInterface.FindSprite('btnhelp_market' ); // tornano visible con CLose su Uniform
+    aSprite.visible := False;
+    aSprite := SE_MainInterface.FindSprite('btnhelp_play' ); // tornano visible con CLose su Uniform
+    aSprite.visible := False;
+
+    if MyActiveGender = 'm' then begin
+
+      aSprite := SE_Rank.FindSprite('token' ); // tornano visible con CLose su Uniform
+      aSprite.visible := False;
+      aSprite := SE_Rank.FindSprite('money' ); // tornano visible con CLose su Uniform
+      aSprite.visible := False;
+    end;
+
+    if Gamemode = pvp then begin
+      aSprite := SE_MainInterface.FindSprite('btnmenu_watchlive' ); // tornano visible con CLose su Uniform
+      aSprite.visible := False;
+    end;
+
     aSprite := SE_MainInterface.FindSprite('btnmenu_reset' ); // tornano visible con CLose su Uniform
     aSprite.visible := False;
 
@@ -10190,30 +11660,56 @@ begin
     FirstLoadOK:= False;
     ReleaseMutex(MutexAnimation );
 
-    if GCD <= 0 then begin
-      if CheckFormationTeamMemory then begin
-       gameScreen := ScreenWaitingLive;
-       LiveMatch := True;
-       tcp.SendStr( 'queue' + endofline);
-      end
-      else begin
-        SE_MainInterface.Visible := True;
-      end;
-     GCD := GCD_DEFAULT;
+    if CheckFormationTeamMemory then begin
+     If GameMode = pvp then begin
+       if GCD <= 0 then begin
+         gameScreen := ScreenWaitingLive;
+         LiveMatch := True;
+         tcp.SendStr( 'queue' + endofline);
+       end;
+     end
+     else If GameMode = pve then begin
+       if MyActiveGender = NextMF then begin
+         GameScreen := ScreenPreMatch;
+         ClientLoadPreMatch ;
+       end
+       else begin
+         CreateInfoError ( 'Attenzione!', Capitalize(Translate ('warning_proceed')),'screenformation');
+       end;
+     end;
+    end
+    else begin
+      SE_MainInterface.Visible := True;
     end;
+
+     GCD := GCD_DEFAULT;
   end
   else if aSpriteClicked.Guid = 'btnmenu_confirmformation' then begin
-    if GCD <= 0 then begin
-      FormationChanged:= False;
-      settcpformation;
-      GCD := GCD_DEFAULT;
+    if GameMode = Pvp then begin
+      if GCD <= 0 then begin
+        FormationChanged:= False;
+        settcpformation;
+        GCD := GCD_DEFAULT;
+      end;
+    end
+    else if GameMode = Pve then begin
+        FormationChanged:= False;
+        settcpformation;
     end;
+
   end
   else if aSpriteClicked.Guid = 'btnmenu_market' then begin
-    if GCD <= 0 then begin
-      MemoC.Lines.Add('--->Tcp : market'  );
-      tcp.SendStr( 'market,' +  IntToStr(MaxInt)  + EndofLine);
-      GCD := GCD_DEFAULT;
+    if GameMode = Pvp then begin
+      if GCD <= 0 then begin
+        MemoC.Lines.Add('--->Tcp : market'  );
+        tcp.SendStr( 'market,' +  IntToStr(MaxInt)  + EndofLine);
+        GCD := GCD_DEFAULT;
+      end;
+    end
+    else if GameMode = Pve then begin
+      GameScreen := ScreenMarket;
+      pveClientLoadMarket;
+      pveRefreshMarket ( IndexMarket);
     end;
   end
   else if aSpriteClicked.Guid = 'btnmenu_watchlive' then begin
@@ -10224,21 +11720,34 @@ begin
     end;
   end
   else if aSpriteClicked.Guid = 'btnmenu_standings' then begin
-    if GCD <= 0 then begin
-      MemoC.Lines.Add('--->Tcp : standings'  );
-      tcp.SendStr( 'standings' + EndofLine );
-      GCD := GCD_DEFAULT;
+    if GameMode = pvp then begin
+      if GCD <= 0 then begin
+        MemoC.Lines.Add('--->Tcp : standings'  );
+        tcp.SendStr( 'standings' + EndofLine );
+        GCD := GCD_DEFAULT;
+      end;
+    end
+    else if GameMode = pve then begin
+       gameScreen := ScreenStandings;
+       IndexRound := ActiveRound;
+       ClientLoadStandings ( ActiveSeason, MyGuidCountry, MyDivision ) ; // parametri utili per display di altre nazione ecc...
+//     ClientLoadStandings ( ActiveSeason, MyGuidCountry, 1 ) ; // parametri utili per display di altre nazione ecc...
     end;
   end
   else if aSpriteClicked.Guid = 'btnmenu_reset' then begin
-    if GCD <= 0 then begin
-      GCD := GCD_DEFAULT;
-      WAITING_GETFORMATION:=true;
-      tcp.SendStr(  'resetformation' + endofline);
+    if GameMode = pvp then begin
+      if GCD <= 0 then begin
+        GCD := GCD_DEFAULT;
+        tcp.SendStr(  'resetformation' + endofline);
+      end;
+    end
+    else if GameMode = pve then begin
+      pveResetformation;
     end;
+
   end
   else if aSpriteClicked.Guid = 'btnmenu_info' then begin
-    { TODO : diventa standings }
+    { TODO : diventa altro }
   end;
 end;
 
@@ -10246,6 +11755,7 @@ procedure TForm1.ScreenFormation_SE_Uniform ( aSpriteClicked: SE_Sprite; Button:
 var
   i: Integer;
   ASprite,aSpriteJS: SE_Sprite;
+  ini : TInifile;
 begin
   if aSpriteClicked.Guid = 'btn_uniformhome' then begin
     aSpriteClicked.Alpha := 255;
@@ -10358,20 +11868,50 @@ begin
       aSprite.visible := True;
       aSprite := SE_MainInterface.FindSprite('btnmenu_standings' ); // tornano visible con CLose su Uniform
       aSprite.visible := True;
-      aSprite := SE_MainInterface.FindSprite('btnmenu_info' ); // tornano visible con CLose su Uniform
-      aSprite.visible := True;
+//      aSprite := SE_MainInterface.FindSprite('btnmenu_info' ); // tornano visible con CLose su Uniform
+//      aSprite.visible := True;
       aSprite := SE_MainInterface.FindSprite('btnmenu_play' ); // tornano visible con CLose su Uniform
       aSprite.visible := True;
-      aSprite := SE_MainInterface.FindSprite('btnmenu_watchlive' ); // tornano visible con CLose su Uniform
-      aSprite.visible := True;
+
+      if GameMode= pvp then begin
+        aSprite := SE_MainInterface.FindSprite('btnmenu_watchlive' ); // tornano visible con CLose su Uniform
+        aSprite.visible := True;
+      end;
+
       aSprite := SE_MainInterface.FindSprite('btnmenu_reset' ); // tornano visible con CLose su Uniform
       aSprite.visible := True;
+
+      aSprite := SE_MainInterface.FindSprite('btnhelp_uniform' ); // tornano visible con CLose su Uniform
+      aSprite.visible := True;
+      aSprite := SE_MainInterface.FindSprite('btnhelp_reset' ); // tornano visible con CLose su Uniform
+      aSprite.visible := True;
+      aSprite := SE_MainInterface.FindSprite('btnhelp_market' ); // tornano visible con CLose su Uniform
+      aSprite.visible := True;
+      aSprite := SE_MainInterface.FindSprite('btnhelp_play' ); // tornano visible con CLose su Uniform
+      aSprite.visible := True;
+
+      aSprite := SE_Rank.FindSprite('token' ); // tornano visible con CLose su Uniform
+      aSprite.visible := True;
+      aSprite := SE_Rank.FindSprite('money' ); // tornano visible con CLose su Uniform
+      aSprite.visible := True;
+
       CheckFormationTeamMemory;  // play / conferma visibilità
       SE_players.ClickSprites := True;
-      ShowLoading;
-      WAITING_GETFORMATION:= True;
-      tcp.SendStr(  'setuniform,' +  TSUniforms[0].CommaText + ',' + TSUniforms[1].CommaText + endofline);
-      GCD := GCD_DEFAULT;
+
+      if GameMode = pvp then begin
+        ShowLoading;
+        tcp.SendStr(  'setuniform,' +  TSUniforms[0].CommaText + ',' + TSUniforms[1].CommaText + endofline);
+        GCD := GCD_DEFAULT;
+      end
+      else if GameMode = pve then begin
+        // storo localmente le uniform
+        ini := TIniFile.Create(dir_saves + 'index.ini');
+        Ini.WriteString('setup','uniformh',tsUniforms[0].CommaText);
+        Ini.WriteString('setup','uniforma',tsUniforms[1].CommaText );
+        ini.free;
+        ClientLoadFormation;
+      end;
+
     end;
   end
 
@@ -10398,21 +11938,27 @@ begin
           edtSell.Text  := IntToStr(aPlayer.MarketValue);
         end
         else begin
-          lastStrError:= 'lbl_ErrorMarketMax';
-          ShowError( Translate('lbl_ErrorMarketMax'));
+          CreateInfoError ('Attenzione!', Translate ('lbl_ErrorMarketMax'),'screenplayerdetails');
+
         end;
       end;
     end;
   end
   else if aSpriteClicked.Guid = 'btnmenu_cancelsell' then begin
     aPlayer := findPlayerMyBrainFormation (IntToStr(SE_BackGround.tag));
-    case aPlayer.OnMarket of  // onMarket
-      True: begin
-        WAITING_GETFORMATION:= True;
-        aPlayer.OnMarket:=false;
-        tcp.SendStr( 'cancelsell,'+ IntToStr(SE_BackGround.tag)  + EndofLine); // solo a sinistra in formation
-      end;
+
+    aPlayer.OnMarket:=false;
+    if GameMode = pvp then
+      tcp.SendStr( 'cancelsell,'+ IntToStr(SE_BackGround.tag)  + EndofLine)
+    else if GameMode = pve then begin
+      pveDeleteFromMarket ( MyActiveGender, aPlayer.ids , dir_saves );
+      aPlayer.OnMarket := False;
+      TotMarket := TotMarket - 1;
+      ShowPlayerDetails(aPlayer);
+      pveClientLoadMarket; // ricarico il market globale
     end;
+
+
   end
   else if aSpriteClicked.Guid = 'btnmenu_dismiss' then begin
     PanelDismiss.Visible := True;
@@ -10478,14 +12024,58 @@ begin
       tcp.SendStr( 'market,'  +  IntToStr(MaxInt)  + EndofLine );
       GCD := GCD_DEFAULT;
     end;
+  end
+  else if aSpriteClicked.Guid = 'btnmenu_back2' then begin
+    IndexMarket := IndexMarket - 40;
+    pveRefreshMarket (IndexMarket );
+  end
+  else if aSpriteClicked.Guid = 'btnmenu_back1' then begin
+    IndexMarket := IndexMarket - 20;
+    pveRefreshMarket (IndexMarket );
+  end
+  else if aSpriteClicked.Guid = 'btnmenu_forward1' then begin
+    IndexMarket := IndexMarket + 20;
+    pveRefreshMarket (IndexMarket );
+  end
+  else if aSpriteClicked.Guid = 'btnmenu_forward2' then begin
+    IndexMarket := IndexMarket + 40;
+    pveRefreshMarket (IndexMarket );
+  end;
+end;
+procedure TForm1.ScreenStandings_SE_Standings ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
+const RowH = 18;
+begin
+  if aSpriteClicked.Guid = 'btnmenu_back' then begin
+    GameScreen := ScreenFormation;
+  end
+  else if aSpriteClicked.Guid = 'btnmenu_back1' then begin
+    IndexRound := IndexRound - MaxDisplayRound;
+    ClientLoadStandings( ActiveSeason, MyGuidCountry, MyDivision );
+  end
+  else if aSpriteClicked.Guid = 'btnmenu_forward1' then begin
+    IndexRound := IndexRound + MaxDisplayRound;
+    ClientLoadStandings( ActiveSeason, MyGuidCountry, MyDivision );
+  end
+  else if LeftStr(aSpriteClicked.Guid,15) = 'standings_round' then begin
+    ShowMatchInfo ( mouse.CursorPos.X + 200 , mouse.CursorPos.Y+200,  aSpriteClicked.Labels[aSpriteClicked.Mousey div Rowh].stag);
+//    ShowMessage(aSpriteClicked.Labels[aSpriteClicked.Mousey div Rowh].stag);
   end;
 end;
 procedure TForm1.ScreenSelectCountryTeam_SE_CountryTeam ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
+var
+  i: integer; // usata per eliminare dalla worldteams le nazioni non selezionate
+  ts2 : TStringList;
+  label loadateam;
 begin
   if aSpriteClicked.Guid = 'btnmenu_back' then begin
     if GameScreen  = ScreenSelectTeam then
       GameScreen := ScreenSelectCountry
-      else GameScreen := ScreenLogin;
+    else begin
+      if GameMode = Pvp then
+        GameScreen := ScreenLogin
+      else if GameMode = Pve then
+        GameScreen := ScreenMain;
+    end;
   end
   else if aSpriteClicked.Guid = 'btnmenu_back2' then begin
     IndexCT := IndexCT - 40;
@@ -10512,17 +12102,49 @@ begin
       ClientLoadTeams( IndexCT )
       else ClientLoadCountries( IndexCT );
   end
-  else if LeftStr(aSpriteClicked.Guid,8) = 'ctselect' then begin
+  else if LeftStr(aSpriteClicked.Guid,11) = 'countryteam' then begin
     // una volta all'inizio del gioco
     if GCD <= 0 then begin
-      if GameScreen =  ScreenSelectCountry then
-      tcp.SendStr( 'selectedcountry,' + aSpriteClicked.sTag + EndofLine)
-      else if GameScreen =  ScreenSelectTeam then begin
-        if (Application.MessageBox  ( PChar(Translate('lbl_ConfirmTeam') + ' : ' + TsNationTeams.Values [aSpriteClicked.sTag] ) , pChar(Translate('lbl_ConfirmTeam')),  MB_YESNO )) = IDYES then begin
-          WAITING_GETFORMATION:= True;
-          tcp.SendStr(  'selectedteam,' + aSpriteClicked.sTag + EndofLine);
+      if GameScreen =  ScreenSelectCountry then begin
+        if Gamemode = pvp  then begin
+          tcp.SendStr( 'selectedcountry,' + aSpriteClicked.sTag + EndofLine);
         end
-        else GameScreen :=  ScreenSelectCountry;
+        else begin // carico i world teams e elimino quelli con la nazione diversa dalla selezionata. aSpriteClicked.sTag contiene la nazione selezionata
+
+          ts2 := TStringList.Create ;
+          ts2.StrictDelimiter := True;
+          ts2.CommaText := TsWorldCountries[StrToInt(aSpriteClicked.sTag)-1];
+          MyCountryName := Ts2[1];
+          MyGuidCountry := StrToInt( aSpriteClicked.sTag);
+          ts2.Free;
+
+          TsNationTeams.LoadFromFile ( dir_data + 'worldteams.csv' );
+          ts2 := TStringList.Create ;
+          ts2.StrictDelimiter := True;
+          for I := TsNationTeams.Count -1 downto 0 do begin
+            ts2.CommaText := TsNationTeams[i];             // elimino i team di country diverse
+            if ts2[2] <> aSpriteClicked.sTag then  // guid,name,country,avgrank,uniformh,uniforma
+              TsNationTeams.Delete(i);
+          end;
+          ts2.Free;
+        end;
+
+        GameScreen := ScreenSelectTeam;
+      end
+      else if GameScreen =  ScreenSelectTeam then begin
+
+        ts2 := TStringList.Create ;
+        ts2.StrictDelimiter := True;
+        for I := TsNationTeams.Count -1 downto 0 do begin
+          ts2.CommaText := TsNationTeams[i];
+          if ts2[0]= aSpriteClicked.sTag then begin
+            CreateYesNo (  Capitalize(Translate('lbl_ConfirmTeam')), MyCountryName + ' - '+ ts2[1] , aSpriteClicked.sTag ) ;
+            break;
+          end;
+
+        end;
+        ts2.Free;
+
       end;
       GCD := GCD_DEFAULT;
     end;
@@ -10533,6 +12155,7 @@ procedure TForm1.ScreenSpectator_SE_Spectator ( aSpriteClicked: SE_Sprite; Butto
 var
   i: Integer;
   aBallSprite: SE_Sprite;
+  aSubSprite :SE_SubSprite;
 begin
   if aSpriteClicked.Guid = 'btnmenu_exit' then begin
     if GCD <= 0 then begin
@@ -10569,7 +12192,6 @@ begin
         SE_Numbers.RemoveAllSprites;
 
         Sleep(1000);
-        WAITING_GETFORMATION:= true;
         tcp.SendStr( 'getformation' + EndofLine);
 
       end;
@@ -10578,19 +12200,26 @@ begin
     end;
   end
   else if aSpriteClicked.Guid = 'btnmenu_overridecolor' then begin
-    overridecolor := true;
-    for i := 0 to MyBrain.lstSoccerPlayer.Count -1  do begin
-      if MyBrain.lstSoccerPlayer[i].Team = 1 then begin
-        MyBrain.lstSoccerPlayer[i].SE_Sprite.BlendMode := SE_BlendAverage;
+    overridecolor := not overridecolor;
+    if overridecolor = True then begin
+      aSpriteClicked.BlendMode := SE_BlendAverage;
+      for i := 0 to MyBrain.lstSoccerPlayer.Count -1  do begin
+        if MyBrain.lstSoccerPlayer[i].Team = 1 then begin
+          MyBrain.lstSoccerPlayer[i].SE_Sprite.BlendMode := SE_BlendAverage;
+        end;
       end;
-    end;
-  end
-  else if aSpriteClicked.Guid = 'btnmenu_overridecolornormal' then begin
-    overridecolor := false;
-    for i := 0 to MyBrain.lstSoccerPlayer.Count -1  do begin
-      if MyBrain.lstSoccerPlayer[i].Team = 1 then begin
-        MyBrain.lstSoccerPlayer[i].SE_Sprite.BlendMode := SE_BlendNormal;
+      aSubSprite := aSpriteClicked.FindSubSprite('overridecolor');
+      ASubSprite.lBmp.LoadFromFileBMP( dir_tmp + 'color1.bmp' );
+    end
+    else begin
+      aSpriteClicked.BlendMode := SE_BlendNormal;
+      for i := 0 to MyBrain.lstSoccerPlayer.Count -1  do begin
+        if MyBrain.lstSoccerPlayer[i].Team = 1 then begin
+          MyBrain.lstSoccerPlayer[i].SE_Sprite.BlendMode := SE_BlendNormal;
+        end;
       end;
+      aSubSprite := aSpriteClicked.FindSubSprite('overridecolor');
+      ASubSprite.lBmp.LoadFromFileBMP( dir_tmp + 'color1.bmp' );
     end;
   end;
 end;
@@ -10614,7 +12243,7 @@ end;
 procedure TForm1.ScreenFreeKick_SE_Players ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
 var
   CornerMap: TCornerMap;
-  aCell2,ACellBarrier: TPoint;
+  ACellBarrier: TPoint;
   aPlayerClicked, SwapPlayer: TSoccerPlayer;
   aFieldPointSpr: SE_Sprite;
 begin
@@ -10834,10 +12463,21 @@ end;
 procedure TForm1.ScreenLive_SE_Green ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
 begin
   if MouseWaitFor = WaitForGreen then begin
+
     MouseWaitFor := WaitForNone;
     hidechances;
-    tcp.SendStr( SendString + EndOfline );
+
+    if Gamemode = pvp then begin
+      tcp.SendStr( SendString + EndOfline );
+    end
+    else if Gamemode = pve then begin
+      MyBrain.BrainInput( IntTostr(MyGuidTeam) + ',' + SendString  );
+    end;
+    LockSkill := False;
     SE_Green.Visible := False;
+    SE_Skills.Visible := false;
+//    SE_Skills.RemoveAllSprites;
+//    SE_Skills.ProcessSprites(2000);
   end;
 
 end;
@@ -10954,6 +12594,11 @@ begin
     DontDoPlayers := true;
     SendString := 'setplayer,' +  SelectedPlayer.ids + ',' +  IntToStr(CellX) + ',' +  IntToStr(CellY);
     SE_FieldPoints.HideAllSprites;
+    if GamemOde = pve then begin
+      SelectedPlayer.CellX := (CellX);
+      SelectedPlayer.CellY := (CellY);
+      SpriteReset;
+    end;
 {$endif tools}
   end
 
@@ -11053,6 +12698,222 @@ begin
     tcp.SendStr( 'getformation' + EndofLine);
   end;
 end;
+procedure TForm1.ScreenAll_SE_YesNo ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
+var
+  MyFile : File of word;
+  ts2,aTsTeam : TStringList;
+  ini : TIniFile;
+  aSpriteInfo, aSprite : SE_Sprite;
+  Engine :SE_Engine;
+  i,im,G: integer;
+  const GenderS = 'fm';
+  const Pix : array[1..5] of Integer =  ( (-40*2), -40 ,0 , +40, (+40*2) );
+begin
+  if aSpriteClicked.Guid = 'yes' then begin
+    if aSpriteClicked.sTag = 'restartgame' then begin
+      MyGuidTeam := 0;
+      SE_yesNo.RemoveAllSprites;
+      ShowLoading;
+      DeleteSaves;
+      btnContinueClick (btnContinue);
+      Exit;
+    end
+    else if aSpriteClicked.sTag = 'liveback' then begin
+      WaitForSingleObject ( MutexAnimation, INFINITE );
+      ShowLoading;
+      while (se_ball.IsAnySpriteMoving ) or (se_players.IsAnySpriteMoving )  do begin
+        se_Theater1.thrdAnimate.OnTimer (se_Theater1.thrdAnimate);
+        application.ProcessMessages ;
+      end;
+      SE_players.RemoveAllSprites;
+      aSprite := SE_ball.FindSprite('ball');
+      SE_ball.RemoveSprite(aSprite);
+      SE_interface.RemoveAllSprites;
+      SE_Numbers.RemoveAllSprites;
+
+      MyBrain := oldbrain;
+      GameScreen := ScreenFormation;
+      ClientLoadFormation;
+
+      for I := lstbrain.Count -1 downto 0 do begin
+        lstbrain.Delete(i);
+      end;
+
+      ReleaseMutex( MutexAnimation );
+    end
+    else if GameScreen = ScreenSelectTeam then begin
+      if Gamemode = pvp  then begin
+        SE_YesNo.RemoveAllSprites;
+        tcp.SendStr(  'selectedteam,' + aSpriteClicked.sTag + EndofLine);
+      end
+      else if Gamemode = pve then begin
+        SE_YesNo.RemoveAllSprites;
+    //    pveInitializeGame;
+        // trovo il mio guid
+        ts2 := TStringList.Create ;
+        ts2.StrictDelimiter := True;
+        for I := TsNationTeams.Count -1 downto 0 do begin
+          ts2.CommaText := TsNationTeams[i];
+          if ts2[0] = aSpriteClicked.sTag then begin // guid,name,country,avgrank,uniformh,uniforma
+            MyGuidTeam :=  StrToInt(aSpriteClicked.sTag);
+            MyTeamName := ts2[1];
+
+            break;
+          end;
+        end;
+        ts2.Free;
+
+        DeleteSaves;
+
+        ActiveSeason := 1;
+        MyDivision := 5;
+        ActiveRound := 1;
+        NextMF := 'm';
+        MyActiveGender := 'm';
+        ini := TIniFile.Create( dir_saves + 'index.ini' );
+        ini.WriteInteger ('setup','guidteam',MyGuidTeam);
+        ini.WriteString ('setup','teamname',MyTeamName);
+        ini.WriteInteger ('setup','country',MyGuidCountry);
+        ini.WriteString('setup','countryname',MyCountryName);
+        ini.WriteInteger('setup','season',ActiveSeason);
+        ini.WriteInteger('setup','round',ActiveRound);
+        ini.WriteInteger('setup','division',MyDivision);
+        ini.WriteString('setup','gender',MyActiveGender);
+        ini.WriteString('setup','nextmf',NextMF);
+        ini.Free;
+
+
+        //goto loadateam;
+        GameScreen := ScreenWaitingCreationSeason;//-->   ShowLoading
+        Engine := SE_Loading;
+        SE_Loading.CreateSprite( dir_interface + 'circleoff.bmp','circleoff1',1,1,1000,(1440 div 2)-(40*2)  , 720 div 2, true ,1999  );
+        SE_Loading.CreateSprite( dir_interface + 'circleoff.bmp','circleoff2',1,1,1000,(1440 div 2)-(40) , 720 div 2, true  ,1999 );
+        SE_Loading.CreateSprite( dir_interface + 'circleoff.bmp','circleoff3',1,1,1000,1440 div 2 , 720 div 2, true  ,1999 );
+        SE_Loading.CreateSprite( dir_interface + 'circleoff.bmp','circleoff4',1,1,1000,(1440 div 2)+(40) , 720 div 2, true  ,1999 );
+        SE_Loading.CreateSprite( dir_interface + 'circleoff.bmp','circleoff5',1,1,1000,(1440 div 2)+(40*2) , 720 div 2, true ,1999  );
+
+        SE_Theater1.thrdAnimate.OnTimer (SE_Theater1.thrdAnimate);
+
+            if FileExists( dir_Saves + 'mteams.120') then // importante o si sommano  ( SOLO ALL'AVVIO QUI
+              DeleteFile (dir_Saves + 'mteams.120');
+            if FileExists( dir_Saves + 'fteams.120') then // importante
+              DeleteFile (dir_Saves + 'fteams.120');
+
+
+
+        aSpriteInfo := SE_Loading.FindSprite('loading');
+        aTsTeam := TStringList.Create;
+        for i:= 1 to TsWorldCountries.Count do begin // 6 countries
+          ts2 := TStringList.Create ;
+          ts2.StrictDelimiter := True;
+          ts2.CommaText := TsWorldCountries[i-1];
+
+          aSpriteInfo.Labels[0].lText := Capitalize(Translate('lbl_creatingteams')) +  ' ' + ts2[1] + ': ' + IntToStr(  (100 * i) div TsWorldCountries.Count ) + '%';
+          aTsTeam.commaText := CreateCalendars ( i, 1, MyGuidTeam , MyGuidCountry, MyTeamName, ts2[1], dir_Data, dir_saves, dir_interface, Engine ); // 1 è la season di partenza
+          if atsTeam.CommaText <> '' then begin
+            TSUniforms[0].CommaText :=aTsTeam[4];
+            TSUniforms[1].CommaText :=aTsTeam[5];
+            ini := TIniFile.Create( dir_saves + 'index.ini' );
+            ini.WriteString ('setup','uniformh',TSUniforms[0].CommaText );
+            ini.WriteString ('setup','uniforma',TSUniforms[1].CommaText);
+            ini.Free;
+          end;
+
+//            SE_Loading.RemoveAllSprites ('circleon'); // i circleon sono creati dentro createcalendars
+//            SE_Theater1.thrdAnimate.OnTimer (SE_Theater1.thrdAnimate);
+            CreateTeams ( i, 1, mfaces[i],ffaces[i], dir_Data, dir_saves); // crea salva in binario come savedata i players.
+
+
+            SE_Loading.RemoveAllSprites ('circleon'); // i circleon sono creati dentro createcalendars
+            SE_Theater1.thrdAnimate.OnTimer (SE_Theater1.thrdAnimate);
+          ts2.Free;
+
+
+        end;
+        aTsTeam.free;
+//        Uniformh=3,9,0,2
+//Uniforma=0,3,9,1
+        // Subito il mercato
+        i:=0;
+        AssignFile(myFile, dir_saves + 'fmarket.120');
+        ReWrite(MyFile);
+        Write(myFile, i );
+        CloseFile(myFile);
+        AssignFile(myFile, dir_saves + 'mmarket.120');
+        ReWrite(MyFile);
+        Write(myFile, i );
+        CloseFile(myFile);
+
+        {$ifdef tools}
+        AssignFile(myFile, dir_saves +  'fLogMarket.txt');
+        ReWrite(MyFile);
+        Write(myFile, i );
+        CloseFile(myFile);
+        AssignFile(myFile, dir_saves +  'mLogMarket.txt');
+        ReWrite(MyFile);
+        Write(myFile, i );
+        CloseFile(myFile);
+        {$endif tools}
+
+        pveSetTeamMoney('f',MyGuidTeam,120,dir_saves);
+        pveSetTeamMoney('m',MyGuidTeam,450,dir_saves);
+
+
+        for g := 1 to 2 do begin
+          SE_Loading.RemoveAllSprites ('circleon'); // i circleon sono creati dentro AllOtherTeamsThinkMarket
+          for im := 1 to 5 do begin  // 5 giri di mercato iniziale per renderlo vivo, che fa il paio con i 5 pallini verdi
+            aSpriteInfo.Labels[0].lText := Capitalize(Translate('lbl_computemarket')) + ' (' +  Capitalize(Translate('lbl_' + uppercase(GenderS[G]) )) +') ' + ': ' + IntToStr(  (100 * im) div 5 ) + '%';
+            aSprite := Engine.CreateSprite( dir_interface + 'circleon.bmp' , 'circleon' + inttostr(pix[im]),1,1,1000,(1440 div 2)+ Pix[im], 720 div 2,true,2000 );
+            SE_Theater1.thrdAnimate.OnTimer (SE_Theater1.thrdAnimate);
+            AllOtherTeamsThinkMarket ( GenderS[g] , 20 );
+          end;
+        end;
+
+        SE_Loading.RemoveAllSprites ('circleon'); // i circleon sono creati dentro AllOtherTeamsThinkMarket
+        SE_Theater1.thrdAnimate.OnTimer (SE_Theater1.thrdAnimate);
+        // rimuovo tutti gli sprite da se_loading
+        SE_Loading.RemoveAllSprites ('circleoff');
+        SE_Theater1.thrdAnimate.OnTimer (SE_Theater1.thrdAnimate);
+        aSpriteInfo.Labels[0].lText := Capitalize(Translate( 'lbl_loading')); // rimetto a posto la stringa originale per il pvp
+
+        ClientLoadFormation;
+
+      end;
+    end;
+  end
+  else if aSpriteClicked.Guid = 'no' then begin
+    if GameScreen = ScreenSelectTeam then begin
+      GameScreen :=  ScreenSelectCountry
+    end
+    else if GameScreen = ScreenMain then begin
+      // è per forza restart
+      PanelSinglePlayer.Visible := true;
+      PanelSinglePlayer.BringToFront;
+    end
+    else if aSpriteClicked.sTag = 'liveback' then begin
+      GameScreen :=  ScreenLive;
+      SE_YesNo.RemoveAllSprites;
+    end;
+
+    SE_YesNo.RemoveAllSprites;
+
+  end;
+
+end;
+procedure TForm1.ScreenAll_SE_InfoError ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
+begin
+  if aSpriteClicked.Guid = 'close' then begin
+    if aSpriteClicked.sTag = 'screenplayerdetails' then begin
+      GameScreen := ScreenPlayerDetails;
+    end
+    else if aSpriteClicked.sTag = 'screenmarket' then begin
+      GameScreen := ScreenMarket;
+      SE_Market.ShowAllSprites;
+      SE_Market.Visible := True;
+    end;
+    SE_InfoError.Visible := False;
+  end
+end;
 procedure TForm1.ScreenLive_SE_Skills ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
 var
   aDoor: TPoint;
@@ -11096,28 +12957,33 @@ LstSkill[7]:= 'Protection';
 LstSkill[8]:= 'Tackle';
 LstSkill[9]:= 'Pressing';
 LstSkill[10]:= 'Corner.Kick'; }
-  SE_Skills.Visible := False;
 
-  SelectedPlayer.se_sprite.DeleteSubSprite('mainskill' );
-  SelectedPlayer.se_sprite.AddSubSprite( dir_skill + aSpriteClicked.Guid+'.bmp'  ,'mainskill',
-    (SelectedPlayer.se_sprite.BmpCurrentFrame.Width div 2) - 16 , (SelectedPlayer.se_sprite.BmpCurrentFrame.Height div 2), true ) ;
-  SE_Skills.ProcessSprites(2000);
+ // SE_Skills.Visible := False;
 
-  if aSpriteClicked.Guid = 'Move' then begin
+  HH_Skill( aSpriteClicked.Guid ); // passo wheelskill o wheelskillname
+  LockSkill  := True;
+
+  //SelectedPlayer.se_sprite.DeleteSubSprite('mainskill' );
+
+ // SelectedPlayer.se_sprite.AddSubSprite( dir_skill + aSpriteClicked.sTag+'.bmp'  ,'mainskill', // stag , usavo guid nella vecchia versione
+ //   (SelectedPlayer.se_sprite.BmpCurrentFrame.Width div 2) , (SelectedPlayer.se_sprite.BmpCurrentFrame.Height div 2), true ) ;
+ // SE_Skills.ProcessSprites(2000);
+
+  if aSpriteClicked.sTag = 'Move' then begin
     MouseWaitFor  :=  WaitForXY_Move;
   end
-  else if aSpriteClicked.Guid = 'Short.Passing' then begin
+  else if aSpriteClicked.sTag = 'Short.Passing' then begin
     MouseWaitFor  :=  WaitForXY_ShortPass;
   end
-  else if  aSpriteClicked.Guid = 'setplayer' then begin
+  else if  aSpriteClicked.sTag = 'setplayer' then begin
     MouseWaitFor  :=  WaitForXY_SetPlayer;
     SE_FieldPoints.ShowAllSprites;
 
   end
-  else if aSpriteClicked.Guid = 'Lofted.Pass' then begin
+  else if aSpriteClicked.sTag = 'Lofted.Pass' then begin
     MouseWaitFor  :=  WaitForXY_LoftedPass;
   end
-  else if aSpriteClicked.Guid = 'Crossing' then begin
+  else if aSpriteClicked.sTag = 'Crossing' then begin
   if GCD <= 0 then begin
     MouseWaitFor  :=  WaitForXY_Crossing;
 
@@ -11129,7 +12995,7 @@ LstSkill[10]:= 'Corner.Kick'; }
     GCD := GCD_DEFAULT;
   end;
   end
-  else if aSpriteClicked.Guid = 'Precision.Shot' then begin
+  else if aSpriteClicked.sTag = 'Precision.Shot' then begin
     if GCD <= 0 then begin
       aDoor:= MyBrain.GetOpponentDoor (SelectedPlayer );
       if (Mybrain.Score.TeamGuid  [ Mybrain.TeamTurn ] = MyGuidTeam) then begin
@@ -11139,7 +13005,7 @@ LstSkill[10]:= 'Corner.Kick'; }
       end;
     end;
   end
-  else if aSpriteClicked.Guid = 'Power.Shot' then begin
+  else if aSpriteClicked.sTag = 'Power.Shot' then begin
     if GCD <= 0 then begin
       aDoor:= MyBrain.GetOpponentDoor (SelectedPlayer );
       if (Mybrain.Score.TeamGuid  [ Mybrain.TeamTurn ] = MyGuidTeam) then begin
@@ -11149,10 +13015,10 @@ LstSkill[10]:= 'Corner.Kick'; }
       end;
     end;
   end
-  else if aSpriteClicked.Guid = 'Dribbling' then begin
+  else if aSpriteClicked.sTag = 'Dribbling' then begin
     MouseWaitFor := WaitForXY_Dribbling;
   end
-  else if aSpriteClicked.Guid = 'Protection' then begin
+  else if aSpriteClicked.sTag = 'Protection' then begin
     if GCD <= 0 then begin
       if Mybrain.Score.TeamGuid  [ Mybrain.TeamTurn ] = MyGuidTeam then begin
         hidechances;
@@ -11161,7 +13027,7 @@ LstSkill[10]:= 'Corner.Kick'; }
       end;
     end;
   end
-  else if  aSpriteClicked.Guid = 'Tackle' then begin
+  else if  aSpriteClicked.sTag = 'Tackle' then begin
     if GCD <= 0 then begin
       MouseWaitFor := WaitForNone;
       if Mybrain.Ball.Player <> nil then begin
@@ -11176,7 +13042,7 @@ LstSkill[10]:= 'Corner.Kick'; }
       end;
     end;
   end
-  else if  aSpriteClicked.Guid = 'Pressing' then begin
+  else if  aSpriteClicked.sTag = 'Pressing' then begin
     if GCD <= 0 then begin
       if Mybrain.Ball.Player <> nil then begin
         if  AbsDistance (Mybrain.Ball.Player.CellX ,Mybrain.Ball.Player.CellY, SelectedPlayer.CellX, SelectedPlayer.CellY ) = 1 then begin
@@ -11189,7 +13055,7 @@ LstSkill[10]:= 'Corner.Kick'; }
       end;
     end;
   end
-  else if  aSpriteClicked.Guid = 'Corner.Kick' then begin
+  else if  aSpriteClicked.sTag = 'Corner.Kick' then begin
          // non più usata
     if GCD <= 0 then begin
       MouseWaitFor := WaitForNone;
@@ -11199,7 +13065,7 @@ LstSkill[10]:= 'Corner.Kick'; }
       hidechances  ;
     end;
   end
-  else if  aSpriteClicked.Guid = 'Stay' then begin
+  else if  aSpriteClicked.sTag = 'Stay' then begin
     if GCD <= 0 then begin
       if (MyBrain.Score.TeamGuid  [ MyBrain.TeamTurn ] = MyGuidTeam) and  ( not SelectedPlayer.stay) then begin
         hidechances;
@@ -11208,7 +13074,7 @@ LstSkill[10]:= 'Corner.Kick'; }
       end;
     end;
   end
-  else if  aSpriteClicked.Guid = 'Free' then begin
+  else if  aSpriteClicked.sTag = 'Free' then begin
     if GCD <= 0 then begin
       if (MyBrain.Score.TeamGuid  [ MyBrain.TeamTurn ] = MyGuidTeam) and  ( SelectedPlayer.stay) then begin
         hidechances;
@@ -11217,7 +13083,7 @@ LstSkill[10]:= 'Corner.Kick'; }
       end;
     end;
   end
-  else if  aSpriteClicked.Guid = 'BuffD' then begin
+  else if  aSpriteClicked.sTag = 'BuffD' then begin
     if GCD <= 0 then begin
       if (MyBrain.Score.TeamGuid  [ MyBrain.TeamTurn ] = MyGuidTeam) then begin
         hidechances;
@@ -11226,7 +13092,7 @@ LstSkill[10]:= 'Corner.Kick'; }
       end;
     end;
   end
-  else if  aSpriteClicked.Guid = 'BuffM' then begin
+  else if  aSpriteClicked.sTag = 'BuffM' then begin
     if GCD <= 0 then begin
       if (MyBrain.Score.TeamGuid  [ MyBrain.TeamTurn ] = MyGuidTeam) then begin
         hidechances;
@@ -11235,7 +13101,7 @@ LstSkill[10]:= 'Corner.Kick'; }
       end;
     end;
   end
-  else if  aSpriteClicked.Guid = 'BuffF' then begin
+  else if  aSpriteClicked.sTag = 'BuffF' then begin
     if GCD <= 0 then begin
       if (MyBrain.Score.TeamGuid  [ MyBrain.TeamTurn ] = MyGuidTeam) then begin
         hidechances;
@@ -11331,6 +13197,10 @@ begin
     aSprite.Visible := True;
     aSprite:=SE_LIVE.FindSprite('btnmenu_skillpass' );
     aSprite.Visible := True;
+    if GameMode = pve then  begin
+      aSprite:=SE_LIVE.FindSprite('btnmenu_exit' );
+      aSprite.Visible := True;
+    end;
     Hide120;
 
 
@@ -11357,6 +13227,7 @@ procedure TForm1.ScreenLive_SE_LIVE ( aSpriteClicked: SE_Sprite; Button: TMouseB
 var
   i:Integer;
   aSprite: SE_Sprite;
+  aSubSprite: SE_SubSprite;
 begin
   case MouseWaitFor of
 
@@ -11383,25 +13254,90 @@ begin
     WaitForXY_PrecisionShot: ; }
   end;
 
-  if aSpriteClicked.Guid = 'btnmenu_overridecolor' then begin
-    overridecolor := true;
-    for i := 0 to MyBrain.lstSoccerPlayer.Count -1  do begin
-      if MyBrain.lstSoccerPlayer[i].Team = 1 then begin
-        MyBrain.lstSoccerPlayer[i].SE_Sprite.BlendMode := SE_BlendAverage;
+  if aSpriteClicked.Guid = 'btnmenu_back' then begin
+    if GameMode = pve then begin
+      { fine partita, ricominicia }
+      if not MyBrain.Finished then
+        CreateYesNo ( Translate('warning_nomatchsaved'),'', 'liveback')
+      else begin
+        GameScreen := ScreenFormation;
+        ClientLoadFormation;
       end;
+
     end;
+
   end
-  else if aSpriteClicked.Guid = 'btnmenu_overridecolornormal' then begin
-    overridecolor := false;
-    for i := 0 to MyBrain.lstSoccerPlayer.Count -1  do begin
-      if MyBrain.lstSoccerPlayer[i].Team = 1 then begin
-        MyBrain.lstSoccerPlayer[i].SE_Sprite.BlendMode := SE_BlendNormal;
+  else if aSpriteClicked.Guid = 'btnmenu_overridecolor' then begin
+    overridecolor := not overridecolor;
+    if overridecolor = True then begin
+      aSpriteClicked.BlendMode := SE_BlendAverage;
+      for i := 0 to MyBrain.lstSoccerPlayer.Count -1  do begin
+        if MyBrain.lstSoccerPlayer[i].Team = 1 then begin
+          MyBrain.lstSoccerPlayer[i].SE_Sprite.BlendMode := SE_BlendAverage;
+        end;
       end;
+      aSubSprite := aSpriteClicked.FindSubSprite('overridecolor');
+      ASubSprite.lBmp.LoadFromFileBMP( dir_tmp + 'color1.bmp' );
+    end
+    else begin
+      aSpriteClicked.BlendMode := SE_BlendNormal;
+      for i := 0 to MyBrain.lstSoccerPlayer.Count -1  do begin
+        if MyBrain.lstSoccerPlayer[i].Team = 1 then begin
+          MyBrain.lstSoccerPlayer[i].SE_Sprite.BlendMode := SE_BlendNormal;
+        end;
+      end;
+      aSubSprite := aSpriteClicked.FindSubSprite('overridecolor');
+      ASubSprite.lBmp.LoadFromFileBMP( dir_tmp + 'color1.bmp' );
     end;
+
   end
   else if aSpriteClicked.Guid = 'btnmenu_skillpass' then begin
-    if MyBrain.Minute < 120 then
-      tcp.SendStr(  'PASS' + EndOfline );
+    if MyBrain.Minute < 120 then begin // non si può passare dopo il 120
+      if GameMode = pvp then
+        tcp.SendStr(  'PASS' + EndOfline )
+        else MyBrain.BrainInput( IntToStr(MyGuidTeam)+ ',PASS' );
+    end;
+
+  end
+  else if aSpriteClicked.Guid = 'btnmenu_auto' then begin
+    if GameMode = pvp then begin
+        tcp.SendStr(  'AUTO' + EndOfline );
+    end;
+   // else if GameMode = pve then begin
+      if (MyBrain.Score.TeamGuid[0]= MyGuidTeam) then begin
+        MyBrain.Score.AI [0] := not MyBrain.Score.AI [0];
+
+        if MyBrain.Score.AI [0] = True then begin
+          aSubSprite := aSpriteClicked.FindSubSprite('autooff');
+          aSubSprite.lVisible := False;
+          aSubSprite := aSpriteClicked.FindSubSprite('autoon');
+          aSubSprite.lVisible := true;
+        end
+        else begin
+          aSubSprite := aSpriteClicked.FindSubSprite('autooff');
+          aSubSprite.lVisible := true;
+          aSubSprite := aSpriteClicked.FindSubSprite('autoon');
+          aSubSprite.lVisible := false;
+        end;
+
+      end
+      else if (MyBrain.Score.TeamGuid[1]= MyGuidTeam) then begin
+        MyBrain.Score.AI [1] := not MyBrain.Score.AI [1];
+        if MyBrain.Score.AI [1] = True then begin
+          aSubSprite := aSpriteClicked.FindSubSprite('autooff');
+          aSubSprite.lVisible := False;
+          aSubSprite := aSpriteClicked.FindSubSprite('autoon');
+          aSubSprite.lVisible := true;
+        end
+        else begin
+          aSubSprite := aSpriteClicked.FindSubSprite('autooff');
+          aSubSprite.lVisible := true;
+          aSubSprite := aSpriteClicked.FindSubSprite('autoon');
+          aSubSprite.lVisible := false;
+        end;
+      end;
+
+    //end;
   end
   else if aSpriteClicked.Guid = 'btnmenu_tactics' then begin
 
@@ -11414,6 +13350,11 @@ begin
     aSprite.Visible := False;
     aSprite:=SE_LIVE.FindSprite('btnmenu_skillpass' );
     aSprite.Visible := false;
+
+    if GameMode = pve then begin
+      aSprite:=SE_LIVE.FindSprite('btnmenu_exit' );
+      aSprite.Visible := false;
+    end;
 
     MyBrain.Ball.SE_Sprite.Visible := False;
     SE_Skills.Visible := False;
@@ -11432,6 +13373,11 @@ begin
     aSprite:=SE_LIVE.FindSprite('btnmenu_skillpass' );
     aSprite.Visible := false;
 
+    if GameMode = pve then begin
+      aSprite:=SE_LIVE.FindSprite('btnmenu_exit' );
+      aSprite.Visible := false;
+    end;
+
     MyBrain.Ball.SE_Sprite.Visible := False;
     SE_Skills.Visible := False;
     MouseWaitFor := WaitForNone;
@@ -11440,19 +13386,65 @@ begin
   end
 
 end;
+procedure TForm1.SE_Theater1AfterVisibleRender(Sender: TObject; VirtualBitmap, VisibleBitmap: SE_Bitmap);
+var
+  R :TRect;
+begin
+  R.Left :=10;
+  R.Right := SE_Theater1.Width;
+  R.Top :=SE_Theater1.Height-20 ;
+  R.Height := SE_Theater1.Height;
+  SetBkMode(VisibleBitmap.Canvas.Handle,TRANSPARENT);
+  DrawText(VisibleBitmap.Canvas.handle, PChar(BuildString), length(BuildString), R, dt_wordbreak or dt_left );
+
+end;
+
 procedure TForm1.SE_Theater1MouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
 
   if (GameScreen = ScreenLive ) and ( Button = MbRight) then begin
-    if SelectedPlayer <> nil then
-      SelectedPlayer.se_sprite.DeleteSubSprite('mainskill' );
+    SE_Skills.Visible := False;
+    SE_Skills.RemoveAllSprites;
+    LockSkill := False;
+    DontDoPlayers:= False;
+
+    //if SelectedPlayer <> nil then
+    //  SelectedPlayer.se_sprite.DeleteSubSprite('mainskill' );
   end;
+end;
+procedure TForm1.SE_Theater1MouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
+begin
+
+  Handled := True;
+  if LockSkill then exit;
+
+  if SE_Skills.visible  then begin
+//    Handled := True;
+
+    if WheelDelta < 0 then begin
+      inc(Index_WheelSkill);
+    end
+    else if WheelDelta > 0 then begin
+      dec(Index_WheelSkill);
+    end;
+
+    if Index_WheelSkill > SelectedPlayer.ActiveSkills.Count -1 then
+      Index_WheelSkill :=0
+    else if Index_WheelSkill < 0 then
+     Index_WheelSkill := SelectedPlayer.ActiveSkills.Count -1;
+
+    ShowSingleSkill;
+
+  end;
+
+
 end;
 
 procedure TForm1.SE_Theater1SpriteMouseDown(Sender: TObject; lstSprite: TObjectList<DSE_theater.SE_Sprite>; Button: TMouseButton;
   Shift: TShiftState);
 var
   i: integer;
+  ts2: TStringlist;
 begin
 
   if not se_Theater1.Active  then Exit;
@@ -11466,17 +13458,46 @@ begin
     MouseWaitFor := WaitForNone;
     hidechances ;
     SE_Green.Visible := false;
-    SE_Skills.Visible := False;
+    SE_Skills.Visible := false;
+    SE_Skills.RemoveAllSprites;
+    LockSkill := false;
 
-    if SelectedPlayer <> nil then
-      SelectedPlayer.se_sprite.DeleteSubSprite('mainskill' );
+  //  if SelectedPlayer <> nil then
+  //    SelectedPlayer.se_sprite.DeleteSubSprite('mainskill' );
 
     Exit;
   end;
 
+
   for I := 0 to lstSprite.Count -1 do begin
 
-    if GameScreen = ScreenFormation then begin
+    if lstSprite[i].Engine = SE_YesNo then begin     // YesNo gestiti a parte
+      ScreenAll_SE_yesNo ( lstSprite[i], Button );
+      exit;
+    end
+
+    else if lstSprite[i].Engine = SE_InfoError then begin     // InfoError gestiti a parte
+      ScreenAll_SE_InfoError ( lstSprite[i], Button );
+      exit;
+    end
+
+    else if lstSprite[i].Guid = 'btnmenu_closehelp' then begin          // Help gestito a parte
+      SE_Help.Visible := False;
+      GameScreen := GameScreenBeforehelp;
+      exit;
+    end
+    else if Pos ('help',lstSprite[i].Guid,1 ) > 0 then begin   // se c'è HELP nella guid
+      ts2 := TStringList.Create ;
+      ts2.StrictDelimiter := True;
+      ts2.Delimiter := '_';
+      ts2.DelimitedText := lstSprite[i].Guid ;
+      ClientLoadHelp ( ts2[1] );
+      ts2.free;
+      exit;
+    end
+
+
+    else if GameScreen = ScreenFormation then begin
       if lstSprite[i].Engine = se_Players then begin   // sposto solo players , non altri sprites
         ScreenFormation_SE_Players ( lstSprite[i], Button );
         Exit;
@@ -11484,12 +13505,17 @@ begin
       else if  lstSprite[i].Engine = se_MainInterface then begin
         ScreenFormation_SE_MainInterface ( lstSprite[i], Button );
         Exit;
-
       end
       else if  lstSprite[i].Engine = se_Uniform then begin
         ScreenFormation_SE_Uniform ( lstSprite[i], Button );
        // c'è frameback, nessun exit
+      end;
 
+    end
+    else if GameScreen = ScreenPreMatch then begin
+      if  lstSprite[i].Engine = se_preMatch then begin
+        ScreenPreMatch_SE_PreMatch ( lstSprite[i], Button );
+        Exit;
       end
     end
     else if GameScreen  = ScreenPlayerDetails then begin
@@ -11502,6 +13528,10 @@ begin
     end
     else if GameScreen  = ScreenMarket then begin
       ScreenMarket_SE_Market ( lstSprite[i], Button );
+      //Exit;
+    end
+    else if GameScreen  = ScreenStandings then begin
+      ScreenStandings_SE_Standings ( lstSprite[i], Button );
       //Exit;
     end
     else if (GameScreen  = ScreenSelectCountry) or (GameScreen  = ScreenSelectTeam) then begin
@@ -11638,12 +13668,16 @@ var
   aSprite: SE_Sprite;
   aSpriteLabel: SE_SpriteLabel;
   ts : TStringList;
-  BtnMenu,BtnLevelUp,Player,BtnTv,SkillMouseMove,UniformMouseMove: string;
+  BtnMenu,BtnLevelUp,Player,BtnTv,SkillMouseMove,UniformMouseMove,MatchInfo: string;
   ScoreMouseMove,ScoreNick,UniformMouseMoveTF: boolean;
 begin
   // una volta processati gli sprite settare  Handled:= TRUE o la SE:Theater non manderà più la lista degli sprite.
 
-  if (not Se_Theater1.Active) then Exit;
+
+  if (not Se_Theater1.Active) or (GameMode = pvnull) then begin
+    Handled := True;
+    Exit;
+  end;
   if SE_DragGuid <> nil then begin
     Handled := True;
     Exit;
@@ -11657,10 +13691,24 @@ begin
   UniformMouseMove := '';
   UniformMouseMoveTF := False;
   TalentId := 0;
+  MatchInfo := '';
+
   for I := lstSprite.Count -1 downto 0 do begin   // lstSprite è protetta fino a quando handled è false
 
       // non usare EXIt ma continue
-    if lstSprite[i].Engine = SE_Score  then begin
+    if lstSprite[i].Engine = SE_YesNo  then begin
+      if (lstSprite[i].Guid = 'yes') or (lstSprite[i].Guid = 'no')then begin
+        ScoreMouseMove := true; // tanto per
+      end;
+
+    end
+    else if lstSprite[i].Engine = SE_InfoError  then begin
+      if (lstSprite[i].Guid = 'close') then begin
+        ScoreMouseMove := true; // tanto per
+      end;
+
+    end
+    else if lstSprite[i].Engine = SE_Score  then begin
       if lstSprite[i].Guid = 'scorescore' then begin
           ScoreMouseMove := True;
           ClientLoadMatchInfo;
@@ -11668,12 +13716,10 @@ begin
       else if lstSprite[i].Guid = 'scorenick0' then begin
          ScoreNick := True;
          lstSprite[i].Labels[0].lText := MyBrain.Score.UserName[0];
-         lstSprite[i].Labels[0].lX := GetXLabel (lstSprite[i].BMP.Bitmap,lstSprite[i].Labels[0].lText , lstSprite[i].BMP.Width, TStringCenter);
       end
       else if lstSprite[i].Guid = 'scorenick1' then begin
          ScoreNick := True;
          lstSprite[i].Labels[0].lText := MyBrain.Score.UserName[1];
-         lstSprite[i].Labels[0].lX := GetXLabel (lstSprite[i].BMP.Bitmap,lstSprite[i].Labels[0].lText , lstSprite[i].BMP.Width, TStringCenter);
       end;
     end
 
@@ -11839,16 +13885,18 @@ begin
         // talenttooltip
         aSprite:=SE_PlayerDetails.FindSprite('playerdetailstooltip' );
         aSprite.Labels.Clear;
-        ts:= TStringlist.Create; ts.Delimiter := '|'; ts.StrictDelimiter := True;
+//        ts:= TStringlist.Create; ts.Delimiter := '|'; ts.StrictDelimiter := True;
 
-        GetTooltipStrings ( lstSprite[i].BMP.Bitmap, Translate('descr_talent_' + StringTalents[TalentId]), ts );
-        aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clYellow,clBlack,16,Capitalize(Translate( 'talent_' + StringTalents[TalentId]))+':',True  );
+//        GetTooltipStrings ( lstSprite[i].BMP.Bitmap, Translate('descr_talent_' + StringTalents[TalentId]), ts );
+        aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clYellow,clBlack,16,Capitalize(Translate( 'talent_' + StringTalents[TalentId]))+':',True ,1, dt_left );
         aSprite.Labels.Add(aSpriteLabel);
-        for st := 0 to ts.Count -1 do begin
-          aSpriteLabel := SE_SpriteLabel.create( 0, (st+1)*18, 'Calibri',clWhite,clBlack,14,ts[st],True  );
-          aSprite.Labels.Add(aSpriteLabel);
-        end;
-        ts.free;
+        aSpriteLabel := SE_SpriteLabel.create( 0,20,'Calibri',clWhite,clBlack,16,Capitalize(Translate( 'descr_talent_' + StringTalents[TalentId])),True ,1, dt_left );
+        aSprite.Labels.Add(aSpriteLabel);
+//        for st := 0 to ts.Count -1 do begin
+//          aSpriteLabel := SE_SpriteLabel.create( 0, (st+1)*18, 'Calibri',clWhite,clBlack,14,ts[st],True ,1, dt_left );
+//          aSprite.Labels.Add(aSpriteLabel);
+//        end;
+//        ts.free;
         aSprite.Visible := True;
       end
       else if (LeftStr(lstSprite[i].Guid,8) = 'btnmenu_') then
@@ -11856,16 +13904,22 @@ begin
       else if (LeftStr(lstSprite[i].Guid,7) = 'levelup') then
         BtnLevelUp := lstSprite[i].Guid
       else if (LeftStr(lstSprite[i].Guid,8) = 'talentup') then
-        BtnLevelUp := lstSprite[i].Guid;
+        BtnLevelUp := lstSprite[i].Guid
+      else if (LeftStr(lstSprite[i].Guid,8) = 'btnhelp_') then
+        BtnMenu := lstSprite[i].Guid;
 
 
     end
     else if (lstSprite[i].Engine = SE_Maininterface)  then begin
-      if (LeftStr(lstSprite[i].Guid,8) = 'btnmenu_') then
+      if (LeftStr(lstSprite[i].Guid,8) = 'btnmenu_') or (LeftStr(lstSprite[i].Guid,8) = 'btnhelp_') then
         BtnMenu := lstSprite[i].Guid;
       //  lstSprite[i].useBmpDimension := True;
       //  lstSprite[i].Scale := 120;
        // lstSprite[i].BlendMode := SE_BlendReflect;
+    end
+    else if (lstSprite[i].Engine = SE_PreMatch)  then begin
+      if (LeftStr(lstSprite[i].Guid,8) = 'btnmenu_') then
+        BtnMenu := lstSprite[i].Guid;
     end
     else if (lstSprite[i].Engine = SE_AML)  then begin
       if (LeftStr(lstSprite[i].Guid,2) = 'tv') then begin
@@ -11886,11 +13940,22 @@ begin
         BtnMenu := lstSprite[i].Guid;
       end;
     end
+    else if (lstSprite[i].Engine = SE_Standings)  then begin
+
+      if (LeftStr(lstSprite[i].Guid,8) = 'btnmenu_') then begin
+        BtnMenu := lstSprite[i].Guid;
+        MatchInfo := '';
+      end
+      else if lstSprite[i].stag <> '' then begin
+        MatchInfo := lstSprite[i].stag;
+      end;
+
+    end
     else if (lstSprite[i].Engine = SE_CountryTeam)  then begin
       if (LeftStr(lstSprite[i].Guid,8) = 'btnmenu_') then begin
         BtnMenu := lstSprite[i].Guid;
       end
-      else if (LeftStr(lstSprite[i].Guid,8) = 'ctselect') then begin
+      else if (LeftStr(lstSprite[i].Guid,11) = 'countryteam') then begin
         BtnMenu := lstSprite[i].Guid;
       end;
     end
@@ -11909,8 +13974,13 @@ begin
         BtnMenu := lstSprite[i].Guid;
       end;
     end
+    else if (lstSprite[i].Engine = SE_Help)  then begin
+      if (LeftStr(lstSprite[i].Guid,8) = 'btnmenu_') then begin
+        BtnMenu := lstSprite[i].Guid;
+      end;
+    end
     else if (lstSprite[i].Engine = SE_Skills)  then begin
-      SkillMouseMove := lstSprite[i].Guid;
+      SkillMouseMove := lstSprite[i].sTag;
     end
     else if (lstSprite[i].Engine = SE_Uniform)  then begin
       UniformMouseMove := lstSprite[i].Guid;
@@ -11928,6 +13998,10 @@ begin
   end;
 
   handled := True;
+
+
+
+
   if TalentId = 0 then begin
     aSprite:=SE_PlayerDetails.FindSprite('playerdetailstooltip' );
     aSprite.Visible := false;
@@ -11941,13 +14015,13 @@ begin
   if SkillMouseMove = '' then begin
     SE_interface.removeallSprites; // rimuovo le frecce
     SE_interface.ProcessSprites(2000);
-    HideHH_Skill ;
+  //  HideHH_Skill ;
     SetGlobalCursor (crDefault);
   end
   else begin
     SE_interface.removeallSprites; // rimuovo le frecce
     SE_interface.ProcessSprites(2000);
-    HH_Skill ( SkillMouseMove );
+  //  HH_Skill ( SkillMouseMove );
     SetGlobalCursor (crHandPoint);
     if SkillMouseMove = 'Precision.Shot' then
      PrsMouseEnter
@@ -11970,10 +14044,8 @@ begin
   if not ScoreNick then begin
     aSprite := SE_Score.FindSprite('scorenick0');
     aSprite.Labels[0].lText := UpperCase( MyBrain.Score.Team [0]);
-    aSprite.Labels[0].lX := GetXLabel (aSprite.BMP.Bitmap,aSprite.Labels[0].lText , aSprite.BMP.Width, TStringCenter);
     aSprite := SE_Score.FindSprite('scorenick1');
     aSprite.Labels[0].lText := UpperCase( MyBrain.Score.Team [1]);
-    aSprite.Labels[0].lX := GetXLabel (aSprite.BMP.Bitmap,aSprite.Labels[0].lText , aSprite.BMP.Width, TStringCenter);
   end;
 
 
@@ -11995,31 +14067,48 @@ begin
     Exit;
   end;
 
+  if (matchInfo <> '')  then begin  // può essere solo ScreenSimulate
+    SetGlobalCursor (crHandPoint);
+   // aSprite := SE_Standings.FindSprite('matchinfo');
+    //aSprite.Visible := True;
+  end
+  else begin
+    SetGlobalCursor (crDefault);
+  //  aSprite := SE_Standings.FindSprite('matchinfo');
+  //  aSprite.Visible := False;
+  end;
+
 end;
 procedure TForm1.HideHH_Skill ;
 var
-  i,l: Integer;
+  aSprite : SE_Sprite;
 begin
-  for I := 0 to SE_Skills.SpriteCount -1 do begin
+  aSprite := SE_Skills.FindSprite('wheelskillname');
+  aSprite.Labels[0].lFontColor := clWhite-1;
+{  for I := 0 to SE_Skills.SpriteCount -1 do begin
     for l := 0 to SE_Skills.Sprites[i].Labels.Count -1 do begin
       SE_Skills.Sprites[i].Labels[l].lFontColor := clWhite;
     end;
-  end;
+  end;}
   SE_Skills.ProcessSprites(2000);
 
 end;
 procedure TForm1.HH_Skill ( SkillMouseMove: string );
 var
-  i,l: Integer;
+  aSprite : SE_Sprite;
 begin
-  for I := 0 to SE_Skills.SpriteCount -1 do begin
+  aSprite := SE_Skills.FindSprite('wheelskillname');
+  aSprite.Labels[0].lFontColor := clYellow;
+
+{  for I := 0 to SE_Skills.SpriteCount -1 do begin
     for l := 0 to SE_Skills.Sprites[i].Labels.Count -1 do begin
+
       SE_Skills.Sprites[i].Labels[l].lFontColor := clWhite;
-      if SE_Skills.Sprites[i].Guid = SkillMouseMove then
+      if SE_Skills.Sprites[i].sTag = SkillMouseMove then
         SE_Skills.Sprites[i].Labels[l].lFontColor := clYellow;
     end;
 
-  end;
+  end;    }
   SE_Skills.ProcessSprites(2000);
 end;
 
@@ -12154,41 +14243,64 @@ begin
 end;
 
 procedure TForm1.btnConfirmBuyClick(Sender: TObject);
+var
+  aBasePlayer : TBasePlayer;
 begin
-  if GCD <= 0 then begin
-    if MyBrainFormation.lstSoccerPlayer.Count < 22 then begin
-      SE_Market.Visible := true;
-      WAITING_GETFORMATION:= True;
-      tcp.SendStr( 'buy,'+ IntToStr(PanelBuy.Tag) + EndofLine) // tag contiene 3625
+  if MyBrainFormation.lstSoccerPlayer.Count < 22 then begin
+    SE_Market.Visible := true;
+    if GameMode = pvp then begin
+      if GCD <= 0 then begin
+        tcp.SendStr( 'buy,'+ IntToStr(PanelBuy.Tag) + EndofLine); // tag contiene guid es. 3625
+        GCD := GCD_DEFAULT;
+      end;
     end
+    else if GameMode = pve then begin
+      if not pveGetDBPlayer(  dir_saves + MyActiveGender + IntToStr(MyGuidTeam) + '.120', IntToStr(PanelBuy.Tag),  aBasePlayer ) then begin
+        pveTransferMarket ( MyActiveGender, PanelBuy.Tag, MyGuidTeam, dir_saves {,price} );
+        pveClientLoadMarket; // ricarico il market globale
+        PanelBuy.Visible := false;
+        ClientLoadFormation;
+      end
       else begin
-      ShowError(Translate('warning_max18'));
-      SE_Market.Visible := True;
+        PanelBuy.Visible := false;
+        CreateInfoError ('Attenzione!',Translate ('warning_nobuyown'),'screenmarket');
+
+      end;
     end;
-    GCD := GCD_DEFAULT;
+
+  end
+  else begin
+    PanelBuy.Visible := false;
+    CreateInfoError ('Attenzione!',Translate ('warning_max22'),'screenmarket');
   end;
 
 end;
 
 procedure TForm1.BtnConfirmDismissClick(Sender: TObject);
 begin
-  if GCD <= 0 then begin
-    WAITING_GETFORMATION:= True;
-    PanelDismiss.Visible := false;
-    tcp.SendStr( 'dismiss,'+ IntToStr(SE_BackGround.tag) + EndofLine); // solo a sinistra in formation
-    GCD := GCD_DEFAULT;
+
+  if GameMode = Pvp then begin
+    if GCD <= 0 then begin
+      PanelDismiss.Visible := false;
+      tcp.SendStr( 'dismiss,'+ IntToStr(SE_BackGround.tag) + EndofLine); // solo a sinistra in formation
+      GCD := GCD_DEFAULT;
+    end;
+  end
+  else if GameMode = Pve then begin
+    pveDeleteFromTeam(  MyActiveGender, SE_BackGround.tag,  MyGuidTeam, dir_saves );    // lo elimino dal team
+    pveDeleteFromMarket(  MyActiveGender, IntToStr(SE_BackGround.tag),  dir_Saves );  // lo elimino dal market se presente
+//    HELP_ClientLoadFormation
+    ClientLoadFormation;
   end;
 
 end;
 
-procedure TForm1.ArrowShowLopheading(CellX, CellY : Integer; ToEmptyCell:
-    boolean);
+procedure TForm1.ArrowShowLopheading(CellX, CellY : Integer; ToEmptyCell: boolean);
 var
   y: integer;
   aheading: TSoccerPlayer;
   ToEmptyCellMalus: integer;
   LstMoving: TList<TInteractivePlayer>;
-
 begin
 
   if not ToEmptyCell then begin
@@ -12230,8 +14342,8 @@ end;
 procedure TForm1.ArrowShowCrossingHeading ( CellX, CellY : Integer);
 var
   y,BonusDefenseHeading: integer;
-  aheading: TSoccerPlayer;
-  aInteractivePlayer: TInteractivePlayer;
+//  aheading: TSoccerPlayer;
+//  aInteractivePlayer: TInteractivePlayer;
   ToEmptyCellMalus: integer;
 //  LstMoving: TList<TInteractivePlayer>;
 
@@ -12436,21 +14548,29 @@ var
   TcpForm: TStringList;
   aPlayer: TSoccerPlayer;
 begin
-  if GCD <= 0 then begin
-    TcpForm:= TStringList.Create ;
-    FixDuplicateFormationMemory;
-    for i := 0 to MyBrainFormation.lstSoccerPlayer.Count -1 do begin
-      aPlayer := MyBrainFormation.lstSoccerPlayer[i];
-  // il server valida anche gli Ids, qui il client non può perchè non conosce gli id
-           TcpForm.Add( aPlayer.ids  + '=' +
-           IntToStr(aPlayer.AIFormationCellX ) + ':' +
-           IntToStr(aPlayer.AIFormationCellY ));
-    end;
 
-    WAITING_STOREFORMATION := True;
-    tcp.SendStr(  'setformation,' +  TcpForm.CommaText + endofline);
-    TcpForm.Free;
-    GCD := GCD_DEFAULT;
+  if GameMode = pvp then begin
+    if GCD <= 0 then begin
+      TcpForm:= TStringList.Create ;
+      FixDuplicateFormationMemory;
+      for i := 0 to MyBrainFormation.lstSoccerPlayer.Count -1 do begin
+        aPlayer := MyBrainFormation.lstSoccerPlayer[i];
+    // il server valida anche gli Ids, qui il client non può perchè non conosce gli id
+             TcpForm.Add( aPlayer.ids  + '=' +
+             IntToStr(aPlayer.AIFormationCellX ) + ':' +
+             IntToStr(aPlayer.AIFormationCellY ));
+      end;
+
+      tcp.SendStr(  'setformation,' +  TcpForm.CommaText + endofline);
+      TcpForm.Free;
+      GCD := GCD_DEFAULT;
+    end;
+  end
+  else if GameMode = pve then begin
+    FixDuplicateFormationMemory;
+    RefreshCheckFormationMemory;
+    {  la formazione va scritta direttamente nel file binario }
+    SaveTeamStream( MyActiveGender, IntToStr(MyGuidTeam), MyBrainFormation.lstSoccerPlayerALL, dir_Saves  );
   end;
 end;
 
@@ -12467,6 +14587,7 @@ var
   DeCompressedStream: TZDecompressionStream;
   s1,s2,s3,s4,s5,InBuffer: string;
   MM,MM2 : TMemoryStream;
+  aSprite :SE_Sprite;
   label firstload;
 begin
  //   MMbraindata:= TMemoryStream.Create;
@@ -12508,13 +14629,13 @@ begin
       s4 := ExtractWordL (5, tmpStr, ',');
       s5 := ExtractWordL (6, tmpStr, ',');
       MyGuidTeam :=  StrToInt(s2);
-      MyGuidTeamName :=  s3;
+      MyTeamName :=  s3;
 
 
       TotalString := 4 + 6 + Length (s1) + Length (s2) +Length (s3) +Length (s4)+ Length (s5) ; //4 è la lunghezza di 'GUID' e 6 sono le virgole
       LastTcpIncMove := ord (buf [TotalString + 10 ]); // 10 è lunghezza di BEGINBRAIN. mi posiziono sul primo byte che indica IncMove
       MemoC.Lines.Add('BEGINBRAIN '+  IntToStr(LastTcpIncMove) );
-      MyActiveGender := s1;
+      MyActiveGender := s1[1];
 
       MM2:= TMemoryStream.Create;
       MM2.Write( buf[  TotalString + 11 ] , len - 11 - TotalString ); // elimino s4 e incmove 11 -11. e prima elimino la parte stringa
@@ -12535,6 +14656,8 @@ begin
         GameScreen:= ScreenLive; // initializetheatermAtch
         CurrentIncMove := LastTcpIncMove;
         ClientLoadBrainMM (CurrentIncMove) ;   // (incmove)
+        aSprite := SE_Live.FindSprite('btnmenu_overridecolor');
+        aSprite.SubSprites[0].lBmp.LoadFromFileBMP( dir_tmp + 'color1.bmp');
         FirstLoadOK := True;
 
         if ViewReplay then ToolSpin.Visible := True;
@@ -12554,7 +14677,7 @@ begin
           ClientLoadMatchInfo;
         end
         else
-          ThreadCurMove.Enabled := true; // eventuale splahscreen compare tramite tsscript e obbliga al pulsante exit. 30 seconplay se c'è il suo guidteam
+          ThreadCurrentIncMove.Enabled := true; // eventuale splahscreen compare tramite tsscript e obbliga al pulsante exit. 30 seconplay se c'è il suo guidteam
       end;
 
       MM.Free;
@@ -12564,7 +14687,6 @@ begin
 
 
         MemoC.Lines.Add( 'Compressed size: ' + IntToStr(Len) );
-
         LastTcpIncMove := ord (buf [10]);
         MemoC.Lines.Add('BEGINBRAIN '+  IntToStr(LastTcpIncMove) );
 
@@ -12606,7 +14728,7 @@ begin
 
 
             SpriteReset;
-            ThreadCurMove.Enabled := true;
+            ThreadCurrentIncMove.Enabled := true;
 
           end;
 
@@ -12616,7 +14738,7 @@ begin
     end
     else if MidStr(tmpStr,1,9 )= 'BEGINTEAM' then begin
 
-      ThreadCurMove.Enabled := false; // parte solo in beginbrain
+      ThreadCurrentIncMove.Enabled := false; // parte solo in beginbrain
       MemoC.Lines.Add( 'Compressed size: ' + IntToStr(Len) );
 
       // elimino beginbrain
@@ -12638,7 +14760,7 @@ begin
       Exit;
     end
     else if MidStr(tmpStr,1,11 )= 'BEGINMARKET' then begin
-      ThreadCurMove.Enabled := false; // parte solo in beginbrain
+      ThreadCurrentIncMove.Enabled := false; // parte solo in beginbrain
       MemoC.Lines.Add( 'Compressed size: ' + IntToStr(Len) );
 
       // elimino beginbrain
@@ -12659,7 +14781,7 @@ begin
       Exit;
     end
     else if MidStr(tmpStr,1,8 )= 'BEGINAML' then begin
-      ThreadCurMove.Enabled := false; // parte solo in beginbrain
+      ThreadCurrentIncMove.Enabled := false; // parte solo in beginbrain
       MemoC.Lines.Add( 'Compressed size: ' + IntToStr(Len) );
 
       // elimino beginbrain
@@ -12680,7 +14802,7 @@ begin
       Exit;
     end;
 
-    ThreadCurMove.Enabled := false; // parte solo in beginbrain
+    ThreadCurrentIncMove.Enabled := false; // parte solo in beginbrain
     MemoC.Lines.Add( 'normal size: ' + IntToStr(Len) );
 
   //  Buf[Len]       := #0;              { Nul terminate  }
@@ -12690,13 +14812,12 @@ begin
 //    ts.CommaText := RemoveEndOfLine(aaa);
     MemoC.Lines.Add('<---Tcp:'+ Ts.CommaText);
     if rightstr(ts[0],4) = 'guid' then begin   // guid,guidteam,teamname,nextha,mi
-      MyActiveGender :=ts[1];
+      MyActiveGender :=ts[1][1];
       MyGuidTeam := StrToInt(ts[2]);
-      MyGuidTeamName := ts[3];
-      Caption := Edit1.Text + '-' + MyGuidTeamName;
+      MyTeamName := ts[3];
+      Caption := Edit1.Text + '-' + MyTeamName;
       Sleep(1500); // GCD
       tcp.SendStr( 'getformation' + EndofLine);
-      WAITING_GETFORMATION := True;
       //GameScreen := ScreenFormation;
     end
     else if  ts[0] = 'BEGINWT' then begin  // lista team della country selezionata
@@ -12721,13 +14842,13 @@ begin
     end
     else if ts[0] = 'info' then begin
       lastStrError:= ts[1];
-      ShowError( Translate( 'lbl_' + ts[1]));
+    //  ShowError( Translate( 'lbl_' + ts[1]));
       if lastStrError = 'errorlogin' then
         PanelLogin.Visible := true;
     end
     else if ts[0] = 'errorformation' then begin
       lastStrError:= ts[0];
-      ShowError( Translate(ts[0]));
+     // ShowError( Translate(ts[0]));
     end
     else if ts[0] = 'la' then begin  // level up attribute : guid, value
       ShowLevelUpA ( ts.commatext );
@@ -12748,8 +14869,10 @@ end;
 procedure TForm1.tcpException(Sender: TObject; SocExcept: ESocketException);
 begin
 
-      MemoC.Lines.add('Can''t connect, error ' + SocExcept.ErrorMessage);
-      GameScreen := ScreenLogin;
+  if GameMode = pvp then begin
+    MemoC.Lines.add('Can''t connect, error ' + SocExcept.ErrorMessage);
+    GameScreen := ScreenLogin;
+  end;
 
 end;
 
@@ -12761,15 +14884,15 @@ begin
       ReleaseMutex(MutexAnimation );
       LastTcpincMove := 0;
       CurrentIncMove:=0;
-      MyGuidTeam := 0;
+      //MyGuidTeam := 0;
       Timer1.Enabled := true;
       lbl_ConnectionStatus.Color := clRed;
-      lbl_ConnectionStatus.Caption := 'connecting';
+      lbl_ConnectionStatus.Caption := 'Server offline';
       GameScreen := ScreenLogin;
       MyBrain.lstSoccerPlayer.Clear;
       MyBrain.lstSoccerReserve.Clear;
       MyBrain.lstSoccerPlayerALL.Clear;
-      ThreadCurMove.Enabled := False;
+      ThreadCurrentIncMove.Enabled := False;
       viewMatch := false;
       LiveMatch := false;
 end;
@@ -12782,8 +14905,8 @@ begin
       GameScreen := ScreenLogin;
       MouseWaitFor := WaitForAuth;
       lbl_ConnectionStatus.Color := clRed;
-      lbl_ConnectionStatus.Caption := 'connecting';
-      ThreadCurMove.Enabled := False;
+      lbl_ConnectionStatus.Caption := 'Server offline';
+      ThreadCurrentIncMove.Enabled := False;
       viewMatch := false;
       LiveMatch := false;
 
@@ -12793,54 +14916,95 @@ begin
       //GameScreen := ScreenLogin;
       MouseWaitFor := WaitForAuth;
       lbl_ConnectionStatus.Color := clGreen;
-      lbl_ConnectionStatus.Caption := 'connected';
+      lbl_ConnectionStatus.Caption := 'Server online';
       viewMatch := false;
       LiveMatch := false;
     end;
 end;
 
-procedure TForm1.ThreadCurMoveTimer(Sender: TObject);
+procedure TForm1.ThreadCurrentIncMoveTimer(Sender: TObject);
+var
+  oldCurrent: byte;
 begin
       // brain in memoria e sprite a video
       // se c'è lo script lo eseguo
-    WaitForSingleObject ( MutexAnimation, INFINITE );
+  // disino in 2 parti per pvp e pve
+  WaitForSingleObject ( MutexAnimation, INFINITE );
 
-    if ( SE_ball.IsAnySpriteMoving  ) or (SE_players.IsAnySpriteMoving ) or ( Animating ) then begin
-      ReleaseMutex(MutexAnimation);
-      Exit;
-    end;
+  if ( SE_ball.IsAnySpriteMoving  ) or (SE_players.IsAnySpriteMoving ) or ( Animating ) then begin
+    ReleaseMutex(MutexAnimation);
+    Exit;
+  end;
 
+  if GameMode = pvp then begin
 
     if CurrentIncMove <= LastTcpIncMove  then begin
+
 
     //  if incMoveAllProcessed [CurrentIncMove] = false then begin   // se non è stato ancora caricato ed eseguito nella tsScript
 
       if incMoveReadTcp [CurrentIncMove] = false then begin   // se non è stato ancora caricato letto in Tcp
 
-        ClientLoadScript ( CurrentIncMove ); // ( MM3, buf3 ); // punta direttamente dove comincia tsScript . riempe mybrain.tscript.commatext
 
-        if Mybrain.tsScript.Count = 0 then begin           // se animationScript ha finito di processare tutte le commatext di Mybrain.tsscript
-          ClientLoadBrainMM ( CurrentIncMove);      //era false oppure se non c'è stringa commatext
-          incMoveReadTcp [CurrentIncMove] := True; // caricato e completamente eseguito
-          incMoveAllProcessed [CurrentIncMove] := True; // caricato e completamente eseguito
-         // Inc(CurrentIncMove); // se maggiore al giro dopo aspetta
-        end
-        else begin
-          if AScript <> Mybrain.tsScript.CommaText then begin  // solo script diversi.
-            AScript := Mybrain.tsScript.CommaText ;
-            LoadAnimationScript; // fa mybrain.tscript.clear ma prima riempe animationScript.  alla fine il thread chiama  ClientLoadBrainMM
-          end;
-      // per questro motivo MM3 e buf3 devono essere globali
-        end;
-//          Inc(CurrentIncMove); // se maggiore al giro dopo aspetta
+          ClientLoadScript ( CurrentIncMove ); // ( MM3, buf3 ); // punta direttamente dove comincia tsScript . riempe mybrain.tscript[CurrentIncMove].commatext
+          AnimationScript.Reset ;
+
+//          if Mybrain.tsScript[CurrentIncMove].Count = 0 then begin           // se animationScript ha finito di processare tutte le commatext di Mybrain.tsscript
+//              ClientLoadBrainMM ( CurrentIncMove);      //era false oppure se non c'è stringa commatext
+
+//            incMoveReadTcp [CurrentIncMove] := True; // caricato e completamente eseguito
+//            incMoveAllProcessed [CurrentIncMove] := True; // caricato e completamente eseguito
+
+//          end
+//          else begin
+  //         // if AScript <> Mybrain.tsScript.CommaText then begin  // solo script diversi.
+  //           // AScript := Mybrain.tsScript.CommaText ;
+              LoadAnimationScript; // riempe animationScript.  alla fine il thread chiama  ClientLoadBrainMM
+           // end;
+        // per questro motivo MM3 e buf3 devono essere globali
+ //         end;
+  //          Inc(CurrentIncMove); // se maggiore al giro dopo aspetta
       end
+
       else begin  // // se è già stato letto in Tcp.  se maggiore al giro dopo aspetta
-        if incMoveAllProcessed [CurrentIncMove] = True then // se AnimationScript è terminata
-          Inc(CurrentIncMove);
+        //if GameMode = pvp then begin
+          if incMoveAllProcessed [CurrentIncMove] = True then // se AnimationScript è terminata
+            Inc(CurrentIncMove);
+       // end;
       end;
     end;
 
-    ReleaseMutex(MutexAnimation);
+
+  end
+
+
+   // nel pve il brain viene riempito di AI begibrain, ha già elaborato 4 risposte. qui non faccio in tempo a leggere Mybrain.tsScript.CommaText
+  else if GameMode = pve then begin
+
+    if CurrentIncMove <= LastMoveBrain  then begin //  MyBrain.incMove è quello che dico io. LastMoveBrain è 4 mosse avanti quando c'è la AI
+      // questa parte rinnova scriptanimation incrementando currentIncMove fino al massimo di  MyBrain.incMove
+
+      if incMoveAllProcessed [CurrentIncMove] = true then begin   // se  è stato eseguito tutto lo script animation
+
+        oldCurrent :=  CurrentIncMove;
+        CurrentIncMove := imin( CurrentIncMove +1, LastMoveBrain ); // avanzo processando tutti gli script
+
+        if OldCurrent < CurrentIncMove then begin  // solo se è cambiato , altrimenti ricarico a oltranz la stessa animazione
+
+          if  Mybrain.tsScript [CurrentIncMove].Count > 0 then
+            LoadAnimationScript // riempe animationScript.  alla fine il thread chiama  ClientLoadBrainMM
+          else incMoveAllProcessed [CurrentIncMove] := true; // se è vuota dico che è stata processata
+        end;
+      end
+      else begin   // l oscript non è stato processato. se è vuoto dico qui che è stato processato o l0altro trhead non lo fa
+        if  Mybrain.tsScript [CurrentIncMove].Count = 0 then
+          incMoveAllProcessed [CurrentIncMove] := true;
+      end;
+    end;
+
+  end;
+
+  ReleaseMutex(MutexAnimation);
 
 
 end;
@@ -12850,6 +15014,9 @@ var
   ini : TInifile;
   pbSprite: SE_SpriteProgressBar;
 begin
+  if GameMode <> Pvp then
+    Exit;
+
   if ViewReplay then
     exit;
   if Tcp.State = wsConnecting then
@@ -12876,6 +15043,7 @@ begin
     if LocalSeconds < 0 then LocalSeconds := 0;
     pbSprite := SE_SpriteProgressBar( SE_Score.FindSprite('scorebartime'));
     pbSprite.Value := (localseconds * 100) div 120;
+    pbSprite.Visible := True;
   end;
 
 end;
@@ -12896,7 +15064,7 @@ procedure TForm1.toolSpinKeyPress(Sender: TObject; var Key: Char);
 begin
   {$ifdef tools}
   if Key=#13 then begin
-    ThreadCurMove.Enabled := False;
+    ThreadCurrentIncMove.Enabled := False;
     Key:=#0;
 
     ViewReplay := True;
@@ -12914,7 +15082,7 @@ begin
 
       CurrentIncMove :=  Trunc(toolSpin.Value);
       ClientLoadScript( Trunc(toolSpin.Value) );
-      if Mybrain.tsScript.Count = 0 then begin
+      if Mybrain.tsScript[0].Count = 0 then begin
         ClientLoadBrainMM ( Trunc(toolSpin.Value) );
       end
       else
@@ -12952,6 +15120,55 @@ begin
   end;
 end;
 
+procedure TForm1.HideAllEnginesExcept ( SE_Engine1,SE_Engine2,SE_Engine3,SE_Engine4,SE_Engine5: SE_engine );
+label skipC;
+begin
+
+  if fGameScreen = ScreenLive then begin
+    if SE_Circles.Visible then goto skipC;
+  end;
+  SE_Circles.Visible := false;
+skipC:
+  SE_matchInfo.Visible := False;
+  SE_InfoError.Visible := False;
+  SE_Simulation.Visible := false;
+  SE_YesNo.Visible := false;
+  SE_GameOver.visible := False;
+  SE_RANK.Visible:= False;
+  SE_Uniform.Visible := False;
+  SE_PlayerDetails.Visible := False;
+  SE_Aml.Visible := False;
+  SE_Market.Visible := False;
+  SE_Spectator.Visible := False;
+  SE_Live.Visible := False;
+  SE_Green.Visible:= False;
+  SE_TacticsSubs.Visible := False;
+  SE_Score.Visible := False;
+  SE_CountryTeam.Visible := false;
+  SE_Skills.Visible := False;
+  SE_Loading.Visible := false;
+  SE_Standings.Visible := false;
+  SE_PreMatch.Visible := False;
+
+  PanelLogin.Visible := false;
+  PanelMain.Visible := False;
+  PanelSinglePlayer.Visible := False;
+  PanelSell.Visible := False;
+  PanelDismiss.Visible := False;
+
+  if SE_Engine1 <> nil  then
+    SE_Engine1.Visible := True;
+  if SE_Engine2 <> nil  then
+    SE_Engine2.Visible := True;
+  if SE_Engine3 <> nil  then
+    SE_Engine3.Visible := True;
+  if SE_Engine4 <> nil  then
+    SE_Engine4.Visible := True;
+  if SE_Engine5 <> nil  then
+    SE_Engine5.Visible := True;
+
+end;
+
 procedure TForm1.SetGameScreen (const aGameScreen:TGameScreen);
 var
   i: Integer;
@@ -12963,9 +15180,11 @@ begin
 
   fGameScreen:= aGameScreen;
 
-  if fGameScreen = ScreenLogin then begin
-    //AudioCrowd.Stop;
+  if fGameScreen = ScreenMain then begin
     IndexCT :=0;
+
+    HideAllEnginesExcept ( SE_BackGround,nil,nil,nil,nil );
+    HideStadiumAndPlayers;
 
     SE_BackGround.HideAllSprites;
     aSprite := SE_Background.FindSprite('backgroundlogin');
@@ -12981,23 +15200,31 @@ begin
 
     viewMatch := False;
 
-    SE_GameOver.visible := False;
-    SE_RANK.Visible:= False;
-    SE_Uniform.Visible := False;
-    HideStadiumAndPlayers;
-    SE_PlayerDetails.Visible := False;
-    SE_Aml.Visible := False;
-    SE_Market.Visible := False;
-    SE_Spectator.Visible := False;
-    SE_Live.Visible := False;
-    SE_Green.Visible:= False;
-    SE_TacticsSubs.Visible := False;
-    SE_Score.Visible := False;
-    SE_CountryTeam.Visible := false;
-    PanelSell.Visible := False;
-    PanelDismiss.Visible := False;
-    SE_Skills.Visible := False;
+    PanelMain.Visible := True;
+    PanelMain.BringToFront;
+    overrideColor := false;
 
+  end
+  else if fGameScreen = ScreenLogin then begin
+    //AudioCrowd.Stop;
+    IndexCT :=0;
+
+    HideAllEnginesExcept ( SE_BackGround,nil,nil,nil,nil );
+    HideStadiumAndPlayers;
+
+    SE_BackGround.HideAllSprites;
+    aSprite := SE_Background.FindSprite('backgroundlogin');
+    aSprite.Visible := True;
+
+    WaitForSingleObject ( MutexAnimation, INFINITE );
+    AnimationScript.Reset;
+    FirstLoadOK:= False;
+    Animating := false;
+    ReleaseMutex(MutexAnimation );
+    LastTcpIncMove := 0;
+    CurrentIncMove := 0;
+
+    viewMatch := False;
 
     PanelLogin.Visible := True;
     PanelLogin.BringToFront;
@@ -13009,27 +15236,12 @@ begin
     aSprite := SE_Background.FindSprite('backgroundlogin');
     aSprite.Visible := True;
 
-    SE_GameOver.visible := False;
-    SE_RANK.Visible:= False;
-    PanelLogin.Visible := false;
-    SE_Uniform.Visible := False;
-    SE_MainInterface.Visible := False;
-    SE_MainStats.Visible := False;
-    SE_PlayerDetails.Visible := False;
+    HideAllEnginesExcept ( SE_BackGround,SE_CountryTeam,nil,nil,nil );
     HideStadiumAndPlayers;
-    SE_Aml.Visible := False;
-    SE_Market.Visible := False;
-    SE_Spectator.Visible := False;
-    SE_Live.Visible := False;
-    SE_Green.Visible:= False;
-    SE_TacticsSubs.Visible := False;
-    SE_Score.Visible := False;
-    SE_CountryTeam.Visible := True;
 
     if fGameScreen = ScreenSelectCountry then begin
       SE_CountryTeam.Tag := 0;
       ClientLoadCountries (0); // indexCT
-
     end
     else if fGameScreen = ScreenSelectTeam then begin
 
@@ -13039,21 +15251,9 @@ begin
 
   end
   else if fGameScreen = ScreenWaitingFormation then begin // si accede cliccando back - settcpformation, in attesa
-    //AudioCrowd.Stop;
 
-    SE_GameOver.visible := False;
-    SE_RANK.Visible:= False;
-    PanelLogin.Visible := false;
-    SE_Uniform.Visible := False;
-    SE_MainStats.Visible := False;
-    SE_PlayerDetails.Visible := False;
-    SE_Aml.Visible := False;
-    SE_Market.Visible := False;
-    SE_Spectator.Visible := False;
-    SE_Live.Visible := False;
-    SE_Green.Visible:= False;
-    SE_Score.Visible := False;
-    SE_CountryTeam.Visible := False;
+    HideAllEnginesExcept ( SE_BackGround,SE_Loading,nil,nil,nil );
+
     aSprite := SE_ball.FindSprite('ball');
     if aSprite <> nil then
       aSprite.Visible := false;
@@ -13071,40 +15271,31 @@ begin
 
     SE_players.RemoveAllSprites;
     SE_players.ProcessSprites(2000);
-    PanelError.Visible := False;
 
     ShowLoading;
     MouseWaitFor := WaitForNone;
   end
   else if fGameScreen = ScreenFormation then begin    // diversa da ScreenLiveFormations che prende i dati dal brain
+
     SE_DragGuid := nil; //<-- nel caso mi trovi in Sub o Tactics.
 
 //    MyBrain:= MyBrainFormation; // <--- assegno MyBrain.
-    SE_GameOver.visible := False;
-    SE_RANK.Visible:= True;
-
     MyBrainFormation := MyBrain; // <--- assegno MyBrain.
-    SE_Uniform.Visible := False;
-    SE_Loading.Visible := False;
-    SE_MainInterface.Visible := true;
-    SE_MainStats.Visible := False;
-    PanelLogin.Visible := false;
-    SE_Aml.Visible := False;
-    SE_Market.Visible := False;
-    SE_Spectator.Visible := False;
-    SE_Live.Visible := False;
-    SE_Green.Visible:= False;
-    SE_Score.Visible := False;
-    SE_CountryTeam.Visible := False;
-    SE_PlayerDetails.Visible := False;
-    //AudioCrowd.Stop;
+
+
+//    if GameMode = pvp then
+//      HideAllEnginesExcept ( SE_BackGround,SE_MainInterface,SE_RANK,nil,nil )
+//    else
+      HideAllEnginesExcept ( SE_BackGround,SE_MainInterface,SE_RANK,nil,nil );
+
+
     PanelSell.Visible := False;
     PanelDismiss.Visible := False;
 
     ShowStadiumAndPlayers (0);
 
     SE_interface.ClickSprites := false;
-    ThreadCurMove.Enabled := false; // parte solo in beginbrain
+    ThreadCurrentIncMove.Enabled := false; // parte solo in beginbrain
     WaitForSingleObject ( MutexAnimation, INFINITE );
     AnimationScript.Reset;
     FirstLoadOK:= False;
@@ -13115,7 +15306,6 @@ begin
 
     LiveMatch := False;
     viewMatch := False;
-    PanelError.Visible := False;
 
     MouseWaitFor := WaitForNone;
     overrideColor := false;
@@ -13134,9 +15324,7 @@ begin
 
   end
   else if fGameScreen = ScreenPlayerDetails then begin
-    SE_GameOver.visible := False;
-    SE_RANK.Visible:= False;
-    SE_Uniform.Visible := False;
+    HideAllEnginesExcept ( SE_BackGround,SE_Playerdetails,nil,nil,nil );
     HideStadiumAndPlayers;
     LiveMatch := False;
     viewMatch := False;
@@ -13206,22 +15394,68 @@ begin
 
   end
 
+  else if fGameScreen = ScreenWaitingCreationSeason then begin // pve
 
+
+    HideAllEnginesExcept ( SE_BackGround,SE_Loading,nil,nil,nil );
+
+    HideStadiumAndPlayers;
+    SE_players.RemoveAllSprites;
+    ShowLoading;
+  //  LiveMatch := True;
+  //  viewMatch := False;
+    MouseWaitFor := WaitForNone;
+    overrideColor := false;
+
+  end
+  else if fGameScreen = ScreenWaitingCreationRound then begin // pve
+
+
+    HideAllEnginesExcept ( SE_BackGround,SE_Loading,nil,nil,nil );
+
+    HideStadiumAndPlayers;
+    SE_players.RemoveAllSprites;
+    ShowLoading;
+   // LiveMatch := True;
+   // viewMatch := False;
+    MouseWaitFor := WaitForNone;
+    overrideColor := false;
+
+  end
+  else if fGameScreen = ScreenPreMatch then begin // pve
+
+
+    HideAllEnginesExcept ( SE_BackGround,SE_PreMatch,nil,nil,nil );
+
+    SE_BackGround.HideAllSprites;
+    aSprite := SE_Background.FindSprite('backgroundmarket');
+    aSprite.Visible := True;
+
+    HideStadiumAndPlayers;
+    //SE_players.RemoveAllSprites;
+
+    LiveMatch := True;
+    viewMatch := False;
+    MouseWaitFor := WaitForNone;
+    overrideColor := false;
+
+  end
+  else if fGameScreen = ScreenWaitingSimulation then begin // pve
+    HideAllEnginesExcept ( SE_BackGround,SE_Loading,nil,nil,nil );
+
+   // HideStadiumAndPlayers;
+   // SE_players.RemoveAllSprites;
+    ShowLoading;
+   // LiveMatch := True;
+   // viewMatch := False;
+    MouseWaitFor := WaitForNone;
+    overrideColor := false;
+
+  end
   else if fGameScreen = ScreenWaitingLive then begin // si accede cliccando queue
-    //AudioCrowd.Stop;
-    SE_GameOver.visible := False;
-    SE_RANK.Visible:= False;
 
-    PanelLogin.Visible := false;
-    SE_Uniform.Visible := False;
-    SE_CountryTeam.Visible := False;
-    SE_PlayerDetails.Visible := False;
-    SE_Aml.Visible := False;
-    SE_Market.Visible := False;
-    SE_Spectator.Visible := False;
-    SE_Live.Visible := False;
-    SE_Green.Visible:= False;
-    SE_Score.Visible := False;
+    HideAllEnginesExcept ( SE_BackGround,SE_Loading,nil,nil,nil );
+
 
     HideStadiumAndPlayers;
     SE_players.RemoveAllSprites;
@@ -13232,24 +15466,15 @@ begin
     overrideColor := false;
 
   end
+  else if fGameScreen = ScreenSimulation then begin // pve
+
+    HideAllEnginesExcept ( SE_BackGround,SE_Simulation,nil,nil,nil );
+    SE_Simulation.RemoveAllSprites;
+    SE_Simulation.ProcessSprites(2000);
+  end
   else if fGameScreen = ScreenLive  then begin
 
-    SE_GameOver.visible := False;
-    SE_RANK.Visible:= False;
-    SE_Loading.Visible := False;
-    SE_Uniform.Visible := False;
-    PanelLogin.Visible := false;
-    SE_CountryTeam.Visible := False;
-    SE_MainInterface.Visible := False;
-    SE_MainStats.Visible := False;
-    SE_PlayerDetails.Visible := False;
-    SE_Players.Visible := False;
-    SE_Aml.Visible := False;
-    SE_Spectator.Visible := False;
-    SE_CountryTeam.Visible := false;
-    SE_Score.Visible := True;
-    SE_Green.Visible:= False;
-
+    HideAllEnginesExcept ( SE_BackGround,SE_Score,nil,nil,nil );
     ShowStadiumAndPlayers(1);
 
     // annulla tutto in tactics e subs
@@ -13264,9 +15489,9 @@ begin
     aSprite := SE_LIVE.FindSprite('btnmenu_subs');
     aSprite.Visible := True;
 
+    SE_Live.ShowAllSprites; // hideallsprites eccetto exit fatta da forcegameover
     SE_Live.Visible := true;
 
-    PanelError.Visible := False;
     LiveMatch := True;
     viewMatch := False;
     MouseWaitFor := WaitForNone;
@@ -13274,23 +15499,7 @@ begin
   end
   else if  fGameScreen = ScreenSpectator then begin
 
-    SE_GameOver.visible := False;
-    SE_RANK.Visible:= False;
-    SE_Loading.Visible := False;
-    PanelLogin.Visible := false;
-    SE_Uniform.Visible := False;
-    SE_CountryTeam.Visible := False;
-
-    SE_MainInterface.Visible := False;
-    SE_MainStats.Visible := False;
-    SE_PlayerDetails.Visible := False;
-    SE_Players.Visible := False;
-    SE_Aml.Visible := False;
-    SE_Market.Visible := false;
-    SE_Spectator.Visible := True;
-    SE_Live.Visible := false;
-    SE_Green.Visible:= False;
-    SE_Score.Visible := True;
+    HideAllEnginesExcept ( SE_BackGround,SE_Score,SE_Spectator,nil,nil );
     ShowStadiumAndPlayers(1);
 
     LiveMatch := False;
@@ -13303,20 +15512,8 @@ begin
     //AudioCrowd.Stop;
 
 
-    SE_GameOver.visible := False;
-    SE_RANK.Visible:= False;
-    PanelLogin.Visible := false;
-    SE_Uniform.Visible := False;
-    SE_CountryTeam.Visible := False;
-    SE_PlayerDetails.Visible := False;
-    SE_Aml.Visible := False;
-    SE_Market.Visible := false;
-    SE_Spectator.Visible := false;
-    SE_Live.Visible := false;
-    SE_Green.Visible:= False;
-    SE_TacticsSubs.Visible := False;
-    SE_Score.Visible := false;
-    SE_CountryTeam.Visible := false;
+    HideAllEnginesExcept ( SE_BackGround,SE_loading,nil,nil,nil );
+
 
     HideStadiumAndPlayers;
     SE_players.RemoveAllSprites;
@@ -13332,25 +15529,14 @@ begin
   end
   else if fGameScreen = ScreenAML then begin
     //AudioCrowd.Stop;
-    SE_GameOver.visible := False;
-    SE_RANK.Visible:= False;
+
+    HideAllEnginesExcept ( SE_BackGround,SE_Aml,nil,nil,nil );
+
     SE_BackGround.HideAllSprites;
     aSprite := SE_Background.FindSprite('backgroundaml');
     aSprite.Visible := True;
     HideStadiumAndPlayers;
-    PanelLogin.Visible := false;
-    SE_Uniform.Visible := False;
-    SE_CountryTeam.Visible := False;
-    SE_PlayerDetails.Visible := False;
-    SE_Market.Visible := false;
-    SE_Spectator.Visible := False;
-    SE_Live.Visible := False;
-    SE_Green.Visible:= False;
-    SE_TacticsSubs.Visible := False;
-    SE_Score.Visible := False;
-    SE_CountryTeam.Visible := false;
 
-    SE_Aml.Visible := True;
 
     LiveMatch := False;
     viewMatch := False;
@@ -13361,27 +15547,24 @@ begin
   end
   else if fGameScreen = ScreenMarket then begin
     //AudioCrowd.Stop;
-    SE_Loading.Visible := False;
+    HideAllEnginesExcept ( SE_BackGround,SE_Market,nil,nil,nil );
     SE_BackGround.HideAllSprites;
     aSprite := SE_Background.FindSprite('backgroundmarket');
     aSprite.Visible := True;
 
+    HideStadiumAndPlayers;
 
-    SE_GameOver.visible := False;
-    SE_RANK.Visible:= False;
-    PanelLogin.Visible := false;
-    SE_Uniform.Visible := False;
-    SE_CountryTeam.Visible := false;
-    SE_PlayerDetails.Visible := False;
-    SE_Aml.Visible := False;
-    SE_Market.Visible := False;
-    SE_Spectator.Visible := False;
-    SE_Live.Visible := False;
-    SE_Green.Visible:= False;
-    SE_Score.Visible := False;
-    SE_TacticsSubs.Visible := False;
-    SE_Aml.Visible := False;
-    SE_Market.Visible := True;
+
+    LiveMatch := False;
+    viewMatch := False;
+    MouseWaitFor := WaitForNone;
+
+  end
+  else if fGameScreen = ScreenStandings then begin
+    HideAllEnginesExcept ( SE_BackGround,SE_Standings,nil,nil,nil );
+    SE_BackGround.HideAllSprites;
+    aSprite := SE_Background.FindSprite('backgroundmarket');
+    aSprite.Visible := True;
 
     HideStadiumAndPlayers;
 
@@ -13397,8 +15580,8 @@ procedure TForm1.ClientLoadCountries ( index: Integer);
 var
   i: Integer;
   aSprite: SE_Sprite;
+  ts2: Tstringlist;
 begin
-  SE_CountryTeam.HideAllSprites ('ctselect');
   SE_CountryTeam.HideAllSprites ('countryteam');
 
   if IndexCT > TsWorldCountries.Count -1 then
@@ -13406,14 +15589,34 @@ begin
   if IndexCT < 0 then
     IndexCT := 0;
 
-  for i := 0 to 19 do begin
+  for i := 0 to  19  do begin
     if IndexCT+i < TsWorldCountries.count then begin
       aSprite :=  SE_CountryTeam.FindSprite('countryteam'+IntToStr(i));
-      aSprite.Labels[0].lText := TsWorldCountries.ValueFromIndex[indexCT+i];
-      aSprite.Labels[0].lX := GetXLabel( aSprite.BMP.Bitmap, aSprite.Labels[0].lText,aSprite.BMP.Width, tStringCenter );
+
+      if GameMode = pvp  then
+        aSprite.Labels[0].lText := TsWorldCountries.ValueFromIndex[indexCT+i]
+      else if GameMode = pve  then begin
+        ts2:= Tstringlist.Create;
+        ts2.StrictDelimiter := True;
+        ts2.CommaText := TsWorldCountries[indexCT+i];
+        aSprite.Labels[0].lText := ts2[1];
+        ts2.free;
+      end;
+
+      aSprite.Labels[0].lX := 0;
       aSprite.Visible := True;
-      aSprite :=  SE_CountryTeam.FindSprite('ctselect'+IntToStr(i));
-      aSprite.sTag := TsWorldCountries.Names[indexCT+i];
+      aSprite :=  SE_CountryTeam.FindSprite('countryteam'+IntToStr(i));
+
+      if GameMode = pvp then
+        aSprite.sTag := TsWorldCountries.Names[indexCT+i]
+      else begin // pve
+        ts2:= Tstringlist.Create;
+        ts2.StrictDelimiter := True;
+        ts2.CommaText := TsWorldCountries[indexCT+i];
+        aSprite.sTag := ts2[0];
+        ts2.free;
+      end;
+
       aSprite.Visible := True;
     end
     else Exit;
@@ -13423,8 +15626,8 @@ procedure TForm1.ClientLoadTeams ( index: Integer);
 var
   i: Integer;
   aSprite: SE_Sprite;
+  ts2: Tstringlist;
 begin
-  SE_CountryTeam.HideAllSprites ('ctselect');
   SE_CountryTeam.HideAllSprites ('countryteam');
 
   if IndexCT > TsNationTeams.Count -1 then
@@ -13435,17 +15638,35 @@ begin
   for i := 0 to 19 do begin
     if indexCT+i < TsNationTeams.count then begin
       aSprite :=  SE_CountryTeam.FindSprite('countryteam'+IntToStr(i));
-      aSprite.Labels[0].lText := TsNationTeams.ValueFromIndex[indexCT+i];
-      aSprite.Labels[0].lX := GetXLabel( aSprite.BMP.Bitmap, aSprite.Labels[0].lText,aSprite.BMP.Width, tStringCenter );
+      if GameMode = pvp  then
+        aSprite.Labels[0].lText := TsNationTeams.ValueFromIndex[indexCT+i]
+      else if GameMode = pve  then begin
+        ts2:= Tstringlist.Create;
+        ts2.StrictDelimiter := True;
+        ts2.CommaText := TsNationTeams[indexCT+i];
+        aSprite.Labels[0].lText := ts2[1];
+        ts2.free;
+      end;
+
+      aSprite.Labels[0].lX := 0;
       aSprite.Visible := True;
-      aSprite :=  SE_CountryTeam.FindSprite('ctselect'+IntToStr(i));
-      aSprite.sTag := TsNationTeams.Names[indexCT+i];
+      aSprite :=  SE_CountryTeam.FindSprite('countryteam'+IntToStr(i));
+      if GameMode = pvp  then
+        aSprite.sTag := TsNationTeams.Names[indexCT+i]
+      else if GameMode = pve  then begin
+        ts2:= Tstringlist.Create;
+        ts2.StrictDelimiter := True;
+        ts2.CommaText := TsNationTeams[indexCT+i];
+        aSprite.sTag := ts2[0];
+        ts2.free;
+      end;
+
       aSprite.Visible := True;
     end
     else Exit;
   end;
 end;
-procedure TForm1.ClientLoadAML ;
+procedure TForm1.ClientLoadAML ;  // Active Match Live
 var
   i,count,Country0,Country1,ActiveMatchesCount,Cur,LBrainIds,LUserName0,LUserName1,LTeamName0,LTeamName1: Integer;
   bmpflags, cBitmap: SE_Bitmap;
@@ -13506,22 +15727,22 @@ begin
 
     LuserName0 :=  Ord( buf3[0][ cur ]);
     aSprite.Labels[0].lText :=  MidStr( dataStr, cur + 2  , LuserName0);
-    aSprite.Labels[0].lX := XUsername0 + GetXLabel ( aSprite.bmp.Bitmap,Capitalize(aSprite.Labels[0].lText),WUsername, TStringCenter );
+    aSprite.Labels[0].lX := XUsername0;
     cur  := cur + LuserName0 + 1;
 
     LuserName1 :=  Ord( buf3[0][ cur ]);
     aSprite.Labels[4].lText :=  MidStr( dataStr, cur + 2  , LuserName1);
-    aSprite.Labels[4].lX := XUsername1 + GetXLabel ( aSprite.bmp.Bitmap,Capitalize(aSprite.Labels[4].lText),WUsername, TStringCenter );
+    aSprite.Labels[4].lX := XUsername1;
     cur  := cur + LuserName1 + 1;
 
     LTeamName0 :=  Ord( buf3[0][ cur ]);
     aSprite.Labels[1].lText :=  MidStr( dataStr, cur + 2  , LTeamName0 ) ;//+ ' - ';
-    aSprite.Labels[1].lX := XTeamName0 + GetXLabel ( aSprite.bmp.Bitmap,Capitalize(aSprite.Labels[1].lText ),WTeamName, TStringCenter );
+    aSprite.Labels[1].lX := XTeamName0;
     cur  := cur + LTeamName0 + 1;
 
     LTeamName1 :=  Ord( buf3[0][ cur ]);
     aSprite.Labels[3].lText := MidStr( dataStr, cur + 2  , LTeamName1 ) ;
-    aSprite.Labels[3].lX := XTeamName1 + GetXLabel ( aSprite.bmp.Bitmap,Capitalize(aSprite.Labels[3].lText ),WTeamName, TStringCenter );
+    aSprite.Labels[3].lX := XTeamName1;
     cur  := cur + LTeamName1 + 1;
 //    aSprite.Labels[1].lText :=  MidStr( dataStr, cur + 2  , LTeamName0 ) + + ' - ' + LTeamName1;
 
@@ -13590,13 +15811,250 @@ begin
     Cur := Cur + 1;
 
     aSprite.Labels[5].lText :=  IntToStr ( ord ( buf3[0][ cur ])) +'''' ;
-    aSprite.Labels[5].lX := XMinute + GetXLabel ( aSprite.bmp.Bitmap,Capitalize(aSprite.Labels[5].lText ),WMinute, TStringCenter );
+    aSprite.Labels[5].lX := XMinute;
     Cur := Cur + 1;
 
     aSprite.Visible := true;
   end;
 
   bmpflags.Free;
+end;
+procedure TForm1.ClientLoadStandings ( Season, Country, Division : integer ) ; // parametri utili per display di altre nazione ecc...; // solo pve ;
+var
+  ini : TIniFile;
+  i,x,y,R,M,bmpH,NewX,NewY,YCount,RoundCount,TeamCount,T: integer;
+  bmp :SE_Bitmap;
+  aSprite : SE_Sprite;
+  aSpriteLabel : SE_SpriteLabel;
+  ts2 : Tstringlist;
+  lstTeam : TObjectlist<TeamStanding>;
+  lstTopScorer : TobjectList<TopScorer>;
+  aTeamStanding : TeamStanding;
+  aTopScorer : TopScorer;
+  const incrX = 12;
+  const incrY = 8;
+  const RowH = 18;
+begin
+  // Faccio 4 x 3 o 4 sprite. Ogni sprite contiene 1 spritelabel + 1 altra spritelabel es. bologna-atalanta       1-1  e uno sprite di giornata es. 12.giornata
+  // il menu è composto da back, e frecce avanti e indietro. Solo in futuro altre nazioni.
+
+  // in base al numero di giornate ( o teamcount ) ridimensiono subito la height degli sprite. a sinistra calendario, a destra fissa la classifica
+  // le standings sono automaticamente create in WriteCalendar
+  ini:= TIniFile.Create(dir_Saves + MyActiveGender + 'S' + Format('%.3d', [Season]) + 'C' + Format('%.3d', [Country]) + 'D' + Format('%.1d', [Division] ) + '.ini') ;
+
+  ts2 := Tstringlist.create;
+  ts2.StrictDelimiter := True;
+
+  if Division <= 2  then begin
+    bmpH := ( RowH  * 10 ) + RowH;  // + titolo
+    YCount := 3;
+    MaxDisplayRound := 12;
+    RoundCount := 38;
+    TeamCount := 20;
+  end
+  else begin
+    bmpH := ( RowH * 8 ) + RowH ;
+    YCount := 4;
+    MaxDisplayRound := 16;
+    RoundCount := 30;
+    TeamCount := 16;
+
+  end;
+
+
+  SE_Standings.RemoveAllSprites  ('standings');
+
+
+
+  if (IndexRound + MaxDisplayRound) > RoundCount then
+    IndexRound := RoundCount - MaxDisplayRound + 1;
+  if IndexRound <= 0 then
+    IndexRound := 1;
+  R := IndexRound;
+
+  NewX := 140;
+  NewY := (bmpH div 2) + RowH  - 8 ;
+  for Y := 1 to YCount do begin
+    for X:= 1 to 4 do begin
+      bmp := SE_Bitmap.Create ( 280, bmpH);
+      bmp.Bitmap.Canvas.Brush.Color :=  $007B5139;
+      bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
+      RoundBorder (bmp.Bitmap);
+      aSprite:=SE_Standings.CreateSprite(bmp.Bitmap ,'standings_round' + IntToStr(R) ,1,1,1000, NewX , NewY ,false,2 );
+      aSprite.BlendMode := SE_BlendAlpha;
+      aSprite.Alpha := 200;
+
+      NewX := (NewX + bmp.Width) + incrX;
+      bmp.Free;
+
+      aSpriteLabel := SE_SpriteLabel.create( -1,2,'Calibri',clYellow,clBlack,12, Translate('lbl_Round2')+ ' ' + IntToStr(R) ,True ,1,dt_left );  // label 0 GIORNATA
+      aSpriteLabel.lFontStyle := [fsBold];
+      aSprite.Labels.Add(aSpriteLabel);
+
+      for M := 1 to  DivisionMatchCount [Division] do begin
+        ts2.commatext := ini.ReadString('round' + IntToStr(R), 'match' + IntToStr(M),''  );
+        aSpriteLabel := SE_SpriteLabel.create( 0,m*RowH,'Calibri',clWhite-1,clBlack,12,ts2[1]+'-'+ts2[3],True ,1,dt_left ); // da 1 x N partite
+        aSpriteLabel.sTag := ts2.commatext ; //<-- la assegno per vederla facile dopo sul mouseover o mouseclick XY
+        aSprite.Labels.Add(aSpriteLabel);
+        if ts2.Count > 4 then begin // partite con risultato e matchinfo
+          aSpriteLabel := SE_SpriteLabel.create( 260,m*RowH,'Calibri',clWhite-1,$007B5139-1,12,ts2[4]{+'-'+ts2[5]},True ,2,dt_right );
+          aSprite.Labels.Add(aSpriteLabel);
+
+
+
+        end;
+      end;
+
+
+      Inc(R);
+
+    end;
+    NewX := 140;
+    NewY := NewY + (bmpH) + incrY;
+
+  end;
+
+
+  lstTeam := TobjectList<TeamStanding>.Create(True);
+  lstTopScorer := TobjectList<TopScorer>.Create(True);
+  for T := 1 to TeamCount do begin
+    ts2.commatext := ini.ReadString('standing' , IntToStr(T) ,''  );
+    aTeamStanding:= TeamStanding.Create;
+    aTeamStanding.Guid := StrToInt( ts2[0]);
+    aTeamStanding.Name := ts2[1];
+    aTeamStanding.Points := 0;// StrToInt (ts2[2]);
+   // aTeamStanding.Points := RndGenerate(30);
+    lstTeam.add ( aTeamStanding );
+  end;
+  Calc_Standing ( MyActiveGender ,Season, Country, Division, dir_saves, lstTeam, lstTopScorer );
+
+  // Visualizzo la classifica ( Guid, nome team, punti)
+  bmp := SE_Bitmap.Create ( 240, (bmpH * 2) - RowH ); // il doppio dei match
+  bmp.Bitmap.Canvas.Brush.Color :=  clGray;
+  bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
+  RoundBorder (bmp.Bitmap);
+  aSprite:=SE_Standings.CreateSprite(bmp.Bitmap ,'standings_teams' + IntToStr(R) ,1,1,1000, 1300 , (bmpH)  ,false,2 );
+  aSprite.BlendMode := SE_BlendAlpha;
+  aSprite.Alpha := 200;
+  bmp.Free;
+
+  // Titolo
+  aSpriteLabel := SE_SpriteLabel.create( -1,2,'Calibri',clYellow,clBlack,12, Translate('lbl_Standing') ,True  ,1,dt_left);  // label 0 GIORNATA
+  aSpriteLabel.lFontStyle := [fsBold];
+  aSprite.Labels.Add(aSpriteLabel);
+
+  for T := 0 to lstTeam.Count -1 do begin
+
+      bmp := SE_Bitmap.Create ( 240, RowH * 4); // le 4 in champions o promosse
+      bmp.Bitmap.Canvas.Brush.Color :=  clBlue;
+      bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));   { TODO : questi valori con le coppe varieranno in base al n. di squadre}
+      aSprite.addSubSprite ( bmp ,'backchampions',0,Rowh,false);
+      bmp.Free;
+
+    if Division = 1 then begin
+
+      bmp := SE_Bitmap.Create ( 240, RowH * 3); // le 3 in uefa
+      bmp.Bitmap.Canvas.Brush.Color :=  clGreen;
+      bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
+      aSprite.addSubSprite ( bmp ,'backuefa',0,Rowh*5,false);
+      bmp.Free;
+    end;
+
+    if Division < 5  then begin
+      bmp := SE_Bitmap.Create ( 240, RowH * 4); // le 4 retrocesse
+      bmp.Bitmap.Canvas.Brush.Color :=  $000080;
+      bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
+      RoundBorder (bmp.Bitmap);
+      aSprite.addSubSprite ( bmp ,'backretro',0,Rowh*17,true);
+      bmp.Free;
+    end;
+
+    aSpriteLabel := SE_SpriteLabel.create( 0,(T+1)*RowH,'Calibri',clWhite-1,clBlack,12,lstTeam[T].Name ,True  ,1,dt_left); // da 1 x N Team
+    aSprite.Labels.Add(aSpriteLabel);
+    aSpriteLabel := SE_SpriteLabel.create( 220,(T+1)*RowH,'Calibri',clWhite-1,clBlack,12, IntToStr(lstTeam[T].Points),True ,1,dt_right );
+    aSprite.Labels.Add(aSpriteLabel);
+  end;
+
+
+
+
+
+  // Visualizzo la classifica TOPSCORER ( Guid, surname, gol)
+  bmp := SE_Bitmap.Create ( 240, (bmpH * 2) - RowH-RowH ); // il doppio dei match
+  bmp.Bitmap.Canvas.Brush.Color :=  clGray;
+  bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
+  RoundBorder (bmp.Bitmap);
+  aSprite:=SE_Standings.CreateSprite(bmp.Bitmap ,'standings_topscorers' ,1,1,1000, 1300 , 602  ,false,2 );
+  aSprite.BlendMode := SE_BlendAlpha;
+  aSprite.Alpha := 200;
+  bmp.Free;
+
+  // Titolo
+  aSpriteLabel := SE_SpriteLabel.create( -1,2,'Calibri',clYellow,clBlack,12, Translate('lbl_Topscorers') ,True  ,1,dt_left);  // label 0 GIORNATA
+  aSpriteLabel.lFontStyle := [fsBold];
+  aSprite.Labels.Add(aSpriteLabel);
+
+  if lstTopScorer.Count > 0 then begin
+    for T := 0 to imin(19,lstTopScorer.Count-1) do begin // oppure 20 o quello che voglio ma pongo un limite, non metto scroll
+      aSpriteLabel := SE_SpriteLabel.create( 0,(T+1)*RowH,'Calibri',clWhite-1,clBlack,12,lstTopScorer[T].Surname ,True  ,1,dt_left); // da 1 x N Team
+      aSprite.Labels.Add(aSpriteLabel);
+      aSpriteLabel := SE_SpriteLabel.create( 220,(T+1)*RowH,'Calibri',clWhite-1,clBlack,12, IntToStr(lstTopScorer[T].Gol),True ,1,dt_right );
+      aSprite.Labels.Add(aSpriteLabel);
+    end;
+  end;
+
+  ts2.Free;
+  ini.Free;
+  lstTeam.Free;
+  lstTopScorer.Free;
+end;
+procedure TForm1.ClientLoadPreMatch;
+var
+  aSprite : SE_Sprite;
+  ini : TInifile;
+  fileName : string;
+  M: integer;
+  ts2: TStringlist;
+  bmp: SE_Bitmap;
+  aSpriteLabel : SE_SpriteLabel;
+begin
+  ts2 := Tstringlist.create;
+  ts2.StrictDelimiter := True;
+  Filename :=dir_Saves + MyActiveGender + 'S' + Format('%.3d', [ActiveSeason]) + 'C' + Format('%.3d', [MyGuidCountry]) + 'D' + Format('%.1d', [MyDivision] ) + '.ini';
+  ini := TIniFile.Create(Filename ) ;
+
+  for M := 1 to DivisionMatchCount[Mydivision]  do begin
+    ts2.commatext := ini.ReadString('round' + IntToStr(ActiveRound), 'match' + IntToStr(M),''  );
+
+    if (StrToInt(ts2[0]) = MyGuidTeam) or (StrToInt(ts2[2]) = MyGuidTeam) then begin   // se è la mia partita
+        // la mia formazione è corretta se proviene da btnclick o da simulate
+      break;
+    end;
+  end;
+  ini.Free;
+
+  SE_PreMatch.RemoveAllSprites('param');
+
+  bmp :=SE_Bitmap.Create ( 500, 32 );
+  aSprite := SE_PreMatch.CreateSprite( bmp.Bitmap , 'param1',1,1,1000, (form1.Width div 2), (form1.height div 2) - 70  ,true,2 );
+  aSpriteLabel := SE_SpriteLabel.create(-1,0,'Calibri',clWhite-1,clBlack,20,'',true,1, dt_center);
+  aSprite.Labels.Add(aSpriteLabel);
+  aSpriteLabel.lFontQuality := fqdefault;
+  bmp.Free;
+  aSprite.Labels[0].lText :=  Capitalize(Translate('lbl_Season')) + ' '+  Capitalize(Translate('lbl_Round2')) +' ' + IntToStr(Activeround) + '          ('+
+                              Capitalize(Translate('lbl_' + UpperCase(MyActiveGender))) +')' ;
+
+  bmp :=SE_Bitmap.Create ( 500, 32 );
+  aSprite := SE_PreMatch.CreateSprite( bmp.Bitmap , 'param2',1,1,1000, (form1.Width div 2), (form1.height div 2) - 20  ,true,2 );
+  aSpriteLabel := SE_SpriteLabel.create(-1,0,'Calibri',clYellow,clBlack,20,'',true,1, dt_center);
+  aSpriteLabel.lFontStyle := [fsBold];
+  aSpriteLabel.lFontQuality := fqdefault;
+  aSprite.Labels.Add(aSpriteLabel);
+  bmp.Free;
+  aSprite.Labels[0].lText :=  ts2[1] + ' - ' + ts2[3];
+
+  ts2.Free;
+
 end;
 procedure TForm1.ClientLoadMarket ;
 var
@@ -13690,22 +16148,22 @@ begin
     Cur := Cur + 4;
 
     aSprite.Labels[2].lText  :=  IntToStr( Ord( buf3[0][ cur ]));  // speed
-    aSprite.Labels[2].lX :=   XSpeed + GetXLabel(aSprite.BMP.Bitmap,aSprite.Labels[2].lText,WSpeed,TStringCenter );
+    aSprite.Labels[2].lX :=   380;
     Cur := Cur + 1;
     aSprite.Labels[3].lText   :=  IntToStr( Ord( buf3[0][ cur ]));  //
-    aSprite.Labels[3].lX :=   XDefense + GetXLabel(aSprite.BMP.Bitmap,aSprite.Labels[3].lText,WDefense,TStringCenter );
+    aSprite.Labels[3].lX :=   460;
     Cur := Cur + 1;
     aSprite.Labels[4].lText   :=  IntToStr( Ord( buf3[0][ cur ]));  //
-    aSprite.Labels[4].lX :=   XPassing + GetXLabel(aSprite.BMP.Bitmap,aSprite.Labels[4].lText,WPassing,TStringCenter );
+    aSprite.Labels[4].lX :=   540;
     Cur := Cur + 1;
     aSprite.Labels[5].lText   :=  IntToStr( Ord( buf3[0][ cur ]));  //
-    aSprite.Labels[5].lX :=   XBallControl + GetXLabel(aSprite.BMP.Bitmap,aSprite.Labels[5].lText,WBallControl,TStringCenter );
+    aSprite.Labels[5].lX :=   620;
     Cur := Cur + 1;
     aSprite.Labels[6].lText   :=  IntToStr( Ord( buf3[0][ cur ]));  //
-    aSprite.Labels[6].lX :=   XShot + GetXLabel(aSprite.BMP.Bitmap,aSprite.Labels[6].lText,WShot,TStringCenter );
+    aSprite.Labels[6].lX :=   700;
     Cur := Cur + 1;
     aSprite.Labels[7].lText   :=  IntToStr( Ord( buf3[0][ cur ]));  // heading
-    aSprite.Labels[7].lX :=   XHeading + GetXLabel(aSprite.BMP.Bitmap,aSprite.Labels[7].lText,WHeading,TStringCenter );
+    aSprite.Labels[7].lX :=   780;
     Cur := Cur + 1;
 
     talentID1 :=  Ord( buf3[0][ cur ]);
@@ -13716,29 +16174,32 @@ begin
     //aSprite.DeleteSubSprite('t1'); sopra c'è removeallsubsprites
     //aSprite.DeleteSubSprite('t2');
     if talentID1 <> 0 then begin    // i talenti li devo creare dinamicamente o rimangono a video
-      aSprite.AddSubSprite(dir_talent + IntToStr( talentID1 )+'.bmp','t1',XTalents ,0,true);
+      aSprite.AddSubSprite(dir_talent + IntToStr( talentID1 )+'.bmp','t1',870 ,0,true);
     end;
     if talentID2 <> 0 then begin
-      aSprite.AddSubSprite(dir_talent + IntToStr( talentID2 )+'.bmp','t2',XTalents + W + 12,0,true); //
+      aSprite.AddSubSprite(dir_talent + IntToStr( talentID2 )+'.bmp','t2',870 + W + 12,0,true); //
     end;
 
-    MatchesPlayed :=  PWORD(@buf3[0][ cur ])^;
-    Cur := Cur + 2;
+    if GameMode = pvp then begin
+      MatchesPlayed :=  PWORD(@buf3[0][ cur ])^;
+      Cur := Cur + 2;
 
+      Age:= Trunc(  MatchesPlayed  div SEASON_MATCHES) + 18 ;
+      MatchesLeft :=  PWORD(@buf3[0][ cur ])^;
+      Cur := Cur + 2;
+    end
+    else if GameMode= pve then begin
+      Age:= Ord( buf3[0][ cur ]);
+      Cur := Cur + 1;
+    end;
 
-    Age:= Trunc(  MatchesPlayed  div SEASON_MATCHES) + 18 ;
-
-    MatchesLeft :=  PWORD(@buf3[0][ cur ])^;
-    Cur := Cur + 2;
     face :=  PWORD(@buf3[0][ cur ])^;
     Cur := Cur + 2;
 
 
 
     aSprite.Labels[8].lText  :=  IntToStr( age );
-    aSprite.Labels[8].lX :=   XAge +  GetXLabel(aSprite.BMP.Bitmap,aSprite.Labels[8].lText,WAge,TStringCenter );
-    aSprite.Labels[9].lText  :=  IntToStr( MatchesLeft );
-    aSprite.Labels[9].lX :=   XMatchsLeft + GetXLabel(aSprite.BMP.Bitmap,aSprite.Labels[9].lText,WMatchsLeft,TStringCenter );
+    aSprite.Labels[8].lX :=   990 ;
 
     country :=  PWORD(@buf3[0][ cur ])^;
     Cur := Cur + 2;
@@ -13755,7 +16216,7 @@ begin
 
     // fitness        sub     2
     bmp := SE_Bitmap.Create ( W,H ); // face W x H
-    aSprite.AddSubSprite(bmp,'fitness',XFitness+20,0,true); // 32 si sovrappone ma sopra alla bandiera. va bene
+    aSprite.AddSubSprite(bmp,'fitness',1100,0,true);
     bmp.free;
 
     cBitmap := SE_Bitmap.Create ( dir_player + '\' + MyActiveGender + '\'+IntTostr(Country) +'\'+IntTostr(face) +'.bmp');
@@ -13812,7 +16273,231 @@ begin
 
   bmpflags.Free;
   aSprite := SE_Market.FindSprite('money');
-  aSprite.Labels[0].lText := FloatToStrF(Money, ffCurrency, 10, 0);
+
+  aSprite.Labels[0].lText := FloatToStrF(Money, ffCurrency, 10, 0)
+
+end;
+procedure TForm1.pveClientLoadMarket ;
+var
+  i,Cur : Integer;
+  count,lenSurname: integer;
+
+  aBasePlayer: TBasePlayer;
+
+begin
+  // il market pve è molto diverso dla pvp quindi uso una procedure a parte. Non leggo random N player, ma carico tutto il market
+  // in una Tlist che posso ordinare per qualunque campo
+  // su MMMarket globale c'è la lista
+
+
+  FillMemory(@bufMarket,SizeOf(BufMarket),0);
+  MMMarket.Size:=0;
+  MMMarket.LoadFromFile( dir_Saves  + MyActiveGender + 'market.120' );
+  CopyMemory( @BufMarket, MMMarket.Memory, MMMarket.Size  ); // metto nel buffer per i comandi non compressi
+  SSMARKET.Size := 0; // n on sovrascribve female e male. è gloable
+  SSMarket.Size := MMMarket.Size;
+  MMMarket.Position := 0;
+  SSMarket.CopyFrom( MMMarket, MMMarket.size );
+  dataStrMarket := SSMarket.DataString;
+  Cur:= 0;
+  IndexMarket := 0;
+  lstPLayerMarket.Clear;
+
+  count := PWORD(@bufMarket[0])^;  // quanti player . solo in questo caso è smallint
+  Cur := Cur + 2; //
+
+  for I:= 0 to Count -1 do begin  // in refresh 20 slot alla volta come countryteam gestita con frecce doppie
+   // aBasePlayer.Guid := PDWORD(@buf3[ cur ] )^; // player identificativo globale
+    aBasePlayer.Guid :=  PDWORD(@bufMarket[ cur ])^; // ids servirà per comprare;
+    Cur := Cur + 4;
+
+    lenSurname :=  Ord( bufMarket[ cur ]);
+    aBasePlayer.Surname := MidStr( dataStrMarket, cur + 2  , LenSurname );// ragiona in base 1
+    cur  := cur + lenSurname + 1;
+
+    aBasePlayer.Age :=   Ord( bufMarket[ cur ]); // solo age, non matchleseft
+    Cur := Cur + 1;
+
+    aBasePlayer.DefaultSpeed := Ord( bufMarket[ cur ]);  // speed
+    Cur := Cur + 1;
+    aBasePlayer.DefaultDefense :=  Ord( bufMarket[ cur ]);
+    Cur := Cur + 1;
+    aBasePlayer.DefaultPassing :=  Ord( bufMarket[ cur ]);
+    Cur := Cur + 1;
+    aBasePlayer.DefaultBallControl :=  Ord( bufMarket[ cur ]);
+    Cur := Cur + 1;
+    aBasePlayer.DefaultShot :=  Ord( bufMarket[ cur ]);
+    Cur := Cur + 1;
+    aBasePlayer.DefaultHeading :=  Ord( bufMarket[ cur ]);
+    Cur := Cur + 1;
+
+    aBasePlayer.talentID1 :=  Ord( bufMarket[ cur ]);
+    Cur := Cur + 1;
+    aBasePlayer.talentID2:=  Ord( bufMarket[ cur ]);
+    Cur := Cur + 1;
+
+    aBasePlayer.Country :=  PWORD(@bufMarket[ cur ] )^;
+    Cur := Cur + 2;
+
+    aBasePlayer.Fitness := Ord( bufMarket [ cur ]);
+    Cur := Cur + 1;
+
+    aBasePlayer.GuidTeam := PDWORD(@bufMarket[ cur ] )^;
+    Cur := Cur + 4;
+
+    aBasePlayer.Face := PDWORD(@bufMarket[ cur ] )^;
+    Cur := Cur + 4;
+
+    aBasePlayer.Price :=   PDWORD(@bufMarket[ cur ])^; // sellprice
+    Cur := Cur + 4;
+
+    lstPLayerMarket.add (aBasePlayer);
+  end;
+
+  lstPLayerMarket.sort(TComparer<TBasePlayer>.Construct(
+      function (const L, R: TBasePlayer): integer
+      begin
+        Result := (R.Price )- (L.price  );
+      end
+     ));
+end;
+procedure TForm1.pveRefreshMarket ( indexMarket: integer );
+var
+  i,L: Integer;
+  aSprite, aBuySprite: SE_Sprite;
+  aSubSprite : SE_SubSprite;
+  bmpflags,bmp : SE_Bitmap;
+  cBitmap: SE_Bitmap;
+  const W=32;H=32;
+begin
+  if IndexMarket > lstPLayerMarket.Count -1 then
+    IndexMarket := (lstPLayerMarket.Count ) - 20;
+  if IndexMarket < 0 then
+    IndexMarket := 0;
+
+  bmpflags := SE_Bitmap.Create ( dir_interface + 'flags.bmp');
+  // svuoto i dati di prima, per esempio se sono di più di prima o swicth m f rimangono in memroia nelle labels
+  for I := 0 to 19 do begin
+    aSprite :=  SE_Market.FindSprite('market'+IntToStr(i));
+    aSprite.sTag := ''; // ids servirà per comprare
+    aSprite.RemoveAllSubSprites;
+    for L := aSprite.Labels.Count -1 downto 0 do begin
+      aSprite.Labels[L].lText := '';
+    end;
+  end;
+  SE_Market.ProcessSprites(2000);
+
+  SE_Market.HideAllSprites ('market');
+  SE_Market.HideAllSprites ('buy');
+  aSprite :=  SE_Market.FindSprite('columns');
+  aSprite.Visible := True;
+
+  SE_Market.ShowAllSprites;
+  for I:= 0 to 19 do begin  // in refresh 20 slot alla volta come countryteam gestita con frecce doppie
+    if indexMarket+i < lstPLayerMarket.Count then begin
+     // aBasePlayer.Guid := PDWORD(@buf3[ cur ] )^; // player identificativo globale
+      aSprite := SE_Market.FindSprite('market'+IntToStr(i));
+      aSprite.sTag := IntToStr(lstPLayerMarket[IndexMarket + I].Guid);
+
+      aSprite.Bmp.Canvas.Font.Size := FontSizeMarket;
+      aSprite.Bmp.Canvas.Font.Name := 'Calibri';
+
+      aSprite.Labels[0].lText  := lstPLayerMarket[IndexMarket + I].Surname;
+      aSprite.Labels[0].lX :=  64; //appena più a destra del face
+
+      aSprite.Labels[8].lText  := IntTostr (lstPLayerMarket[IndexMarket + I].age); // solo age, non matchleseft
+      aSprite.Labels[8].lX :=   990 ;
+
+      aSprite.Labels[2].lText :=  IntTostr (lstPLayerMarket[IndexMarket + I].DefaultSpeed);
+      aSprite.Labels[2].lX :=   380;
+
+      aSprite.Labels[3].lText   :=  IntTostr (lstPLayerMarket[IndexMarket + I].DefaultDefense);
+      aSprite.Labels[3].lX :=   460;
+
+      aSprite.Labels[4].lText   :=  IntTostr (lstPLayerMarket[IndexMarket + I].DefaultPassing);
+      aSprite.Labels[4].lX :=   540;
+
+      aSprite.Labels[5].lText   :=  IntTostr (lstPLayerMarket[IndexMarket + I].DefaultBallControl);
+      aSprite.Labels[5].lX :=   620;
+
+      aSprite.Labels[6].lText   :=  IntTostr (lstPLayerMarket[IndexMarket + I].DefaultShot);
+      aSprite.Labels[6].lX :=   700;
+
+      aSprite.Labels[7].lText   :=  IntTostr (lstPLayerMarket[IndexMarket + I].DefaultHeading);
+      aSprite.Labels[7].lX :=   780;
+
+      //aSprite.DeleteSubSprite('t1'); sopra c'è removeallsubsprites
+      //aSprite.DeleteSubSprite('t2');
+      if lstPLayerMarket[IndexMarket + I].talentID1 <> 0 then begin    // i talenti li devo creare dinamicamente o rimangono a video
+        aSprite.AddSubSprite(dir_talent + IntToStr( lstPLayerMarket[IndexMarket + I].talentID1 )+'.bmp','t1',870 ,0,true);
+      end;
+      if lstPLayerMarket[IndexMarket + I].talentID2 <> 0 then begin
+        aSprite.AddSubSprite(dir_talent + IntToStr( lstPLayerMarket[IndexMarket + I].talentID2 )+'.bmp','t2',870 + W + 12,0,true); //
+      end;
+
+      aSprite.Labels[1].lText   :=  FloatToStrF(lstPLayerMarket[IndexMarket + I].Price , ffCurrency, 10, 0);
+      aSprite.Labels[1].lX :=   1300;
+
+      // country        sub   0
+      bmp := SE_Bitmap.Create ( 40,H ); // flags bandiere sono stretchate 40 x 32
+      aSprite.AddSubSprite(bmp,'country',0 ,0,True);
+      bmp.free;
+      // face           sub    1
+      bmp := SE_Bitmap.Create ( W,H ); // face W x H
+      aSprite.AddSubSprite(bmp,'face',32,0,true); // 32 si sovrappone ma sopra alla bandiera. va bene
+      bmp.free;
+
+      // fitness        sub     2
+      bmp := SE_Bitmap.Create ( W,H ); // face W x H
+      aSprite.AddSubSprite(bmp,'fitness',1100,0,true);
+      bmp.free;
+
+
+      cBitmap := SE_Bitmap.Create (60,40);
+
+        case lstPLayerMarket[IndexMarket + I].Country  of
+          1: begin
+            bmpflags.CopyRectTo( cBitmap, 2,12,0,0,60,40,False,0 );
+          end;
+          2: begin
+            bmpflags.CopyRectTo( cBitmap, 66,12,0,0,60,40,False,0 );
+          end;
+          3: begin
+            bmpflags.CopyRectTo( cBitmap, 130,12,0,0,60,40,False,0 );
+          end;
+          4: begin
+            bmpflags.CopyRectTo( cBitmap, 194,12,0,0,60,40,False,0 );
+          end;
+          5: begin
+            bmpflags.CopyRectTo( cBitmap, 259,12,0,0,60,40,False,0 );
+          end;
+          6: begin
+            bmpflags.CopyRectTo( cBitmap, 450,716,0,0,60,40,False,0 );
+          end;
+        end;
+        cBitmap.Stretch(40,32);
+        aSubSprite :=  aSprite.FindSubSprite('country');
+        cBitmap.CopyRectTo( aSubSprite.lBmp, 0,0,0,0,40,32,False,0 );
+        cBitmap.Free;
+
+
+      cBitmap := SE_Bitmap.Create ( dir_player + '\' + MyActiveGender + '\'+IntTostr(lstPLayerMarket[IndexMarket + I].Country) +'\'+IntTostr(lstPLayerMarket[IndexMarket + I].face) +'.bmp');
+      cBitmap.Stretch(W,H);
+      aSubSprite :=  aSprite.FindSubSprite('face');
+      cBitmap.CopyRectTo( aSubSprite.lBmp, 0,0,0,0,W,H,True,0 );
+      cBitmap.Free;
+
+      cBitmap := SE_Bitmap.Create ( dir_interface + IntToStr (lstPLayerMarket[IndexMarket + I].Fitness)+'.bmp' ) ;
+      aSubSprite :=  aSprite.FindSubSprite('fitness');
+      cBitmap.CopyRectTo( aSubSprite.lBmp, 0,0,0,0,W,H,True,0 );
+      cBitmap.Free;
+    end
+    else break;
+  end;
+
+  bmpflags.Free;
+  aSprite := SE_Market.FindSprite('money');
+  aSprite.Labels[0].lText := FloatToStrF(MyTeamRecord.Money, ffCurrency, 10, 0);
 
 end;
 function TForm1.GetAttributeColor ( value: integer ): TColor;
@@ -13844,19 +16529,6 @@ begin
 
 
 end;
-function TForm1.GetXLabel ( bmp: TBitmap; aString: String; FrameWidth: integer; StringAlignment : TStringAlignment ): Integer;
-var
-  w: Integer;
-begin
-  w:= BMP.Canvas.TextWidth(aString) ;
-  if StringAlignment = TStringCenter then begin
-    Result := (FrameWidth - w) div 2;
-  end
-  else if StringAlignment = TStringRight then begin
-    Result := FrameWidth - w ;
-  end;
-
-end;
 procedure TForm1.RenewUniform ( ha: Integer );
 var
   i: Integer;
@@ -13876,41 +16548,27 @@ Function TForm1.Translate ( aString : string  ): String;
 begin
    Result :=  TranslateMessages.Values [aString];
 end;
-procedure TForm1.ShowError ( AString: string);
+procedure TForm1.pveForceGameOver ;
+var
+  asprite : SE_Sprite;
 begin
-  lbl_Error.Font.Color := clwhite;
-  lbl_Error.Caption := AString;
-  PanelError.Visible:= true;
-  PanelError.Left := (Form1.Width div 2) - (PanelError.Width div 2);
-  PanelError.Top := (Form1.Height div 2) - (PanelError.Height div 2);
-  BtnErrorOK.Caption := 'OK';
-  PanelError.BringToFront;
-
+  ClientLoadMatchInfo;
+  SE_Live.HideAllSprites;
+  asprite:= SE_Live.FindSprite('btnmenu_exit' );
+  asprite.Visible := True;
 end;
-procedure TForm1.ShowInfo ( AString: string);
-begin
-  lbl_Error.Font.Color := clwhite;
-  lbl_Error.Caption := AString;
-  PanelError.Visible:= true;
-  PanelError.Left := (Form1.Width div 2) - (PanelError.Width div 2);
-  PanelError.Top := (Form1.Height div 2) - (PanelError.Height div 2);
-  BtnErrorOK.Caption := Capitalize(Translate ('lbl_Close'));
-  PanelError.BringToFront;
 
-end;
 procedure TForm1.ShowGameOver ( MoneyStarVisible: boolean);
 var
   bmp: SE_Bitmap;
   aBtnSprite,aSprite: SE_Sprite;
-  aSubSprite: SE_SubSprite;
   aSpriteLabel : SE_SpriteLabel;
   index,MoneyGain, miGain:Integer;
   MoneyGainS,miGainS: string;
-  Rank : Integer;
+//  Rank : Integer;
 begin
   // è tutto dinamico. il button elimina tutti gli sprites
   // 3 label: endgame, team e risultato , icona + money, e le star con il rank . le creo qui in showGameOver e le distruggo sul button
-        { TODO : continuare qui }
 
   SE_GameOver.RemoveAllSprites;
   SE_GameOver.ProcessSprites(2000);
@@ -13962,18 +16620,16 @@ begin
   // 3 label: endgame, team e risultato , icona + money, e le star con il rank . le creo qui in showGameOver e le distruggo sul button
 
   // backframe
-  aSprite:=SE_GameOver.CreateSprite(dir_interface + 'bguniform.bmp' ,'frameback',1,1,1000,720,450,false ); // 400x200
-  aSprite.Priority := 1;
+  SE_GameOver.CreateSprite(dir_interface + 'bguniform.bmp' ,'frameback',1,1,1000,720,450,false,1 ); // 400x200
 
   //close
   bmp := SE_Bitmap.Create ( dir_interface + 'button.bmp' );
-  aBtnSprite:=SE_GameOver.CreateSprite(bmp.Bitmap ,'btnmenu_back',1,1,1000,720,450,true );
+  aBtnSprite:=SE_GameOver.CreateSprite(bmp.Bitmap ,'btnmenu_back',1,1,1000,720,450,true,1200 );
 //  aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize, Translate('lbl_Tactics') ,true  );
 //  aBtnSprite.Labels.Add( aSpriteLabel);
   aBtnSprite.TransparentForced := True;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
   aBtnSprite.AddSubSprite( dir_interface +'arrowl.bmp', 'sub',90-40,56-40,True );
-  aBtnSprite.Priority := 1200;
   bmp.Free;
 
   // label End_Game
@@ -13982,8 +16638,7 @@ begin
   // money
   if MoneyStarVisible then begin
 
-    aSprite := SE_GameOver.CreateSprite(dir_interface + 'money.bmp','gold', 1,1,1000,540,300,true);
-    aSprite.Priority := 1200;
+    SE_GameOver.CreateSprite(dir_interface + 'money.bmp','gold', 1,1,1000,540,300,true,1200);
 
     bmp := SE_Bitmap.Create (300,22);
     bmp.Bitmap.Canvas.Brush.Color :=  clGray;
@@ -13993,15 +16648,13 @@ begin
         else if MoneyGain < 0 then
           MoneyGainS := '- ' + IntToStr(MoneyGain);
 
-    aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clYellow,clBlack,16, MoneyGainS ,True  );
-    aSprite := SE_GameOver.CreateSprite(bmp.bitmap,'money', 1,1,1000,490,400,true);
+    aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clYellow,clBlack,16, MoneyGainS ,True ,1,dt_left );
+    aSprite := SE_GameOver.CreateSprite(bmp.bitmap,'money', 1,1,1000,490,400,true,1200);
     aSprite.Labels.Add(aSpriteLabel);
-    aSprite.Priority := 1200;
     bmp.Free;
        { TODO : fare bene star 44 }
     // star del colore del rank attuale. in caso di passaggio rank su questa partita finita, si vede per un attimo ancora il vecchio colore qui.
-    aSprite := SE_GameOver.CreateSprite(dir_interface + '\star\24\star' + IntTostr(MyBrain.Score.Rank [index]) +'.bmp','star', 1,1,1000,305,300,true);
-    aSprite.Priority := 1200;
+    SE_GameOver.CreateSprite(dir_interface + '\star\24\star' + IntTostr(MyBrain.Score.Rank [index]) +'.bmp','star', 1,1,1000,305,300,true,1200);
 
     bmp := SE_Bitmap.Create (300,22);
     bmp.Bitmap.Canvas.Brush.Color :=  clGray;
@@ -14011,10 +16664,9 @@ begin
         else if MiGain < 0 then
           MiGainS := '- ' + IntToStr(MiGain);
 
-    aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clYellow,clBlack,16, MiGainS ,True  );
-    aSprite := SE_GameOver.CreateSprite(bmp.bitmap,'money', 1,1,1000,490,300,true);
+    aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clYellow,clBlack,16, MiGainS ,True ,1,dt_left );
+    aSprite := SE_GameOver.CreateSprite(bmp.bitmap,'money', 1,1,1000,490,300,true,1200);
     aSprite.Labels.Add(aSpriteLabel);
-    aSprite.Priority := 1200;
     bmp.Free;
 
   end;
@@ -14037,22 +16689,13 @@ begin
 
   GameScreen := ScreenFormation;
   aPlayer := MyBrainFormation.GetSoccerPlayerALL ( tslocal[1] );
-  PanelError.Left := (Form1.Width div 2) - (PanelError.Width div 2);
-  PanelError.Top := (Form1.Height div 2) - (PanelError.Height div 2);
-  BtnErrorOK.Caption := 'OK';
-
+   { TODO : da tradurre in messages }
   if tslocal[2] <> '0' then begin
-    lbl_Error.Caption := aPlayer.SurName + ' è appena migliorato!';
-    lbl_error.color := clLime;
-    PanelError.Color := clLime;
+    CreateInfoError ('Attenzione!',aPlayer.SurName + ' è appena migliorato!','screenplayerdetails' );
   end
   else begin
-    lbl_Error.Caption := 'Purtroppo ' + aPlayer.SurName + ' non è riuscito a migliorare.';
-    lbl_error.color := clRed;
-    PanelError.Color := clRed;
+    CreateInfoError ( 'Attenzione!','Purtroppo ' + aPlayer.SurName + ' non è riuscito a migliorare.','screenplayerdetails' );
   end;
-  PanelError.Visible:= true;
-  PanelError.BringToFront;
 
   tslocal.Delete(0); // elimino guid e value già usati
   tslocal.Delete(0); // rimane la xpString
@@ -14082,23 +16725,13 @@ begin
 
   GameScreen := ScreenFormation;
   aPlayer := MyBrainFormation.GetSoccerPlayerALL ( tslocal[1] );
-  PanelError.Left := (Form1.Width div 2) - (PanelError.Width div 2);
-  PanelError.Top := (Form1.Height div 2) - (PanelError.Height div 2);
-  BtnErrorOK.Caption := 'OK';
 
   if tslocal[2] <> '0' then begin
-    lbl_Error.Caption := aPlayer.SurName + ' ha nuovi talenti!';
-    lbl_error.color := clLime;
-    PanelError.Color := clLime;
+    CreateInfoError ('Attenzione!',aPlayer.SurName + ' ha nuovi talenti!','screenplayerdetails' );
   end
   else begin
-    lbl_Error.Caption := 'Purtroppo ' + aPlayer.SurName + ' non è riuscito a sviluppare il talento.';
-    lbl_error.color := clRed;
-    PanelError.Color := clRed;
+    CreateInfoError ('Attenzione!','Purtroppo ' + aPlayer.SurName + ' non è riuscito a sviluppare il talento','screenplayerdetails' );
   end;
-
-  PanelError.Visible:= true;
-  PanelError.BringToFront;
 
   tslocal.Delete(0); // elimino la o lt ,guid e value già usati
   tslocal.Delete(0); // rimane la xpString
@@ -14126,6 +16759,947 @@ begin
     aSprite.Visible := False;
   end;
 end;
+procedure TForm1.PveResetFormation ;  // solo memoria
+var
+  aCommaText: string;
+begin
+// vecchio reset
+//  for I := 0 to MyBrainFormation.lstSoccerPlayerALL.Count -1 do begin
+//    MyBrainFormation.lstSoccerPlayerALL[i].AIFormationCellX := i;
+//    MyBrainFormation.lstSoccerPlayerALL[i].AIFormationCellY := -1;
+//  end;
+//  SaveTeamStream( MyActiveGender, IntToStr(MyGuidTeam), MyBrainFormation, dir_Saves  );
+
+
+//  aCommaText :=  pveCreateFormationTeam( dir_saves + MyActiveGender + IntToStr(MyGuidTeam) + '.120', MyActiveGender, MyGuidTeam, '442' ) ;
+  aCommaText :=  pveCreateFormationTeam( dir_saves + MyActiveGender + IntToStr(MyGuidTeam) + '.120', MyActiveGender, MyGuidTeam ,false,'' ) ;
+  WriteTeamFormation ( MyActiveGender , IntToStr(MyGuidTeam) , dir_Saves , aCommaText );
+
+  Makedelay (300) ;
+  ClientLoadformation;
+end;
+procedure TForm1.CreateYesNo ( param1,param2,paramSpecial: string );
+var
+  aSprite: SE_Sprite;
+  aSpriteLabel : SE_SpriteLabel;
+  bmp: SE_Bitmap;
+begin
+
+  HideAllEnginesExcept(SE_BackGround,SE_YesNo,nil,nil,nil );
+
+  bmp :=SE_Bitmap.Create ( 500, 200 );
+  bmp.Bitmap.Canvas.Brush.Color :=  $007B5139;
+  bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
+  RoundBorder ( bmp.Bitmap );
+  aSprite := SE_YesNo.CreateSprite( bmp.Bitmap , 'baseyesno',1,1,1000, (form1.Width div 2), (form1.height div 2) ,true,1 ); // non visibile. in futuro immagine.
+  aSprite.Alpha := 200;
+  aSprite.BlendMode := SE_BlendAlpha;
+  bmp.Free;
+
+  bmp :=SE_Bitmap.Create ( 500, 32 );
+  aSprite := SE_YesNo.CreateSprite( bmp.Bitmap , 'param1',1,1,1000, (form1.Width div 2), (form1.height div 2) - 70  ,true,2 );
+  aSpriteLabel := SE_SpriteLabel.create(-1,0,'Calibri',clWhite-1,clBlack,20,param1,true,1,dt_center);
+  aSprite.Labels.Add(aSpriteLabel);
+  aSpriteLabel.lFontQuality := fqdefault;
+  bmp.Free;
+
+  bmp :=SE_Bitmap.Create ( 500, 32 );
+  aSprite := SE_YesNo.CreateSprite( bmp.Bitmap , 'param2',1,1,1000, (form1.Width div 2), (form1.height div 2) - 20  ,true,2 );
+  aSpriteLabel := SE_SpriteLabel.create(-1,0,'Calibri',clYellow,clBlack,20,param2,true,1,dt_center);
+  aSpriteLabel.lFontStyle := [fsBold];
+  aSpriteLabel.lFontQuality := fqdefault;
+  aSprite.Labels.Add(aSpriteLabel);
+  bmp.Free;
+
+  bmp :=SE_Bitmap.Create ( 80, 24 );
+  bmp.Canvas.Brush.Color := clGreen;
+  bmp.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
+  aSprite := SE_YesNo.CreateSprite( bmp.Bitmap , 'yes',1,1,1000, (form1.Width div 2) - 100 , (form1.height div 2) + 60  ,false,2 );
+  aSpriteLabel := SE_SpriteLabel.create(-1,0,'Calibri',clWhite-1,clgreen,16,Capitalize(Translate('lbl_Yes' )),true,2,dt_center);
+  aSprite.Labels.Add(aSpriteLabel);
+  aSpriteLabel.lFontQuality := fqdefault;
+  aSprite.sTag := paramSpecial;
+  bmp.Free;
+
+  bmp :=SE_Bitmap.Create ( 80, 24 );
+  bmp.Canvas.Brush.Color := $000080;
+  bmp.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
+  aSprite := SE_YesNo.CreateSprite( bmp.Bitmap , 'no',1,1,1000, (form1.Width div 2) + 100, (form1.height div 2) + 60  ,false,2 );
+  aSpriteLabel := SE_SpriteLabel.create(-1,0,'Calibri',clWhite-1,$000080,16,Capitalize(Translate('lbl_No' )),true,2,dt_center);
+  aSprite.Labels.Add(aSpriteLabel);
+  aSpriteLabel.lFontQuality := fqdefault;
+  aSprite.sTag := paramSpecial;
+  bmp.Free;
+
+
+end;
+procedure TForm1.CreateInfoError ( param1,param2,paramSpecial: string );
+var
+  aSprite: SE_Sprite;
+  aSpriteLabel : SE_SpriteLabel;
+  bmp: SE_Bitmap;
+begin
+  SE_InfoError.RemoveAllSprites;
+  HideAllEnginesExcept(SE_BackGround,SE_Infoerror,nil,nil,nil );
+
+  bmp :=SE_Bitmap.Create ( 500, 200 );
+  bmp.Bitmap.Canvas.Brush.Color :=  $007B5139;
+  bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
+  RoundBorder ( bmp.Bitmap );
+  aSprite := SE_InfoError.CreateSprite( bmp.Bitmap , 'baseinfoerror',1,1,1000, (form1.Width div 2), (form1.height div 2) ,true,1 ); // non visibile. in futuro immagine.
+  aSprite.Alpha := 200;
+  aSprite.BlendMode := SE_BlendAlpha;
+  bmp.Free;
+
+  bmp :=SE_Bitmap.Create ( 500, 24 );
+  aSprite := SE_InfoError.CreateSprite( bmp.Bitmap , 'param1',1,1,1000, (form1.Width div 2), (form1.height div 2) - 160  ,true,2 );
+  aSpriteLabel := SE_SpriteLabel.create(-1,0,'Calibri',clWhite-1,clBlack,20,param1,true,1,dt_center);
+  aSprite.Labels.Add(aSpriteLabel);
+  aSpriteLabel.lFontQuality := fqdefault;
+  bmp.Free;
+
+  bmp :=SE_Bitmap.Create ( 500, 200 );
+  aSprite := SE_InfoError.CreateSprite( bmp.Bitmap , 'param2',1,1,1000, (form1.Width div 2), (form1.height div 2) - 140  ,true,2 );
+  aSpriteLabel := SE_SpriteLabel.create(-1,0,'Calibri',clYellow,clBlack,20,param2,true,1,dt_center);
+  aSpriteLabel.lFontStyle := [fsBold];
+  aSpriteLabel.lFontQuality := fqdefault;
+  aSprite.Labels.Add(aSpriteLabel);
+  bmp.Free;
+
+  bmp :=SE_Bitmap.Create ( 120, 24 );
+  bmp.Canvas.Brush.Color := clGray;
+  bmp.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
+  aSprite := SE_InfoError.CreateSprite( bmp.Bitmap , 'close',1,1,1000, (form1.Width div 2) , (form1.height div 2) + 60  ,false,2 );
+  aSpriteLabel := SE_SpriteLabel.create(-1,0,'Calibri',clWhite-1,clgreen,16,Capitalize(Translate('lbl_Close' )),true,1,dt_center);
+  aSprite.Labels.Add(aSpriteLabel);
+  aSpriteLabel.lFontQuality := fqdefault;
+  aSprite.sTag := paramSpecial;
+  bmp.Free;
+
+
+end;
+procedure TForm1.StartAllMatches ( Gender:char; Season, Country, Round: integer; simulation: boolean );
+var
+  ini : TiniFile;
+  i,D,M: integer;
+  ts2 : TStringlist;
+  Filename,aCommaText: string; // per motivi di lunghezza codice
+  aBrain: TSoccerBrain;
+  aSprite : SE_Sprite;
+  fY: boolean;
+  label others;
+begin
+  ts2 := Tstringlist.create;
+  ts2.StrictDelimiter := True;
+
+  for D := 1 to 5 do begin
+
+    if (D > 2) and ( Round > 30 ) then Continue; // Quei campionati si fermano li'. advanceNextMF setta round es. 17 e le divisioni 1 e 2 continuano
+
+    Filename :=dir_Saves + Gender + 'S' + Format('%.3d', [Season]) + 'C' + Format('%.3d', [Country]) + 'D' + Format('%.1d', [D] ) + '.ini';
+    ini := TIniFile.Create(Filename ) ;
+    for M := 1 to DivisionMatchCount[D]  do begin
+      ts2.commatext := ini.ReadString('round' + IntToStr(Round), 'match' + IntToStr(M),''  );
+
+      if simulation then goto others;
+      if (StrToInt(ts2[0]) = MyGuidTeam) or (StrToInt(ts2[2]) = MyGuidTeam) then begin   // se è la mia partita
+        // la mia formazione è corretta se proviene da btnclick o da simulate
+        if StrToInt(ts2[0]) = MyGuidTeam then begin
+          aCommaText := pveCreateFormationTeam  ( dir_Saves + Gender + ts2[2] + '.120' , Gender, StrToInt(ts2[2]) , false  ); // la formazione dell'altro generata al volo .
+            WriteTeamFormation ( Gender , ts2[2] , dir_Saves , aCommaText );
+        end
+        else if StrToInt(ts2[2]) = MyGuidTeam then begin
+         aCommaText := pveCreateFormationTeam  ( dir_Saves + Gender + ts2[0] + '.120', Gender, StrToInt(ts2[0]) , false ); // la formazione dell'altro generata al volo
+            WriteTeamFormation (  Gender , ts2[0] , dir_Saves , aCommaText );
+        end;
+        Application.ProcessMessages ;
+        aBrain:= TSoccerBrain.Create( 'my',Gender, Season , Country, D, Round ) ; // questo è il mio ids. Gli altri ids sono vuoti
+        aBrain.GameMode := pve;
+        aBrain.pvePostMessage := True; // manda OnappMessage
+        {$IFDEF  tools}
+        aBrain.dir_log := dir_tmp;
+        aBrain.LogUser[0]:=1;
+        {$endIF  tools}
+
+        pveCreateMatch ( Season, Country, Round,  ts2[0],ts2[1],ts2[2], ts2[3], aBrain );
+        if (ts2[0]='15')  or (ts2[2]='15') then asm int 3 ; end;
+
+
+        Application.ProcessMessages ;
+        lstbrain.Add(aBrain);
+
+        if aBrain.Score.TeamGuid[0]=MyGuidTeam then aBrain.Score.AI[1]:= True
+        else if aBrain.Score.TeamGuid[1]=MyGuidTeam then aBrain.Score.AI[0]:= True;
+
+        MyBrain:= aBrain; //<--- è già assegnato
+        MyBrain.Start;
+      end
+      else begin
+others:
+        if Rndgenerate (100) <= CREATEFORMATION_FORCEYOUNG then
+          fY := True
+          ELSE fY:= FALSE;
+
+
+        aCommaText := pveCreateFormationTeam   ( dir_Saves + Gender + ts2[0] + '.120', Gender, StrToInt(ts2[0]), fY ) ; // la AI generata al volo
+          WriteTeamFormation (  Gender , ts2[0] , dir_Saves , aCommaText );
+        aCommaText := pveCreateFormationTeam   (  dir_Saves + Gender + ts2[2] + '.120', Gender, StrToInt(ts2[2]),fY ) ; // la AI generata al volo
+          WriteTeamFormation (  Gender , ts2[2] , dir_Saves , aCommaText );
+        aBrain:= TSoccerBrain.Create ('other',Gender, Season , Country, D, Round) ; // no ids
+        aBrain.GameMode := pve;
+        aBrain.pvePostMessage := false;  // non manda OnappMessage
+        pveCreateMatch ( Season, Country, Round,   ts2[0],ts2[1],ts2[2], ts2[3], aBrain );
+        lstbrain.Add(aBrain);
+        aBrain.Score.AI[0]:= True;
+        aBrain.Score.AI[1]:= True;
+        aBrain.Start;
+      end;
+    //AdvProgressLoading.Position := i*5;
+     application.ProcessMessages ;
+
+
+    end;
+    ini.Free;
+  end;
+  ts2.Free;
+
+  if simulation then         // processo tutti i brain
+   Exit;
+  // da qui in poi solo grafica per la propria partita, quindi esco con simulation
+
+  //  MyBrain.MMbraindata è il file.IS ( in Tcp spedito ) che contiene script e nuove posizioni
+  PostMessage ( Application.Handle, 50,0,0);   // per qualche oscuro motivo il primo postmessage non va, quindi devo fare sotto la copymemory
+  application.ProcessMessages;
+  MM3[CurrentIncMove].Clear; // MM3[MyBrain.incMove].Clear;
+  MM3[CurrentIncMove].CopyFrom ( MyBrain.MMbraindata, 0);
+  CopyMemory( @Buf3[CurrentIncMove], mm3[CurrentIncMove].Memory , mm3[CurrentIncMove].size  ); // copia del buf per non essere sovrascritti
+
+  if not FirstLoadOK  then begin   // avvio partita se è la prima volta
+    CurrentIncMove := 0;
+    ClientLoadBrainMM(CurrentIncMove);
+//    pveSynchBrain;
+    // ClientLoadBrainMM (CurrentIncMove) ;   // (incmove)
+    FirstLoadOK := True;
+    for I := 0 to 255 do begin
+     incMoveAllProcessed [i] := false;
+   //  incMoveReadTcp [i] := false;
+    end;
+  //  for I := 0 to CurrentIncMove do begin
+     // caricato e completamente eseguito
+//     incMoveAllProcessed [i] := true;
+    // incMoveReadTcp [i] := true;
+   // end;
+  end;
+
+  SpriteReset;
+  ThreadCurrentIncMove.Enabled := true;
+
+  aSprite := SE_Live.FindSprite('btnmenu_overridecolor');
+  aSprite.SubSprites[0].lBmp.LoadFromFileBMP( dir_tmp + 'color1.bmp');
+  GameScreen := ScreenLive;
+
+ // MM3[MyBrain.incMove].SaveToFile( dir_data + IntToStr(MyBrain.incMove) + '.IS');
+
+end;
+procedure TForm1.pveCreateMatch ( aSeason, aCountry, aRound: Integer; t0,n0,t1,n1 : string; var Brain:TSoccerBrain );
+var
+  i,T,Cur,count,aTeam,Guid: integer;
+  TvCell,TvReserveCell,aPoint: TPoint;
+  GuidTeam: array[0..1] of Integer;
+  UserName: array[0..1] of string;
+  aPlayer: TSoccerPlayer;
+  aName, aSurname,Surname, Attributes,aIds: string;
+  GuidTeams,NameTeams : array [0..1] of String;
+  Uniforms: array [0..1] of Tstringlist;
+  MM :TMemoryStream;
+  SS: TStringStream;
+  dataStr: string;
+  lenuser0,lenuser1,lenteamname0,lenteamname1,lenuniform0,lenuniform1,lenSurname: byte;
+  lenMatchInfo: word;
+  TotPlayer,TotReserve,TotGameOver: byte;
+  aFieldPointSpr, aSprite: se_Sprite;
+  ii , aAge,aCellX,aCellY,aGuidTeam,BIndex,aStamina,Age,Stamina: integer;
+  AIFormation_x,AIFormation_Y : ShortInt;
+  DefaultCellX,DefaultCellY: ShortInt;
+  TalentID1,TalentID2: Byte;
+  FC: TFormationCell;
+  bmp: se_Bitmap;
+  PenaltyCell: TPoint;
+  bmp1: SE_Bitmap;
+  Injured: Integer;
+  CornerMap: TCornerMap;
+  ACellBarrier,aPenaltyCell: TPoint;
+  DefaultSpeed, DefaultDefense , DefaultPassing, DefaultBallControl, DefaultShot, DefaultHeading: Byte;
+  Speed, Defense , Passing, BallControl, Shot, Heading: ShortInt;
+  UniformBitmap : array[0..1] of SE_Bitmap;
+  UniformBitmapGK: SE_bitmap;
+  aBallSprite: SE_Sprite;
+  yellowcard, disqualified, onmarket,face , fitness,  morale, country: integer;
+  tsHistory,tsXP : TStringList;
+  LenHistory, lenXP, IndexTal : Integer;
+  buf3 : TArray8192;
+begin
+  // qui carico il brain . Carico una parte del file, non carico xp ad esempio, quindi quando riscrivo il file devo stare attento
+  // dopo in pratica if abrain.Ids ='my' then server + clientloadbrain.
+//  if (t0='15') or (t1='15') then asm int 3; end;
+
+  GuidTeams[0] := t0;
+  GuidTeams[1] := t1;
+  NameTeams[0] := n0;
+  NameTeams[1] := n1;
+  Uniforms[0] := TStringList.Create;      // le carico tutte e 4 le uniformi  per uso futuro
+  Uniforms[1] := TStringList.Create;
+  Uniforms[0].Add('0,0,0,0');
+  Uniforms[0].Add('1,1,1,1');
+  Uniforms[1].Add('0,0,0,0');
+  Uniforms[1].Add('1,1,1,1');
+
+  brain.Minute := 1;
+
+  brain.GameStarted := True;
+  brain.FlagEndGame := False;
+  brain.ShpBuff :=  false;
+  brain.incMove :=  0;
+  brain.TeamCorner :=  -1;
+  brain.w_CornerSetup := false;
+  brain.w_Coa := False;
+  brain.w_Cod :=  False;
+  brain.w_CornerKick  := False;
+
+  brain.TeamFreeKick := -1;
+  brain.w_FreeKickSetup1 := False;
+  brain.w_fka1 :=False;
+  brain.w_FreeKick1  := False;
+
+  brain.w_FreeKickSetup2 := False;
+  brain.w_fka2 := False;
+  brain.w_fkd2 := False;
+  brain.w_FreeKick2  := False;
+
+  brain.w_FreeKickSetup3 := False;
+  brain.w_fka3 :=False;
+  brain.w_fkd3 := False;
+  brain.w_FreeKick3  := False;
+
+  brain.w_FreeKickSetup4 := False;
+  brain.w_fka4 := False;
+  brain.w_FreeKick4  := False;
+
+  brain.TeamTurn := 0 ;
+
+  if brain.Ball <> nil then brain.Ball.Free;
+  brain.Ball := Tball.create(brain);
+  brain.Ball.CellX := 5;
+  brain.Ball.CellY := 3;
+
+  MM := TMemoryStream.Create;
+
+  for T := 0 to 1 do begin
+
+    GetUniforms ( GuidTeams[T], Uniforms[T] );
+
+    brain.Score.Team [T] :=  NameTeams[T];
+    brain.Score.TeamGuid [T] := StrToInt( GuidTeams[T]);
+    brain.Score.Country [T] := aCountry;
+    brain.Score.Season [T] := aSeason;
+    brain.Score.SeasonRound [T] := aRound;
+    brain.Score.TeamSubs [T] := 0;
+
+    brain.Score.Uniform [T]:= Uniforms[T][T];  // le carico tutte e 4 le uniformi  per uso futuro
+   // if i = 0 then
+   //   brain.Score.Uniform [T] :=  Uniforms[T][0]
+   // else
+   //   brain.Score.Uniform [T] :=  Uniforms[T][1];
+
+
+    brain.Score.Gol [T] := 0;
+
+    MM.LoadFromFile ( dir_saves + Brain.Gender + GuidTeams[T] + '.120');
+    CopyMemory( @buf3, MM.Memory, MM.Size  ); // metto nel buffer per i comandi non compressi
+    SS:= TStringStream.Create;
+    SS.Size := MM.Size;
+    Mm.Position := 0;
+    SS.CopyFrom( MM, MM.size );
+    dataStr := SS.DataString;
+    SS.Free;
+    Cur:= 0;
+
+    count := ord (buf3 [ cur ]);   // quanti player
+    Cur := Cur + 1; //
+  //PDWORD(@buf3 [ cur ])^;
+    for I := 0 to count -1 do begin
+      guid :=  PDWORD(@buf3 [ cur ])^; // player identificativo globale
+      Cur := Cur + 4;
+      lenSurname :=  Ord( buf3 [ cur ]);
+      Surname := MidStr( dataStr, cur + 2  , lenSurname );// ragiona in base 1  e l'elemento 0 è la len della stringa quindi + 2
+      cur  := cur + lenSurname + 1;
+
+      Age :=  Ord( buf3 [ cur ]);               // età
+      Cur := Cur + 1 ;
+      TalentID1 := Ord( buf3 [ cur ]);           // identificativo talento
+      Cur := Cur + 1;
+      TalentID2 := Ord( buf3 [ cur ]);           // identificativo talento
+      Cur := Cur + 1;
+
+      Stamina := PWORD(@buf3 [ cur ])^;
+      Cur := Cur + 2;
+
+
+
+      DefaultSpeed := Ord( buf3 [ cur ]);
+      Cur := Cur + 1;
+      DefaultDefense := Ord( buf3 [ cur ]);
+      Cur := Cur + 1;
+      DefaultPassing := Ord( buf3 [ cur ]);
+      Cur := Cur + 1;
+      DefaultBallControl := Ord( buf3 [ cur ]);
+      Cur := Cur + 1;
+      DefaultShot := Ord( buf3 [ cur ]);
+      Cur := Cur + 1;
+      DefaultHeading := Ord( buf3 [ cur ]);
+      Cur := Cur + 1;
+      Attributes:= IntTostr( DefaultSpeed) + ',' + IntTostr( DefaultDefense) + ',' + IntTostr( DefaultPassing) + ',' + IntTostr( DefaultBallControl) + ',' +
+                   IntTostr( DefaultShot) + ',' + IntTostr( DefaultHeading) ;
+
+      AIFormation_x := Ord( buf3 [ cur ]);
+      Cur := Cur + 1;
+      AIFormation_y := Ord( buf3 [ cur ]);
+      Cur := Cur + 1;
+      injured := Ord( buf3 [ cur ]);
+      Cur := Cur + 1;
+      yellowcard := 0;//Ord( buf3 [ cur ]); lo ricarico dal db. questo si riferisce alla partita
+      Cur := Cur + 1;
+      disqualified := Ord( buf3 [ cur ]);
+      Cur := Cur + 1;
+
+
+
+      //onmarket := Ord( buf3 [ cur ]);
+      //Cur := Cur + 1;
+
+      face :=  PDWORD(@buf3 [ cur ])^; // face bmp viso
+      Cur := Cur + 4;
+      fitness:= Ord( buf3 [ cur ]);
+      Cur := Cur + 1;
+      morale:=Ord( buf3 [ cur ]);
+      Cur := Cur + 1;
+      Country:= PWORD(@buf3 [ cur ])^;
+      Cur := Cur + 2;
+
+      aPlayer:= TSoccerPlayer.create(T,StrToInt( GuidTeams[T]), 0,IntToStr(guid),'',surname,Attributes,TalentID1,TalentID2);
+      if Gamemode = pve then
+        aPlayer.Age := age;
+
+
+      aPlayer.devA:= PWORD(@buf3 [ cur ])^;
+      Cur := Cur + 2;
+      aPlayer.devT:= PWORD(@buf3 [ cur ])^;
+      Cur := Cur + 2;
+      aPlayer.devI:= PWORD(@buf3 [ cur ])^;
+      Cur := Cur + 2;
+
+      tsHistory := TStringList.Create;
+      LenHistory :=  Ord( buf3 [ cur ]);
+      tsHistory.commaText := MidStr( dataStr, cur + 2  , LenHistory );// ragiona in base 1  e l'elemento 0 è la len della stringa quindi + 2
+      cur  := cur + LenHistory + 1;
+  //      tsHistory.commaText := ini.readString('player' + IntToStr(i),'History','0,0,0,0,0,0' ); // <-- 6 attributes
+      aPlayer.History_Speed         := StrToInt( tsHistory[0]);
+      aPlayer.History_Defense       := StrToInt( tsHistory[1]);
+      aPlayer.History_Passing       := StrToInt( tsHistory[2]);
+      aPlayer.History_BallControl   := StrToInt( tsHistory[3]);
+      aPlayer.History_Shot          := StrToInt( tsHistory[4]);
+      aPlayer.History_Heading       := StrToInt( tsHistory[5]);
+      tsHistory.Free;
+
+      tsXP := TStringList.Create;
+      LenXP :=  Ord( buf3 [ cur ]);
+  //     tsXP.commaText := ini.readString('player' + IntToStr(i),'xp','0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0' ); // <-- 6 attributes , 17 talenti
+      tsXP.commaText := MidStr( dataStr, cur + 2  , LenXP );// ragiona in base 1  e l'elemento 0 è la len della stringa quindi + 2
+      cur  := cur + LenXP + 1;
+
+      // rispettare esatto ordine dei talenti sul db   all'inizoo del match le xp sono azzerate . in pvefinalizebrain le ricarico e le sommo
+      aPlayer.xp_Speed         := 0;// StrToInt( tsXP[0]);
+      aPlayer.xp_Defense       := 0;// StrToInt( tsXP[1]);
+      aPlayer.xp_Passing       := 0;// StrToInt( tsXP[2]);
+      aPlayer.xp_BallControl   := 0;// StrToInt( tsXP[3]);
+      aPlayer.xp_Shot          := 0;// StrToInt( tsXP[4]);
+      aPlayer.xp_Heading       := 0;// StrToInt( tsXP[5]);
+
+      for IndexTal := 1 to NUM_TALENT do begin
+        aPlayer.xpTal[IndexTal]:=  0;// StrToInt( tsXP[IndexTal+5])
+      end;
+
+      tsXP.Free;
+
+
+      aPlayer.devA:= 0;//PWORD(@buf3 [ cur ])^;
+      Cur := Cur + 2;
+      aPlayer.devT:= 0;// PWORD(@buf3 [ cur ])^;
+      Cur := Cur + 2;
+      aPlayer.devI:= 0;// PWORD(@buf3 [ cur ])^;
+      Cur := Cur + 2;
+
+      if disqualified > 0 then  // gli squalificati vengono lasciati a casa. SOLO QUI alla fine della lettura della memoria
+        Continue;
+
+      aPlayer.xpdevA := 0;
+      aPlayer.xpdevT := 0;
+      aPlayer.xpdevI := 0;
+
+      aPlayer.TalentId1 := TalentID1;
+      aPlayer.TalentId2 := TalentID2;
+      aPlayer.GuidTeam := StrToInt( GuidTeams[T]);
+      aPlayer.AIFormationCellX := AIFormation_x;
+      aPlayer.AIFormationCellY := AIFormation_y;
+
+            // la formationcells determina il role
+      aPoint.X := AIFormation_x;
+      aPoint.Y := AIFormation_y;
+
+      // la formationcells determina il role
+
+      aPlayer.Age:= Age;
+
+      if isReserveSlotFormation( aPoint.X,aPoint.Y  ) then begin
+//          TvReserveCell:= brain.ReserveSlotTV [0,aPoint.X,aPoint.Y  ]; // sempre 0 qui, il client lo metterà a 1 (aplayer.team)
+          aPlayer.DefaultCells :=  Point(aPoint.X ,aPoint.Y ); //
+          aPlayer.CellS := aPlayer.DefaultCells;
+      end
+      else begin
+        TvCell := brain.AiField2TV ( T,  aPoint.X,aPoint.Y);
+        aPlayer.DefaultCells :=  Point(TvCell.X ,TvCell.Y );
+        aPlayer.Cells := TvCell;
+
+      end;
+
+      aPlayer.Injured := injured;
+      if aPlayer.Injured > 0 then begin
+        aPlayer.Speed :=1;
+        aPlayer.Defense :=1;
+        aPlayer.Passing :=1;
+        aPlayer.BallControl :=1;
+        aPlayer.Shot :=1;
+        aPlayer.Heading :=1;
+      end;
+
+      aPlayer.YellowCard := 0;
+      aPlayer.GameOver  := False;
+
+      aPlayer.Stamina := Stamina;
+
+
+
+
+        (* variabili di gioco *)
+      aPlayer.CanMove  := true;
+      aPlayer.CanSkill := true;
+      aPlayer.CanDribbling := true;
+      aPlayer.PressingDone  := False;
+      aPlayer.BonusTackleTurn  := 0;
+      aPlayer.BonusLopBallControlTurn  := 0;
+      aPlayer.BonusProtectionTurn  := 0;
+      aPlayer.UnderPressureTurn := 0;
+      aPlayer.BonusSHPturn := 0;
+      aPlayer.BonusSHPAREAturn := 0;
+      aPlayer.BonusPLMturn := 0;
+      aPlayer.isCOF := False;
+      aPlayer.isFK1 := False;
+      aPlayer.isFK2 := False;
+      aPlayer.isFK3 := False;
+      aPlayer.isFK4 := False;
+
+      aPlayer.face := face;
+      aPlayer.Fitness := fitness;
+      aPlayer.morale := morale;
+      aPlayer.Country := Country; // non aCountry che è la nazione di gioco , non del singolo player
+
+      brain.lstSoccerPlayerALL.Add(aPlayer);
+      if isReserveSlot( aPlayer.CellX, aPlayer.CellY ) then
+        brain.AddSoccerReserve(aPlayer)    // <--- riempe reserveSlot
+      else  brain.AddSoccerPlayer(aPlayer);
+
+      // Non carico XP attribute e talent e history e neanche xpDeva,T,I. la lascio sul file e la sommo dopo
+      //
+
+    end;
+
+  end;
+
+  MM.Free;
+
+
+ { buff casalingo e morale }
+  for I := 0 to 3 do begin // buff casalingo ti ASSICURA 3 player con attributi incrementati  +1 sia per f che per m
+    aPlayer := brain.GetSoccerPlayerRandom (0,false); // non il gk
+    if Buff_or_Debuff_4 ( aPlayer, 1, brain.MAX_STAT) then // potrebbe trovare un player già maximizzato
+      aPlayer.BuffHome := 1;
+  end;
+
+  // morale  i GK sono esenti dal morale
+  for i := brain.lstSoccerPlayer.Count -1 downto 0 do begin
+    aPlayer := brain.lstSoccerPlayer[i];
+    if aPlayer.TalentId1 <> 1 then begin // non GK
+      if aPlayer.Team = 0 then begin // solo Home players
+        if aPlayer.Morale = 2 then begin // su di morale   // se morale 2 20% ottenere +1
+          if RndGenerate(100) <= 20 then begin
+            if Buff_or_Debuff_4 ( aPlayer, 1 , brain.MAX_STAT ) then  // f e m
+              aPlayer.BuffMorale := 1;
+          end;
+        end
+        else if aPlayer.Morale = 0 then begin  // giù di morale  // se morale 0 20% ottenere -1
+          if RndGenerate(100) <= 20 then begin
+            Buff_or_Debuff_4 ( aPlayer, -1, brain.MAX_STAT );  // f e m
+              aPlayer.BuffMorale := -1;
+          end;
+        end;
+
+      end;
+    end;
+  end;
+  Uniforms[0].free;
+  Uniforms[1].free;
+  brain.Start;  // <-- teammoveleft, seconds ecc...
+  brain.SaveData( brain.incMove  );
+  //inc (brain.incMove);
+end;
+
+procedure TForm1.GetUniforms ( GuidTeam: string; var ts: TStringList  );
+var
+  i: integer;
+  ts2 : Tstringlist;
+begin
+  TsNationTeams.LoadFromFile( dir_Data+ 'worldTeams.csv' );
+  ts2 := TStringList.Create ;
+  ts2.StrictDelimiter := True;
+
+  for I := TsNationTeams.Count -1 downto 0 do begin
+    ts2.CommaText := TsNationTeams[i];             // elimino i team di country diverse
+    if ts2[0] = GuidTeam then begin // guid,name,country,avgrank,uniformh,uniforma
+      ts[0]:=ts2[4] ;
+      ts[1]:=ts2[5] ;
+      break;
+    end;
+  end;
+
+  ts2.Free;
+
+end;
+procedure TForm1.AllbrainThink;
+var
+  i: Integer;
+begin
+
+  // il mio brain pensa se è settato su AI (auto oppure l'avversario)  , poi pensano tutti gli altri
+  if MyBrain.Score.AI[ MyBrain.TeamTurn ] then
+    MyBrain.AI_Think(   MyBrain.TeamTurn  );
+
+    // tutti gli altri brain pensano
+    for I := 0 to lstbrain.Count -1 do begin
+      if lstbrain[i].brainIds <> MyBrain.brainids then begin
+        lstbrain[i].AI_Think(lstbrain[i].TeamTurn);
+  //      lstbrain[i].tsScript.SaveToFile(dir_tmp + IntToStr(lstbrain[i].Score.TeamGuid [0]) + '-' + IntToStr(lstbrain[i].Score.TeamGuid [1]) + '.script.ini');
+      end;
+    end;
+ // end;
+end;
+procedure TForm1.ClientLoadHelp ( help : string );
+var
+  fileName: TextFile;
+  MyText, Text  : string;
+  aSprite :SE_sprite;
+  R : TRect;
+  h: Integer;
+ // lstText : TStringList;
+begin
+
+  if Help = 'confirmformation' then
+    Help := 'play';
+
+ // lstText := TStringList.Create;
+
+  AssignFile( fileName,  dir_Help + Help +'.txt');
+  Reset(fileName);
+
+  while not Eof(fileName) do begin
+    ReadLn(fileName, text);
+    MyText := MyText + text + ' ';
+//    lstText.Add( Mytext );
+  end;
+
+  Closefile (fileName) ;
+  GameScreenBeforehelp := GameScreen;
+  HideAllEnginesExcept(SE_BackGround, SE_Help, nil,nil,nil);
+  HideStadiumAndPlayers;
+
+  aSprite := se_help.FindSprite('help_frameback');
+  aSprite.bmp.Bitmap.Canvas.Brush.Color :=  $007B5139;
+  aSprite.bmp.Bitmap.Canvas.FillRect(Rect(0,0,aSprite.bmp.Width,aSprite.bmp.Height));
+  R.Left := 60;
+  R.Top := 60;
+  R.Right :=  SE_Theater1.Width-60;
+  R.Bottom := SE_Theater1.height-60;
+//  aSprite.bmp.Bitmap.Canvas.TextRect( R, 0,0, MyText );
+  aSprite.bmp.Canvas.Font.Color := clwhite-1;
+  aSprite.bmp.Canvas.Font.Name := 'Calibri';
+  aSprite.bmp.Canvas.Font.Size := 20;
+  SetBkMode(aSprite.bmp.Canvas.Handle,TRANSPARENT);
+  h:=DrawText(aSprite.bmp.Canvas.handle, PChar(MyText), length(MyText), R, dt_wordbreak or DT_CALCRECT);
+  R.Top := (aSprite.BMP.Height div 2) - (h div 2);
+  R.Bottom := (aSprite.BMP.Height);
+  DrawText(aSprite.bmp.Canvas.handle, PChar(MyText), length(MyText), R, dt_wordbreak or dt_left or dt_vcenter);
+
+  SE_Help.Visible := true;
+
+
+end;
+procedure TForm1.AllOtherTeamsThinkMarket ( fm :Char; Perc: integer );  // comprende tutte le country, es. 20% percentuale dei team thinkano
+var
+  Cur: Integer;
+  MM : TMemoryStream;
+  aTeamRecord : TTeam;
+  buf3: TArray8192;
+begin
+
+  MM := TMemoryStream.Create;
+  MM.LoadFromFile( dir_Saves + fm + 'teams.120' );
+  CopyMemory( @Buf3, MM.Memory, MM.Size  ); // metto nel buffer per i comandi non compressi
+  MM.Position := 0;
+
+  Cur := 0;
+//  TotalTeams := MM.Size div 8;
+   SE_Loading.FindSprite('loading');
+
+  while Cur < MM.Size do begin
+
+    aTeamRecord.guid := PDWORD(@buf3 [ cur ])^;
+    Cur := Cur + 4;
+    aTeamRecord.Money := PDWORD(@buf3 [ cur ])^;
+    Cur := Cur + 4;
+    aTeamRecord.Division := ord (buf3 [ cur ]);
+    Cur := Cur + 1;
+    aTeamRecord.YoungQueue :=ord(buf3 [ cur ]);
+    Cur := Cur + 1;
+
+    if RndGenerate(100) <= Perc then begin
+      if aTeamRecord.guid <> MyGuidTeam then begin // AllOther al mio team penso io
+        pveThinkMarket ( fm, aTeamRecord.Division, IntToStr(aTeamRecord.guid) , dir_saves);
+      end;
+    end;
+
+  end;
+
+  MM.Free;
+
+end;
+procedure TForm1.pveFinalizeBrain ( aBrain : TSoccerBrain ) ;
+var
+  lstPlayersDB: TObjectList<TSoccerPlayer>;
+  T,p,ptg,NewStamina,NewMorale,aRnd,indexTal: Integer;
+  aPlayerDB,aPlayerThisGame : TSoccerPlayer;
+  label dev;
+begin
+  // Elaboro prima i player, poi i team per i punti e classifica .
+  // ciclo per tutti e 2 i iteam --> T   ciclo per tutti i player ---> p
+  // carico i file .120 e riempo lstPlayersDB ( tutti i player, disqualified compresi)
+  // controllo fine carriera.
+  // disqualified e injured
+  // morale ( non sui GK )
+  // per i cannonieri ho guid e surname in InfoMatch. ricalcolo tutti come ricalcolo tutta la classifica ogni volta alla fine.
+  lstPlayersDB:= TObjectList<TSoccerPlayer>.Create(true);
+
+
+  for T := 0 to 1 do begin
+    pveLoadTeam( dir_saves + aBrain.Gender + IntToStr(aBrain.Score.TeamGuid[T])+'.120', aBrain.Gender,aBrain.Score.TeamGuid[T], lstPlayersDB );
+    for p := lstPlayersDB.Count -1 downto 0 do begin
+      aPlayerDB := lstPlayersDB [p];
+      aPlayerThisGame  := aBrain.GetSoccerPlayerALL( aPlayerDB.ids ); // sincronizzo col corrispettivo player
+      //if aPlayerThisGame.YellowCard > 0 then asm int 3; end;
+      if ((aBrain.Round = 38) and ( aBrain.Division <= 2 )) or ( (aBrain.Round = 30) and ( aBrain.Division > 2 )) then begin
+        aPlayerDB.Age:= aPlayerDB.Age + 1; // è passato di età
+        if aPlayerDB.Age >= 33 then begin
+          //fine carriera eliminazione completa del player
+          pveDeleteFromTeam(aBrain.Gender, StrToInt(aPlayerDB.Ids), aBrain.Score.TeamGuid[T], dir_saves );
+          PveDeleteFromMarket( aBrain.Gender, aPlayerDB.Ids, dir_saves );
+          lstPlayersDB.Delete(p);
+          Continue;
+        end
+        else if aPlayerDB.Age = 30 then begin // allo scoccare dei 30 anni può perdere 1 punto di fitness
+          if aPlayerDB.fitness > 0 then begin
+            if RndGenerate(100) <= 50 then begin
+              aPlayerDB.fitness := aPlayerDB.fitness  - 1;
+            end;
+          end;
+        end;
+
+        aPlayerDB.devA := aPlayerDB.devA - 1;
+        aPlayerDB.devT := aPlayerDB.devT - 1;
+        aPlayerDB.devI := aPlayerDB.devI + 1;
+
+      end;
+
+
+      if aPlayerDB.injured > 0 then
+        aPlayerDB.injured := aPlayerDB.injured - 1;
+
+      // aggiornata la injured, calcolo, ma qui può essere ThisGameInjured
+
+     // OutputDebugString(  PChar( IntTostr(aBrain.Score.TeamGuid[T]) +' '+aPlayerDB.ids ));
+
+      if not (aPlayerDB.disqualified > 0) then begin // è per forza in GetSoccerPlayerALL altrimenti era a casa
+        if (aPlayerDB.injured <= 0) and ( aBrain.GetSoccerPlayerALL (aPlayerDB.ids).Injured <= 0 ) then begin
+          aPlayerDB.Stamina := aPlayerThisGame.Stamina + REGEN_STAMINA + GetFitnessModifier ( lstPlayersDB[p].Fitness  );
+          if aPlayerDB.Stamina > 120 then aPlayerDB.Stamina := 120;
+        end
+        else aPlayerDB.Stamina:=0; // se è injured non recupera stamina
+      end
+      else aPlayerDB.Stamina := aPlayerDB.Stamina + REGEN_STAMINA + GetFitnessModifier ( lstPlayersDB[p].Fitness  );// se era disqualified
+
+      NewMorale := 0;
+      if aPlayerDB.TalentId1 <> TALENT_ID_GOALKEEPER then begin // il morale non funziona sui GK
+        if abrain.GetSoccerPlayer3( aPlayerDB.ids ) <> nil then begin // HA GIOCATO LA PARTITA
+          if RndGenerate(100) <= 25 then
+            NewMorale := +1;
+        end
+        else begin // NON HA GIOCATO LA PARTITA
+          if RndGenerate(100) <= 33 then
+            NewMorale := -1;
+        end;
+        if NewMorale < 0 then
+          NewMorale := 0
+          else if NewMorale > 2 then
+            NewMorale := 2;
+
+        aPlayerDB.Morale := NewMorale;
+      end;
+
+      if aPlayerDB.disqualified > 0 then begin
+        aPlayerDB.xpdevI := aPlayerDB.xpdevI + 120; // fisso
+        goto dev;
+      end;
+        // xp
+        aPlayerDB.xp_Speed :=  aPlayerDB.xp_Speed + aPlayerThisGame.xp_Speed;
+        aPlayerDB.xp_Defense :=  aPlayerDB.xp_Defense + aPlayerThisGame.xp_Defense;
+        aPlayerDB.xp_Passing :=  aPlayerDB.xp_Passing + aPlayerThisGame.xp_Passing;
+        aPlayerDB.xp_BallControl :=  aPlayerDB.xp_BallControl + aPlayerThisGame.xp_BallControl;
+        aPlayerDB.xp_Shot :=  aPlayerDB.xp_Shot + aPlayerThisGame.xp_Shot;
+        aPlayerDB.xp_Heading :=  aPlayerDB.xp_Heading + aPlayerThisGame.xp_Heading;
+        for indexTal := 1 to NUM_TALENT do begin
+          aPlayerDB.xpTal[indexTal]  := aPlayerDB.xpTal[indexTal] + aPlayerThisGame.XpTal [indexTal]; // xpTal array [1..NUM_TALENT] come f_game.talents quindi 5 perchè base 1
+        end;
+
+        // xpdev si sommano e automaticamente cambiano deva,devt,devi
+        aPlayerDB.xpdevA := aPlayerDB.xpdevA + aPlayerThisGame.xpDevA;
+        aPlayerDB.xpdevT := aPlayerDB.xpdevT + aPlayerThisGame.xpDevT;
+        aPlayerDB.xpdevI := aPlayerDB.xpdevI + aPlayerThisGame.xpDevI;
+
+dev:
+        if aPlayerDB.xpDevA >= xpDeva_THRESHOLD then begin          // sopra potrebbe essere passato di età. qui lo recupera
+          aPlayerDB.devA := aPlayerDB.devA + 1;
+          if aPlayerDB.devA > MAX_DEVA then
+            aPlayerDB.devA := MAX_DEVA;
+
+          aPlayerDB.xpDevA := aPlayerDB.xpDevA - xpDeva_THRESHOLD;
+
+          aPlayerDB.DevI := aPlayerDB.DevI - 1; // deva fa -1% su Devi
+          if aPlayerDB.devI <= MIN_DEVI then
+            aPlayerDB.devI := MIN_DEVI;
+
+          aPlayerDB.xpDevI := 0; // azzero anche xp devi
+        end;
+        if aPlayerDB.xpDevT >= xpDevt_THRESHOLD then begin
+          aPlayerDB.devT := aPlayerDB.devT + 1;
+          if aPlayerDB.devT > MAX_DEVT then
+            aPlayerDB.devT := MAX_DEVT;
+
+          aPlayerDB.xpDevT := aPlayerDB.xpDevT - xpDevt_THRESHOLD;
+        end;
+        if aPlayerDB.xpDevI >= xpDevi_THRESHOLD then begin
+          aPlayerDB.devI := aPlayerDB.devI + 1;
+          if aPlayerDB.devI > MAX_DEVI then
+            aPlayerDB.devI := MAX_DEVI;
+
+          aPlayerDB.xpDevI := 0;//aPlayerDB.xpDevI - xpDevi_THRESHOLD;
+
+        end;
+            //disqualified e injured
+      if aPlayerDB.disqualified > 0 then
+        aPlayerDB.disqualified := aPlayerDB.disqualified - 1; //  se era disqualified non ha giocato
+
+
+    end;
+
+
+        // adesso ciclo per brain.lstsoccer ( ThisGame )
+    for ptg := aBrain.lstSoccerPlayerALL.Count -1 downto 0 do begin
+      aPlayerThisGame := aBrain.lstSoccerPlayerALL [ptg]; // si è infortunato in ThisGame
+      aPlayerDB  :=  GetSoccerPlayer ( StrToInt(aPlayerThisGame.Ids), lstPlayersDB );
+      if aPlayerDB = nil then continue; // fa parte dell'altra T
+      
+      if aPlayerThisGame.Injured > 0 then begin // devo scrivere i valori nel lstplayerDS, della memoria ThisGame non me ne faccio nulla
+        aRnd := RndGenerate(100);
+        case aRnd of
+          1..70:  aPlayerDB.injured := RndGenerateRange( 1,2 ) ;
+          71..90: aPlayerDB.injured := RndGenerateRange( 3,10 );
+          91..99: aPlayerDB.injured := RndGenerateRange( 11,17 );
+          100:begin // possibile perdita attributo
+                aPlayerDB.injured := RndGenerateRange( 18, 38 );
+                calc_injured_attribute_lost( aPlayerDB); // è calc_xp ma in perdita di 1    . Modifica default e history
+              end;
+        end;
+
+        aPlayerDB.Stamina := 0;
+      end;
+
+      aPlayerDB.YellowCard := aPlayerDB.YellowCard + aPlayerThisGame.YellowCard;
+      if aPlayerDB.YellowCard >= YELLOW_DISQUALIFIED then begin
+        // genero 1 turno di squalifica
+        aPlayerDB.disqualified := 1;
+        // azzero il totYellowCard
+        aPlayerDB.YellowCard := 0;
+      end
+      else if aPlayerThisGame.RedCard > 0 then begin
+        aRnd := RndGenerate(100);
+        case aRnd of
+          1..70: aPlayerDB.disqualified := 1;
+          71..90: aPlayerDB.disqualified := 2;
+          91..100: aPlayerDB.disqualified := 3;
+        end;
+
+      end;
+
+    end;
+
+
+
+
+    SaveTeamStream( aBrain.Gender, IntToStr(aBrain.Score.TeamGuid[T]), lstPlayersDB, dir_saves  ); // storo il team aggiornato
+    // UpdateCalendar. calc_standings è a parte
+    { il risultato e matchinfo +  }
+
+  end;
+
+  UpdateCalendar ( aBrain, dir_Saves );
+  lstPlayersDB.Free;
+end;
+procedure TForm1.DeleteSaves;
+begin
+
+
+  sfSaves.MaskInclude.add ('*.*');
+  sfSaves.FromPath := dir_saves;
+  sfSaves.SubDirectories := False;
+  sfSaves.Execute ;
+
+  while sfSaves.SearchState <> ssIdle do begin
+    Application.ProcessMessages ;
+  end;
+
+  //for i := sf.ListFiles.Count downto 0 do begin
+  //  DeleteFile( Dir_saves  + '\' + sf.ListFiles[i] );
+  //end;
+
+end;
+
 // utilities
 {
 procedure TForm1.MovMouseEnter ( Sender : TObject);
@@ -14298,6 +17872,11 @@ end;
 
 
 }
+procedure TForm1.sfSavesValidateFile(Sender: TObject; ValidMaskInclude, ValidMaskExclude, ValidAttributes: Boolean; var Accept: Boolean);
+begin
+  DeleteFile( SE_SearchFiles(Sender).CurrentDirectory + SE_SearchFiles(Sender).CurrentFilename );
+end;
+
 end.
 
 

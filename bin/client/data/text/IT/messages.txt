@@ -149,6 +149,9 @@ descr_talent_diving=+10% chance di subire un fallo durante i tackle.
 descr_talent_gkmiracle=Ha una chance del 5% di ottenere +1 Difesa sui tiri precisi a distanza 1. Non valido sui rigori.
 descr_talent_gkpenalty=Ha una chance del 10% di ottenere +1 Difesa sui rigori. 
 
+lbl_TrainingTalentChance=Allenamento talento
+lbl_InjuredChance=Probabilita' di infortunio
+lbl_TrainingChance=Allenamento attributi
 lbl_Talent=Talento
 lbl_Talents=Talenti
 lbl_Role=Ruolo
@@ -158,9 +161,11 @@ lbl_Play=Gioca
 lbl_End Turn=Passa Turno
 lbl_Round=Turno
 lbl_Round2=Giornata
+lbl_Simulate=Simulazione
 lbl_Formation=Formazione
 lbl_Calendar=Calendario
 lbl_Standings=Classifiche
+lbl_Standing=Classifica
 lbl_Exit=Esci
 lbl_Thinking=Sto pensando...
 lbl_Minute=Minuto
@@ -192,7 +197,7 @@ lbl_Login=Login
 lbl_Help=Aiuto
 lbl_Refresh=Aggiorna
 lbl_Wait=Attendi
-lbl_MarketValue=Valore
+lbl_MarketValue=Valore di mercato
 lbl_Age=Eta'
 lbl_MatchesLeft=Partite rimaste
 lbl_MatchesLeft2=P. rimaste
@@ -224,6 +229,8 @@ lbl_Away=Trasferta
 lbl_Close=Chiudi
 lbl_endgame=Fine Partita
 
+lbl_computemarket=Elaborazione mercato 
+lbl_creatingteams=Creazione squadre
 lbl_Country=Nazione
 lbl_Country2=Nazionalità
 lbl_Sell=Vendi
@@ -238,11 +245,29 @@ lbl_Price=Prezzo
 lbl_Search=Cerca
 lbl_MaxValue=Valore massimo
 warning_nosellgk=Non puoi vendere l'unico portiere che hai.
-warning_max18=Non puoi avere piu' di 18 giocatori.
+warning_max22=Non puoi avere piu' di 22 giocatori.
 warning_nosell_lowprice=Non puoi vendere un giocatore ad un costo inferiore al suo valore di mercato.
-lbl_ConfirmBuy=Conferma l'acquisto?
+warning_nobuyown=Non puoi comprare un giocatore gia' in tuo possesso.
+lbl_ConfirmBuy=Confermi l'acquisto?
 
-lbl_ConfirmTeam=Conferma la tua squadra.
+lbl_ConfirmTeam=Confermi la tua scelta?
 lbl_Uniform1=Colore 1
 lbl_Uniform2=Colore 2
 lbl_UniformNormal=Normale
+lbl_Automatic=Auto
+
+lbl_Continue=Continua
+lbl_Restart=Ricomincia
+lbl_MultiPlayer=Partita Online
+lbl_SinglePlayer=Giocatore singolo
+lbl_RestartAdvice=Ogni progresso verra' perso. Sei Sicuro?
+
+lbl_Yes=Si
+lbl_No=No
+
+lbl_warningrestart=Devi riavviare Time120 perche' i cambiamenti abbiano effetto.
+lbl_language=Lingua
+
+lbl_Topscorers=Classifica marcatori
+warning_proceed=Prossima partita:
+warning_nomatchsaved=La partita non verra' salvata. Sei sicuro? 

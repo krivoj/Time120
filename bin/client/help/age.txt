@@ -1,0 +1,1 @@
+I giocatori hanno eta' comprese fra i 18 e i 33 anni. Compiuti i 33 anni il giocatore si ritira automaticamente. I giocatori giovani, solitamente hanno probabilita' piu' alte di imparare un talento o aumentare gli attributi.

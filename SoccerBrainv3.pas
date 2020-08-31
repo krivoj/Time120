@@ -7,7 +7,7 @@ unit SoccerBrainv3;
 interface
 uses DSE_theater, DSE_Random, DSE_PathPlanner,  DSE_MISC,
   generics.collections, generics.defaults, system.classes, ZLIBEX,
-  System.SysUtils, System.Types, strutils, Inifiles, IOUtils, winapi.windows ;
+  System.SysUtils, System.Types, strutils, Inifiles, IOUtils, winapi.windows , forms;
 
 
 const Schemas = 4;           // numero di schema delle uniformi
@@ -26,6 +26,9 @@ const xp_PASSING_POINTS = 120;
 const xp_BALLCONTROL_POINTS = 120;
 const xp_SHOT_POINTS = 80;
 const xp_HEADING_POINTS = 80;
+
+const F_DEFENSESHOT = 3;
+const M_DEFENSESHOT = 5;
 
 // Queste costanti sono uguali al DB game.talents . Gli ID devono corrispondere
 const NUM_TALENT               = 24; // totale talenti di livelo 1
@@ -60,22 +63,22 @@ const HIGH_TALENT2             = 141; // id alto talenti di livelo 2
 const LOW_TALENT2_GK           = 250; // id basso talenti di livelo 2 solo del portiere (GK)
 const HIGH_TALENT2_GK          = 251; // id alto talenti di livelo 2 solo del portiere (GK)
 
-const TALENT_ID_ADVANCED_CHALLENGE  = 128; // prereq difesa 3 TALENT_ID_CHALLENGE  --> 5% chance +1 autotackle
-const TALENT_ID_ADVANCED_TOUGHNESS  = 129; // prereq difesa 3 TALENT_ID_TOUGHNESS  --> 5% chance +1 tackle
+const TALENT_ID_ADVANCED_CHALLENGE  = 128; // prereq difesa 3/5 TALENT_ID_CHALLENGE  --> 5% chance +1 autotackle
+const TALENT_ID_ADVANCED_TOUGHNESS  = 129; // prereq difesa 3/5 TALENT_ID_TOUGHNESS  --> 5% chance +1 tackle
 const TALENT_ID_ADVANCED_POWER      = 130;    // prereq ballcontrol 3 TALENT_ID_POWER  --> 5% chance +1 resist tackle
-const TALENT_ID_ADVANCED_CROSSING   = 131; // prereq passing 3 TALENT_ID_CROSSING  -->  5% chance +2 crossing
+const TALENT_ID_ADVANCED_CROSSING   = 131; // prereq passing 3/5 TALENT_ID_CROSSING  -->  5% chance +2 crossing
 const TALENT_ID_ADVANCED_EXPERIENCE = 132; // prereq TALENT_ID_EXPERIENCE  --> pressing costa cpst_pre - 1
 const TALENT_ID_ADVANCED_DRIBBLING  = 133; // prereq TALENT_ID_DRIBBLING --> +2 totale dribbling  . strutture alzano questa chance
 const TALENT_ID_ADVANCED_BULLDOG    = 134;  // prereq TALENT_ID_BULLDOG mastino +2 intercept
-const TALENT_ID_ADVANCED_AGGRESSION = 135; // prereq TALENT_ID_MARKING fa pressing automatico sul portatore di palla se lo raggiunge. 25% chance. no sistema di cariche qui.
-const TALENT_ID_ADVANCED_BOMB       = 136; //  prereq tiro 3 talent bomb --> 5% chance che si attivi da solo tiro +2 su powershot, non precision.shot
+const TALENT_ID_ADVANCED_AGGRESSION = 135; // prereq TALENT_ID_AGGRESSION fa pressing automatico sul portatore di palla se lo raggiunge. 25% chance. no sistema di cariche qui.
+const TALENT_ID_ADVANCED_BOMB       = 136; //  prereq tiro 3/5 talent bomb --> 5% chance che si attivi da solo tiro +2 su powershot, non precision.shot
 
 const TALENT_ID_PRECISE_CROSSING = 137; // prereq passing 3 TALENT_ID_CROSSING  --> +1 crossing dal fondo
 const  TALENT_ID_SUPER_DRIBBLING = 138; // prereq almeno 3 ball.control, talent dribbling --> dribbling +3 chance 15%  ( dribbling2 è +1 fisso )
 
-const TALENT_ID_BUFF_DEFENSE = 139; //prereq almeno 3 Defense, 1 talento qualsiasi --> skill 2x buff reparto (20% chance) dif 25 turni + tutti attr 1 (speed e heading max 4)
-const  TALENT_ID_BUFF_MIDDLE = 140; //prereq almeno 3 passing, 1 talento qualsiasi --> skill 2x buff reparto (20% chance) cen  25 turni + tutti attr 1 (speed e heading max 4)
-const  TALENT_ID_BUFF_FORWARD = 141; //prereq almeno 3 Shot , 1 talento qualsiasi --> skill 2x buff reparto (20% chance) att 25 turni + tutti attr 1 (speed e heading max 4)
+const TALENT_ID_BUFF_DEFENSE = 139; //prereq almeno 3/5 Defense, 1 talento qualsiasi --> skill 2x buff reparto (20% chance) dif 25 turni + tutti attr 1 (speed e heading max 4)
+const  TALENT_ID_BUFF_MIDDLE = 140; //prereq almeno 3/5 passing, 1 talento qualsiasi --> skill 2x buff reparto (20% chance) cen  25 turni + tutti attr 1 (speed e heading max 4)
+const  TALENT_ID_BUFF_FORWARD = 141; //prereq almeno 3/5 Shot , 1 talento qualsiasi --> skill 2x buff reparto (20% chance) att 25 turni + tutti attr 1 (speed e heading max 4)
 
 const TALENT_ID_GKMIRACLE = 250; //solo GK  Ha una chance del 10% di ottenere +1 Difesa sui tiri precisi a distanza 1. Non valido sui rigori.
 const TALENT_ID_GKPENALTY = 251; //specialista para rigori. ottiene +1 10% chance .
@@ -102,6 +105,9 @@ const cost_autotac = 2;
 const cost_cor = 1;
 const cost_defshot = 1;
 const cost_defdrib = 3;
+const cost_GKprs = 1;
+const cost_GKHeading = 2;
+const cost_GKpos = 3;
 
 
    const ShortPassRange       = 2;
@@ -130,7 +136,7 @@ Type TShotCell = Class
   Destructor Destroy;override;
 end;
 type TDoorTeam = ( DoorFriendly, DoorOpponent);
-
+type TGameMode =(pvnull,pve,pvp);
 type TTVCrossAreaCell = record
   DoorTeam: integer;
   CellX: integer;
@@ -289,7 +295,7 @@ TSoccerPlayer = class
 
     procedure SetGameOver( const value: Boolean);
     procedure SetSpeed( v: ShortInt );
-    procedure SetStamina( v: ShortInt );
+    procedure SetStamina( v: SmallInt );
     procedure SetDefense( v: ShortInt );
     procedure SetBallControl( v: ShortInt );
     procedure SetPassing( v: ShortInt );
@@ -352,7 +358,7 @@ TSoccerPlayer = class
 
     // comuni
     fSpeed: ShortInt;
-    fStamina: ShortInt;
+    fStamina: SmallInt;
     fDefense: ShortInt;
     fBallControl: ShortInt;
     fPassing: ShortInt;
@@ -389,9 +395,13 @@ TSoccerPlayer = class
     RedCard: Byte; // espulsione diretta o con somma di gialli
     disqualified: Byte; // giornate di squalifica
 
-    Injured_Penalty: array [0..2] of Integer; // chance dopo un infortunio (lungo) di perdere una stat
-    devA: array [0..2] of Integer; // chance dopo N azioni di guadagnare 1 punto stat
-    devT: array [0..2] of Integer; // chance dopo N azioni di guadagnare 1 talento
+    devA: Integer; // chance dopo N azioni di guadagnare 1 punto stat
+    devT: Integer; // chance dopo N azioni di guadagnare 1 talento
+    devI: Integer; // // chance dopo un infortunio (lungo) di perdere una stat
+
+    xpDevA : Integer;
+    xpDevT : Integer;
+    xpDevI : Integer;
 
     DefaultSpeed: ShortInt;
     DefaultStamina: ShortInt;
@@ -434,7 +444,7 @@ TSoccerPlayer = class
     property DefaultAttributes : ShortString read fDefaultAttributes write LoadDefaultAttributes;
 
     property Speed : ShortInt read fSpeed write SetSpeed;
-    property Stamina : ShortInt read fStamina write SetStamina;
+    property Stamina : SmallInt read fStamina write SetStamina;
     property Defense : ShortInt read fDefense write SetDefense;
     property BallControl : ShortInt read fBallControl write SetBallControl;
     property Passing : ShortInt read fPassing write SetPassing;
@@ -459,6 +469,8 @@ TSoccerPlayer = class
     procedure resetFIN;
 end;
 
+  pSoccerPlayer = ^TSoccerplayer;
+
   TInteractivePlayer = class // Player che puòpublic interagire durante il turno dell'avversario. ad esempio Intercept su Short.passing dell'avversario
     Player : TSoccerPlayer;  // il player che interagisce
     Cell: Tpoint;            // la cella su cui interagisce
@@ -481,8 +493,16 @@ end;
     procedure SetMinute ( const Value: byte );
   protected
     public
+      GameMode : TGameMode;
+      pvePostMessage: boolean;
+
+      Season: integer;
+      Country : integer;
+      Division : integer;
+      Round : Integer;
       fGender: Char;
       GenderN: integer;
+
       Dice : Integer;
       MAX_STAT : Integer;
 
@@ -584,7 +604,6 @@ end;
       TeamTurn: byte;
       FTeamMovesLeft : ShortInt;
 
-
       GameStarted: boolean;
       FlagEndGame : boolean;
       Finished: boolean;
@@ -617,14 +636,14 @@ end;
       w_FreeKick4: boolean;
 
       tsSpeaker: TstringList;
-      tsScript: TstringList;   // la lista di ciò che accade sul server viene spedita al client
+      tsScript: array [0..255] of TstringList;   // la lista di ciò che accade sul server viene spedita al client
 
 
       ExceptPlayers: TObjectList<TSoccerPlayer>; // lista di player che non si muoveranno durante la Ai_moveAll
       ShpBuff: Boolean;
       function findSpectator (Cliid: Integer): Boolean;
       function RemoveSpectator (Cliid: Integer): Boolean;
-      constructor Create  (ids: string);
+      constructor Create  ( ids: string; AGender: Char; aSeason, aCountry, aDivision, aRound: integer);
       destructor Destroy; override;
 
 //      procedure CreateFormationCells;
@@ -700,6 +719,7 @@ end;
         function AI_Think_Tactic (Team, cks:integer ): TBetterSolution;   // ai pensa a tattiche
         function AI_Think_StayFree ( team, Cks:integer ): TbetterSolution;  // ai pensa a muovere,non muovere certi player
         function AI_Think_CleanSomeRows (team:Integer): TBetterSolution;    // ai pensa di spostare qualche player
+        function AI_ForceRandomMove ( team : Integer ): Boolean;
         function AI_TrySomeBuff ( team: integer ): Boolean;
           function GetDummyTalentInRole ( team, TalentId: integer ): TSoccerPlayer;
 
@@ -761,6 +781,7 @@ end;
       function isReserveSlot (CellX, CellY: integer): boolean;
       procedure CleanReserveSlot ( team: integer );
 
+      procedure UpdateDevi; // sia team 0 che 1
 
 
     procedure AddSoccerPlayer (aSoccerPlayer: TSoccerPlayer );
@@ -801,6 +822,7 @@ end;
     function GetCrossOpponent ( aPlayer:TSoccerPlayer ): TSoccerPlayer;
 
 
+    function GetReservePlayerRandom ( Team: integer; GK:boolean): TSoccerPlayer;
     function GetSoccerPlayerRandom ( Team: integer; GK:boolean): TSoccerPlayer;overload;
     function GetSoccerPlayer (X,Y: integer): TSoccerPlayer;overload;
     function GetSoccerPlayer (ids: string): TSoccerPlayer;overload;
@@ -813,6 +835,8 @@ end;
     function GetSoccerPlayerDefault2 (X,Y: integer): TSoccerPlayer;
 
     function GetSoccerPlayerReserve (ids : string): TSoccerPlayer;
+    function GetSoccerPlayerRandom3 : TSoccerPlayer; // cerca chi ha giocato in una partita ma non un GK
+
     function GetSoccerPlayer2 (X,Y: integer): TSoccerPlayer;overload;
     function GetSoccerPlayer2 (ids: string): TSoccerPlayer;overload;
     function GetSoccerPlayer2 (X,Y, Team: integer): TSoccerPlayer;overload;
@@ -861,6 +885,8 @@ end;
     procedure GetFavourCellPath ( aSoccerPlayer: TSoccerPlayer; X2, Y2: integer );
     function GetRandomCell ( CellX, CellY, Speed: integer; noPlayer,noOutside: boolean ): Tpoint;
     function GetRandomCellNO06 ( CellX, CellY, Speed: integer  ): Tpoint;
+    function GetRandomCellNOPlayer ( CellX, CellY, Speed: integer  ): Tpoint;
+
     procedure GetNeighbournsCells ( CellX, CellY, Speed: integer; NoPlayer,noOutside,noGK: boolean; var aCellList:Tlist<TPoint> );
     function GetZone ( Team, CellX, CellY: integer ): String;
     function GetTackleDirection ( Team, StartX, StartY, ToX, ToY: Integer): TTackleDirection;
@@ -2158,11 +2184,15 @@ begin
   Team := aTeam;
 
   GuidTeam:= aGuidTeam;
-  MatchesPlayed := aMatchesPlayed;
-  MatchesLeft := (SEASON_MATCHES * 15) - MatchesPlayed;
-  Age:= Trunc(  MatchesPlayed  div SEASON_MATCHES) + 18 ;
-  SurName := aSurname;
 
+  //if  brain.GameMode = pvp then begin
+    MatchesPlayed := aMatchesPlayed;
+    MatchesLeft := (SEASON_MATCHES * 15) - MatchesPlayed;
+    Age:= Trunc(  MatchesPlayed  div SEASON_MATCHES) + 18 ;
+  //end;
+
+  SurName := aSurname;
+  iTag := 0;
 
   DefaultAttributes:= AT;
   Attributes:= AT;
@@ -2492,7 +2522,7 @@ begin
   fSpeed := v;
   if fSpeed <= 0 then fSpeed := 1;
 end;
-procedure TSoccerPlayer.SetStamina( v: ShortInt );
+procedure TSoccerPlayer.SetStamina( v: SmallInt );
 begin
   fStamina := v;
   if fStamina < 0 then fStamina := 0;
@@ -4130,6 +4160,19 @@ retry:
     goto retry;
   Result := aPlayer;
 end;
+function TSoccerBrain.GetReservePlayerRandom ( Team: integer; GK:boolean): TSoccerPlayer;
+var
+  aPlayer : TSoccerPlayer;
+  arnd :Integer;
+  label retry;
+begin
+retry:
+  arnd := RndGenerate (lstSoccerReserve.Count -1 );
+  aPlayer := lstSoccerReserve[aRnd];
+  if ((aPlayer.TalentId1 = TALENT_ID_GOALKEEPER) and (GK = False))  or ( aPlayer.Team <> Team) then
+    goto retry;
+  Result := aPlayer;
+end;
 function TSoccerBrain.GetSoccerPlayer2 ( X, Y : integer): TSoccerPlayer;
 var
   i: integer;
@@ -4239,6 +4282,28 @@ begin
     end;
   end;
 end;
+function TSoccerBrain.GetSoccerPlayerRandom3 : TSoccerPlayer; // cerca chi ha giocato in una partita ma non un GK
+var
+  arnd :Integer;
+  i: integer;
+  label retry;
+begin
+  Result := nil;
+retry:
+  arnd := RndGenerate (100 );
+  if arnd <= 50 then begin
+    arnd := RndGenerate (lstSoccerPlayer.Count -1 );
+    Result := lstSoccerPlayer[aRnd];
+  end
+  else  begin
+    arnd := RndGenerate (lstSoccerGameover.Count -1 );
+    Result := lstSoccerGameover[aRnd];
+  end;
+  if (Result.TalentId1 = TALENT_ID_GOALKEEPER) then
+    goto retry;
+
+end;
+
 function TSoccerBrain.GetSoccerPlayerALL ( ids: string ): TSoccerPlayer; // cerca anche in reserve e gameOver
 var
   i: integer;
@@ -5236,6 +5301,37 @@ begin
 
   aCellList.Free;
 end;
+function TSoccerBrain.GetRandomCellNOPlayer ( CellX, CellY, Speed: integer  ): Tpoint;
+var
+  acellList: Tlist<TPoint>;
+  aPoint: Tpoint;
+  x,y,aRnd: integer;
+begin
+
+  result.x := -1;
+  acellList:= Tlist<TPoint>.Create;
+  // noplayer per forza. per forza in campo, diversa da 0 e 6
+
+  for x := 1 to 10 do begin   // in campo
+    for y := 0 to 6 do begin  // tutte
+      if (CellX = X) and (CellY=Y) then continue; // non sè stessa
+
+      if (AbsDistance(CellX,CellY,X,Y) <= Speed) and (getSoccerPlayer(x,y)=nil) then begin
+        aPoint.X := x; aPoint.Y:= y;
+        AcellList.Add(aPoint);
+      end;
+    end;
+  end;
+
+
+  if aCellList.count > 0 then begin
+    aRnd := RndGenerate0 (aCellList.Count -1);
+    Result.X := aCellList[aRnd].X;
+    Result.Y := aCellList[aRnd].Y;
+  end;
+
+  aCellList.Free;
+end;
 procedure TSoccerBrain.GetMarkingPath ( aPlayer: TSoccerPlayer );
 var
   aMagnete: TSoccerPlayer;
@@ -5445,7 +5541,9 @@ begin
 end;
 
 
-constructor TSoccerbrain.Create ( ids: string);
+constructor TSoccerbrain.Create ( ids: string; AGender: Char; aSeason, aCountry, aDivision, aRound: integer);
+var
+  i: Integer;
 begin
   // Roll random da 1 a 4. le stat dei player vanno da 1 a 6.
   // Roll random da 1 a 6. le stat dei player vanno da 1 a 10. max 4 speed
@@ -5457,8 +5555,11 @@ begin
   debug_Setposcrosscorner := false;
   debug_Buff100 := false;
 
-
-  Gender := ids[1];
+  Season := ASeason;
+  Gender := AGender;
+  Division := aDivision;
+  Country := aCountry;
+  Round := aRound;
 
   lstSoccerPlayerALL := TObjectList<TSoccerPlayer>.create(True);
   lstSoccerPlayer := TObjectList<TSoccerPlayer>.create(false);
@@ -5489,7 +5590,9 @@ begin
 
 
     tsSpeaker:= TstringList.Create ;
-    tsScript:= TstringList.Create ;
+    for I := 0 to 255 do begin
+      tsScript[i]:= TstringList.Create ;
+    end;
     TeamMovesLeft := TurnMovesStart;
 
 
@@ -5508,7 +5611,9 @@ begin
     //TVCrossingAreaCells.Free;
     lstSpectator.free;
     tsSpeaker.free ;
-    tsScript.free ;
+    for I := 0 to 255 do begin
+      tsScript[i].free ;
+    end;
     ExceptPlayers.Free;
     MMbraindata.Free;
     MMbraindataZIP.Free;
@@ -5521,8 +5626,12 @@ begin
   inherited ;
 end;
 procedure TSoccerbrain.Start;
+var
+  i: integer;
 begin
-  tsScript.Clear ;
+  for I := 0 to 255 do begin
+    tsScript[i].Clear ;
+  end;
   tsSpeaker.Clear ;
   FTeamMovesLeft := TurnMovesStart;
   GameStarted:= true;
@@ -5570,7 +5679,11 @@ begin
   Ball.CellX := CornerMap.CornerCell.X;
   Ball.CellY := CornerMap.CornerCell.Y;
 
-  {$IFDEF ADDITIONAL_MATCHINFO}  MatchInfo.Add( IntToStr(fminute) + '.corner.' + aPlayer.ids);{$ENDIF}
+  {$IFDEF ADDITIONAL_MATCHINFO}
+  if GameMode = pvp then
+    MatchInfo.Add( IntToStr(fminute) + '.corner.' + aPlayer.ids)
+    else MatchInfo.Add( IntToStr(fminute) + '.corner.' + aPlayer.ids+'.'+ aPlayer.SurName);
+  {$ENDIF}
 
   // da settemamovesleft. qui deve essere piazzato chi calcia il corner
   TeamTurn := aPlayer.Team ;
@@ -5579,10 +5692,10 @@ begin
   ResetPassiveSkills;
 
   fmilliseconds := Turnmilliseconds;
-  TsScript.add ('sc_TUC,' + intTostr(TeamTurn) ) ;
+  TsScript[incMove].add ('sc_TUC,' + intTostr(TeamTurn) ) ;
   fTeamMovesLeft := 3; // il cof non utilizza teammovesleft
-  TsScript.add ('sc_CORNER.COA,' + intTostr(TeamTurn) + ',' + IntTostr( CornerMap.CornerCell.X) +','+IntTostr( CornerMap.CornerCell.Y) ) ; // richiesta al client corner free kick
-  TsScript.add ('E') ;
+  TsScript[incMove].add ('sc_CORNER.COA,' + intTostr(TeamTurn) + ',' + IntTostr( CornerMap.CornerCell.X) +','+IntTostr( CornerMap.CornerCell.Y) ) ; // richiesta al client corner free kick
+  TsScript[incMove].add ('E') ;
 
   // da settemamovesleft. qui deve essere piazzato chi calcia il corner
   w_CornerSetup:= true;
@@ -5644,7 +5757,7 @@ begin
          ));
       // tra queste a distanza 2 presumnibile ne estraggo una random
       aRnd := RndGenerate0(aCellList.Count-1);
-      TsScript.add ('sc_player,'+ anOpponent.Ids +','+IntTostr(anOpponent.CellX)+','+ IntTostr(anOpponent.CellY)+','+
+      TsScript[incMove].add ('sc_player,'+ anOpponent.Ids +','+IntTostr(anOpponent.CellX)+','+ IntTostr(anOpponent.CellY)+','+
       IntTostr(aCellList[aRnd].X)+','+ IntTostr(aCellList[aRnd].Y)  ) ;
       anOpponent.Cells := Point(aCellList[aRnd].X, aCellList[aRnd].Y);
 
@@ -5655,13 +5768,16 @@ begin
   // non faccio il turnchange perchè il fallo può essere anche durante la mia azione
   TeamTurn := Team ;
   TeamFreeKick := TeamTurn ;
-  TsScript.add ('sc_TUC,' + intTostr(TeamTurn) ) ;
+  TsScript[incMove].add ('sc_TUC,' + intTostr(TeamTurn) ) ;
   fTeamMovesLeft := TurnMoves;
   fmilliseconds := Turnmilliseconds;
 //  TurnChange(TurnMoves); // 4
-  {$IFDEF ADDITIONAL_MATCHINFO}  MatchInfo.Add( IntToStr(fminute) + '.freekick1.' + IntToStr(team));{$ENDIF}
-  TsScript.add ('sc_FREEKICK1.FKA1,' + IntTostr(Team) + ',' +  IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client che si può proseguire
-  TsScript.add ('E') ;
+  {$IFDEF ADDITIONAL_MATCHINFO}
+
+    MatchInfo.Add( IntToStr(fminute) + '.freekick1.' + IntToStr(team));
+  {$ENDIF}
+  TsScript[incMove].add ('sc_FREEKICK1.FKA1,' + IntTostr(Team) + ',' +  IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client che si può proseguire
+  TsScript[incMove].add ('E') ;
 
   // da settemamovesleft. qui deve essere piazzato chi calcia il corner
   w_FreeKickSetup1:= true;
@@ -5673,13 +5789,13 @@ begin
   ResetPassiveSkills;
   TeamTurn := Team ;
   TeamFreeKick := TeamTurn ;
-  TsScript.add ('sc_TUC,' + intTostr(TeamTurn) ) ;
+  TsScript[incMove].add ('sc_TUC,' + intTostr(TeamTurn) ) ;
   fTeamMovesLeft := TurnMoves;
   fmilliseconds := Turnmilliseconds;
 
   {$IFDEF ADDITIONAL_MATCHINFO}  MatchInfo.Add( IntToStr(fminute) + '.freekick2.' + IntToStr( team));{$ENDIF}
-  TsScript.add ('sc_FREEKICK2.FKA2,' + IntTostr(Team) + ',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // richiesta al client corner free kick
-  TsScript.add ('E') ;
+  TsScript[incMove].add ('sc_FREEKICK2.FKA2,' + IntTostr(Team) + ',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // richiesta al client corner free kick
+  TsScript[incMove].add ('E') ;
 
   // da settemamovesleft. qui deve essere piazzato chi calcia il corner
   w_FreeKickSetup2:= true;
@@ -5694,13 +5810,13 @@ begin
   ResetPassiveSkills;
   TeamTurn := Team ;
   TeamFreeKick := TeamTurn ;
-  TsScript.add ('sc_TUC,' + intTostr(TeamTurn) ) ;
+  TsScript[incMove].add ('sc_TUC,' + intTostr(TeamTurn) ) ;
   fmilliseconds := Turnmilliseconds;
 
   fTeamMovesLeft := 2; // il pos o prs utilizza teammovesleft
   {$IFDEF ADDITIONAL_MATCHINFO}  MatchInfo.Add( IntToStr(fminute) + '.freekick3.' + IntToStr( team));{$ENDIF}
-  TsScript.add ('sc_FREEKICK3.FKA3,'  + IntTostr(Team) + ',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // richiesta al client corner free kick
-  TsScript.add ('E') ;
+  TsScript[incMove].add ('sc_FREEKICK3.FKA3,'  + IntTostr(Team) + ',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // richiesta al client corner free kick
+  TsScript[incMove].add ('E') ;
 
   // da settemamovesleft. qui deve essere piazzato chi calcia il corner
   w_FreeKickSetup3:= true;
@@ -5716,11 +5832,11 @@ begin
   fmilliseconds := Turnmilliseconds;
   TeamTurn := Team ;
   TeamFreeKick := TeamTurn ;
-  TsScript.add ('sc_TUC,' + intTostr(TeamTurn) ) ;
+  TsScript[incMove].add ('sc_TUC,' + intTostr(TeamTurn) ) ;
   fTeamMovesLeft := 2; // il pos o prs non utilizza teammovesleft
   {$IFDEF ADDITIONAL_MATCHINFO}  MatchInfo.Add( IntToStr(fminute) + '.freekick4.' + IntToStr( team));{$ENDIF}
-  TsScript.add ('sc_FREEKICK4.FKA4,'  + IntTostr(Team) + ',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // richiesta al client corner free kick
-  TsScript.add ('E') ;
+  TsScript[incMove].add ('sc_FREEKICK4.FKA4,'  + IntTostr(Team) + ',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // richiesta al client corner free kick
+  TsScript[incMove].add ('E') ;
 
   // da settemamovesleft. qui deve essere piazzato chi calcia il penalty
   w_FreeKickSetup4:= true;
@@ -5733,10 +5849,11 @@ var
   aPlayer: TSoccerPlayer;
   label noCheckCheat;
 begin
+   UpdateDevi;
 
    FTeamMovesLeft := value;
    if GameStarted then begin
-      TsScript.add ('sc_TML,' + IntTostr(FTeamMovesLeft) + ',' + IntTostr(TeamTurn) + ',' + IntToStr(ShpFree) ) ;
+      TsScript[incMove].add ('sc_TML,' + IntTostr(FTeamMovesLeft) + ',' + IntTostr(TeamTurn) + ',' + IntToStr(ShpFree) ) ;
       Minute := Minute + 1;
       if Minute >= 120 then FlagEndGame := True; // le sostituzioni non incrementano i minuti
    end;
@@ -5840,7 +5957,7 @@ begin
    {
      if isCheatingBall ( TeamTurn ) then begin
        if TeamTurn = 0 then TeamFaultFavour := 1 else TeamFaultFavour :=0;
-       TsScript.add ('sc_fault.cheatball,' + intTostr(TeamFaultFavour) + ',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
+       TsScript[incMove].add ('sc_fault.cheatball,' + intTostr(TeamFaultFavour) + ',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
 
        // cambio turno
        if TeamTurn = 0 then TeamTurn := 1 else TeamTurn :=0;
@@ -5849,19 +5966,19 @@ begin
         case Isfault of
           1:Begin    // normale nella propria metacampo
             // allontano i player avversari, batterà il ball.player che può essere anche injured. se viene sostituito? tutto ok, ci va sopra
-            TsScript.add ('sc_fault.cheatball,' + intTostr(TeamFaultFavour) +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
+            TsScript[incMove].add ('sc_fault.cheatball,' + intTostr(TeamFaultFavour) +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
             FreeKickSetup1(TeamFaultFavour); // aspetta short.passing o lofted.pass
           end;
           2:Begin    // cross offensivo
-            TsScript.add ('sc_fault.cheatball,' + intTostr(TeamFaultFavour)  +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
+            TsScript[incMove].add ('sc_fault.cheatball,' + intTostr(TeamFaultFavour)  +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
             FreeKickSetup2(ball.Player.team); // aspetta crossing
           end;
           3:Begin    // barriera
-            TsScript.add ('sc_fault.cheatball,' + intTostr(TeamFaultFavour) +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
+            TsScript[incMove].add ('sc_fault.cheatball,' + intTostr(TeamFaultFavour) +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
             FreeKickSetup3(ball.Player.team);  // aspetta pos o prs
           end;
           4:Begin    // rigore
-            TsScript.add ('sc_fault.cheatball,' + intTostr(TeamFaultFavour) + ',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
+            TsScript[incMove].add ('sc_fault.cheatball,' + intTostr(TeamFaultFavour) + ',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
             FreeKickSetup4(ball.Player.team); // aspetta pos o prs
           end;
         end;
@@ -5877,7 +5994,7 @@ begin
     if isCheatingBallGK ( TeamTurn ) then begin // se quel portiere ha la palla. qui è dove sta per cambiare il turno ma ancora è il suo
       { fallo del GK, rigore }
       if TeamTurn = 0 then TeamFaultFavour := 1 else TeamFaultFavour :=0;
-      TsScript.add ('sc_fault.cheatballgk,' + intTostr(TeamFaultFavour) +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
+      TsScript[incMove].add ('sc_fault.cheatballgk,' + intTostr(TeamFaultFavour) +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
       if TeamTurn = 0 then TeamTurn := 1 else TeamTurn :=0;
       FreeKickSetup4(TeamTurn);
       Exit; // evito fine partita
@@ -5886,17 +6003,17 @@ begin
     // qui cambia effettivamente il turno
     FTeamMovesLeft := MovesLeft;
     if TeamTurn = 0 then TeamTurn := 1 else TeamTurn :=0;
-    TsScript.add ('sc_TUC,' + intTostr(TeamTurn) ) ;
+    TsScript[incMove].add ('sc_TUC,' + intTostr(TeamTurn) ) ;
     ResetPassiveSkills ;
     ShpFree:=  1;
     fmilliseconds := Turnmilliseconds;
 
 
-    if GameStarted and  FlagEndGame then begin
-      TsScript.add ('sc_GAMEOVER,' + intTostr(TeamTurn) ) ;
+    if (GameStarted) and  (FlagEndGame)  then begin
+      TsScript[incMove].add ('sc_GAMEOVER,' + intTostr(TeamTurn) ) ;
       GameStarted:= False;
       Finished:= True;
-      FinishedTime := GetTickCount;  { TODO -con the road : bug alle 23.59 }
+      FinishedTime := GetTickCount;  { TODO -con the road : pvp bug alle 23.59 }
       if Length(Score.lstGol) > 0 then // rimuovo la virgola finale
         Score.lstGol := LeftStr ( Score.lstGol , Length(Score.lstGol) - 1);
 
@@ -5957,7 +6074,10 @@ begin
       end;
 
 
-      TBrainManager(brainManager).Input ( Self,   'FINALIZE' ) ;
+      if GameMode = pvp then
+        TBrainManager(brainManager).Input ( Self,   'FINALIZE' )
+      else if pvePostMessage then
+          postMessage ( Application.Handle , $2EEE,0,0);
 
     end;
 
@@ -6152,11 +6272,12 @@ begin
 
   fmilliseconds:= value;
   if fmilliseconds < 0 then begin
-    if  w_Coa or w_Cod or w_CornerKick or w_Fka1 or w_FreeKick1 or w_Fka2 or w_Fkd2  or w_FreeKick2 or w_Fka3 or w_Fkd3 or w_FreeKick3 or
-     w_Fka4 or w_FreeKick4 then
-      AI_Think( teamTurn )
-    else
-      BrainInput ( IntTostr(score.TeamGuid [teamTurn]) + ',' + 'PASS'  ) ;
+//    if  w_Coa or w_Cod or w_CornerKick or w_Fka1 or w_FreeKick1 or w_Fka2 or w_Fkd2  or w_FreeKick2 or w_Fka3 or w_Fkd3 or w_FreeKick3 or
+//     w_Fka4 or w_FreeKick4 then
+      AI_Think( teamTurn );
+//    else
+
+      //BrainInput ( IntTostr(score.TeamGuid [teamTurn]) + ',' + 'PASS'  ) ;  // PASS oltre 120+ non è permesso
       SaveData ( incMove );
 //      TBrainManager(brainManager).Input ( Self,   brainIds + '\' + Format('%.*d',[3, incMove])  ) ;
       TBrainManager(brainManager).Input ( Self,  IntToStr(incMove)  ) ;
@@ -6245,11 +6366,15 @@ begin
   //
   // anIntercept, , aPlayer2,anOpponent
   // lstAutoTackle,lstIntercepts,LstHeading
+  inc (incMove);
 
   tsCmd:= TstringList.Create ;
   tsCmd.CommaText := aCmd;
-  InputGuidTeam := StrToInt(tsCmd[0]);
-  tsCmd.Delete(0); // se serve lo uso
+
+ // if GameMode = pvp then begin
+    InputGuidTeam := StrToInt(tsCmd[0]);
+    tsCmd.Delete(0); // se serve lo uso
+//  end;
 
   if Working then begin
      reason := 'Brain working ' + aCmd ;
@@ -6331,7 +6456,7 @@ begin
       end;
     end;
 
-    TsScript.add ('SERVER_SHP,' + aPlayer.ids + ',' + IntToStr(aPlayer.CellX) + ',' + IntToStr(aPlayer.CellY)  + ',' +tsCmd[1] + ',' + tsCmd[2] ) ;//  skillused  tentativo ) ;
+    TsScript[incMove].add ('SERVER_SHP,' + aPlayer.ids + ',' + IntToStr(aPlayer.CellX) + ',' + IntToStr(aPlayer.CellY)  + ',' +tsCmd[1] + ',' + tsCmd[2] ) ;//  skillused  tentativo ) ;
     tsSpeaker.Add( aPlayer.Surname + ' cerca di passare la palla' );
 
     OldBall:= Point ( Ball.CellX , Ball.Celly );
@@ -6339,6 +6464,7 @@ begin
     aPlayer.Stamina := aPlayer.Stamina - cost_shp;
     aPlayer.xp_passing := aPlayer.xp_passing + 1;
     aPlayer.xpTal[TALENT_ID_PLAYMAKER] := aPlayer.xpTal[TALENT_ID_PLAYMAKER] + 1;
+    aPlayer.xpDeva := aPlayer.xpDeva + 1; // per il momento solo xpdevA. xpDevt solo shp va a buon fine
 
     if w_FreeKick1 then begin
       w_FreeKick1:= False;
@@ -6348,9 +6474,9 @@ begin
       aPlayer.isFK1  := false;
     end;
 
-    TsScript.add ('ST,' + aPlayer.ids +',' + intTostr(cost_shp) ) ;  // shp è gratis. gli avversari e i compagni corrono
+    TsScript[incMove].add ('ST,' + aPlayer.ids +',' + intTostr(cost_shp) ) ;  // shp è gratis. gli avversari e i compagni corrono
    // ExceptPlayers.Add(aPlayer);
-    TsScript.add ( 'sc_DICE,' + IntTostr(aPlayer.CellX) + ',' + Inttostr(aPlayer.CellY) +','+  IntTostr(aRnd) +','+
+    TsScript[incMove].add ( 'sc_DICE,' + IntTostr(aPlayer.CellX) + ',' + Inttostr(aPlayer.CellY) +','+  IntTostr(aRnd) +','+
     IntTostr(aPlayer.Passing)+',Short.Passing,'+ aPlayer.ids+','+IntTostr(Roll.value) + ',' + Roll.fatigue +'.0' +',0');
 
     // SHP Precompilo la lista di possibili intercept perchè non si ripetano
@@ -6367,14 +6493,17 @@ begin
             preRoll2 :=  RndGenerate (dice) ;
             Roll2 := AdjustFatigue (anOpponent.Stamina , preRoll2);
             aRnd2:= Roll2.value + anOpponent.Defense + ToEmptyCell;
-            TsScript.add ( 'sc_DICE,' + IntTostr(CellX) + ',' + Inttostr(CellY) +','+  IntTostr(aRnd2) + ','+
+            TsScript[incMove].add ( 'sc_DICE,' + IntTostr(CellX) + ',' + Inttostr(CellY) +','+  IntTostr(aRnd2) + ','+
             IntTostr(anOpponent.Defense )+ ',Intercept,'+ anOpponent.ids+','+IntTostr(Roll2.value) + ',' + Roll2.fatigue +'.0,' + IntToStr(ToEmptyCell));
             anOpponent.xp_Defense:= anOpponent.xp_Defense + 1;
+            anOpponent.xpdevA := anOpponent.xpdevA + 1;  // anche se non riesca a prendere la palla
+
               if aRnd2 > aRnd then begin // passaggio ---> avversario prende la palla
 
+                  anOpponent.xpdevT := anOpponent.xpdevT + 1; // solo se riesce prende xpdevt
                   OldBall:= Point ( Ball.CellX , Ball.Celly );
                   Ball.Cells := anOpponent.Cells;
-                  TsScript.add ('sc_ball.move,'+ IntTostr(OldBall.X)+','+ IntTostr(OldBall.Y)+','+  IntTostr(Ball.CellX)+','+ IntTostr(Ball.CellY)
+                  TsScript[incMove].add ('sc_ball.move,'+ IntTostr(OldBall.X)+','+ IntTostr(OldBall.Y)+','+  IntTostr(Ball.CellX)+','+ IntTostr(Ball.CellY)
                   +','+anOpponent.Ids+',stop' ) ;
 
               if (AbsDistance(aPlayer.CellX,aPlayer.CellY, ball.cellX, Ball.CellY ) <=1) then // = 1) or (aPlayer.CellY = aCell.Y) or (aPlayer.CellX = aCell.X) then
@@ -6385,7 +6514,7 @@ begin
                   if (ShpFree < 0) and (aPlayer.TalentId1 <> TALENT_ID_GOALKEEPER)then TeamMovesLeft := TeamMovesLeft - 1; //<--- esaurische shpfree se minore di 0, non uguale
                     AI_moveAll;
                     if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-                    TsScript.add ('E');
+                    TsScript[incMove].add ('E');
                     reason:='';
                     goto MyExit;
 
@@ -6410,10 +6539,11 @@ begin
             Roll2 := AdjustFatigue (anIntercept.Stamina , preRoll2);
             aRnd2:=  Roll2.value + anIntercept.Defense + anIntercept.tmp + ToEmptyCell -1 ;
 
-            TsScript.add ( 'sc_DICE,' + IntTostr(CellX) + ',' + Inttostr(CellY) +','+ IntTostr(aRnd2) +',' + IntToStr(anIntercept.Defense )+
+            TsScript[incMove].add ( 'sc_DICE,' + IntTostr(CellX) + ',' + Inttostr(CellY) +','+ IntTostr(aRnd2) +',' + IntToStr(anIntercept.Defense )+
             ',Intercept,'+ anIntercept.ids+','+IntTostr(Roll2.value) + ',' + Roll2.fatigue +'.0' + ',' + IntToStr((anIntercept.tmp) + ToEmptyCell -1));
             anIntercept.xp_Defense:= anIntercept.xp_Defense + 1;
             anIntercept.xpTal[TALENT_ID_BULLDOG] := anIntercept.xpTal[TALENT_ID_BULLDOG] + 1;
+            anIntercept.xpDeva := anIntercept.xpDeva + 1; // anche se non prende la palla
 
             //arnd2:=arnd+1;
             if aRnd2 > aRnd then begin // passaggio ---> intercpet prende la palla
@@ -6424,11 +6554,12 @@ begin
               0..1: begin // prende la palla ma rimbalza in avanti di 1
 
                      anIntercept.Stamina := anIntercept.Stamina - 3;
+                     anIntercept.xpDevT := anIntercept.xpDevT+ 1; // solo se prende la palla
                      oldPlayer := anIntercept.Cells;
                      anIntercept.Cells := Point (aPath[i].X,aPath[i].Y) ;       // il player si posiziona
                      Ball.Cells  := anIntercept.cells;  // posiziona la palla temporaneamente
 
-                     TsScript.add ('sc_player.move.intercept,'+ anIntercept.Ids +','+IntTostr(oldPlayer.x)+','+ IntTostr(oldPlayer.Y)+','+ IntTostr(anIntercept.CellX)+','+ IntTostr(anIntercept.CellY) ) ;
+                     TsScript[incMove].add ('sc_player.move.intercept,'+ anIntercept.Ids +','+IntTostr(oldPlayer.x)+','+ IntTostr(oldPlayer.Y)+','+ IntTostr(anIntercept.CellX)+','+ IntTostr(anIntercept.CellY) ) ;
                      tsSpeaker.Add(anIntercept.Surname +' anticipa ma non controlla');
                     // la palla, che ora è in possesso di chi ha effettuato l'anticipo, rimbalza e finisce in posizione random che calcolo adesso
                      Ball.Cells:= GetBounceCell ( aPlayer.cellX, aPlayer.cellY, Ball.CellX, Ball.CellY,  1, anIntercept.team );
@@ -6438,34 +6569,35 @@ begin
                      if aPossibleoffside <> nil then begin
                       if isOffside ( aPossibleoffside )   then begin
                         //come fallo freekick1
-                        TsScript.add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
+                        TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
                         if aPossibleoffside.team = 0 then
                           FreeKickSetup1( 1 ) // aspetta short.passing o lofted.pass
                         else
                           FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
                         reason := '';
-                        TsScript.add ('E');
+                        TsScript[incMove].add ('E');
                         goto MyExit;
                       end;
 
 
                      end;
 
-                     TsScript.add ('sc_ball.move,'+ IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+  IntTostr(aPath[i].X)+','+ IntTostr(aPath[i].Y)
+                     TsScript[incMove].add ('sc_ball.move,'+ IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+  IntTostr(aPath[i].X)+','+ IntTostr(aPath[i].Y)
                      +','+anIntercept.Ids+',intercept' ) ;
-                     TsScript.add ('sc_bounce,'+ IntTostr(aPath[i].X)+','+ IntTostr(aPath[i].Y)+','+  IntTostr(Ball.CellX)+','+ IntTostr(Ball.CellY) +',0' ) ;
+                     TsScript[incMove].add ('sc_bounce,'+ IntTostr(aPath[i].X)+','+ IntTostr(aPath[i].Y)+','+  IntTostr(Ball.CellX)+','+ IntTostr(Ball.CellY) +',0' ) ;
 
                     end;
               2..MAX_LEVEL: begin // si impossessa della palla
                      anIntercept.Stamina := anIntercept.Stamina - 2;
+                     anIntercept.xpDevT := anIntercept.xpDevT+ 1; // solo se prende la palla
                      OldBall:= Point ( Ball.CellX , Ball.Celly );
                      oldPlayer := anIntercept.CellS;
                      anIntercept.Cells := point (aPath[i].X,apath[i].Y);   // il player si posiziona
                      Ball.Cells  := anIntercept.Cells; // posiziona la palla
 
-                     TsScript.add ('sc_player.move.intercept,'+ anIntercept.Ids +','+IntTostr(oldPlayer.X)+','+ IntTostr(oldPlayer.Y)+','+
+                     TsScript[incMove].add ('sc_player.move.intercept,'+ anIntercept.Ids +','+IntTostr(oldPlayer.X)+','+ IntTostr(oldPlayer.Y)+','+
                                                     IntTostr(anIntercept.CellX)+','+ IntTostr(anIntercept.CellY)  ) ;
-                     TsScript.add ('sc_ball.move,'+ IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+  IntTostr(aPath[i].X)+','+ IntTostr(aPath[i].Y)
+                     TsScript[incMove].add ('sc_ball.move,'+ IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+  IntTostr(aPath[i].X)+','+ IntTostr(aPath[i].Y)
                      +','+anIntercept.Ids+',stop' ) ;
                      tsSpeaker.Add(anIntercept.Surname +' anticipa tutti e recupera la palla ');
 
@@ -6480,7 +6612,7 @@ begin
                     if ShpFree < 0 then TeamMovesLeft := TeamMovesLeft - 1; //<--- esaurische shpfree se minore di 0, non uguale
                     AI_moveAll;
                     if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-                    TsScript.add ('E');
+                    TsScript[incMove].add ('E');
                     reason := '';
                     goto MyExit;
             end;  // if arnd >0 arnd
@@ -6493,19 +6625,19 @@ begin
          // oppure assegno la palla a chi è sulla cella
         if i = aPath.Count -1 then begin
            Ball.Cells  := Point ( aPath[i].X,aPath[i].Y) ;  // posiziona la palla
-           TsScript.add ('sc_ball.move,'+ IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+  IntTostr(Ball.CellX)+','+ IntTostr(Ball.CellY) + ',0,0') ;
+           TsScript[incMove].add ('sc_ball.move,'+ IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+  IntTostr(Ball.CellX)+','+ IntTostr(Ball.CellY) + ',0,0') ;
 
            aPossibleOffside := GetSoccerPlayer(Ball.CellX , ball.cellY );
            if aPossibleoffside <> nil then begin
             if isOffside ( aPossibleoffside )   then begin
               //come fallo freekick1
-                    TsScript.add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
+                    TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
                     if aPossibleoffside.team = 0 then
                       FreeKickSetup1( 1 ) // aspetta short.passing o lofted.pass
                     else
                       FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
                     reason := '';
-                    TsScript.add ('E');
+                    TsScript[incMove].add ('E');
                     goto MyExit;
 
             end;
@@ -6517,8 +6649,11 @@ begin
          { Playmaker if aplyaer.tal_playmaker shp in area avversaria +N lunghezza passaggio al shot }
 //           aPath.count è la lunghezza del passaggio che qui non +è stato intercettato perchè sopra c'è exit sicura
            aFriend := GetSoccerPlayer(ball.CellX, ball.celly);
+           aPlayer.xpDevT := aPlayer.xpDevT + 1; // solo se shp riesce
            if aFriend <> nil then begin
               aFriend.XpTal [TALENT_ID_RAPIDPASSING] := aFriend.XpTal [TALENT_ID_RAPIDPASSING] + 1;
+              aFriend.xpdevA := aFriend.xpdevA + 1;
+//              aFriend.xpdevT := aFriend.xpdevT + 1; qui no
 
               if aPath.Count >= 2 then
                 aFriend.XpTal [TALENT_ID_AGILITY] := aFriend.XpTal [TALENT_ID_AGILITY] + 1;
@@ -6544,17 +6679,17 @@ begin
                  aFriend2 :=  GetFriendAhead( aFriend ) ;
                  if aFriend2 <> nil then begin
                    Ball.Cells  := Point ( aFriend2.cellX,aFriend2.CellY) ;  // posiziona la palla
-                   TsScript.add ('sc_ball.move,'+ IntTostr(aFriend.CellX)+','+ IntTostr(aFriend.CellY)+','+  IntTostr(Ball.CellX)+','+ IntTostr(Ball.CellY) + ',0,0') ;
+                   TsScript[incMove].add ('sc_ball.move,'+ IntTostr(aFriend.CellX)+','+ IntTostr(aFriend.CellY)+','+  IntTostr(Ball.CellX)+','+ IntTostr(Ball.CellY) + ',0,0') ;
 
                     if isOffside ( aFriend2 )   then begin
                     //come fallo freekick1
-                          TsScript.add ('sc_fault,' + aFriend2.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
+                          TsScript[incMove].add ('sc_fault,' + aFriend2.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
                           if aFriend2.team = 0 then
                             FreeKickSetup1( 1 ) // aspetta short.passing o lofted.pass
                           else
                             FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
                           reason := '';
-                          TsScript.add ('E');
+                          TsScript[incMove].add ('E');
                           goto MyExit;
 
                     end;
@@ -6577,7 +6712,7 @@ begin
             shpBuff := true;  // chi raggiunge la palla ottiene il buff    { TODO : forse se afreind = nil. aggiustare tutto con nuovo talento }
             AI_moveAll;
             if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-            TsScript.add ('E');
+            TsScript[incMove].add ('E');
          end;
 
     end; // for  aPath ball
@@ -6666,15 +6801,17 @@ begin
     if debug_SetAlwaysGol then arnd := 20;
 
 
-    TsScript.add ('SERVER_LOP,' + aPlayer.ids + ',' + IntToStr(aPlayer.CellX) + ',' + IntToStr(aPlayer.CellY) + ',' +tsCmd[1] + ',' + tsCmd[2] ) ;//  skillused  tentativo
+    TsScript[incMove].add ('SERVER_LOP,' + aPlayer.ids + ',' + IntToStr(aPlayer.CellX) + ',' + IntToStr(aPlayer.CellY) + ',' +tsCmd[1] + ',' + tsCmd[2] ) ;//  skillused  tentativo
     aPlayer.Stamina := aPlayer.Stamina - cost_lop;
    // aPlayer.xp_passing := aPlayer.xp_passing + 1; giusto cosi'
+    aPlayer.xpdevA := aPlayer.xpdevA + 1;
     aPlayer.xpTal[TALENT_ID_LONGPASS] := aPlayer.xpTal[TALENT_ID_LONGPASS] + 1;
+
 
     if aPlayer.Team = aPlayer.Field then
       aPlayer.xpTal[TALENT_ID_PLAYMAKER] := aPlayer.xpTal[TALENT_ID_PLAYMAKER] + 1; {  solo il lop nella propria metacampo }
 
-    TsScript.add ('sc_ST,' + aPlayer.ids +',' + IntToStr(cost_lop) ) ;
+    TsScript[incMove].add ('sc_ST,' + aPlayer.ids +',' + IntToStr(cost_lop) ) ;
     ExceptPlayers.Add(aPlayer);   //no  unico caso. lop segue l'azione
     if w_FreeKick1 then begin
       w_FreeKick1:= False; // nel caso
@@ -6684,7 +6821,7 @@ begin
       aPlayer.isFK1  := false;
     end;
 
-    TsScript.add ( 'sc_DICE,' + IntTostr(aPlayer.CellX) + ',' + Inttostr(aPlayer.CellY) +','+  IntTostr(aRnd) +  ','+
+    TsScript[incMove].add ( 'sc_DICE,' + IntTostr(aPlayer.CellX) + ',' + Inttostr(aPlayer.CellY) +','+  IntTostr(aRnd) +  ','+
     IntToStr(aPlayer.Passing)+  ',Lofted.Pass,'+ aPlayer.ids+','+IntTostr(Roll.value)+ ','+ Roll.fatigue +'.0' + ',0' );
     if aFriend <> nil then begin
 //Dettagli:
@@ -6708,13 +6845,13 @@ begin
          if aPossibleoffside <> nil then begin
             if isOffside ( aPossibleoffside )   then begin
               // se è offside fallo freekick1
-              TsScript.add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
+              TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
               if aPossibleoffside.team = 0 then
                 FreeKickSetup1( 1 ) // passa di turno all'avversario e aspetta short.passing o lofted.pass
               else
                 FreeKickSetup1( 0 ); // passa di turno all'avversario e aspetta short.passing o lofted.pass
               reason := '';
-              TsScript.add ('E');
+              TsScript[incMove].add ('E');
               goto MyExit;
             end;
          end;
@@ -6723,7 +6860,7 @@ begin
           ExceptPlayers.Add(aPlayer); // no ai_moveAll dopo per questo player
 
         tsSpeaker.Add( aPlayer.Surname +' effettua il passaggio alto sbagliato' );
-             TsScript.add ('sc_lop.no,' + aPlayer.Ids {Lop} + ',' + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) {celle}
+             TsScript[incMove].add ('sc_lop.no,' + aPlayer.Ids {Lop} + ',' + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) {celle}
                                                             + ',' + IntTostr(aCell.x)+',' + IntTostr(aCell.y));
 
           // gli heading sono a distanza 1 e possono muoversi sul pallone automaticamente solo se la cella è vuota
@@ -6735,9 +6872,9 @@ begin
             oldPlayer.Y := anOpponent.CellY ;
             anOpponent.CellX := Ball.CellX;   // anOpponent raggiunge la palla
             anOpponent.CellY := Ball.CellY;
-
+            anOpponent.xpDevA := anOpponent.xpDevA + 1;
             // informo il client che muovo il player
-            TsScript.add ('sc_player,'+ anOpponent.Ids +','+IntTostr(oldPlayer.X)+','+ IntTostr(oldPlayer.Y)+','+
+            TsScript[incMove].add ('sc_player,'+ anOpponent.Ids +','+IntTostr(oldPlayer.X)+','+ IntTostr(oldPlayer.Y)+','+
                                                 IntTostr(anOpponent.CellX)+','+ IntTostr(anOpponent.CellY)  ) ;
 
           end;
@@ -6752,13 +6889,13 @@ begin
          if aPossibleoffside <> nil then begin
           if isOffside ( aPossibleoffside )   then begin
             //come fallo freekick1
-            TsScript.add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
+            TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
             if aPossibleoffside.team = 0 then
               FreeKickSetup1( 1 ) // aspetta short.passing o lofted.pass
             else
               FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
             reason := '';
-            TsScript.add ('E');
+            TsScript[incMove].add ('E');
             goto MyExit;
           end;
          end;
@@ -6772,18 +6909,21 @@ begin
             aRnd2:=  aHeadingOpponent.Heading + Roll2.value;
             tsSpeaker.Add(aHeadingOpponent.Surname +' cerca di colpire la palla per anticipare '+ aFriend.SurName );
             aHeadingOpponent.Stamina := aHeadingOpponent.Stamina - cost_hea;
-            TsScript.add ('sc_ST,' + aHeadingOpponent.ids +',' + IntToStr(cost_hea) ) ;
+            TsScript[incMove].add ('sc_ST,' + aHeadingOpponent.ids +',' + IntToStr(cost_hea) ) ;
             aHeadingOpponent.xp_heading := aHeadingOpponent.xp_heading + 1;
             aHeadingOpponent.Stamina := aHeadingOpponent.Stamina - cost_hea;
-            TsScript.add ( 'sc_DICE,' + IntTostr(CellX) + ',' + Inttostr(CellY) +','+  IntTostr(aRnd2) + ',' +
+            aHeadingOpponent.xpDevA := aHeadingOpponent.xpDevA +1; // anche se non prende la palla
+            TsScript[incMove].add ( 'sc_DICE,' + IntTostr(CellX) + ',' + Inttostr(CellY) +','+  IntTostr(aRnd2) + ',' +
             IntToStr(aHeadingOpponent.Heading)+  ',Heading,'+aHeadingOpponent.ids+','+IntTostr(Roll2.value) + ',' + Roll2.fatigue + '.0' + ',0' );
             if aRnd2 > aRnd then begin  // lop su friend, se heading difensivo riesce
                // passo la cella dove è avventu il colpo di testa o tentativo
                tsSpeaker.Add(aHeadingOpponent.Surname +' colpisce la palla');
                // swap
+               aHeadingOpponent.xpDevT := aHeadingOpponent.xpDevT +1; // respinta di testa riuscita, prende xpdevt
+
                oldCell := aHeadingOpponent.Cells;
                Ball.CellS:=GetBounceCell ( aPlayer.cellX, aPlayer.cellY, CellX, CellY,  RndGenerate (2), aHeadingOpponent.team );
-               TsScript.add ('sc_lop.heading.bounce,' + aPlayer.Ids {Lop} + ','+ aFriend.ids{cella} + ',' + aHeadingOpponent.ids{Difesa}
+               TsScript[incMove].add ('sc_lop.heading.bounce,' + aPlayer.Ids {Lop} + ','+ aFriend.ids{cella} + ',' + aHeadingOpponent.ids{Difesa}
                                                                    + ',' + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) {celle}
                                                                    + ',' + IntTostr(aFriend.cellx)+',' + IntTostr(aFriend.cellY)
                                                                    + ',' + IntTostr(aHeadingOpponent.cellx)+',' + IntTostr(aHeadingOpponent.celly) {celle}
@@ -6800,6 +6940,7 @@ begin
                 end;
                 Ball.Player.Shot := Ball.Player.Shot + 1;
                 Ball.Player.BonusFinishingTurn := 1;
+                Ball.Player.xpDevA := Ball.Player.xpDevA + 1; // riceve il rimbalzo
               end;
 
                 TeamMovesLeft := TeamMovesLeft - 1;
@@ -6809,7 +6950,7 @@ begin
                 ExceptPlayers.Add(aHeadingOpponent);
                 AI_moveAll;
                 if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-                TsScript.add ('E');
+                TsScript[incMove].add ('E');
 
                 reason :='';
                 goto MyExit;
@@ -6828,10 +6969,13 @@ begin
               Roll3 := AdjustFatigue (aFriend.Stamina , preRoll3);
               aRnd3 :=  Roll3.value + aFriend.BallControl  ;
               aFriend.xp_BallControl := aFriend.xp_BallControl + 1;
-              TsScript.add ( 'sc_DICE,' + IntTostr(aFriend.CellX) + ',' + Inttostr(aFriend.CellY) +','+  IntTostr(aRnd3) + ','+
+              TsScript[incMove].add ( 'sc_DICE,' + IntTostr(aFriend.CellX) + ',' + Inttostr(aFriend.CellY) +','+  IntTostr(aRnd3) + ','+
               IntToStr(aFriend.BallControl)+ ',Ball.Control,'+ aFriend.ids+','+IntTostr(Roll3.value) + ',' + Roll3.fatigue + '.0' + ',0' );
               aFriend.Stamina := aFriend.Stamina - cost_bac;
-              TsScript.add ('sc_ST,' + aFriend.ids +',' + IntToStr(cost_hea) ) ;
+              aFriend.xpDevA := aFriend.xpDevA + 1;
+              aPlayer.xpDevT := aPlayer.xpDevT + 1; // il lop è riuscito
+              TsScript[incMove].add ('sc_ST,' + aFriend.ids +',' + IntToStr(cost_hea) ) ;
+
 
               if (aRnd3 >= LOP_BC_MIN1) and (aRnd3 <= LOP_BC_MIN2)   then begin //freind non controlla la palla
                    aCell:= GetRandomCell  (  Ball.CellX, Ball.CellY , 1 , false ,true);
@@ -6840,19 +6984,19 @@ begin
                      if aPossibleoffside <> nil then begin
                       if isOffside ( aPossibleoffside )   then begin
                         //come fallo freekick1
-                        TsScript.add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
+                        TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
                         if aPossibleoffside.team = 0 then
                           FreeKickSetup1( 1 ) // aspetta short.passing o lofted.pass
                         else
                           FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
                         reason := '';
-                        TsScript.add ('E');
+                        TsScript[incMove].add ('E');
                         goto MyExit;
                       end;
                      end;
                    tsSpeaker.Add(aFriend.Surname + ' controlla male');
 
-                     TsScript.add ('sc_lop.ballcontrol.bounce,' + aPlayer.Ids {Lop} + ','+ aFriend.ids{cella}
+                     TsScript[incMove].add ('sc_lop.ballcontrol.bounce,' + aPlayer.Ids {Lop} + ','+ aFriend.ids{cella}
                                                              + ',' + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) {celle}
                                                              + ',' + IntTostr(aFriend.cellx)+',' + IntTostr(aFriend.cellY)
                                                              + ',' + IntTostr(Ball.cellx)+',' + IntTostr(ball.celly)); {celle}
@@ -6874,20 +7018,20 @@ begin
                    if aPossibleoffside <> nil then begin
                     if isOffside ( aPossibleoffside )   then begin
                       //come fallo freekick1
-                      TsScript.add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
+                      TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
                       if aPossibleoffside.team = 0 then
                         FreeKickSetup1( 1 ) // aspetta short.passing o lofted.pass
                       else
                         FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
                       reason := '';
-                      TsScript.add ('E');
+                      TsScript[incMove].add ('E');
                       goto MyExit;
                     end;
                    end;
 
                    if GetSoccerPlayer (ball.CellX , ball.celly) = nil then begin
 
-                    TsScript.add ('sc_lop.ballcontrol.bounce.playertoball,' + aPlayer.Ids {Lop} + ','+ aFriend.ids{cella}
+                    TsScript[incMove].add ('sc_lop.ballcontrol.bounce.playertoball,' + aPlayer.Ids {Lop} + ','+ aFriend.ids{cella}
                              + ',' + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) {celle}
                              + ',' + IntTostr(aFriend.cellx)+',' + IntTostr(aFriend.cellY)
                              + ',' + IntTostr(Ball.cellx)+',' + IntTostr(ball.celly)); {celle}
@@ -6900,39 +7044,42 @@ begin
                      if aPossibleoffside <> nil then begin
                       if isOffside ( aPossibleoffside )   then begin
                         //come fallo freekick1
-                        TsScript.add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
+                        TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
                         if aPossibleoffside.team = 0 then
                           FreeKickSetup1( 1 ) // aspetta short.passing o lofted.pass
                         else
                           FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
                         reason := '';
-                        TsScript.add ('E');
+                        TsScript[incMove].add ('E');
                         goto MyExit;
                       end;
                      end;
-                     TsScript.add ('sc_lop.ballcontrol.bounce,' + aPlayer.Ids {Lop} + ','+ aFriend.ids{cella}
+                     TsScript[incMove].add ('sc_lop.ballcontrol.bounce,' + aPlayer.Ids {Lop} + ','+ aFriend.ids{cella}
                                                            + ',' + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) {celle}
                                                            + ',' + IntTostr(aFriend.cellx)+',' + IntTostr(aFriend.cellY)
                                                            + ',' + IntTostr(Ball.cellx)+',' + IntTostr(ball.celly)); {celle}
+                     aFriend.xpDevT := aFriend.xpDevT + 1;
 
                    End;
               end
               else if (aRnd3 >= LOP_BC_MAX1) and (aRnd3 <= MAX_LEVEL)   then begin // controlla perfettamente
-                   TsScript.add ('sc_lop.ballcontrol.ok10,' + aPlayer.Ids {Lop} + ','+ aFriend.ids{cella}
+                   TsScript[incMove].add ('sc_lop.ballcontrol.ok10,' + aPlayer.Ids {Lop} + ','+ aFriend.ids{cella}
                                                            + ',' + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) {celle}
                                                            + ',' + IntTostr(aFriend.cellx)+',' + IntTostr(aFriend.cellY));
                    tsSpeaker.Add(aFriend.Surname +' controlla');
+                   aFriend.xpDevT := aFriend.xpDevT + 2;
+
                    aPossibleOffside := GetSoccerPlayer(Ball.CellX , ball.cellY );
                    if aPossibleoffside <> nil then begin
                     if isOffside ( aPossibleoffside )   then begin
                       //come fallo freekick1
-                      TsScript.add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
+                      TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
                       if aPossibleoffside.team = 0 then
                         FreeKickSetup1( 1 ) // aspetta short.passing o lofted.pass
                       else
                         FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
                       reason := '';
-                      TsScript.add ('E');
+                      TsScript[incMove].add ('E');
                       goto MyExit;
                     end;
                    end;
@@ -6943,22 +7090,24 @@ begin
 
           // nel caso di non Volley, ma riceve a centrocampo ad esempio, ci sono i buff di ballcontrol+1
 
-           TsScript.add ('sc_lop.ok10,' + aPlayer.Ids {Lop} + ','+ aFriend.ids{cella}
+           TsScript[incMove].add ('sc_lop.ok10,' + aPlayer.Ids {Lop} + ','+ aFriend.ids{cella}
                                                                + ',' + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) {celle}
                                                                + ',' + IntTostr(aFriend.cellx)+',' + IntTostr(aFriend.cellY));
-              Ball.CellS := Point (CellX, CellY);
+           aPlayer.xpDevT := aPlayer.xpDevT + 1;
+           aFriend.xpDevT := aFriend.xpDevT + 1;
+           Ball.CellS := Point (CellX, CellY);
 
              aPossibleOffside := GetSoccerPlayer(Ball.CellX , ball.cellY );
              if aPossibleoffside <> nil then begin
               if isOffside ( aPossibleoffside )   then begin
                 //come fallo freekick1
-                TsScript.add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
+                TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
                 if aPossibleoffside.team = 0 then
                   FreeKickSetup1( 1 ) // aspetta short.passing o lofted.pass
                 else
                   FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
                 reason := '';
-                TsScript.add ('E');
+                TsScript[incMove].add ('E');
                 goto MyExit;
               end;
              end;
@@ -6985,8 +7134,9 @@ begin
                     aRnd2:= Roll2.value + BaseShot  ;
                     if debug_SetAlwaysGol then arnd2 := 20;
                     aFriend.Stamina := aFriend.Stamina - cost_pos;
-                    TsScript.add ('sc_ST,' +aFriend.ids +',' + IntToStr(cost_pos) ) ;
-                    TsScript.add ( 'sc_DICE,' + IntTostr(aFriend.CellX) + ',' + Inttostr(aFriend.CellY) +','+  IntTostr(aRnd2) +','+
+                    aFriend.XpdevT := aFriend.XpdevT + 1; // xpdeva gli è stata assegnata sopra durabte il ballcontrol , queso tè un bonus uleriore
+                    TsScript[incMove].add ('sc_ST,' +aFriend.ids +',' + IntToStr(cost_pos) ) ;
+                    TsScript[incMove].add ( 'sc_DICE,' + IntTostr(aFriend.CellX) + ',' + Inttostr(aFriend.CellY) +','+  IntTostr(aRnd2) +','+
                     IntTostr ( BaseShot)+',Volley,'+ aFriend.ids+','+IntTostr(Roll2.value) + ',' + Roll2.fatigue + '.0' + ',1');
                     ExceptPlayers.Add(aFriend);
 
@@ -7011,22 +7161,24 @@ begin
                             Roll3 := AdjustFatigue (anOpponent.Stamina , preRoll3);
                             aRnd3:= roll3.value + anOpponent.Defense + Modifier;
                             anOpponent.Stamina := anOpponent.Stamina - cost_defshot;
-                            TsScript.add ( 'sc_DICE,' + IntTostr(anOpponent.CellX) + ',' + Inttostr(anOpponent.CellY) +','+  IntTostr(aRnd3) +','+
+                            TsScript[incMove].add ( 'sc_DICE,' + IntTostr(anOpponent.CellX) + ',' + Inttostr(anOpponent.CellY) +','+  IntTostr(aRnd3) +','+
                             IntTostr ( anOpponent.Defense ) +',Defense,'+ anOpponent.ids+','+IntTostr(Roll3.value) + ',' + Roll3.fatigue+'.0' + ',' + IntToStr(Modifier));
+                            anOpponent.xpDevA := anOpponent.xpDevA + 1; // anche se non prende la palla
 
                             if aRnd3 > aRnd2 then begin // power.Shot ---> avversario prende la palla e c'è il rimbalzo
 
                               // back o path di tiro non prevede ballmove
                              oldball:= Point ( anOpponent.CellX, anOpponent.CellY);
                              Ball.Cells :=  GetBounceCell ( aPlayer.cellX, aPlayer.CellY, anOpponent.CellX, anOpponent.CellY,  RndGenerate (2),AnOpponent.team );
+                             anOpponent.xpDevT := anOpponent.xpDevT + 1;
 
                               if Modifier <> 0 then begin
                               // un difensore raggiunge chi effettua il POS e fa lo swap
-              //                TsScript.add ('sc_pos.back.bounce,' + aPlayer.ids + ',' + anOpponent.ids +','
+              //                TsScript[incMove].add ('sc_pos.back.bounce,' + aPlayer.ids + ',' + anOpponent.ids +','
               //                                              + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) + ','
               //                                              + IntTostr(anOpponent.cellx)+',' + IntTostr(anOpponent.celly) +','
               //                                              + IntTostr(Ball.cellX)+',' + IntTostr(Ball.cellY ));
-                              TsScript.add ('sc_lop.back.swap.bounce,' + aPlayer.ids + ',' + anOpponent.ids +','
+                              TsScript[incMove].add ('sc_lop.back.swap.bounce,' + aPlayer.ids + ',' + anOpponent.ids +','
                                                             + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) + ','
                                                             + IntTostr(anOpponent.cellx)+',' + IntTostr(anOpponent.celly) +','
                                                             + IntTostr(Ball.cellX)+',' + IntTostr(Ball.cellY ));
@@ -7034,26 +7186,27 @@ begin
                               end
                               else begin
                               // il tiro raggiunge la cella e rimbalza
-                              TsScript.add ('sc_lop.bounce,' + aPlayer.ids + ',' + anOpponent.ids +','
+                              TsScript[incMove].add ('sc_lop.bounce,' + aPlayer.ids + ',' + anOpponent.ids +','
                                                             + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) + ','
                                                             + IntTostr(anOpponent.cellx)+',' + IntTostr(anOpponent.celly) +','
                                                             + IntTostr(Ball.cellX)+',' + IntTostr(Ball.cellY ));
 
-                              // se chi riceve il rimbalzo è dello stesso Team
-                              if Ball.Player <> nil then begin
-                                if Ball.Player.Team = aPlayer.Team then begin
-                                  Ball.Player.xpTal[TALENT_ID_FINISHING] :=  Ball.Player.xpTal[TALENT_ID_FINISHING] + 1;
+                                // se chi riceve il rimbalzo è dello stesso Team
+                                if Ball.Player <> nil then begin
+                                  if Ball.Player.Team = aPlayer.Team then begin
+                                    Ball.Player.xpTal[TALENT_ID_FINISHING] :=  Ball.Player.xpTal[TALENT_ID_FINISHING] + 1;
+                                  end;
+                                  Ball.Player.Shot := Ball.Player.Shot + 1;
+                                  Ball.Player.BonusFinishingTurn := 1;
+                                  Ball.Player.xpDevA := Ball.Player.xpDevA + 1;
                                 end;
-                                Ball.Player.Shot := Ball.Player.Shot + 1;
-                                Ball.Player.BonusFinishingTurn := 1;
-                              end;
                               end;
                                 // POS finisce con rimbalzo della difesa grazie a intercept
                               //  aPlayer.resetALL;
                                 TeamMovesLeft := TeamMovesLeft - 1;
                                 AI_moveAll ;
                                 if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-                                TsScript.add ('E');
+                                TsScript[incMove].add ('E');
                                   reason :='';
                                   goto MyExit;
 
@@ -7071,15 +7224,20 @@ begin
                           preRoll4 := RndGenerate (dice);
                           Roll4 := AdjustFatigue (aGK.Stamina , preRoll4);
                           aRnd4:= roll4.value + aGK.defense ;
-                          TsScript.add ( 'sc_DICE,' + IntTostr(aGK.CellX) + ',' + Inttostr(aGK.CellY) +','+  IntTostr(aRnd4) +','+
+                          TsScript[incMove].add ( 'sc_DICE,' + IntTostr(aGK.CellX) + ',' + Inttostr(aGK.CellY) +','+  IntTostr(aRnd4) +','+
                           IntTostr ( aGK.defense ) +',Defense,'+ aGK.ids+','+IntTostr(Roll4.value) + ',' + Roll4.fatigue + '.0' + ',0');
                           // o angolo o respinta o gol
+                          aGK.Stamina := aGK.Stamina - cost_GKheading;
+                          aGK.xp_Defense:= aGK.xp_Defense+1;
+                          aGK.xpDevA := aGK.xpDevA + 1;
               //            goto palo;
                           if aRnd4 > aRnd2 then begin // power.Shot ---> il portiere para e c'è il rimbalzo
                              aCell := GetGKBounceCell (aGK,  aGK.cellX, aGK.CellY,  RndGenerate (2), true );
                              Ball.Cells := aCell;
+                             aGK.xpDevT := aGK.xpDevT + 1;
+
                             // la palla, che ora è in possesso del portiere , rimbalza e finisce in posizione random che calcolo adesso
-                              TsScript.add ('sc_lop.bounce.gk,' + aPlayer.ids + ',' + aGK.ids{sfidante} +','
+                              TsScript[incMove].add ('sc_lop.bounce.gk,' + aPlayer.ids + ',' + aGK.ids{sfidante} +','
                                                             + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) + ','
                                                             + IntTostr(aGK.cellx)+',' + IntTostr(aGK.celly)  +','
                                                             + IntTostr(Ball.cellX)+',' + IntTostr(Ball.cellY)  );
@@ -7100,16 +7258,18 @@ begin
                                 end;
                                 Ball.Player.Shot := Ball.Player.Shot + 1;
                                 Ball.Player.BonusFinishingTurn := 1;
+                                Ball.Player.xpDevA := Ball.Player.xpDevA + 1;
                               end;
 
 
-                               TsScript.add ('E') ;
+                               TsScript[incMove].add ('E') ;
 
                           end
 
                                // POS finisce con in gol
                           else begin // gol
 
+                                 aPlayer.xpDevT := aPlayer.xpDevT + 1; //come fosse gol , anche palo
                                 // ma c'è sempre il palo.
                                 if RndGenerate(12) = 12 then begin
               pos_crossbar:
@@ -7118,9 +7278,13 @@ begin
                                  aCell := GetGKBounceCell (aGK,  aGK.cellX, aGK.CellY, RndGenerate (2),false );
                                  Ball.Cells := aCell;
                                  tsSpeaker.Add(' palo ');
-                                  {$IFDEF ADDITIONAL_MATCHINFO}  MatchInfo.Add( IntToStr(fminute) + '.crossbar.' + aGK.ids);{$ENDIF}
+                                  {$IFDEF ADDITIONAL_MATCHINFO}
+                                    if gameMode = pvp then
+                                      MatchInfo.Add( IntToStr(fminute) + '.crossbar.' + aFriend.ids)
+                                      else MatchInfo.Add( IntToStr(fminute) + '.crossbar.' + aFriend.ids+'.'+aFriend.SurName);
+                                  {$ENDIF}
 
-                                  TsScript.add ('sc_lop.bounce.crossbar,' + aPlayer.ids + ',' + aGK.ids{sfidante} +','
+                                  TsScript[incMove].add ('sc_lop.bounce.crossbar,' + aPlayer.ids + ',' + aGK.ids{sfidante} +','
                                                             + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) + ','
                                                             + IntTostr(aGK.cellx)+',' + IntTostr(aGK.celly )+','
                                                             + IntTostr(Ball.cellX)+',' + IntTostr(Ball.cellY) + ',' + IntToStr(CrossBarN) );
@@ -7134,18 +7298,19 @@ begin
                                     end;
                                     Ball.Player.Shot := Ball.Player.Shot + 1;
                                     Ball.Player.BonusFinishingTurn := 1;
+                                    Ball.Player.xpDevA := Ball.Player.xpDevA + 1;
                                   end;
 
                                   TeamMovesLeft := TeamMovesLeft - 1;
                                   AI_moveAll ;
                                   if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-                                  TsScript.add ('E');
+                                  TsScript[incMove].add ('E');
                                   reason :='';
                                   goto MyExit;
                                 end
                                 else begin
 
-                                 TsScript.add ('sc_lop.gol,' + aPlayer.ids + ','+ aFriend.ids + ',' + aGK.ids +','
+                                 TsScript[incMove].add ('sc_lop.gol,' + aPlayer.ids + ','+ aFriend.ids + ',' + aGK.ids +','
                                                             + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) + ','
                                               + IntTostr(aFriend.cellx)+',' + IntTostr(aFriend.celly) + ','
                                                             + IntTostr(aGK.cellx)+',' + IntTostr(aGK.celly) +','
@@ -7154,10 +7319,14 @@ begin
                                   aPlayer.resetPRE ;  // eventuale pressing viene perso DOPO il tiro
                                   inc (Score.gol[aPlayer.team]);
                                   Score.lstGol:= Score.lstGol + IntTostr( Minute ) + '=' + aFriend.Ids + ',';
-                                  MatchInfo.Add( IntToStr(fminute) + '.golvolley.' + aFriend.ids);
+
+                                  if GameMode = pvp then
+                                    MatchInfo.Add( IntToStr(fminute) + '.golvolley.' + aFriend.ids)
+                                    else MatchInfo.Add( IntToStr(fminute) + '.golvolley.' + aFriend.ids+'.'+aFriend.SurName);
+
                                   LoadDefaultTeamPos ( aGK.Team ) ;
                                   TurnChange(TurnMovesStart);
-                                  TsScript.add ('E') ;
+                                  TsScript[incMove].add ('E') ;
                                   reason :='';
                                   goto MyExit;
                                 End;
@@ -7174,9 +7343,9 @@ begin
 
       end;
     //  aPlayer.resetALL;
-      TeamMovesLeft := TeamMovesLeft - 1;
-      if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-      TsScript.add ('E');
+//      TeamMovesLeft := TeamMovesLeft - 1;
+//      if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
+//      TsScript[incMove].add ('E');
 
     end
 
@@ -7208,7 +7377,7 @@ begin
           aGhost := GetSoccerPlayer (CellX, CellY) ;
             if aGhost = nil then begin
               // gli intercept sono a distanza 1 e possono muoversi sul pallone automaticamente
-               TsScript.add ('sc_lop.no,' + aPlayer.Ids {Lop}     + ',' + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) {celle}
+               TsScript[incMove].add ('sc_lop.no,' + aPlayer.Ids {Lop}     + ',' + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) {celle}
                                                                    + ',' + IntTostr(Ball.cellx)+',' + IntTostr(Ball.cellY));
 
 
@@ -7221,7 +7390,7 @@ begin
                 anOpponent.CellX := Ball.CellX;
                 anOpponent.CellY := Ball.CellY;
 
-                TsScript.add ('sc_player,'+ anOpponent.Ids +','+IntTostr(oldPlayer.X)+','+ IntTostr(oldPlayer.Y)+','+
+                TsScript[incMove].add ('sc_player,'+ anOpponent.Ids +','+IntTostr(oldPlayer.X)+','+ IntTostr(oldPlayer.Y)+','+
                                                     IntTostr(anOpponent.CellX)+','+ IntTostr(anOpponent.CellY)  ) ;
               end;
             end
@@ -7230,13 +7399,13 @@ begin
                if aPossibleoffside <> nil then begin
                 if isOffside ( aPossibleoffside )   then begin
                   //come fallo freekick1
-                  TsScript.add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
+                  TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
                   if aPossibleoffside.team = 0 then
                     FreeKickSetup1( 1 ) // aspetta short.passing o lofted.pass
                   else
                     FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
                   reason := '';
-                  TsScript.add ('E');
+                  TsScript[incMove].add ('E');
                   goto MyExit;
                 end;
                end;
@@ -7248,11 +7417,12 @@ begin
                 Roll3 := AdjustFatigue (aFriend.Stamina , preRoll3);
                 aRnd3 := Roll3.value  + aFriend.BallControl - 2 ;
                 if aRnd3 < 0  then aRnd3 := 1;
-                TsScript.add ( 'sc_DICE,' + IntTostr(aFriend.CellX) + ',' + Inttostr(aFriend.CellY) +','+  IntTostr(aRnd3) + ','+
+                TsScript[incMove].add ( 'sc_DICE,' + IntTostr(aFriend.CellX) + ',' + Inttostr(aFriend.CellY) +','+  IntTostr(aRnd3) + ','+
                 IntToStr(aFriend.BallControl )+ ',Ball.Control,'+ aFriend.ids+','+IntTostr(Roll3.value) + ',' + Roll3.fatigue + '.0' + ',-2' );
-                 TsScript.add ('sc_ST,' + aFriend.ids +',' + IntToStr(cost_bac) ) ;
+                 TsScript[incMove].add ('sc_ST,' + aFriend.ids +',' + IntToStr(cost_bac) ) ;
                  aFriend.xp_BallControl := aFriend.xp_BallControl + 1;
                  aFriend.Stamina := aFriend.Stamina - cost_bac;
+                 aFriend.xpDevA := aFriend.xpDevA + 1;
 
                 if (aRnd3 >= LOP_BC_MIN1) and (aRnd3 <= LOP_BC_MIN2)   then begin //friend non controlla la palla
                    aCell:= GetRandomCell  (  Ball.CellX, Ball.CellY , 1 , false ,true);
@@ -7261,19 +7431,19 @@ begin
                    if aPossibleoffside <> nil then begin
                     if isOffside ( aPossibleoffside )   then begin
                       //come fallo freekick1
-                      TsScript.add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
+                      TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
                       if aPossibleoffside.team = 0 then
                         FreeKickSetup1( 1 ) // aspetta short.passing o lofted.pass
                       else
                         FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
                       reason := '';
-                      TsScript.add ('E');
+                      TsScript[incMove].add ('E');
                       goto MyExit;
                     end;
                    end;
                    tsSpeaker.Add(aFriend.Surname + ' controlla male ');
 
-                    TsScript.add ('sc_lop.ballcontrol.bounce,' + aPlayer.Ids {Lop} + ','+ aFriend.ids{cella}
+                    TsScript[incMove].add ('sc_lop.ballcontrol.bounce,' + aPlayer.Ids {Lop} + ','+ aFriend.ids{cella}
                                                            + ',' + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) {celle}
                                                            + ',' + IntTostr(aFriend.cellx)+',' + IntTostr(aFriend.cellY)
                                                            + ',' + IntTostr(Ball.cellx)+',' + IntTostr(ball.celly)); {celle}
@@ -7285,13 +7455,13 @@ begin
                    if aPossibleoffside <> nil then begin
                     if isOffside ( aPossibleoffside )   then begin
                       //come fallo freekick1
-                      TsScript.add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
+                      TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
                       if aPossibleoffside.team = 0 then
                         FreeKickSetup1( 1 ) // aspetta short.passing o lofted.pass
                       else
                         FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
                       reason := '';
-                      TsScript.add ('E');
+                      TsScript[incMove].add ('E');
                       goto MyExit;
                     end;
                    end;
@@ -7300,15 +7470,15 @@ begin
 
                      OldPlayer := aFriend.Cells;
                      aFriend.CellS:= aCell;
-                     TsScript.add ('sc_lop.ballcontrol.bounce.playertoball,' + aPlayer.Ids {Lop} + ','+ aFriend.ids{cella}
+                     TsScript[incMove].add ('sc_lop.ballcontrol.bounce.playertoball,' + aPlayer.Ids {Lop} + ','+ aFriend.ids{cella}
                                                          + ',' + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) {celle}
                                                          + ',' + IntTostr(aFriend.cellx)+',' + IntTostr(aFriend.cellY)
                                                          + ',' + IntTostr(Ball.cellx)+',' + IntTostr(ball.celly)); {celle}
                      tsSpeaker.Add(aPlayer.Surname +' controlla e si sposta ');
-
+                     aFriend.xpDevT := aFriend.xpDevT + 1;
                    end
                    else begin
-                    TsScript.add ('sc_lop.ballcontrol.bounce,' + aPlayer.Ids {Lop} + ','+ aFriend.ids{cella}
+                    TsScript[incMove].add ('sc_lop.ballcontrol.bounce,' + aPlayer.Ids {Lop} + ','+ aFriend.ids{cella}
                                                          + ',' + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) {celle}
                                                          + ',' + IntTostr(aFriend.cellx)+',' + IntTostr(aFriend.cellY)
                                                          + ',' + IntTostr(Ball.cellx)+',' + IntTostr(ball.celly)); {celle}
@@ -7321,21 +7491,21 @@ begin
                      if aPossibleoffside <> nil then begin
                       if isOffside ( aPossibleoffside )   then begin
                         //come fallo freekick1
-                        TsScript.add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
+                        TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
                         if aPossibleoffside.team = 0 then
                           FreeKickSetup1( 1 ) // aspetta short.passing o lofted.pass
                         else
                           FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
                         reason := '';
-                        TsScript.add ('E');
+                        TsScript[incMove].add ('E');
                         goto MyExit;
                       end;
                      end;
-                       TsScript.add ('sc_lop.ballcontrol.ok10,' + aPlayer.Ids {Lop} + ','+ aFriend.ids{cella}
+                       TsScript[incMove].add ('sc_lop.ballcontrol.ok10,' + aPlayer.Ids {Lop} + ','+ aFriend.ids{cella}
                                                              + ',' + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) {celle}
                                                              + ',' + IntTostr(ball.cellx)+',' + IntTostr(ball.cellY));
                        tsSpeaker.Add(aFriend.Surname +' controlla');
-
+                       aFriend.xpDevT := aFriend.xpDevT + 1;
 
                 end;
             end
@@ -7347,15 +7517,17 @@ begin
                   Roll3 := AdjustFatigue (anOpponent.Stamina , preRoll3);
                   aRnd3 :=  Roll3.value + anOpponent.BallControl + 4 ;
                   if aRnd3 < 0  then aRnd3 := 1;
-                  TsScript.add ( 'sc_DICE,' + IntTostr(anOpponent.CellX) + ',' + Inttostr(anOpponent.CellY) +','+  IntTostr(aRnd3) + ','+
+                  TsScript[incMove].add ( 'sc_DICE,' + IntTostr(anOpponent.CellX) + ',' + Inttostr(anOpponent.CellY) +','+  IntTostr(aRnd3) + ','+
                   IntToStr(anOpponent.BallControl)+',Ball.Control,'+ anOpponent.ids+','+IntTostr(Roll3.value)+','+Roll3.fatigue + '.0' + ',4' );
                   anOpponent.Stamina := anOpponent.Stamina - cost_bac;
                   anOpponent.xp_BallControl := anOpponent.xp_BallControl + 1;
-                  TsScript.add ('sc_ST,' + anOpponent.ids +',' + IntToStr(cost_bac) ) ;
+                  anOpponent.xpDevA := anOpponent.xpDevA + 1;
+
+                  TsScript[incMove].add ('sc_ST,' + anOpponent.ids +',' + IntToStr(cost_bac) ) ;
                   if (aRnd3 >= LOP_BC_MIN1) and (aRnd3 <= LOP_BC_MIN2) then begin //opponent non controlla la palla
                      aCell:= GetRandomCell  ( Ball.CellX, Ball.CellY , 1, false  ,true);
                      Ball.Cells := aCell;
-                     TsScript.add ('sc_lop.ballcontrol.bounce,' + aPlayer.Ids {Lop} + ','+ anOpponent.ids{cella}
+                     TsScript[incMove].add ('sc_lop.ballcontrol.bounce,' + aPlayer.Ids {Lop} + ','+ anOpponent.ids{cella}
                                                              + ',' + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) {celle}
                                                              + ',' + IntTostr(anOpponent.cellx)+',' + IntTostr(anOpponent.cellY)
                                                              + ',' + IntTostr(Ball.cellx)+',' + IntTostr(ball.celly)); {celle}
@@ -7367,6 +7539,7 @@ begin
                       end;
                       Ball.Player.Shot := Ball.Player.Shot + 1;
                       Ball.Player.BonusFinishingTurn := 1;
+                      Ball.Player.xpDevA := Ball.Player.xpDevA + 1;
                     end;
 
                   end
@@ -7374,21 +7547,22 @@ begin
                      aCell:= GetRandomCell  ( Ball.CellX, Ball.CellY , 1, false  ,true); {  possibile cell=nil }
 
                      Ball.CellS := aCell;
+                     anOpponent.xpDevT := anOpponent.xpDevT + 1;
 
-                     TsScript.add ('sc_bounce,'+ IntTostr(anOpponent.CellX)+','+ IntTostr(anOpponent.CellY)+','+ IntTostr(aCell.X)+','+ IntTostr(aCell.Y) +',0' ) ;
+                     TsScript[incMove].add ('sc_bounce,'+ IntTostr(anOpponent.CellX)+','+ IntTostr(anOpponent.CellY)+','+ IntTostr(aCell.X)+','+ IntTostr(aCell.Y) +',0' ) ;
                      if GetSoccerPlayer (ball.CellX , ball.celly) = nil then begin
 
                         OldPlayer := anOpponent.Cells;
                         anOpponent.CellS:= aCell;
 
-                         TsScript.add ('sc_lop.ballcontrol.bounce.playertoball,' + aPlayer.Ids {Lop} + ','+ anOpponent.ids{cella}
+                         TsScript[incMove].add ('sc_lop.ballcontrol.bounce.playertoball,' + aPlayer.Ids {Lop} + ','+ anOpponent.ids{cella}
                                                            + ',' + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) {celle}
                                                            + ',' + IntTostr(anOpponent.cellx)+',' + IntTostr(anOpponent.cellY)
                                                            + ',' + IntTostr(Ball.cellx)+',' + IntTostr(ball.celly)); {celle}
                         tsSpeaker.Add(aPlayer.Surname +' controlla e si sposta a');
                      end
                      else begin
-                      TsScript.add ('sc_lop.ballcontrol.bounce,' + aPlayer.Ids {Lop} + ','+ anOpponent.ids{cella}
+                      TsScript[incMove].add ('sc_lop.ballcontrol.bounce,' + aPlayer.Ids {Lop} + ','+ anOpponent.ids{cella}
                                                            + ',' + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) {celle}
                                                            + ',' + IntTostr(anOpponent.cellx)+',' + IntTostr(anOpponent.cellY)
                                                            + ',' + IntTostr(Ball.cellx)+',' + IntTostr(ball.celly)); {celle}
@@ -7400,21 +7574,23 @@ begin
                         end;
                         Ball.Player.Shot := Ball.Player.Shot + 1;
                         Ball.Player.BonusFinishingTurn := 1;
+                        Ball.Player.xpDevA := Ball.Player.xpDevA + 1;
                       end;
                      end;
                   end
                   else if (aRnd3 >= LOP_BC_MAX1) and (aRnd3 <= MAXINT )   then begin // controlla perfettamente
-                              TsScript.add ('sc_lop.ballcontrol.ok10,' + aPlayer.Ids {Lop} + ','+ anOpponent.ids{cella}
+                              TsScript[incMove].add ('sc_lop.ballcontrol.ok10,' + aPlayer.Ids {Lop} + ','+ anOpponent.ids{cella}
                                                                    + ',' + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) {celle}
                                                                    + ',' + IntTostr(anOpponent.cellx)+',' + IntTostr(anOpponent.cellY));
                              tsSpeaker.Add(anOpponent.Surname +' controlla');
+                     anOpponent.xpDevT := anOpponent.xpDevT + 2;
                   end;
             end
 
       end
       else if (aRnd >= LOP_MID1) and (aRnd <= MAX_LEVEL)   then begin // lop // la palla cade nella cella scelta  e non succede nulla altro
           // se non c'è nessuno solo controllo del target
-          TsScript.add ('sc_ball.move,'+ IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+  IntTostr(CellX)+','+ IntTostr(CellY) +',0,0' ) ;
+          TsScript[incMove].add ('sc_ball.move,'+ IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+  IntTostr(CellX)+','+ IntTostr(CellY) +',0,0' ) ;
           tsSpeaker.Add( aPlayer.Surname +' effettua un passaggio alto a seguire' );
           Ball.Cells := Point (CellX, CellY );
          aPossibleOffside := GetSoccerPlayer(Ball.CellX , ball.cellY );
@@ -7422,13 +7598,13 @@ begin
          if aPossibleoffside <> nil then begin
           if isOffside ( aPossibleoffside )   then begin
             //come fallo freekick1
-            TsScript.add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
+            TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
             if aPossibleoffside.team = 0 then
               FreeKickSetup1( 1 ) // aspetta short.passing o lofted.pass
             else
               FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
             reason := '';
-            TsScript.add ('E');
+            TsScript[incMove].add ('E');
             goto MyExit;
           end;
          end;
@@ -7443,7 +7619,7 @@ begin
 
       AI_moveAll ;
       if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-      TsScript.add ('E');
+      TsScript[incMove].add ('E');
 
 
   end // LOP
@@ -7511,9 +7687,10 @@ TALENT_ID_PRECISE_CROSSING ( +1 crossing solo dal fondo campo, l'ultima cella )
     tsSpeaker.Add( aPlayer.Surname +' cerca un cross per ' + aHeadingFriend.SurName   );
 
 
-    TsScript.add ('SERVER_CRO,' + aPlayer.Ids + ',' + IntToStr(aPlayer.CellX) + ',' + IntToStr(aPlayer.CellY) +',' +IntTostr(CellX)+','+IntToStr(CellY) ) ;
+    TsScript[incMove].add ('SERVER_CRO,' + aPlayer.Ids + ',' + IntToStr(aPlayer.CellX) + ',' + IntToStr(aPlayer.CellY) +',' +IntTostr(CellX)+','+IntToStr(CellY) ) ;
     aPlayer.Stamina := aPlayer.Stamina - cost_cro;
-    TsScript.add ('sc_ST,' + aPlayer.ids +',' + IntToStr(cost_cro) ) ;
+    aplayer.xpDevA := aplayer.xpDevA + 1;
+    TsScript[incMove].add ('sc_ST,' + aPlayer.ids +',' + IntToStr(cost_cro) ) ;
     ExceptPlayers.Add(aPlayer);
 
     OldBall:= Point ( Ball.CellX , Ball.Celly );
@@ -7541,7 +7718,7 @@ TALENT_ID_PRECISE_CROSSING ( +1 crossing solo dal fondo campo, l'ultima cella )
     aPlayer.resetALL;
     aPlayer.xpTal[TALENT_ID_CROSSING] :=  aPlayer.xpTal[TALENT_ID_CROSSING] + 1;
 
-    TsScript.add ( 'sc_DICE,' + IntTostr(aPlayer.CellX) + ',' + Inttostr(aPlayer.CellY) +','+  IntTostr(aRnd) + ','+
+    TsScript[incMove].add ( 'sc_DICE,' + IntTostr(aPlayer.CellX) + ',' + Inttostr(aPlayer.CellY) +','+  IntTostr(aRnd) + ','+
     IntToStr(aPlayer.Passing )+',Crossing,'+ aPlayer.ids+','+IntTostr(Roll.value)+','+Roll.fatigue+ '.'+ACT +  ','+IntToStr(aPlayer.tmp)  );
 
     DefenseHeadingWin:= false;
@@ -7561,14 +7738,17 @@ GK:
           //  ---------->>>      vuota la palla diretta al portiere che blocca
           aGK := GetOpponentGK ( aPlayer.Team );
           Ball.Cells := aGK.Cells;
-          TsScript.add ('sc_ball.move,'+ IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+  IntTostr(aGK.CellX)+','+ IntTostr(aGK.CellY )
+          TsScript[incMove].add ('sc_ball.move,'+ IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+  IntTostr(aGK.CellX)+','+ IntTostr(aGK.CellY )
           +','+aGK.Ids+',ball.control' ) ;
           tsSpeaker.Add( aPlayer.Surname +' la palla direttamente tra le braccia di ' + aGK.SurName  );
           //aPlayer.resetALL;
+          aGK.Stamina := aGK.Stamina - cost_GKprs;// presa semplice
+          aGK.xp_Defense:= aGK.xp_Defense+1;
+          aGK.xpDevA := aGK.xpDevA + 1;
           TeamMovesLeft := TeamMovesLeft - 1;
           AI_moveAll ;
           if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-          TsScript.add ('E');
+          TsScript[incMove].add ('E');
           reason := '';
           goto MyExit;
 
@@ -7579,13 +7759,13 @@ GK:
                  if aPossibleoffside <> nil then begin
                   if isOffside ( aPossibleoffside )   then begin
                     //come fallo freekick1
-                    TsScript.add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
+                    TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
                     if aPossibleoffside.team = 0 then
                       FreeKickSetup1( 1 ) // aspetta short.passing o lofted.pass
                     else
                       FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
                     reason := '';
-                    TsScript.add ('E');
+                    TsScript[incMove].add ('E');
                     goto MyExit;
                   end;
                  end;
@@ -7615,12 +7795,13 @@ GK:
               ExceptPlayers.Add(aGhost);
               Ball.Cells:= GetBounceCell  ( aPlayer.CellX,aPlayer.CellY, CellX, CellY, 2 , aGhost.team);
 
-               TsScript.add ('sc_cross.headingdef.bounce,' + aPlayer.Ids +',' + aGhost.ids
+               TsScript[incMove].add ('sc_cross.headingdef.bounce,' + aPlayer.Ids +',' + aGhost.ids
                                                            + ',' + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly)
                                                            + ',' + IntTostr(aGhost.cellx)+',' + IntTostr(aGhost.celly)
                                                            + ',' + IntTostr(Ball.cellx)+',' + IntTostr(Ball.celly));
 
           aGhost.Stamina := aGhost.Stamina - cost_hea;
+          aGhost.xpDevA := aGhost.xpDevA + 1;
           aGhost.xp_Heading := aGhost.xp_Heading + 1;
           aGhost.xpTal[TALENT_ID_HEADING] :=  aGhost.xpTal[TALENT_ID_HEADING] + 1;
           if Ball.BallisOutside then begin
@@ -7637,6 +7818,7 @@ GK:
               end;
               Ball.Player.Shot := Ball.Player.Shot + 1;
               Ball.Player.BonusFinishingTurn := 1;
+              Ball.Player.xpDevA := Ball.Player.xpDevA + 1;
             end;
 
         end;
@@ -7644,7 +7826,7 @@ GK:
         TeamMovesLeft := TeamMovesLeft - 1;
         AI_moveAll ;
         if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-        TsScript.add ('E');
+        TsScript[incMove].add ('E');
         reason := '';
         goto MyExit;
     end
@@ -7652,6 +7834,7 @@ GK:
     else if (aRnd >= CRO_MID1) and (aRnd <= CRO_MID2)   then begin
       //la palla termina esattamente sul friend a cellx,celly . ci sono i bonus della difesa che dipendono dalla posizione e heading vs heading
        //HVSH con certi bonus
+         aPlayer.xpDevT := aPlayer.xpDevT + 1;  // cross sulla testa del friend
           aCell.X := CellX;
           aCell.Y := CellY;
           Ball.Cells := aCell;
@@ -7659,18 +7842,18 @@ GK:
          if aPossibleoffside <> nil then begin
           if isOffside ( aPossibleoffside )   then begin
             //come fallo freekick1
-            TsScript.add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
+            TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
             if aPossibleoffside.team = 0 then
               FreeKickSetup1( 1 ) // aspetta short.passing o lofted.pass
             else
               FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
             reason := '';
-            TsScript.add ('E');
+            TsScript[incMove].add ('E');
             goto MyExit;
           end;
          end;
 
-          //2              TsScript.add ('sc_ball.move,'+ IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+  IntTostr(CellX )+','+ IntTostr(CellY) +',1' ) ;
+          //2              TsScript[incMove].add ('sc_ball.move,'+ IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+  IntTostr(CellX )+','+ IntTostr(CellY) +',1' ) ;
           aHeadingFriend := GetSoccerPlayer(CellX, CellY);
           BaseHeadingFriend:= aHeadingFriend.Heading ;
           ACT := '0';
@@ -7693,6 +7876,7 @@ GK:
     else if (aRnd >= CRO_MAX1) and (aRnd <= MAX_LEVEL)   then begin
       //Roll 10 la palla termina esattamente sul friend a cellx,celly e il compagno ha +1 in heading (lancio perfetto). la difesa ha comunque i suoi bonus
        //HVSH con certi bonus
+         aPlayer.xpDevT := aPlayer.xpDevT + 2; // cross perfetto
           aCell.X := CellX;
           aCell.Y := CellY;
           Ball.Cells := aCell;
@@ -7700,13 +7884,13 @@ GK:
          if aPossibleoffside <> nil then begin
           if isOffside ( aPossibleoffside )   then begin
             //come fallo freekick1
-            TsScript.add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
+            TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
             if aPossibleoffside.team = 0 then
               FreeKickSetup1( 1 ) // aspetta short.passing o lofted.pass
             else
               FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
             reason := '';
-            TsScript.add ('E');
+            TsScript[incMove].add ('E');
             goto MyExit;
           end;
          end;
@@ -7743,14 +7927,15 @@ HVSH:
 
 
             aHeadingFriend.Stamina := aHeadingFriend.Stamina - cost_hea;
-            TsScript.add ('sc_ST,' + aHeadingFriend.ids +',' + IntToStr(cost_hea) ) ;
+            aHeadingFriend.xpDevA := aHeadingFriend.xpDevA + 1;
+            TsScript[incMove].add ('sc_ST,' + aHeadingFriend.ids +',' + IntToStr(cost_hea) ) ;
             aHeadingFriend.xp_Heading := aHeadingFriend.xp_Heading + 1;
             aHeadingFriend.xpTal[TALENT_ID_HEADING] :=  aHeadingFriend.xpTal[TALENT_ID_HEADING] + 1;
             ExceptPlayers.Add(aHeadingfriend);
 //            goto cro_crossbar;
             // prima i difensori di testa , se falliscono rimane il portiere.
 
-                TsScript.add ( 'sc_DICE,' + IntTostr(aHeadingFriend.cellx) + ',' + Inttostr(aHeadingFriend.cellY) +','+  IntTostr(aRnd3) + ','+
+                TsScript[incMove].add ( 'sc_DICE,' + IntTostr(aHeadingFriend.cellx) + ',' + Inttostr(aHeadingFriend.cellY) +','+  IntTostr(aRnd3) + ','+
                 IntToStr(aHeadingFriend.Heading)+',Heading,'+aHeadingFriend.ids+','+IntTostr(Roll3.value) + ',' + Roll3.fatigue + '.' + ACT + ',' + IntToStr(Modifier));
                 ACT := '0';
               for I := 0 to LstHeading.Count -1 do begin
@@ -7774,15 +7959,16 @@ HVSH:
                 aHeadingOpponent.xp_Heading := aHeadingOpponent.xp_Heading + 1;
                 aHeadingOpponent.xpTal[TALENT_ID_HEADING] :=  aHeadingOpponent.xpTal[TALENT_ID_HEADING] + 1;
                 aHeadingOpponent.Stamina := aHeadingOpponent.Stamina - cost_hea;
+                aHeadingOpponent.xpDevA := aHeadingOpponent.xpDevA + 1;
 
-
-                TsScript.add ( 'sc_DICE,' + IntTostr(aHeadingOpponent.cellx) + ',' + Inttostr(aHeadingOpponent.cellY) +','+  IntTostr(aRnd2) +','+
+                TsScript[incMove].add ( 'sc_DICE,' + IntTostr(aHeadingOpponent.cellx) + ',' + Inttostr(aHeadingOpponent.cellY) +','+  IntTostr(aRnd2) +','+
                 IntToStr(aHeadingOpponent.Heading)+',Heading,'+aHeadingOpponent.ids+','+IntTostr(Roll2.value) + ',' + Roll2.fatigue + '.' +ACT + ','+ IntToStr(BonusDefenseHeading));
                 aHeadingOpponent.Stamina := aHeadingOpponent.Stamina - 1;
-                TsScript.add ('sc_ST,' + aHeadingOpponent.ids +',' + '1' ) ;
+                TsScript[incMove].add ('sc_ST,' + aHeadingOpponent.ids +',' + '1' ) ;
 
 
                 if aRnd2 > Arnd3 then begin   //  heading difensivo vince
+                  aHeadingOpponent.xpDevT := aHeadingOpponent.xpDevT + 1; // riesce a fare il meglio possibile
                   tsSpeaker.Add(aHeadingOpponent.Surname +' respinge di testa' );
                   SwapPlayers ( aHeadingOpponent, aHeadingFriend);
                    //bounce
@@ -7791,7 +7977,7 @@ HVSH:
                    DefenseHeadingWin := true;
 
 
-                   TsScript.add ('sc_cross.headingdef.swap.bounce,' + aPlayer.Ids +',' + aHeadingFriend.ids + ',' + aHeadingOpponent.ids
+                   TsScript[incMove].add ('sc_cross.headingdef.swap.bounce,' + aPlayer.Ids +',' + aHeadingFriend.ids + ',' + aHeadingOpponent.ids
                                                                + ',' + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) {celle}
                                                                + ',' + IntTostr(aHeadingFriend.cellx)+',' + IntTostr(aHeadingFriend.celly) {celle}
                                                                + ',' + IntTostr(aHeadingOpponent.cellx)+',' + IntTostr(aHeadingOpponent.celly)
@@ -7800,7 +7986,7 @@ HVSH:
                    break;
                 end;
               //  else begin
-              //     TsScript.add ('sc_ball.move,'+ IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+  IntTostr(aCell.X )+','+ IntTostr(aCell.Y) +',1' ) ;
+              //     TsScript[incMove].add ('sc_ball.move,'+ IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+  IntTostr(aCell.X )+','+ IntTostr(aCell.Y) +',1' ) ;
               //  end;
               end;
 
@@ -7818,6 +8004,7 @@ HVSH:
                 end;
                 Ball.Player.Shot := Ball.Player.Shot + 1;
                 Ball.Player.BonusFinishingTurn := 1;
+                Ball.Player.xpDevA := Ball.Player.xpDevA + 1;
               end;
 
               if DefenseHeadingWin then begin
@@ -7825,7 +8012,7 @@ HVSH:
                 TeamMovesLeft := TeamMovesLeft - 1;
                 AI_moveAll ;
                 if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-                TsScript.add ('E');
+                TsScript[incMove].add ('E');
                 reason := '';
                 goto MyExit;
               end;
@@ -7844,19 +8031,23 @@ HVSH:
               Roll4 := AdjustFatigue (aGK.Stamina , preRoll4);
               aRnd4 := Roll4.value + BaseGK + BonusDefenseHeading ;
               aGK.xpTal[TALENT_ID_GoalKeeper] := aGK.xpTal[TALENT_ID_GoalKeeper] + 1;
-              //              TsScript.add ('gkdive,'+ anOpponent.Ids ) ;
+              //              TsScript[incMove].add ('gkdive,'+ anOpponent.Ids ) ;
+              aGK.Stamina := aGK.Stamina - cost_GKheading;
+              aGK.xp_Defense:= aGK.xp_Defense+1;
 
 
               // o angolo o respinta o gol
-              TsScript.add ( 'sc_DICE,' + IntTostr(aGK.CellX) + ',' + Inttostr(aGK.CellY) +','+  IntTostr(aRnd4) +','+
+              TsScript[incMove].add ( 'sc_DICE,' + IntTostr(aGK.CellX) + ',' + Inttostr(aGK.CellY) +','+  IntTostr(aRnd4) +','+
               IntToStr(aGK.Defense)+',Defense,'+ aGK.ids+','+IntTostr(Roll4.value ) + ',' + Roll4.fatigue+ '.0' +',' + IntTostr(BonusDefenseHeading) );
 
               if aRnd4 > aRnd3 then begin // heading ---> il portiere para e c'è il rimbalzo
                 // la palla, che ora è in possesso del portiere , rimbalza e finisce in posizione random che calcolo adesso
+                 aGK.xpdevA := aGK.xpdevA + 1;
+                 aGK.xpdevT := aGK.xpdevT + 1;
                  aCell := GetGKBounceCell (aGK,  aGK.cellX, aGK.CellY,  RndGenerate (2),true );
                  Ball.Cells := aCell;
 
-                  TsScript.add ('sc_cross.bounce.gk,' + aPlayer.ids + ','+ aHeadingFriend.ids + ',' + aGK.ids +','
+                  TsScript[incMove].add ('sc_cross.bounce.gk,' + aPlayer.ids + ','+ aHeadingFriend.ids + ',' + aGK.ids +','
                                               + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) + ','
                                               + IntTostr(aHeadingFriend.cellx)+',' + IntTostr(aHeadingFriend.celly) + ','
                                               + IntTostr(aGK.cellx)+',' + IntTostr(aGK.celly)  +','
@@ -7878,6 +8069,7 @@ HVSH:
                     end;
                     Ball.Player.Shot := Ball.Player.Shot + 1;
                     Ball.Player.BonusFinishingTurn := 1;
+                    ball.Player.xpDevA := ball.Player.xpDevA + 1;
                   end;
 
               end
@@ -7885,19 +8077,24 @@ HVSH:
               else begin // cross finisce in gol
 // GOL
 
-                 // TsScript.add ('sc_bounce.heading,'+ aHeadingFriend.ids +',' +IntTostr(Ball.CellX)+','+ IntTostr(Ball.CellY)+','+  IntTostr(aGK.CellX)+','+ IntTostr(aGK.CellY) +',1' ) ;
+                 // TsScript[incMove].add ('sc_bounce.heading,'+ aHeadingFriend.ids +',' +IntTostr(Ball.CellX)+','+ IntTostr(Ball.CellY)+','+  IntTostr(aGK.CellX)+','+ IntTostr(aGK.CellY) +',1' ) ;
 
-
+                  aHeadingFriend.xpDevT := aHeadingFriend.xpDevT + 2;  // sia gol che palo
                   // ma c'è sempre il palo.
                   if RndGenerate(12) = 12 then begin
 cro_crossbar:
 //aGK := GetOpponentGK ( aHeadingFriend.Team );
-                   {$IFDEF ADDITIONAL_MATCHINFO}  MatchInfo.Add( IntToStr(fminute) + '.crossbar.' + aGK.ids);{$ENDIF}
+                   {$IFDEF ADDITIONAL_MATCHINFO}
+                    if GameMode = Pvp then
+                      MatchInfo.Add( IntToStr(fminute) + '.crossbar.' + aHeadingFriend.ids)
+                      else MatchInfo.Add( IntToStr(fminute) + '.crossbar.' + aHeadingFriend.ids+'.'+aHeadingFriend.SurName);
+
+                    {$ENDIF}
                    CrossBarN := RndGenerate0 (2);
                    aCell := GetGKBounceCell (aGK,  aGK.cellX, aGK.CellY,  RndGenerate (2) ,false );
                   // se il portiere è fuori dai pali, la palla può rimbalzare in gol più sotto perchè il GK usa defense
                    Ball.Cells := aCell;
-                   TsScript.add ('sc_cross.bounce.crossbar,' + aPlayer.ids + ','+ aHeadingFriend.ids + ',' + aGK.ids +','
+                   TsScript[incMove].add ('sc_cross.bounce.crossbar,' + aPlayer.ids + ','+ aHeadingFriend.ids + ',' + aGK.ids +','
                                               + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) + ','
                                               + IntTostr(aHeadingFriend.cellx)+',' + IntTostr(aHeadingFriend.celly) + ','
                                               + IntTostr(aGK.cellx)+',' + IntTostr(aGK.celly)  +','
@@ -7911,18 +8108,19 @@ cro_crossbar:
                       end;
                       Ball.Player.Shot := Ball.Player.Shot + 1;
                       Ball.Player.BonusFinishingTurn := 1;
+                      ball.Player.xpDevA := ball.Player.xpDevA + 1;
                     end;
 
                     TeamMovesLeft := TeamMovesLeft - 1;
                     AI_moveAll ;
                     if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-                    TsScript.add ('E');
+                    TsScript[incMove].add ('E');
                     reason := '';
                     goto MyExit;
                   end;
 
 
-                   TsScript.add ('sc_cross.gol,' + aPlayer.ids + ','+ aHeadingFriend.ids + ',' + aGK.ids +','
+                   TsScript[incMove].add ('sc_cross.gol,' + aPlayer.ids + ','+ aHeadingFriend.ids + ',' + aGK.ids +','
                                               + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) + ','
                                               + IntTostr(aHeadingFriend.cellx)+',' + IntTostr(aHeadingFriend.celly) + ','
                                               + IntTostr(aGK.cellx)+',' + IntTostr(aGK.celly)  +','
@@ -7930,11 +8128,14 @@ cro_crossbar:
 
                   inc (Score.gol [aPlayer.team]);
                   Score.lstGol:= Score.lstGol + IntTostr(Minute) + '=' + aHeadingFriend.Ids + ',';
-                  MatchInfo.Add( IntToStr(fminute) + '.golcrossing.' + aHeadingFriend.ids);
+                  if GameMode = Pvp then
+                    MatchInfo.Add( IntToStr(fminute) + '.golcrossing.' + aHeadingFriend.ids)
+                    else MatchInfo.Add( IntToStr(fminute) + '.golcrossing.' + aHeadingFriend.ids+'.'+aHeadingFriend.SurName);
+
                   LoadDefaultTeamPos ( aGK.Team ) ;
                 //  aPlayer.resetALL;
                   TurnChange(TurnMovesStart);
-                  TsScript.add ('E') ;
+                  TsScript[incMove].add ('E') ;
 
               end;
 
@@ -8007,9 +8208,10 @@ cro_crossbar:
        end;
 
 
-       TsScript.add ('SERVER_DRI,' + aPlayer.ids  + ',' + IntToStr(aPlayer.CellX) + ',' + IntToStr(aPlayer.CellY) + ',' +tsCmd[1] + ',' + tsCmd[2] ) ;//  skillused  tentativo) ;
+       TsScript[incMove].add ('SERVER_DRI,' + aPlayer.ids  + ',' + IntToStr(aPlayer.CellX) + ',' + IntToStr(aPlayer.CellY) + ',' +tsCmd[1] + ',' + tsCmd[2] ) ;//  skillused  tentativo) ;
        aPlayer.Stamina := aPlayer.Stamina - cost_dri;
-       TsScript.add ('sc_ST,' + aPlayer.ids +',' + IntToStr(cost_dri) ) ;
+       aPlayer.xpdevA := aPlayer.xpDevA + 1;
+       TsScript[incMove].add ('sc_ST,' + aPlayer.ids +',' + IntToStr(cost_dri) ) ;
        aPlayer.xpTal[TALENT_ID_DRIBBLING] :=  aPlayer.xpTal[TALENT_ID_DRIBBLING] + 1;
        ExceptPlayers.Add(aPlayer);
 
@@ -8038,11 +8240,12 @@ cro_crossbar:
        aRnd2:= Roll2.value + anOpponent.Defense ;
        anOpponent.xp_Defense :=  anOpponent.xp_Defense + 1;
        anOpponent.stamina :=  anOpponent.stamina - cost_defdrib;
+       anOpponent.xpDevA := anOpponent.xpDevA + 1;
        if aRnd2 < 0 then aRnd2 :=0;
-        TsScript.add ( 'sc_DICE,' + IntTostr(aPlayer.CellX) + ',' + Inttostr(aPlayer.CellY) +','+  IntTostr(aRnd) +','+
+        TsScript[incMove].add ( 'sc_DICE,' + IntTostr(aPlayer.CellX) + ',' + Inttostr(aPlayer.CellY) +','+  IntTostr(aRnd) +','+
         IntToStr(aPlayer.BallControl) +',Ball.Control,'+  aPlayer.ids+','+IntTostr(Roll.value) + ',' + Roll.fatigue+ '.'+ACT +',-2');
 
-        TsScript.add ( 'sc_DICE,' + IntTostr(anOpponent.CellX) + ',' + Inttostr(anOpponent.CellY) +','+  IntTostr(aRnd2) +',' +
+        TsScript[incMove].add ( 'sc_DICE,' + IntTostr(anOpponent.CellX) + ',' + Inttostr(anOpponent.CellY) +','+  IntTostr(aRnd2) +',' +
         IntToStr(anOpponent.Defense) +',Defense,'+ anOpponent.ids+','+IntTostr(Roll2.value) + ',' + Roll2.fatigue+ '.0' + ',0');
 
 
@@ -8052,7 +8255,9 @@ cro_crossbar:
             // guadagna 1 cella se il punteggio è alto
         if( (aRnd-aRnd2) >= DRIBBLING_DIFF ) and (dstCell.X <> -1)  then begin // si sposta in avanti
 
-            TsScript.add ('sc_dribbling.ok10,' + aPlayer.ids{sfidante} +',' + anOpponent.ids {cella}
+            aPlayer.xpdevT := aPlayer.xpdevT + 2; // premio massimo
+
+            TsScript[incMove].add ('sc_dribbling.ok10,' + aPlayer.ids{sfidante} +',' + anOpponent.ids {cella}
                                               + ',' + IntTostr(aPlayer.CellX)+',' + IntTostr(aPlayer.CellY)
                                               + ',' + IntTostr(anOpponent.cellx)+',' + IntTostr(anOpponent.cellY)
                                               + ',' + IntTostr(dstCell.x)+',' + IntTostr(dstCell.Y)  ) ;
@@ -8062,7 +8267,8 @@ cro_crossbar:
         end
         else begin
 
-            TsScript.add ('sc_dribbling.ok,' + aPlayer.ids{sfidante} +',' + anOpponent.ids {cella}
+            aPlayer.xpdevT := aPlayer.xpdevT + 1; // premio normale
+            TsScript[incMove].add ('sc_dribbling.ok,' + aPlayer.ids{sfidante} +',' + anOpponent.ids {cella}
                                               + ',' + IntTostr(aPlayer.CellX)+',' + IntTostr(aPlayer.CellY)
                                               + ',' + IntTostr(anOpponent.cellx)+',' + IntTostr(anOpponent.cellY)
                                               + ',' + IntTostr(anOpponent.cellx)+',' + IntTostr(anOpponent.cellY)  ) ;
@@ -8081,7 +8287,8 @@ cro_crossbar:
 
       else begin
 
-            TsScript.add ('sc_dribbling.no,' + aPlayer.ids{sfidante} +',' + anOpponent.ids {cella}
+        anOpponent.xpDevT := anOpponent.xpDevT + 1;
+            TsScript[incMove].add ('sc_dribbling.no,' + aPlayer.ids{sfidante} +',' + anOpponent.ids {cella}
                                               + ',' + IntTostr(aPlayer.CellX)+',' + IntTostr(aPlayer.CellY)
                                               + ',' + IntTostr(anOpponent.cellx)+',' + IntTostr(anOpponent.cellY)
                                               + ',' + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.cellY)  ) ;
@@ -8091,7 +8298,7 @@ cro_crossbar:
                   TeamMovesLeft := TeamMovesLeft - 1;
                   AI_moveAll ;
                   if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-                  TsScript.add ('E');
+                  TsScript[incMove].add ('E');
 
 
 
@@ -8138,7 +8345,7 @@ cro_crossbar:
         aPlayer.tmp:= 1;
 
       BaseShot :=  aPlayer.Shot + (MalusPowerShot[aPlayer.CellX]+1) + aPlayer.tmp ; // punizione bonus +1
-      TsScript.add ('SERVER_POS3,' + aPlayer.ids + ',' + IntToStr(aPlayer.CellX) + ',' + IntToStr(aPlayer.CellY) + ',' + IntToStr( aDoor.X) +',' + IntToStr( aDoor.Y));
+      TsScript[incMove].add ('SERVER_POS3,' + aPlayer.ids + ',' + IntToStr(aPlayer.CellX) + ',' + IntToStr(aPlayer.CellY) + ',' + IntToStr( aDoor.X) +',' + IntToStr( aDoor.Y));
       Kind := '.golpos3.';
       Modifier :=  MalusPowerShot[aPlayer.CellX]+1 + aPlayer.tmp;
     end
@@ -8149,13 +8356,13 @@ cro_crossbar:
 
       BaseShot :=  aPlayer.Shot + modifier_penaltyPOS ; // rigore  ( in prs + 3 )
       aPlayer.isFK4  := false;
-      TsScript.add ('SERVER_POS4,' + aPlayer.ids + ',' + IntToStr(aPlayer.CellX) + ',' + IntToStr(aPlayer.CellY) + ',' + IntToStr( aDoor.X) +',' + IntToStr( aDoor.Y));
+      TsScript[incMove].add ('SERVER_POS4,' + aPlayer.ids + ',' + IntToStr(aPlayer.CellX) + ',' + IntToStr(aPlayer.CellY) + ',' + IntToStr( aDoor.X) +',' + IntToStr( aDoor.Y));
       Kind := '.golpos4.';
       Modifier :=  modifier_penaltyPOS ;
     end
     else  begin
       BaseShot :=  aPlayer.Shot + MalusPowerShot[aPlayer.CellX]; // tiro normale
-      TsScript.add ('SERVER_POS,' + aPlayer.ids + ',' + IntToStr(aPlayer.CellX) + ',' + IntToStr(aPlayer.CellY)+ ',' + IntToStr( aDoor.X) +',' + IntToStr( aDoor.Y));
+      TsScript[incMove].add ('SERVER_POS,' + aPlayer.ids + ',' + IntToStr(aPlayer.CellX) + ',' + IntToStr(aPlayer.CellY)+ ',' + IntToStr( aDoor.X) +',' + IntToStr( aDoor.Y));
       Kind := '.golpos.';
       Modifier :=  MalusPowerShot[aPlayer.CellX];
     end;
@@ -8167,10 +8374,11 @@ cro_crossbar:
     if debug_SetAlwaysGol then arnd := 20;
 
     aPlayer.Stamina := aPlayer.Stamina - cost_pos;
+    aPlayer.xpDevA := aPlayer.xpDevA + 1;
     aPlayer.xpTal[TALENT_ID_FREEKICKS] :=  aPlayer.xpTal[TALENT_ID_FREEKICKS] + 1;
 
-    TsScript.add ('sc_ST,' +aPlayer.ids +',' + IntToStr(cost_pos) ) ;
-    TsScript.add ( 'sc_DICE,' + IntTostr(aPlayer.CellX) + ',' + Inttostr(aPlayer.CellY) +','+  IntTostr(aRnd) +','+
+    TsScript[incMove].add ('sc_ST,' +aPlayer.ids +',' + IntToStr(cost_pos) ) ;
+    TsScript[incMove].add ( 'sc_DICE,' + IntTostr(aPlayer.CellX) + ',' + Inttostr(aPlayer.CellY) +','+  IntTostr(aRnd) +','+
     IntTostr ( BaseShot)+',Power.Shot,'+ Ball.Player.ids+','+IntTostr(Roll.value ) + ',' + Roll.fatigue + '.0'+ ',' + IntToStr(Modifier) );
     ExceptPlayers.Add(aPlayer);
     aPlayer.resetALL;
@@ -8197,16 +8405,18 @@ cro_crossbar:
           aRnd2:= roll2.value + anOpponent.Defense;
           anOpponent.xp_Defense := anOpponent.xp_Defense + 1;
           anOpponent.Stamina := anOpponent.Stamina - cost_defshot;
-          TsScript.add ( 'sc_DICE,' + IntTostr(anOpponent.CellX) + ',' + Inttostr(anOpponent.CellY) +','+  IntTostr(aRnd2) +','+
+          TsScript[incMove].add ( 'sc_DICE,' + IntTostr(anOpponent.CellX) + ',' + Inttostr(anOpponent.CellY) +','+  IntTostr(aRnd2) +','+
           IntTostr ( anOpponent.Defense  ) +',Defense,'+ anOpponent.ids+','+IntTostr(Roll2.value) + ',' + Roll2.fatigue+ '.0' +',0');
 
          // oldball:= Point ( anOpponent.CellX, anOpponent.CellY);
-          if aRnd2 > aRnd then begin
+          if aRnd2 > aRnd then begin  // la barriera respinge
 
+            anOpponent.xpDevA := anOpponent.xpDevA + 1;
+            anOpponent.xpDevT := anOpponent.xpDevT + 1;
             Ball.Cells :=  GetBounceCell ( aPlayer.cellX, aPlayer.CellY, anOpponent.CellX, anOpponent.CellY,  RndGenerate (2),AnOpponent.team );
 
             // il tiro raggiunge la cella e rimbalza
-            TsScript.add ('sc_pos.bounce,' + aPlayer.ids + ',' + anOpponent.ids +','
+            TsScript[incMove].add ('sc_pos.bounce,' + aPlayer.ids + ',' + anOpponent.ids +','
                                             + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) + ','
                                             + IntTostr(anOpponent.cellx)+',' + IntTostr(anOpponent.celly) +','
                                             + IntTostr(Ball.cellX)+',' + IntTostr(Ball.cellY ));
@@ -8228,7 +8438,7 @@ cro_crossbar:
             TeamMovesLeft := TeamMovesLeft - 1;
             AI_moveAll ;
             //if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-            TsScript.add ('E');
+            TsScript[incMove].add ('E');
             reason := '';
             goto MyExit;
           end
@@ -8282,22 +8492,24 @@ cro_crossbar:
               aRnd2:= roll2.value + anOpponent.Defense + Modifier;
               anOpponent.xp_Defense := anOpponent.xp_Defense + 1;
               anOpponent.Stamina := anOpponent.Stamina - cost_defshot;
-              TsScript.add ( 'sc_DICE,' + IntTostr(anOpponent.CellX) + ',' + Inttostr(anOpponent.CellY) +','+  IntTostr(aRnd2) +','+
+              TsScript[incMove].add ( 'sc_DICE,' + IntTostr(anOpponent.CellX) + ',' + Inttostr(anOpponent.CellY) +','+  IntTostr(aRnd2) +','+
               IntTostr ( anOpponent.Defense ) +',Defense,'+ anOpponent.ids+','+IntTostr(Roll2.value)+','+Roll2.fatigue+ '.0' +','+IntToStr(Modifier) );
 
               if aRnd2 > aRnd then begin // power.Shot ---> avversario prende la palla e c'è il rimbalzo
 
                 // back o path di tiro non prevede ballmove
+               anOpponent.xpDevA := anOpponent.xpDevA + 1;
+               anOpponent.xpDevT := anOpponent.xpDevT + 1;
                oldball:= Point ( anOpponent.CellX, anOpponent.CellY);
                Ball.Cells :=  GetBounceCell ( aPlayer.cellX, aPlayer.CellY, anOpponent.CellX, anOpponent.CellY,  RndGenerate (2),AnOpponent.team );
 
                 if Modifier <> 0 then begin
                 // un difensore raggiunge chi effettua il POS e fa lo swap
-//                TsScript.add ('sc_pos.back.bounce,' + aPlayer.ids + ',' + anOpponent.ids +','
+//                TsScript[incMove].add ('sc_pos.back.bounce,' + aPlayer.ids + ',' + anOpponent.ids +','
 //                                              + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) + ','
 //                                              + IntTostr(anOpponent.cellx)+',' + IntTostr(anOpponent.celly) +','
 //                                              + IntTostr(Ball.cellX)+',' + IntTostr(Ball.cellY ));
-                TsScript.add ('sc_pos.back.swap.bounce,' + aPlayer.ids + ',' + anOpponent.ids +','
+                TsScript[incMove].add ('sc_pos.back.swap.bounce,' + aPlayer.ids + ',' + anOpponent.ids +','
                                               + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) + ','
                                               + IntTostr(anOpponent.cellx)+',' + IntTostr(anOpponent.celly) +','
                                               + IntTostr(Ball.cellX)+',' + IntTostr(Ball.cellY ));
@@ -8305,7 +8517,7 @@ cro_crossbar:
                 end
                 else
                 // il tiro raggiunge la cella e rimbalza
-                TsScript.add ('sc_pos.bounce,' + aPlayer.ids + ',' + anOpponent.ids +','
+                TsScript[incMove].add ('sc_pos.bounce,' + aPlayer.ids + ',' + anOpponent.ids +','
                                               + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) + ','
                                               + IntTostr(anOpponent.cellx)+',' + IntTostr(anOpponent.celly) +','
                                               + IntTostr(Ball.cellX)+',' + IntTostr(Ball.cellY ));
@@ -8317,6 +8529,7 @@ cro_crossbar:
                   end;
                   Ball.Player.Shot := Ball.Player.Shot + 1;
                   Ball.Player.BonusFinishingTurn := 1;
+                  Ball.Player.xpDevA := Ball.Player.xpDevA + 1;
                 end;
 
                   // POS finisce con rimbalzo della difesa grazie a intercept
@@ -8324,7 +8537,7 @@ cro_crossbar:
                   TeamMovesLeft := TeamMovesLeft - 1;
                   AI_moveAll ;
                   if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-                  TsScript.add ('E');
+                  TsScript[incMove].add ('E');
                   reason:='';
                   goto MyExit;
 
@@ -8345,14 +8558,23 @@ POSvsGK:
             aRnd2:= roll2.value + aGK.defense + aGK.tmp;
             if debug_Setposcrosscorner then aRnd2:=20;
 
+            aGK.Stamina := aGK.Stamina - cost_GKpos;
+            aGK.xpDevA := aGK.xpDevA + 1;
+            aGK.xp_Defense := aGK.xp_Defense + 1;
             aGK.xpTal[TALENT_ID_GoalKeeper] := aGK.xpTal[TALENT_ID_GoalKeeper] + 1;
-            TsScript.add ( 'sc_DICE,' + IntTostr(aGK.CellX) + ',' + Inttostr(aGK.CellY) +','+  IntTostr(aRnd2) +','+
+            TsScript[incMove].add ( 'sc_DICE,' + IntTostr(aGK.CellX) + ',' + Inttostr(aGK.CellY) +','+  IntTostr(aRnd2) +','+
             IntTostr ( aGK.defense ) +',Defense,'+ aGK.ids+','+IntTostr(Roll2.value)+','+Roll2.fatigue+ '.0'+',0');
             // o angolo o respinta o gol
 //            goto palo;
             if aRnd2 > aRnd then begin // power.Shot ---> il portiere para e c'è il rimbalzo
-               if Kind = '.golpos4.' then
-                 MatchInfo.Add( IntToStr(fminute) + '.pos4fail.' + aPlayer.ids);
+               if Kind = '.golpos4.' then begin
+                 if GameMode = pvp then
+                  MatchInfo.Add( IntToStr(fminute) + '.pos4fail.' + aPlayer.ids)
+                  else MatchInfo.Add( IntToStr(fminute) + '.pos4fail.' + aPlayer.ids+'.'+aPlayer.SurName);
+
+                 aGK.xpDevT := aGK.xpDevT + 2;
+               end
+               else aGK.xpDevT := aGK.xpDevT + 1;
 
                aCell := GetGKBounceCell (aGK,  aGK.cellX, aGK.CellY,  RndGenerate (2), true );
 
@@ -8364,7 +8586,7 @@ POSvsGK:
 
                Ball.Cells := aCell;
               // la palla, che ora è in possesso del portiere , rimbalza e finisce in posizione random che calcolo adesso
-                TsScript.add ('sc_pos.bounce.gk,' + aPlayer.ids + ',' + aGK.ids{sfidante} +','
+                TsScript[incMove].add ('sc_pos.bounce.gk,' + aPlayer.ids + ',' + aGK.ids{sfidante} +','
                                               + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) + ','
                                               + IntTostr(aGK.cellx)+',' + IntTostr(aGK.celly)  +','
                                               + IntTostr(Ball.cellX)+',' + IntTostr(Ball.cellY) + ',' +IntTostr(RndGenerate(2)) );
@@ -8385,12 +8607,13 @@ setCorner:
                     end;
                     Ball.Player.Shot := Ball.Player.Shot + 1;
                     Ball.Player.BonusFinishingTurn := 1;
+                    Ball.Player.xpDevA := Ball.Player.xpDevA + 1;
                   end;
 
                   TeamMovesLeft := TeamMovesLeft - 1;
                   AI_moveAll ;
                   if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-                  TsScript.add ('E');
+                  TsScript[incMove].add ('E');
                   reason:='';
                   goto MyExit;
 
@@ -8399,6 +8622,7 @@ setCorner:
                  // POS finisce con in gol
             else begin // gol
 
+                  aPlayer.xpDevT := aPlayer.xpDevT + 2;
                   // ma c'è sempre il palo.
                   if RndGenerate(12) = 12 then begin
 
@@ -8407,9 +8631,14 @@ setCorner:
                    aCell := GetGKBounceCell (aGK,  aGK.cellX, aGK.CellY,  RndGenerate (2),false );
                    Ball.Cells := aCell;
                    tsSpeaker.Add(' palo ');
-                                  {$IFDEF ADDITIONAL_MATCHINFO}  MatchInfo.Add( IntToStr(fminute) + '.crossbar.' + aGK.ids);{$ENDIF}
+                                  {$IFDEF ADDITIONAL_MATCHINFO}
+                                    if GameMode = pvp then
+                                      MatchInfo.Add( IntToStr(fminute) + '.crossbar.' + aPlayer.ids)
+                                      else MatchInfo.Add( IntToStr(fminute) + '.crossbar.' + aPlayer.ids+'.'+aPlayer.SurName);
 
-                    TsScript.add ('sc_pos.bounce.crossbar,' + aPlayer.ids + ',' + aGK.ids{sfidante} +','
+                                    {$ENDIF}
+
+                    TsScript[incMove].add ('sc_pos.bounce.crossbar,' + aPlayer.ids + ',' + aGK.ids{sfidante} +','
                                               + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) + ','
                                               + IntTostr(aGK.cellx)+',' + IntTostr(aGK.celly )+','
                                               + IntTostr(Ball.cellX)+',' + IntTostr(Ball.cellY) + ',' +IntTostr(CrossBarN) );
@@ -8423,28 +8652,34 @@ setCorner:
                       end;
                       Ball.Player.Shot := Ball.Player.Shot + 1;
                       Ball.Player.BonusFinishingTurn := 1;
+                      Ball.Player.xpDevA := Ball.Player.xpDevA + 1;
                     end;
 
                     TeamMovesLeft := TeamMovesLeft - 1;
                     AI_moveAll ;
                     if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-                    TsScript.add ('E');
+                    TsScript[incMove].add ('E');
                     reason:='';
                     goto MyExit;
                   end
                   else begin
 
-                    TsScript.add ('sc_pos.gol,' + aPlayer.ids + ',' + aGK.ids{sfidante} +','
+                    TsScript[incMove].add ('sc_pos.gol,' + aPlayer.ids + ',' + aGK.ids{sfidante} +','
                                               + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) + ','
                                               + IntTostr(aGK.cellx)+',' + IntTostr(aGK.celly) +','
                                               + IntTostr(aGK.cellX)+',' + IntTostr(aGK.cellY) + ',' +IntTostr(RndGenerate(2)) );
                     aPlayer.resetPRE ;  // eventuale pressing viene perso DOPO il tiro
                     inc (Score.gol[aPlayer.team]);
                     Score.lstGol:= Score.lstGol + IntTostr(Minute) + '=' + aPlayer.Ids + ',';
-                    MatchInfo.Add( IntToStr(fminute) + Kind + aPlayer.ids);
+
+                    if GameMode = pvp then
+                      MatchInfo.Add( IntToStr(fminute) + kind + aPlayer.ids)
+                      else MatchInfo.Add( IntToStr(fminute) + kind + aPlayer.ids+'.'+aPlayer.SurName);
+
+
                     LoadDefaultTeamPos ( aGK.Team ) ;
                     TurnChange(TurnMovesStart);
-                    TsScript.add ('E') ;
+                    TsScript[incMove].add ('E') ;
                     reason:='';
                     goto MyExit;
                   End;
@@ -8517,12 +8752,13 @@ setCorner:
     aPlayer.resetall;
     if debug_SetAlwaysGol then arnd := 20;
 
-    TsScript.add ('SERVER_PRS,' + aPlayer.ids + ',' + IntToStr(aPlayer.CellX) + ',' + IntToStr(aPlayer.CellY)+ ',' + IntToStr( aDoor.X) +',' + IntToStr( aDoor.Y));
+    TsScript[incMove].add ('SERVER_PRS,' + aPlayer.ids + ',' + IntToStr(aPlayer.CellX) + ',' + IntToStr(aPlayer.CellY)+ ',' + IntToStr( aDoor.X) +',' + IntToStr( aDoor.Y));
     aPlayer.Stamina := aPlayer.Stamina - cost_prs;
+    aPlayer.xpDevA := aPlayer.xpDevA + 1;
     ExceptPlayers.Add(aPlayer);
 
-    TsScript.add ('sc_ST,' +aPlayer.ids +',' + inttostr(cost_prs) ) ;
-    TsScript.add ( 'sc_DICE,' + IntTostr(aPlayer.CellX) + ',' + Inttostr(aPlayer.CellY) +','+  IntTostr(aRnd) +','
+    TsScript[incMove].add ('sc_ST,' +aPlayer.ids +',' + inttostr(cost_prs) ) ;
+    TsScript[incMove].add ( 'sc_DICE,' + IntTostr(aPlayer.CellX) + ',' + Inttostr(aPlayer.CellY) +','+  IntTostr(aRnd) +','
     + IntToStr(aPlayer.Shot)+',Precision.Shot,'+ Ball.Player.ids+','+IntTostr(Roll.value)+','+Roll.fatigue+ '.0'+','+IntToStr(Modifier));
 
     //    goto prs_crossbar;
@@ -8549,15 +8785,17 @@ setCorner:
           aRnd2:= roll2.value + anOpponent.Defense;
           anOpponent.xp_Defense := anOpponent.xp_Defense + 1;
           anOpponent.Stamina := anOpponent.Stamina - cost_defshot;
-          TsScript.add ( 'sc_DICE,' + IntTostr(anOpponent.CellX) + ',' + Inttostr(anOpponent.CellY) +','+  IntTostr(aRnd2) +','+
+          TsScript[incMove].add ( 'sc_DICE,' + IntTostr(anOpponent.CellX) + ',' + Inttostr(anOpponent.CellY) +','+  IntTostr(aRnd2) +','+
           IntTostr ( anOpponent.Defense ) +',Defense,'+ anOpponent.ids+','+IntTostr(Roll2.value) + ',' + Roll2.fatigue+ '.0' + ','+IntToStr(Modifier));
 
           if aRnd2 > aRnd then begin
 
+            anOpponent.xpDevA := anOpponent.xpDevA + 1;
+            anOpponent.xpDevT := anOpponent.xpDevT + 1;
             Ball.cells:= Point ( anOpponent.CellX, anOpponent.CellY);
 
             // il tiro raggiunge la cella barriera e viene catturata
-            TsScript.add ('sc_prs.stealball,' + aPlayer.ids + ',' + anOpponent.ids{sfidante} +','
+            TsScript[incMove].add ('sc_prs.stealball,' + aPlayer.ids + ',' + anOpponent.ids{sfidante} +','
                                           + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) + ','
                                           + IntTostr(anOpponent.cellx)+',' + IntTostr(anOpponent.celly) +','
                                           + IntTostr(Ball.cellX)+',' + IntTostr(Ball.cellY) );
@@ -8572,7 +8810,7 @@ setCorner:
             TeamMovesLeft := TeamMovesLeft - 1;
             AI_moveAll ;
             //if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-            TsScript.add ('E');
+            TsScript[incMove].add ('E');
             reason := '';
             goto MyExit;
           end;
@@ -8624,24 +8862,26 @@ setCorner:
               aRnd2:= roll2.value + anOpponent.Defense + Modifier;
               anOpponent.Stamina := anOpponent.Stamina - cost_defshot;
               anOpponent.xp_Defense := anOpponent.xp_Defense + 1;
-              TsScript.add ( 'sc_DICE,' + IntTostr(anOpponent.CellX) + ',' + Inttostr(anOpponent.CellY) +','+  IntTostr(aRnd2) +','+
+              TsScript[incMove].add ( 'sc_DICE,' + IntTostr(anOpponent.CellX) + ',' + Inttostr(anOpponent.CellY) +','+  IntTostr(aRnd2) +','+
               IntTostr (anOpponent.Defense)+',Defense,'+ anOpponent.ids+','+IntTostr(Roll2.value)+','+Roll2.fatigue+ '.0' +','+IntToStr(Modifier));
 
               if aRnd2 > aRnd then begin // precision.Shot ---> avversario prende la palla
 
+                anOpponent.xpDevA := anOpponent.xpDevA + 1;
+                anOpponent.xpDevT := anOpponent.xpDevT + 1;
 
                // Assegno la nuova posizione  della palla
                 Ball.cells:= Point ( anOpponent.CellX, anOpponent.CellY);
 
                 if Modifier <> 0 then
                 // un difensore raggiunge chi effettua il PRS
-                TsScript.add ('sc_prs.back.stealball,' + aPlayer.ids + ',' + anOpponent.ids{sfidante} +','
+                TsScript[incMove].add ('sc_prs.back.stealball,' + aPlayer.ids + ',' + anOpponent.ids{sfidante} +','
                                               + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) + ','
                                               + IntTostr(anOpponent.cellx)+',' + IntTostr(anOpponent.celly)+','
                                               + IntTostr(Ball.cellX)+',' + IntTostr(Ball.cellY) )
                 else
                 // il tiro raggiunge la cella e viene catturata
-                TsScript.add ('sc_prs.stealball,' + aPlayer.ids + ',' + anOpponent.ids{sfidante} +','
+                TsScript[incMove].add ('sc_prs.stealball,' + aPlayer.ids + ',' + anOpponent.ids{sfidante} +','
                                               + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) + ','
                                               + IntTostr(anOpponent.cellx)+',' + IntTostr(anOpponent.celly) +','
                                               + IntTostr(Ball.cellX)+',' + IntTostr(Ball.cellY) );
@@ -8652,7 +8892,7 @@ setCorner:
                 TeamMovesLeft := TeamMovesLeft - 1;
                 AI_moveAll;
                 if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-                TsScript.add ('E');
+                TsScript[incMove].add ('E');
                 reason:='';
                     goto MyExit;
 
@@ -8684,17 +8924,28 @@ PRSvsGK:
             Roll2 := AdjustFatigue (aGK.Stamina , preRoll2);
             aRnd2:= roll2.value + aGK.defense +aGK.tmp;
             aGK.xpTal[TALENT_ID_GoalKeeper] := aGK.xpTal[TALENT_ID_GoalKeeper] + 1;
+            aGK.Stamina := aGK.Stamina - cost_GKprs;
+            aGK.xp_Defense:= aGK.xp_Defense+1;
+            aGK.xpDevA := aGK.xpDevA + 1;
             // o gol o presa
-              TsScript.add ( 'sc_DICE,' + IntTostr(aGK.CellX) + ',' + Inttostr(aGK.CellY) +','+  IntTostr(aRnd2) +','+
+              TsScript[incMove].add ( 'sc_DICE,' + IntTostr(aGK.CellX) + ',' + Inttostr(aGK.CellY) +','+  IntTostr(aRnd2) +','+
               IntTostr ( aGK.defense ) +',Defense,'+ aGK.ids+','+IntTostr(Roll2.value)+','+Roll2.fatigue+ '.' +ACT +',0');
             if aRnd2 > aRnd then begin // power.Shot ---> il portiere para
-               if Kind = '.golprs4.' then
-                 MatchInfo.Add( IntToStr(fminute) + '.prs4fail.' + aPlayer.ids);
+
+
+               if Kind = '.golprs4.' then begin
+                 if GameMode = pvp then
+                   MatchInfo.Add( IntToStr(fminute) + '.prs4fail.' + aPlayer.ids)
+                     else MatchInfo.Add( IntToStr(fminute) + '.prs4fail.' + aPlayer.ids+'.'+aPlayer.SurName);
+
+                 aGK.xpDevT := aGK.xpDevT + 2
+               end
+               else aGK.xpDevT := aGK.xpDevT + 1;
               // la palla,  ora è in possesso del portiere
 
                Ball.Cells := aGK.Cells;
                tsSpeaker.Add(aGK.Surname +' para');
-                TsScript.add ('sc_prs.gk,' + aPlayer.ids + ',' + aGK.ids{sfidante} +','
+                TsScript[incMove].add ('sc_prs.gk,' + aPlayer.ids + ',' + aGK.ids{sfidante} +','
                                               + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) + ','
                                               + IntTostr(aGK.cellx)+',' + IntTostr(aGK.celly)  + ','
                                               + IntTostr(Ball.cellX)+',' + IntTostr(Ball.cellY) + ',' +IntTostr(RndGenerate(2)) );
@@ -8704,7 +8955,7 @@ PRSvsGK:
               TeamMovesLeft := TeamMovesLeft - 1;
               AI_moveAll ;
               if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-              TsScript.add ('E');
+              TsScript[incMove].add ('E');
 reason:='';
                     goto MyExit;
             end
@@ -8713,15 +8964,21 @@ reason:='';
             else begin // gol
 
                   // ma c'è sempre il palo.
+                  aPlayer.xpdevT := aPlayer.xpdevT + 1;
                   if RndGenerate(12) = 12 then begin
                    // non torna mai Corner
 prs_crossbar:
 //aGK := GetOpponentGK ( aPlayer.team);
-                   {$IFDEF ADDITIONAL_MATCHINFO}  MatchInfo.Add( IntToStr(fminute) + '.crossbar.' + aGK.ids);{$ENDIF}
+                   {$IFDEF ADDITIONAL_MATCHINFO}
+                   if GameMode = pvp then
+                   MatchInfo.Add( IntToStr(fminute) + '.crossbar.' + aPlayer.ids)
+                     else MatchInfo.Add( IntToStr(fminute) + '.crossbar.' + aPlayer.ids+'.'+aPlayer.SurName);
+
+                    {$ENDIF}
                    CrossbarN := RndGenerate0(2);
                    aCell := GetGKBounceCell (aGK,  aGK.cellX, aGK.CellY,  1 ,false);  //<--- prs 1 rimbalzo debole
                    Ball.Cells := aCell;
-                   TsScript.add ('sc_prs.bounce.crossbar,' + aPlayer.ids + ',' + aGK.ids{sfidante} +','
+                   TsScript[incMove].add ('sc_prs.bounce.crossbar,' + aPlayer.ids + ',' + aGK.ids{sfidante} +','
                                               + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) + ','
                                               + IntTostr(aGK.cellx)+',' + IntTostr(aGK.celly)+','
                                               + IntTostr(Ball.cellX)+',' + IntTostr(Ball.cellY) + ',' +IntTostr(CrossbarN) );
@@ -8740,28 +8997,31 @@ prs_crossbar:
                       end;
                       Ball.Player.Shot := Ball.Player.Shot + 1;
                       Ball.Player.BonusFinishingTurn := 1;
+                      Ball.Player.xpDevA := Ball.Player.xpDevA + 1;
                     end;
 
                     TeamMovesLeft := TeamMovesLeft - 1;
                     AI_moveAll ;
                     if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-                    TsScript.add ('E');
+                    TsScript[incMove].add ('E');
 reason:='';
                     goto MyExit;
                   end
                   else begin
 
-                    TsScript.add ('sc_prs.gol,' + aPlayer.ids + ',' + aGK.ids{sfidante} +','
+                    TsScript[incMove].add ('sc_prs.gol,' + aPlayer.ids + ',' + aGK.ids{sfidante} +','
                                               + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) + ','
                                               + IntTostr(aGK.cellx)+',' + IntTostr(aGK.celly) +','
                                               + IntTostr(aGK.cellX)+',' + IntTostr(aGK.cellY)+ ',' +IntTostr(RndGenerate(2)) );
                     aPlayer.resetPRE ;  // eventuale pressing viene perso DOPO il tiro
                     inc (Score.gol[aPlayer.team]);
                     Score.lstGol:= Score.lstGol + IntTostr(Minute) + '=' + aPlayer.Ids + ',';
-                    MatchInfo.Add( IntToStr(fminute) + kind + aPlayer.ids);
+                   if GameMode = pvp then
+                   MatchInfo.Add( IntToStr(fminute) + kind + aPlayer.ids)
+                     else MatchInfo.Add( IntToStr(fminute) + kind + aPlayer.ids+'.'+aPlayer.SurName);
                     LoadDefaultTeamPos ( aGK.Team ) ;
                     TurnChange(TurnMovesStart);
-                    TsScript.add ('E') ;
+                    TsScript[incMove].add ('E') ;
 reason:='';
                     goto MyExit;
                   End;
@@ -8809,14 +9069,17 @@ reason:='';
      goto myexit; // hack
     end;
 
-    TsScript.add ('SERVER_PRE,' + aPlayer.ids + ',' + IntToStr(aPlayer.CellX) + ',' + IntToStr(aPlayer.CellY) + ',' + IntToStr(Ball.Player.CellX) + ',' + IntToStr(Ball.Player.CellY) ) ;
-    TsScript.add ('ST,' + aPlayer.ids +',' + IntToStr(cost_pre) ) ; // pressing costa come tackle. molto.
+    TsScript[incMove].add ('SERVER_PRE,' + aPlayer.ids + ',' + IntToStr(aPlayer.CellX) + ',' + IntToStr(aPlayer.CellY) + ',' + IntToStr(Ball.Player.CellX) + ',' + IntToStr(Ball.Player.CellY) ) ;
+    TsScript[incMove].add ('ST,' + aPlayer.ids +',' + IntToStr(cost_pre) ) ; // pressing costa come tackle. molto.
     aPlayer.Stamina := aPlayer.Stamina - cost_pre;
+    aPlayer.xpDevA := aPlayer.xpDevA + 1;
     if aPlayer.TalentId2 = TALENT_ID_ADVANCED_EXPERIENCE then
       aPlayer.Stamina := aPlayer.Stamina + 1;
 
     aPlayer.xpTal[TALENT_ID_EXPERIENCE] :=  aPlayer.xpTal[TALENT_ID_EXPERIENCE] + 1;
     aPlayer.xpTal[TALENT_ID_AGGRESSION] :=  aPlayer.xpTal[TALENT_ID_AGGRESSION] + 1;
+   // if aPlayer.YellowCard > 0 then asm int 3; end;
+
     Ball.Player.xpTal[TALENT_ID_ACE] :=  aPlayer.xpTal[TALENT_ID_ACE] + 1;
     ExceptPlayers.Add(aPlayer);
 
@@ -8830,7 +9093,7 @@ reason:='';
         aRnd  :=  RndGenerate(100);
         if aRnd <= 33 then begin
 
-            TsScript.add ('sc_dribbling.ok,' +  Ball.Player.ids{sfidante} +',' + aPlayer.ids {cella}
+            TsScript[incMove].add ('sc_dribbling.ok,' +  Ball.Player.ids{sfidante} +',' + aPlayer.ids {cella}
                                               + ',' + IntTostr(Ball.Player.CellX)+',' + IntTostr(Ball.Player.CellY)
                                               + ',' + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.cellY)
                                               + ',' + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.cellY)  ) ;
@@ -8851,7 +9114,7 @@ Normalpressing:
         Ball.Player.BallControl  := Ball.Player.BallControl - PRE_VALUE;  //  MINIMO 0, mai in negativo
         Ball.Player.Passing  := Ball.Player.passing - PRE_VALUE;
         Ball.Player.Shot := Ball.Player.Shot - PRE_VALUE;
-
+        Ball.Player.xpDevA := Ball.Player.xpDevA + 1;
         tsSpeaker.Add( aPlayer.Surname +' (Pressing) fa pressing su ' + Ball.Player.ids {cella}  ) ;
       end;
 
@@ -8860,7 +9123,7 @@ Normalpressing:
         end else TeamMovesLeft := TeamMovesLeft - 1;
 
       if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-      TsScript.add ('E');
+      TsScript[incMove].add ('E');
       reason:='';
       goto MyExit;
 
@@ -8886,9 +9149,10 @@ Normalpressing:
      goto myexit; // hack
     end;
 
-    TsScript.add ('SERVER_PRO,' + aPlayer.ids + ',' + IntToStr(aPlayer.cellX) + ',' + IntToStr(aPlayer.cellY)+ ',' + IntToStr(aPlayer.cellX) + ',' + IntToStr(aPlayer.cellY) ) ;
+    TsScript[incMove].add ('SERVER_PRO,' + aPlayer.ids + ',' + IntToStr(aPlayer.cellX) + ',' + IntToStr(aPlayer.cellY)+ ',' + IntToStr(aPlayer.cellX) + ',' + IntToStr(aPlayer.cellY) ) ;
     aPlayer.Stamina := aPlayer.Stamina - cost_pro;
-    TsScript.add ('ST,' + aPlayer.ids +',' + IntToStr(cost_pro) ) ;
+    aPlayer.xpDevA := aPlayer.xpDevA + 1;
+    TsScript[incMove].add ('ST,' + aPlayer.ids +',' + IntToStr(cost_pro) ) ;
     aPlayer.xpTal[TALENT_ID_POWER] :=  aPlayer.xpTal[TALENT_ID_POWER] + 1;
 
     ExceptPlayers.Add(aPlayer);
@@ -8898,7 +9162,7 @@ Normalpressing:
     aPlayer.CanSkill := false;
     TeamMovesLeft := TeamMovesLeft - 1;
     if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-    TsScript.add ('E');
+    TsScript[incMove].add ('E');
     reason:='';
     goto MyExit;
   end
@@ -8928,11 +9192,11 @@ Normalpressing:
 
     end;
 
-    TsScript.add ('SERVER_STAY,' + aPlayer.ids ) ;
+    TsScript[incMove].add ('SERVER_STAY,' + aPlayer.ids ) ;
     aPlayer.stay := True;
     TeamMovesLeft := TeamMovesLeft - 1;
     if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-    TsScript.add ('E');
+    TsScript[incMove].add ('E');
     reason:='';
     goto MyExit;
   end
@@ -8961,11 +9225,11 @@ Normalpressing:
 
     end;
 
-    TsScript.add ('SERVER_FREE,' + aPlayer.ids ) ;
+    TsScript[incMove].add ('SERVER_FREE,' + aPlayer.ids ) ;
     aPlayer.stay := false;
     TeamMovesLeft := TeamMovesLeft - 1;
     if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-    TsScript.add ('E');
+    TsScript[incMove].add ('E');
     reason:='';
     goto MyExit;
   end
@@ -8997,41 +9261,41 @@ Normalpressing:
      reason := 'TAC,Ball.Player not found';
      goto myexit; // hack
     end;
-    TsScript.Add('SERVER_TAC,' + aPlayer.ids + ',' + IntToStr(aPlayer.CellX) + ',' + IntToStr(aPlayer.CellY)+ ',' + IntToStr(Ball.Player.CellX) + ',' + IntToStr(Ball.Player.CellY) ) ;
+    TsScript[incMove].add('SERVER_TAC,' + aPlayer.ids + ',' + IntToStr(aPlayer.CellX) + ',' + IntToStr(aPlayer.CellY)+ ',' + IntToStr(Ball.Player.CellX) + ',' + IntToStr(Ball.Player.CellY) ) ;
 
 
     Isfault := exec_tackle ( tsCmd[1]) ;
     case Isfault of
       0:Begin   // non è fallo
         TeamMovesLeft := TeamMovesLeft - 1;
-        if TeamMovesLeft <= 0 then TurnChange (TurnMoves);// else TsScript.add ('E') ;
+        if TeamMovesLeft <= 0 then TurnChange (TurnMoves);// else TsScript[incMove].add ('E') ;
         AI_MoveAll;
-        TsScript.add ('E');
+        TsScript[incMove].add ('E');
         reason:='';
         goto MyExit;
       end;
       1:Begin    // normale nella propria metacampo
         // allontano i player avversari, batterà il ball.player che può essere anche injured. se viene sostituito? tutto ok, ci va sopra
 
-        TsScript.add ('sc_fault,' + aPlayer.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
+        TsScript[incMove].add ('sc_fault,' + aPlayer.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
         FreeKickSetup1(ball.Player.team); // aspetta short.passing o lofted.pass
         reason := '';
         goto MyExit;
       end;
       2:Begin    // cross offensivo
-        TsScript.add ('sc_fault,' + aPlayer.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
+        TsScript[incMove].add ('sc_fault,' + aPlayer.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
         FreeKickSetup2(ball.Player.team); // aspetta crossing
         reason := '';
         goto MyExit;
       end;
       3:Begin    // barriera
-        TsScript.add ('sc_fault,' + aPlayer.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
+        TsScript[incMove].add ('sc_fault,' + aPlayer.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
         FreeKickSetup3(ball.Player.team);  // aspetta pos o prs
         reason := '';
         goto MyExit;
       end;
       4:Begin    // rigore
-        TsScript.add ('sc_fault,' + aPlayer.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
+        TsScript[incMove].add ('sc_fault,' + aPlayer.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
         FreeKickSetup4(ball.Player.team); // aspetta pos o prs
         reason := '';
         goto MyExit;
@@ -9098,15 +9362,21 @@ Normalpressing:
      goto myexit; // hack
     End;
 
-    TsScript.add ('SERVER_TACTIC,' + aPlayer.ids + ',' + IntToStr(aPlayer.defaultCellX) + ',' + IntToStr(aPlayer.defaultCellY) + ',' + tsCmd[2] + ',' + tsCmd[3]) ;
+    if minute >= 120 then begin
+     reason := 'TACTIC, 120+ ';
+     goto myexit; // hack
+
+    end;
+
+    TsScript[incMove].add ('SERVER_TACTIC,' + aPlayer.ids + ',' + IntToStr(aPlayer.defaultCellX) + ',' + IntToStr(aPlayer.defaultCellY) + ',' + tsCmd[2] + ',' + tsCmd[3]) ;
     aPlayer.DefaultCells := Point(CellX,CellY);
 
-    TsScript.add ('sc_tactic,' + aPlayer.ids + ',' + IntToStr(aPlayer.defaultCellX) + ',' + IntToStr(aPlayer.defaultCellY) + ',' + tsCmd[2] + ',' + tsCmd[3]) ;
-    TsScript.add ('sc_TML,' + IntTostr(FTeamMovesLeft) + ',' + IntTostr(TeamTurn)+ ',' + IntToStr(ShpFree) ) ;    // non incremento i minuti ma le mosse decrementano
+    TsScript[incMove].add ('sc_tactic,' + aPlayer.ids + ',' + IntToStr(aPlayer.defaultCellX) + ',' + IntToStr(aPlayer.defaultCellY) + ',' + tsCmd[2] + ',' + tsCmd[3]) ;
+    TsScript[incMove].add ('sc_TML,' + IntTostr(FTeamMovesLeft) + ',' + IntTostr(TeamTurn)+ ',' + IntToStr(ShpFree) ) ;    // non incremento i minuti ma le mosse decrementano
     fTeamMovesLeft := fTeamMovesLeft -1 ;
-    if TeamMovesLeft <= 0 then TurnChange (TurnMoves);// else TsScript.add ('E') ;
+    if TeamMovesLeft <= 0 then TurnChange (TurnMoves);// else TsScript[incMove].add ('E') ;
 //    TeamMovesLeft := TeamMovesLeft -1 ;
-    TsScript.add ('E');
+    TsScript[incMove].add ('E');
     reason:='';
     goto MyExit;
 
@@ -9114,6 +9384,7 @@ Normalpressing:
 
   end
   else if tsCmd[0] = 'SUB' then  begin
+  // si fanno sempre anche oltre 120+
     if w_CornerSetup or w_Coa or w_cod or w_CornerKick or w_FreeKickSetup1 or w_Fka1 or w_Fka2 or w_FreeKick1 or w_FreeKickSetup2 or w_Fka2 or w_Fkd2 or w_FreeKick2
     or w_FreeKickSetup3 or w_Fka3 or w_Fkd3 or w_FreeKick3 or w_Fka4 or w_FreeKickSetup4 or w_FreeKick4  then begin
      reason := 'SUB, waiting freekick ';
@@ -9191,7 +9462,7 @@ Normalpressing:
     end;
 
 
-    TsScript.add ('SERVER_SUB,' + aPlayer.ids + ',' +  aPlayer2.ids);
+    TsScript[incMove].add ('SERVER_SUB,' + aPlayer.ids + ',' +  aPlayer2.ids);
 
     aPlayer.Role := aPlayer2.role;
     SwapPlayers  ( aPlayer, aPlayer2 );
@@ -9209,15 +9480,17 @@ Normalpressing:
     RemoveSoccerPlayer(aPlayer2);
 
     Score.TeamSubs[aPlayer2.Team]:= Score.TeamSubs[aPlayer2.Team] + 1;
-    TsScript.add ('sc_sub,' + aPlayer.ids  + ',' + aPlayer2.ids) ;
+    TsScript[incMove].add ('sc_sub,' + aPlayer.ids  + ',' + aPlayer2.ids) ;
 
     fTeamMovesLeft := fTeamMovesLeft -1 ;
-    TsScript.add ('sc_TML,' + IntTostr(FTeamMovesLeft) + ',' + IntTostr(TeamTurn)+ ',' + IntToStr(ShpFree) ) ;    // non incremento i minuti
+    TsScript[incMove].add ('sc_TML,' + IntTostr(FTeamMovesLeft) + ',' + IntTostr(TeamTurn)+ ',' + IntToStr(ShpFree) ) ;    // non incremento i minuti
 //    TeamMovesLeft := TeamMovesLeft -1 ;
-    if TeamMovesLeft <= 0 then TurnChange (TurnMoves);// else TsScript.add ('E') ;
-    TsScript.add ('E');
+    if TeamMovesLeft <= 0 then TurnChange (TurnMoves);// else TsScript[incMove].add ('E') ;
+    TsScript[incMove].add ('E');
     reason:='';
-    MatchInfo.Add( IntToStr(fminute) + '.sub.' + aPlayer.ids + '.' + aPlayer2.ids);
+    if GameMode = pvp then
+      MatchInfo.Add( IntToStr(fminute) + '.sub.' + aPlayer.ids + '.' + aPlayer2.ids  )
+      else MatchInfo.Add( IntToStr(fminute) + '.sub.' + aPlayer.ids + '.' + aPlayer.SurName + '.' + aPlayer2.ids + '.' + aPlayer2.SurName);
     goto MyExit;
 
 
@@ -9252,8 +9525,8 @@ Normalpressing:
     // controllo client del movimento
     aPlayer.Stamina := aPlayer.Stamina - cost_plm;
     ExceptPlayers.Add(aPlayer);
-    TsScript.add ('SERVER_PLM,' + aPlayer.ids + ',' + IntToStr(aPlayer.CellX) + ',' + IntToStr(aPlayer.CellY) + ',' + tsCmd[2] + ',' + tsCmd[3]) ;
-    TsScript.add ('sc_ST,' + aPlayer.ids +',' + IntToStr(cost_plm) ) ;
+    TsScript[incMove].add ('SERVER_PLM,' + aPlayer.ids + ',' + IntToStr(aPlayer.CellX) + ',' + IntToStr(aPlayer.CellY) + ',' + tsCmd[2] + ',' + tsCmd[3]) ;
+    TsScript[incMove].add ('sc_ST,' + aPlayer.ids +',' + IntToStr(cost_plm) ) ;
     aPlayer.xp_speed := aPlayer.xp_speed + 1;
 
     if  aPlayer.HasBall then begin
@@ -9278,7 +9551,7 @@ Normalpressing:
                               MoveValue{Limit},false{useFlank},FriendlyWall{FriendlyWall},
                               OpponentWall{OpponentWall},FinalWall{FinalWall},TruncOneDir{OneDir}, aPlayer.MovePath );
     if aPlayer.MovePath.Count = 0 then begin
-      TsScript.add ('E');
+      TsScript[incMove].add ('E');
       reason := 'PLM,Path not found';
       goto myexit; // hack
     end;
@@ -9290,15 +9563,15 @@ Normalpressing:
                               MoveValue{Limit},false{useFlank},FriendlyWall{FriendlyWall},
                               OpponentWall{OpponentWall},FinalWall{FinalWall},TruncOneDir{OneDir}, aPlayer.MovePath );
 
-    TsScript.add ( 'sc_DICE,' + IntTostr(aPlayer.CellX) + ',' + Inttostr(aPlayer.CellY) +','+  IntTostr(Roll.value) +','+
+    TsScript[incMove].add ( 'sc_DICE,' + IntTostr(aPlayer.CellX) + ',' + Inttostr(aPlayer.CellY) +','+  IntTostr(Roll.value) +','+
     IntTostr ( aPlayer.Speed ) +',Speed,'+ aPlayer.ids+','+IntTostr(Roll.value)+','+Roll.fatigue+ '.0'+',0');
 
     if aPlayer.MovePath.Count = 0 then begin  // USCITA per via del roll con fatigue
       TeamMovesLeft := TeamMovesLeft - 1;
       ExceptPlayers.Add(aPlayer);
       AI_moveAll;
-      if TeamMovesLeft <= 0 then TurnChange (TurnMoves);// else TsScript.add ('E') ;
-      TsScript.add ('E');
+      if TeamMovesLeft <= 0 then TurnChange (TurnMoves);// else TsScript[incMove].add ('E') ;
+      TsScript[incMove].add ('E');
       reason:='';
       goto MyExit;
     end;
@@ -9317,14 +9590,14 @@ Normalpressing:
        // se ha la palla, la palla si sposta con il player
 
        if aPlayer.HasBall then begin //aPlayer.HasBall then begin   se il player AVEVA la palla
-          TsScript.add ('sc_player.move,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
+          TsScript[incMove].add ('sc_player.move,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
           IntTostr(aPlayer.MovePath [i].X)+','+ IntTostr(aPlayer.MovePath [i].Y)  ) ;
 
           aPlayer.CellX :=  aPlayer.MovePath[i].X;
           aPlayer.CellY :=  aPlayer.MovePath[i].Y;
           tsSpeaker.Add(aPlayer.surname + ' porta palla' );
 
-          TsScript.add ('sc_ball.move,'+ IntTostr(Ball.CellX)+','+IntTostr(Ball.CellY) +','+
+          TsScript[incMove].add ('sc_ball.move,'+ IntTostr(Ball.CellX)+','+IntTostr(Ball.CellY) +','+
                                             IntTostr(aPlayer.MovePath [i].X)+','+IntTostr(aPlayer.MovePath [i].Y)+',0,0' );
 
           Ball.Cells := aPlayer.Cells;// aPath [i];
@@ -9334,7 +9607,7 @@ Normalpressing:
        end
        // se NON ha la palla
        else begin
-          TsScript.add ('sc_player,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
+          TsScript[incMove].add ('sc_player,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
           IntTostr(aPlayer.MovePath [i].X)+','+ IntTostr(aPlayer.MovePath [i].Y)  ) ;
 
           aPlayer.CellX :=  aPlayer.MovePath[i].X;
@@ -9384,8 +9657,8 @@ Normalpressing:
 
     ExceptPlayers.Add(aPlayer);
     AI_moveAll;
-    if TeamMovesLeft <= 0 then TurnChange (TurnMoves);// else TsScript.add ('E') ;
-    TsScript.add ('E');
+    if TeamMovesLeft <= 0 then TurnChange (TurnMoves);// else TsScript[incMove].add ('E') ;
+    TsScript[incMove].add ('E');
     reason:='';
     goto MyExit;
 
@@ -9398,17 +9671,17 @@ Normalpressing:
      goto myexit; // hack
     end;  // concesso nulla
 
-    if minute >= 120 then begin
-     reason := 'PASS, 120+ ';
-     goto myexit; // hack
-
+    if (FlagEndGame) then begin
+      reason := 'PASS, 120+ ';
+      goto myexit; // hack
     end;
-    TsScript.add ('SERVER_PASS,' + IntToStr(teamturn) ) ;
+
+    TsScript[incMove].add ('SERVER_PASS,' + IntToStr(teamturn) ) ;
 
     TeamMovesLeft := 0;
-    TurnChange (TurnMoves);
+    TurnChange (TurnMoves); // // PASS oltre 120+ non fa finire la partita ma fa giocare l'avversario
 
-    TsScript.add ('E') ;
+    TsScript[incMove].add ('E') ;
     reason:='';
     goto MyExit;
 
@@ -9429,7 +9702,7 @@ Normalpressing:
         end;
       End;
 
-     TsScript.add ('SERVER_COA.IS');
+     TsScript[incMove].add ('SERVER_COA.IS');
      CornerMap := GetCorner ( TeamCorner , Ball.CellY,OpponentCorner);
      SwapString:= TstringList.Create;
      SwapString.Add('0');
@@ -9447,7 +9720,7 @@ Normalpressing:
            aPlayer := GetSoccerPlayer(tsCmd[1]);  // cmd, cof, coa, coa, coa
            aPlayer.Cells := CornerMap.CornerCell;
            aPlayer.isCOF := true;
-           TsScript.add ('sc_player,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
+           TsScript[incMove].add ('sc_player,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
                                             IntTostr(Ball.CellX)+','+ IntTostr(Ball.CellY)  ) ;
            ball.Cells:= aPlayer.Cells;
          end
@@ -9456,7 +9729,7 @@ Normalpressing:
            aCell := CornerMap.HeadingCellA [I-1];
            swapPlayer := GetSoccerPlayer(aCell.x, aCell.Y  );  //<-- prima di tutti o prende sè stesso
            aPlayer := GetSoccerPlayer(tsCmd[I+1]);  // cmd, cof, coa, coa, coa
-           TsScript.add ('sc_player,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
+           TsScript[incMove].add ('sc_player,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
                                             IntTostr(aCell.X)+','+ IntTostr(aCell.Y)  ) ;
            aPlayer.Cells := aCell;
          end;
@@ -9465,7 +9738,7 @@ Normalpressing:
            if (swapPlayer.Team = aPlayer.Team) and (SwapPlayer.Ids <> aPlayer.ids) then begin    // swap compagno
               SwapString[i]:= SwapPlayer.Ids;
               aCell2 := FindSwapCOAD (  swapPlayer, CornerMap  );
-              TsScript.add ('sc_player,'+ swapPlayer.Ids +','+IntTostr(swapPlayer.CellX)+','+ IntTostr(swapPlayer.CellY)+','+
+              TsScript[incMove].add ('sc_player,'+ swapPlayer.Ids +','+IntTostr(swapPlayer.CellX)+','+ IntTostr(swapPlayer.CellY)+','+
                                           IntTostr(aCell2.X)+','+ IntTostr(aCell2.Y)  ) ;
               swapPlayer.Cells := aCell2;
 
@@ -9473,7 +9746,7 @@ Normalpressing:
            else if (swapPlayer.Team <> aPlayer.Team) and (SwapPlayer.Ids <> aPlayer.ids) then begin // swap avversario
               SwapString[i]:= SwapPlayer.Ids;
               aCell2 := FindSwapCOAD (  swapPlayer, CornerMap  );
-              TsScript.add ('sc_player,'+ swapPlayer.Ids +','+IntTostr(swapPlayer.CellX)+','+ IntTostr(swapPlayer.CellY)+','+
+              TsScript[incMove].add ('sc_player,'+ swapPlayer.Ids +','+IntTostr(swapPlayer.CellX)+','+ IntTostr(swapPlayer.CellY)+','+
                                           IntTostr(aCell2.X)+','+ IntTostr(aCell2.Y)  ) ;
               swapPlayer.Cells := aCell2;
 
@@ -9483,11 +9756,11 @@ Normalpressing:
        end;
 
        if teamTurn = 0 then tt := '1' else tt :='0';
-       TsScript.add ('COA.IS,'+  tt +','+ tsCmd[1]  +',' + tsCmd[2] +',' + tsCmd[3] +',' + tsCmd[4] + ',' + SwapString.CommaText );
+       TsScript[incMove].add ('COA.IS,'+  tt +','+ tsCmd[1]  +',' + tsCmd[2] +',' + tsCmd[3] +',' + tsCmd[4] + ',' + SwapString.CommaText );
 
        Turnchange(TurnMoves);
        SwapString.Free;
-       TsScript.add ('E' ) ;
+       TsScript[incMove].add ('E' ) ;
        w_coa := false;
        w_cod := true;
   end
@@ -9502,7 +9775,7 @@ Normalpressing:
            goto myexit; // hack
         end;
       End;
-     TsScript.add ('SERVER_COD.IS' );
+     TsScript[incMove].add ('SERVER_COD.IS' );
      CornerMap := GetCorner ( TeamCorner , Ball.CellY, OpponentCorner);// devo sapere di chi è il corner attuale
      SwapString:= TstringList.Create;
      SwapString.Add('0');
@@ -9520,7 +9793,7 @@ Normalpressing:
              if (swapPlayer.Team = aPlayer.Team) and (SwapPlayer.Ids <> aPlayer.ids) then begin    // swap compagno
                 SwapString[i]:= SwapPlayer.Ids;
                 aCell2 := FindSwapCOAD (  swapPlayer, CornerMap  );
-                TsScript.add ('sc_player,'+ swapPlayer.Ids +','+IntTostr(swapPlayer.CellX)+','+ IntTostr(swapPlayer.CellY)+','+
+                TsScript[incMove].add ('sc_player,'+ swapPlayer.Ids +','+IntTostr(swapPlayer.CellX)+','+ IntTostr(swapPlayer.CellY)+','+
                                             IntTostr(aCell2.X)+','+ IntTostr(aCell2.Y)  ) ;
                 swapPlayer.Cells := aCell2;
 
@@ -9528,7 +9801,7 @@ Normalpressing:
              else if (swapPlayer.Team <> aPlayer.Team) and (SwapPlayer.Ids <> aPlayer.ids) then begin // swap avversario
                 SwapString[i]:= SwapPlayer.Ids;
                 aCell2 := FindSwapCOAD (  swapPlayer, CornerMap  );
-                TsScript.add ('sc_player,'+ swapPlayer.Ids +','+IntTostr(swapPlayer.CellX)+','+ IntTostr(swapPlayer.CellY)+','+
+                TsScript[incMove].add ('sc_player,'+ swapPlayer.Ids +','+IntTostr(swapPlayer.CellX)+','+ IntTostr(swapPlayer.CellY)+','+
                                             IntTostr(aCell2.X)+','+ IntTostr(aCell2.Y)  ) ;
                 swapPlayer.Cells := aCell2;
 
@@ -9536,16 +9809,16 @@ Normalpressing:
 
            end;
 
-         TsScript.add ('sc_player,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
+         TsScript[incMove].add ('sc_player,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
                                             IntTostr(aCell.X)+','+ IntTostr(aCell.Y)  ) ;
          aPlayer.Cells := aCell;
        end;
 
        if teamTurn = 0 then tt := '1' else tt :='0';
-       TsScript.add ('COD.IS,' + tt + ',' + tsCmd[1] +',' + tsCmd[2] +',' + tsCmd[3]+','+SwapString.CommaText );
+       TsScript[incMove].add ('COD.IS,' + tt + ',' + tsCmd[1] +',' + tsCmd[2] +',' + tsCmd[3]+','+SwapString.CommaText );
        Turnchange(TurnMoves);
        SwapString.Free;
-       TsScript.add ('E' ) ;
+       TsScript[incMove].add ('E' ) ;
        w_coa := false;
        w_cod := false;
        w_CornerKick := True;
@@ -9579,7 +9852,7 @@ Normalpressing:
        goto myexit; // hack
     end;
 
-     TsScript.add ('SERVER_FKA1.IS' );
+     TsScript[incMove].add ('SERVER_FKA1.IS' );
 
      CornerMap := GetCorner ( TeamFreekick , Ball.CellY,OpponentCorner);
      SwapString:= TstringList.Create;
@@ -9587,7 +9860,7 @@ Normalpressing:
      swapPlayer := GetSoccerPlayer( Ball.CellX, Ball.CellY  );  //<-- prima di tutti o prende sè stesso
      aPlayer := GetSoccerPlayer(tsCmd[1]);  // cmd, Fk1
 
-     TsScript.add ('sc_player,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
+     TsScript[incMove].add ('sc_player,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
                                             IntTostr(Ball.CellX)+','+ IntTostr(Ball.CellY)  ) ;
 
      aPlayer.Cells :=  Ball.Cells ; // freekick cell
@@ -9598,7 +9871,7 @@ Normalpressing:
           // il player è già posizionato
           SwapString[i]:= SwapPlayer.Ids;
           aCell2 := FindSwapCOAD (  swapPlayer, CornerMap  );
-          TsScript.add ('sc_player,'+ swapPlayer.Ids +','+IntTostr(swapPlayer.CellX)+','+ IntTostr(swapPlayer.CellY)+','+
+          TsScript[incMove].add ('sc_player,'+ swapPlayer.Ids +','+IntTostr(swapPlayer.CellX)+','+ IntTostr(swapPlayer.CellY)+','+
                                             IntTostr(aCell2.X)+','+ IntTostr(aCell2.Y)  ) ;
 
           swapPlayer.Cells := aCell2;
@@ -9607,16 +9880,16 @@ Normalpressing:
        else if (swapPlayer.Team <> aPlayer.Team) and (SwapPlayer.Ids <> aPlayer.ids) then begin // swap avversario
           SwapString[i]:= SwapPlayer.Ids;
           aCell2 := FindSwapCOAD (  swapPlayer, CornerMap  );
-          TsScript.add ('sc_player,'+ swapPlayer.Ids +','+IntTostr(swapPlayer.CellX)+','+ IntTostr(swapPlayer.CellY)+','+
+          TsScript[incMove].add ('sc_player,'+ swapPlayer.Ids +','+IntTostr(swapPlayer.CellX)+','+ IntTostr(swapPlayer.CellY)+','+
                                             IntTostr(aCell2.X)+','+ IntTostr(aCell2.Y)  ) ;
           swapPlayer.Cells := aCell2;
 
        end;
      end;
-       TsScript.add ('FKA1.IS,'+ IntToStr(teamTurn) + ',' +tsCmd[1]  + ',' + SwapString.CommaText );
+       TsScript[incMove].add ('FKA1.IS,'+ IntToStr(teamTurn) + ',' +tsCmd[1]  + ',' + SwapString.CommaText );
        //Turnchange(TurnMoves);
        SwapString.Free;
-       TsScript.add ('E' ) ;
+       TsScript[incMove].add ('E' ) ;
        w_fka1 := false;
        w_FreeKick1 := True;
        goto Myexit;
@@ -9643,10 +9916,10 @@ Normalpressing:
      SwapString.Add('0');
      SwapString.Add('0');
       // molto importante la sequenza
-     TsScript.add ('SERVER_FKA2.IS' );
+     TsScript[incMove].add ('SERVER_FKA2.IS' );
 
      aPlayer := GetSoccerPlayer(tsCmd[1]);  // cmd, Fk2, coa, coa, coa
-     TsScript.add ('sc_player,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
+     TsScript[incMove].add ('sc_player,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
                                             IntTostr(Ball.CellX)+','+ IntTostr(Ball.CellY)  ) ;
 
        for I := 0 to 3 do begin
@@ -9671,7 +9944,7 @@ Normalpressing:
              if (swapPlayer.Team = aPlayer.Team) and (SwapPlayer.Ids <> aPlayer.ids) then begin    // swap compagno
                 SwapString[i]:= SwapPlayer.Ids;
                 aCell2 := FindSwapCOAD (  swapPlayer, CornerMap  );
-                TsScript.add ('sc_player,'+ swapPlayer.Ids +','+IntTostr(swapPlayer.CellX)+','+ IntTostr(swapPlayer.CellY)+','+
+                TsScript[incMove].add ('sc_player,'+ swapPlayer.Ids +','+IntTostr(swapPlayer.CellX)+','+ IntTostr(swapPlayer.CellY)+','+
                                             IntTostr(aCell2.X)+','+ IntTostr(aCell2.Y)  ) ;
                 swapPlayer.Cells := aCell2;
 
@@ -9679,7 +9952,7 @@ Normalpressing:
              else if (swapPlayer.Team <> aPlayer.Team) and (SwapPlayer.Ids <> aPlayer.ids) then begin // swap avversario
                 SwapString[i]:= SwapPlayer.Ids;
                 aCell2 := FindSwapCOAD (  swapPlayer, CornerMap  );
-                TsScript.add ('sc_player,'+ swapPlayer.Ids +','+IntTostr(swapPlayer.CellX)+','+ IntTostr(swapPlayer.CellY)+','+
+                TsScript[incMove].add ('sc_player,'+ swapPlayer.Ids +','+IntTostr(swapPlayer.CellX)+','+ IntTostr(swapPlayer.CellY)+','+
                                             IntTostr(aCell2.X)+','+ IntTostr(aCell2.Y)  ) ;
                 swapPlayer.Cells := aCell2;
 
@@ -9688,10 +9961,10 @@ Normalpressing:
 
        end;
        if teamTurn = 0 then tt := '1' else tt :='0';
-       TsScript.add ('FKA2.IS,'+  tt + ',' + tsCmd[1]  +',' + tsCmd[2] +',' + tsCmd[3] +',' + tsCmd[4] + ',' + SwapString.CommaText );
+       TsScript[incMove].add ('FKA2.IS,'+  tt + ',' + tsCmd[1]  +',' + tsCmd[2] +',' + tsCmd[3] +',' + tsCmd[4] + ',' + SwapString.CommaText );
        Turnchange(TurnMoves);
        SwapString.Free;
-       TsScript.add ('E' ) ;
+       TsScript[incMove].add ('E' ) ;
        w_fka2 := false;
        w_fkd2 := true;
   end
@@ -9713,14 +9986,14 @@ Normalpressing:
      SwapString.Add('0');
      SwapString.Add('0');
      SwapString.Add('0');
-     TsScript.add ('SERVER_FKD2.IS');
+     TsScript[incMove].add ('SERVER_FKD2.IS');
 
        for I := 0 to 2 do begin
 
          aCell := CornerMap.HeadingCellD [I];
          swapPlayer := GetSoccerPlayer(aCell.x, aCell.Y  );  //<-- prima di tutti o prende sè stesso
          aPlayer := GetSoccerPlayer(tsCmd[I+1]);  // cmd, cod, cod, cod
-         TsScript.add ('sc_player,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
+         TsScript[incMove].add ('sc_player,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
                                             IntTostr( aCell.X )+','+ IntTostr(aCell.Y )  ) ;
 
            if swapPlayer <> nil then begin
@@ -9728,7 +10001,7 @@ Normalpressing:
              if (swapPlayer.Team = aPlayer.Team) and (SwapPlayer.Ids <> aPlayer.ids) then begin    // swap compagno
                 SwapString[i]:= SwapPlayer.Ids;
                 aCell2 := FindSwapCOAD (  swapPlayer, CornerMap  );
-                TsScript.add ('sc_player,'+ swapPlayer.Ids +','+IntTostr(swapPlayer.CellX)+','+ IntTostr(swapPlayer.CellY)+','+
+                TsScript[incMove].add ('sc_player,'+ swapPlayer.Ids +','+IntTostr(swapPlayer.CellX)+','+ IntTostr(swapPlayer.CellY)+','+
                                             IntTostr(aCell2.X)+','+ IntTostr(aCell2.Y)  ) ;
                 swapPlayer.Cells := aCell2;
 
@@ -9736,7 +10009,7 @@ Normalpressing:
              else if (swapPlayer.Team <> aPlayer.Team) and (SwapPlayer.Ids <> aPlayer.ids) then begin // swap avversario
                 SwapString[i]:= SwapPlayer.Ids;
                 aCell2 := FindSwapCOAD (  swapPlayer, CornerMap  );
-                TsScript.add ('sc_player,'+ swapPlayer.Ids +','+IntTostr(swapPlayer.CellX)+','+ IntTostr(swapPlayer.CellY)+','+
+                TsScript[incMove].add ('sc_player,'+ swapPlayer.Ids +','+IntTostr(swapPlayer.CellX)+','+ IntTostr(swapPlayer.CellY)+','+
                                             IntTostr(aCell2.X)+','+ IntTostr(aCell2.Y)  ) ;
                 swapPlayer.Cells := aCell2;
 
@@ -9748,10 +10021,10 @@ Normalpressing:
        end;
 
        if teamTurn = 0 then tt := '1' else tt :='0';
-       TsScript.add ('FKD2.IS,' + tt + ',' + tsCmd[1] +',' + tsCmd[2] +',' + tsCmd[3]+','+SwapString.CommaText );
+       TsScript[incMove].add ('FKD2.IS,' + tt + ',' + tsCmd[1] +',' + tsCmd[2] +',' + tsCmd[3]+','+SwapString.CommaText );
        SwapString.Free;
        Turnchange(TurnMoves);
-       TsScript.add ('E' ) ;
+       TsScript[incMove].add ('E' ) ;
        w_fka2 := false;
        w_fkd2 := false;
        w_FreeKick2 := True;
@@ -9766,14 +10039,14 @@ Normalpressing:
        reason := 'FREEKICK3_ATTACK.SETUP, Guid/team error ';
        goto myexit; // hack
     end;
-     TsScript.add ('SERVER_FKA3.IS' );
+     TsScript[incMove].add ('SERVER_FKA3.IS' );
 
      CornerMap := GetCorner ( TeamFreekick , Ball.CellY,OpponentCorner);
      SwapString:= TstringList.Create;
      SwapString.Add('0');
      swapPlayer := GetSoccerPlayer( Ball.CellX, Ball.CellY  );  //<-- prima di tutti o prende sè stesso
      aPlayer := GetSoccerPlayer(tsCmd[1]);  // cmd, Fk2, coa, coa, coa
-         TsScript.add ('sc_player,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
+         TsScript[incMove].add ('sc_player,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
                                             IntTostr(Ball.CellX)+','+ IntTostr(Ball.CellY)  ) ;
      aPlayer.Cells :=  Ball.Cells ; // CornerMap.CornerCell;
      aPlayer.isFk3 := true;
@@ -9783,7 +10056,7 @@ Normalpressing:
        if SwapPlayer.Ids <> aPlayer.ids then begin    // swap compagno
           SwapString[i]:= SwapPlayer.Ids;
           aCell2 := FindSwapCOAD (  swapPlayer, CornerMap  );
-                TsScript.add ('sc_player,'+ swapPlayer.Ids +','+IntTostr(swapPlayer.CellX)+','+ IntTostr(swapPlayer.CellY)+','+
+                TsScript[incMove].add ('sc_player,'+ swapPlayer.Ids +','+IntTostr(swapPlayer.CellX)+','+ IntTostr(swapPlayer.CellY)+','+
                                            IntTostr(aCell2.X)+','+ IntTostr(aCell2.Y)  ) ;
           swapPlayer.Cells := aCell2;
 
@@ -9791,7 +10064,7 @@ Normalpressing:
      //  else if (swapPlayer.Team <> aPlayer.Team) and (SwapPlayer.Ids <> aPlayer.ids) then begin // swap avversario
      //     SwapString[i]:= SwapPlayer.Ids;
      //     aCell2 := FindSwapCOAD (  swapPlayer, CornerMap  );
-     //           TsScript.add ('sc_player,'+ swapPlayer.Ids +','+IntTostr(swapPlayer.CellX)+','+ IntTostr(swapPlayer.CellY)+','+
+     //           TsScript[incMove].add ('sc_player,'+ swapPlayer.Ids +','+IntTostr(swapPlayer.CellX)+','+ IntTostr(swapPlayer.CellY)+','+
      //                                       IntTostr(aCell2.X)+','+ IntTostr(aCell2.Y)  ) ;
      //     swapPlayer.Cells := aCell2;
 
@@ -9799,10 +10072,10 @@ Normalpressing:
      end;
 
        if teamTurn = 0 then tt := '1' else tt :='0';
-       TsScript.add ('FKA3.IS,'+ tt +',' +tsCmd[1]  + ',' + SwapString.CommaText );
+       TsScript[incMove].add ('FKA3.IS,'+ tt +',' +tsCmd[1]  + ',' + SwapString.CommaText );
        Turnchange(TurnMoves);
        SwapString.Free;
-       TsScript.add ('E' ) ;
+       TsScript[incMove].add ('E' ) ;
        w_fka3 := false;
        w_fkd3 := true;
        w_FreeKick3 := false;
@@ -9820,7 +10093,7 @@ Normalpressing:
       end;
     End;
      // devo sapere di chi è il corner attuale
-       TsScript.add ('SERVER_FKD3.IS' );
+       TsScript[incMove].add ('SERVER_FKD3.IS' );
      CornerMap := GetCorner ( TeamFreekick , Ball.CellY, OpponentCorner);
      SwapString:= TstringList.Create;
      SwapString.Add('0');
@@ -9841,24 +10114,24 @@ Normalpressing:
              if SwapPlayer.Ids <> aPlayer.ids  then begin    // swap compagno
                   SwapString[i]:= SwapPlayer.Ids;
                   aCell2 := FindSwapCOAD (  swapPlayer, CornerMap  );
-                  TsScript.add ('sc_player,'+ swapPlayer.Ids +','+IntTostr(swapPlayer.CellX)+','+ IntTostr(swapPlayer.CellY)+','+
+                  TsScript[incMove].add ('sc_player,'+ swapPlayer.Ids +','+IntTostr(swapPlayer.CellX)+','+ IntTostr(swapPlayer.CellY)+','+
                                               IntTostr(aCell2.X)+','+ IntTostr(aCell2.Y)  ) ;
                   swapPlayer.Cells := aCell2;
                   SwapDone := true; // 1 solo swap, dopo skippo gli atri 3 in barriera
 
              end;
          end;
-           TsScript.add ('sc_player.barrier,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
+           TsScript[incMove].add ('sc_player.barrier,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
                                               IntTostr(ACellBarrier.X)+','+ IntTostr(ACellBarrier.Y)  ) ;
            aPlayer.Cells := ACellBarrier;
            aPlayer.isFKD3 := True;
 
        end;
        if teamTurn = 0 then tt := '1' else tt :='0';
-       TsScript.add ('FKD3.IS,' + tt +',' + tsCmd[1] +',' + tsCmd[2] +',' + tsCmd[3]+','+  tsCmd[4] + ',' + SwapString.CommaText );
+       TsScript[incMove].add ('FKD3.IS,' + tt +',' + tsCmd[1] +',' + tsCmd[2] +',' + tsCmd[3]+','+  tsCmd[4] + ',' + SwapString.CommaText );
        SwapString.Free;
        Turnchange(TurnMoves);
-       TsScript.add ('E' ) ;
+       TsScript[incMove].add ('E' ) ;
        w_fka3 := false;
        w_fkd3 := false;
        w_FreeKick3 := True;
@@ -9874,7 +10147,7 @@ Normalpressing:
        goto myexit; // hack
     end;
 
-     TsScript.add ('SERVER_FKA4.IS' );
+     TsScript[incMove].add ('SERVER_FKA4.IS' );
      CornerMap := GetCorner ( TeamFreekick , Ball.CellY,OpponentCorner);
      SwapString:= TstringList.Create;
      SwapString.Add('0');
@@ -9882,7 +10155,7 @@ Normalpressing:
      aPlayer := GetSoccerPlayer(tsCmd[1]);  // cmd, Fk2, coa, coa, coa
      Ball.Cells := GetPenaltyCell( aPlayer.team ) ;
      swapPlayer := GetSoccerPlayer( Ball.CellX, Ball.CellY  );  //<-- prima di tutti o prende sè stesso
-     //    TsScript.add ('sc_player,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
+     //    TsScript[incMove].add ('sc_player,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
      //                                       IntTostr(Ball.CellX)+','+ IntTostr(Ball.CellY)  ) ;
 
      aPlayer.Cells :=  Ball.Cells ;
@@ -9892,7 +10165,7 @@ Normalpressing:
        if SwapPlayer.Ids <> aPlayer.ids then begin    // swap compagno
           SwapString[i]:= SwapPlayer.Ids;
           aCell2 := FindSwapCOAD (  swapPlayer, CornerMap  );
-                TsScript.add ('sc_player,'+ swapPlayer.Ids +','+IntTostr(swapPlayer.CellX)+','+ IntTostr(swapPlayer.CellY)+','+
+                TsScript[incMove].add ('sc_player,'+ swapPlayer.Ids +','+IntTostr(swapPlayer.CellX)+','+ IntTostr(swapPlayer.CellY)+','+
                                             IntTostr(aCell2.X)+','+ IntTostr(aCell2.Y)  ) ;
           swapPlayer.Cells := aCell2;
 
@@ -9900,17 +10173,17 @@ Normalpressing:
  //      else if (swapPlayer.Team <> aPlayer.Team) and (SwapPlayer.Ids <> aPlayer.ids) then begin // swap avversario
 //          SwapString[i]:= SwapPlayer.Ids;
 //          aCell2 := FindSwapCOAD (  swapPlayer, CornerMap  );
-//                TsScript.add ('sc_player,'+ swapPlayer.Ids +','+IntTostr(swapPlayer.CellX)+','+ IntTostr(swapPlayer.CellY)+','+
+//                TsScript[incMove].add ('sc_player,'+ swapPlayer.Ids +','+IntTostr(swapPlayer.CellX)+','+ IntTostr(swapPlayer.CellY)+','+
 //                                            IntTostr(aCell2.X)+','+ IntTostr(aCell2.Y)  ) ;
 //          swapPlayer.Cells := aCell2;
 
        end;
      end;
 
-       TsScript.add ('FKA4.IS,'+ intTostr(TeamTurn) +','+ tsCmd[1]  + ',' + SwapString.CommaText );
+       TsScript[incMove].add ('FKA4.IS,'+ intTostr(TeamTurn) +','+ tsCmd[1]  + ',' + SwapString.CommaText );
     //   Turnchange(TurnMoves);
        SwapString.Free;
-       TsScript.add ('E' ) ;
+       TsScript[incMove].add ('E' ) ;
        w_fka4 := false;
        w_FreeKick4 := true;
        goto Myexit;
@@ -9971,12 +10244,12 @@ buffd:
       aList.Free;
     end;
 
-    TsScript.add ('SERVER_BUFFD,' + aPlayer.ids ) ;
+    TsScript[incMove].add ('SERVER_BUFFD,' + aPlayer.ids ) ;
 
 
     TeamMovesLeft := TeamMovesLeft - 1;
     if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-    TsScript.add ('E');
+    TsScript[incMove].add ('E');
     reason:='';
     goto MyExit;
   end
@@ -10012,7 +10285,7 @@ buffd:
      goto myexit; // hack
     end;
 
-    TsScript.add ('SERVER_BUFFM,' + aPlayer.ids  ) ;
+    TsScript[incMove].add ('SERVER_BUFFM,' + aPlayer.ids  ) ;
     // non costa stamina
     // non va in ExceptPlayer
     if debug_Buff100 then begin
@@ -10036,7 +10309,7 @@ buffm:
     end;
     TeamMovesLeft := TeamMovesLeft - 1;
     if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-    TsScript.add ('E');
+    TsScript[incMove].add ('E');
     reason:='';
     goto MyExit;
   end
@@ -10072,7 +10345,7 @@ buffm:
      goto myexit; // hack
     end;
 
-    TsScript.add ('SERVER_BUFFF,' + aPlayer.ids ) ;
+    TsScript[incMove].add ('SERVER_BUFFF,' + aPlayer.ids ) ;
 
     if debug_Buff100 then begin
       goto bufff;
@@ -10095,7 +10368,7 @@ bufff:
 
     TeamMovesLeft := TeamMovesLeft - 1;
     if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-    TsScript.add ('E');
+    TsScript[incMove].add ('E');
     reason:='';
     goto MyExit;
   end
@@ -10108,7 +10381,7 @@ bufff:
 
     Ball.CellX := StrToIntDef(tsCmd[1],5);
     Ball.CellY := StrToIntDef(tsCmd[2],3);
-    tsScript.Clear;
+    tsScript[incMove].Clear;
 //    SaveData (incMove -1);
 {    SaveData (incMove );
     TBrainManager(brainManager).Input ( Self, IntToStr(incMove)  ) ; // -1
@@ -10146,7 +10419,7 @@ bufff:
     aPlayer := GetSoccerPlayer(tsCmd[1]);
     if aPlayer <> nil then begin
       aGK := GetOpponentGK ( aPlayer.team);
-      TsScript.add ('SERVER_POS,' + aPlayer.ids + ',' + IntToStr(aPlayer.CellX) + ',' + IntToStr(aPlayer.CellY)+ ',' + IntToStr( aGK.CellX ) +',' + IntToStr(aGK.celly));
+      TsScript[incMove].add ('SERVER_POS,' + aPlayer.ids + ',' + IntToStr(aPlayer.CellX) + ',' + IntToStr(aPlayer.CellY)+ ',' + IntToStr( aGK.CellX ) +',' + IntToStr(aGK.celly));
       CornerSetup ( aPlayer );
       goto Myexit;
 //      Exit; //<-- non deve fare incMove sotto    invece lo deve fare in caso di azione
@@ -10175,26 +10448,29 @@ bufff:
 
   end
   else if tsCmd[0] ='setplayer' then begin  // già verificato dal server GmLevel (account)
-    aPlayer := GetSoccerPlayer(tsCmd[1]);
-    if aPlayer <> nil then begin
-      aPlayer.CellX := StrToIntDef(tsCmd[2],5);
-      aPlayer.CellY := StrToIntDef(tsCmd[3],3);
-      tsScript.Clear;
-//    SaveData (incMove -1);
-{    SaveData (incMove );
-      TBrainManager(brainManager).Input ( Self, IntToStr(incMove)  ) ; // -1
-      Working:= false;
-      Exit; //<-- non deve fare incMove sotto  }
-    end;
+    if GameMode =  pvp then begin
+      aPlayer := GetSoccerPlayer(tsCmd[1]);
+      if aPlayer <> nil then begin
+        aPlayer.CellX := StrToIntDef(tsCmd[2],5);
+        aPlayer.CellY := StrToIntDef(tsCmd[3],3);
+        tsScript[incMove].Clear;
+
+       // TBrainManager(brainManager).Input ( Self, IntToStr(incMove) )  ; // -1
+       // Working:= false;
+        //<-- non deve fare incMove sopra  }
+      End;
       goto Myexit;
+    end;
   end;
 Myexit:
     if reason <> '' then Begin
       // hacking
-     // TsScript.add ('HACKING: ' + Reason ) ;
-     // TsScript.add ('E' ) ;
+     // TsScript[incMove].add ('HACKING: ' + Reason ) ;
+     // TsScript[incMove].add ('E' ) ;
       // informo il brainManager del Server del cheating
-      TBrainManager(brainManager).Input ( Self, 'cheat: ' + reason + ':' + tsCmd.CommaText  ) ;
+      if GameMode = pvp then
+        TBrainManager(brainManager).Input ( Self, 'cheat: ' + reason + ':' + tsCmd.CommaText  ) ;
+
       Working:= false;
       tsCmd.free;
       if aPath <> nil then aPath.Free; // shp
@@ -10219,10 +10495,18 @@ Myexit:
      end;
     // devo passare il brain in Tcp qui (saveini e mtptransfer)
     // così può usare spritereset su quel brain
-      inc (incMove);
+//      inc (incMove);
       SaveData ( incMove );
 
-      TBrainManager(brainManager).Input ( Self, IntToStr(incMove)  ) ; // -1
+      if GameMode = pvp then begin
+        TBrainManager(brainManager).Input ( Self, IntToStr(incMove)  ) ; // -1
+      End
+      else if GameMode = pve  then begin
+//        SendMessage (PveClientHandle, 50,0,0);
+        if pvePostMessage then
+          postMessage ( Application.Handle , $2CCC,0,0);
+      end;
+
       tsCmd.free;
       if aPath <> nil then aPath.Free; // shp
       if lstHeading <> nil then begin
@@ -10372,12 +10656,14 @@ begin
     MMbraindata.Write( @lstSoccerPlayer[i].Surname [0], length ( lstSoccerPlayer[i].Surname) +1 );      // +1 byte 0 indica lunghezza stringa
 
     MMbraindata.Write( @lstSoccerPlayer[i].Team, sizeof(byte) );
+    if GameMode = pvp then begin
+      MMbraindata.Write( @lstSoccerPlayer[i].MatchesPlayed, sizeof(SmallInt) );
+      MMbraindata.Write( @lstSoccerPlayer[i].MatchesLeft, sizeof(SmallInt) );
+    end;
     MMbraindata.Write( @lstSoccerPlayer[i].Age, sizeof(byte) );
-    MMbraindata.Write( @lstSoccerPlayer[i].MatchesPlayed, sizeof(SmallInt) );
-    MMbraindata.Write( @lstSoccerPlayer[i].MatchesLeft, sizeof(SmallInt) );
     MMbraindata.Write( @lstSoccerPlayer[i].TalentID1,  sizeof(byte) );
     MMbraindata.Write( @lstSoccerPlayer[i].TalentID2,  sizeof(byte) );
-    MMbraindata.Write( @lstSoccerPlayer[i].Stamina, sizeof(ShortInt) );
+    MMbraindata.Write( @lstSoccerPlayer[i].Stamina, sizeof(SmallInt) );
 
 
     MMbraindata.Write( @lstSoccerPlayer[i].DefaultSpeed , sizeof(byte) );      // i valori di default senza buff o debuff (come underpressure)
@@ -10435,6 +10721,11 @@ begin
     MMbraindata.Write( @lstSoccerPlayer[i].BonusBuffF, sizeof(Byte) );
     MMbraindata.Write( @lstSoccerPlayer[i].buffhome, sizeof(Byte) );
     MMbraindata.Write( @lstSoccerPlayer[i].buffmorale, sizeof(ShortInt) );
+
+    MMbraindata.Write( @lstSoccerPlayer[i].xpDevA, sizeof(smallint) );
+    MMbraindata.Write( @lstSoccerPlayer[i].xpDevT, sizeof(smallint) );
+    MMbraindata.Write( @lstSoccerPlayer[i].xpDevI, sizeof(smallint) );
+
   end;
 
   totReserve :=   lstSoccerReserve.Count;
@@ -10447,11 +10738,13 @@ begin
     MMbraindata.Write( @lstSoccerReserve[i].Surname[0], length ( lstSoccerReserve[i].Surname) +1 );
     MMbraindata.Write( @lstSoccerReserve[i].Team, sizeof(byte) );
     MMbraindata.Write( @lstSoccerReserve[i].Age, sizeof(byte) );
-    MMbraindata.Write( @lstSoccerReserve[i].MatchesPlayed, sizeof(SmallInt) );
-    MMbraindata.Write( @lstSoccerReserve[i].MatchesLeft, sizeof(SmallInt) );
+    if GameMode = pvp then begin
+      MMbraindata.Write( @lstSoccerReserve[i].MatchesPlayed, sizeof(SmallInt) );
+      MMbraindata.Write( @lstSoccerReserve[i].MatchesLeft, sizeof(SmallInt) );
+    end;
     MMbraindata.Write( @lstSoccerReserve[i].TalentID1,  sizeof(byte) );
     MMbraindata.Write( @lstSoccerReserve[i].TalentID2,  sizeof(byte) );
-    MMbraindata.Write( @lstSoccerReserve[i].Stamina, sizeof(ShortInt) );
+    MMbraindata.Write( @lstSoccerReserve[i].Stamina, sizeof(SmallInt) );
 
     MMbraindata.Write( @lstSoccerReserve[i].DefaultSpeed , sizeof(byte) );
     MMbraindata.Write( @lstSoccerReserve[i].DefaultDefense , sizeof(byte) );
@@ -10483,6 +10776,10 @@ begin
     MMbraindata.Write( @lstSoccerReserve[i].face, sizeof(integer) );
     MMbraindata.Write( @lstSoccerReserve[i].country, sizeof(smallint) );
 
+    MMbraindata.Write( @lstSoccerReserve[i].xpDevA, sizeof(smallint) );
+    MMbraindata.Write( @lstSoccerReserve[i].xpDevT, sizeof(smallint) );
+    MMbraindata.Write( @lstSoccerReserve[i].xpDevI, sizeof(smallint) );
+
   end;
 
   totGameOver :=   lstSoccerGameover.Count;
@@ -10494,12 +10791,15 @@ begin
     MMbraindata.Write( @lstSoccerGameOver[i].GuidTeam, sizeof(integer) );
     MMbraindata.Write( @lstSoccerGameOver[i].Surname[0], length ( lstSoccerGameOver[i].Surname) +1 );
     MMbraindata.Write( @lstSoccerGameOver[i].Team, sizeof(byte) );
+    if GameMode = pvp then begin
+      MMbraindata.Write( @lstSoccerGameOver[i].MatchesPlayed, sizeof(SmallInt) );
+      MMbraindata.Write( @lstSoccerGameOver[i].MatchesLeft, sizeof(SmallInt) );
+    end;
     MMbraindata.Write( @lstSoccerGameOver[i].Age, sizeof(byte) );
-    MMbraindata.Write( @lstSoccerGameOver[i].MatchesPlayed, sizeof(SmallInt) );
-    MMbraindata.Write( @lstSoccerGameOver[i].MatchesLeft, sizeof(SmallInt) );
+
     MMbraindata.Write( @lstSoccerGameOver[i].TalentID1,  sizeof(byte) );
     MMbraindata.Write( @lstSoccerGameOver[i].TalentID2,  sizeof(byte) );
-    MMbraindata.Write( @lstSoccerGameOver[i].Stamina, sizeof(ShortInt) );
+    MMbraindata.Write( @lstSoccerGameOver[i].Stamina, sizeof(SmallInt) );
 
     MMbraindata.Write( @lstSoccerGameOver[i].DefaultSpeed , sizeof(byte) );
     MMbraindata.Write( @lstSoccerGameOver[i].DefaultDefense , sizeof(byte) );
@@ -10531,12 +10831,16 @@ begin
     MMbraindata.Write( @lstSoccerGameOver[i].face, sizeof(integer) );
     MMbraindata.Write( @lstSoccerGameOver[i].country, sizeof(smallint) );
 
+    MMbraindata.Write( @lstSoccerGameOver[i].xpDevA, sizeof(smallint) );
+    MMbraindata.Write( @lstSoccerGameOver[i].xpDevT, sizeof(smallint) );
+    MMbraindata.Write( @lstSoccerGameOver[i].xpDevI, sizeof(smallint) );
+
   end;
 
   // save Tsscript fino a 'E' perchè savedata è chiamata alla fine della mossa, non del turno
   Dummy := MMbraindata.Position ;
 
-  str:= AnsiString  ( tsScript.CommaText );
+  str:= AnsiString  ( tsScript[incMove].CommaText );
   LentsScript := Length (str);
   MMbraindata.Write( @LentsScript, sizeof(word) );
   MMbraindata.Write( @str[1] , Length(str) );
@@ -10568,7 +10872,7 @@ begin
 
 
 
-  tsScript.Clear ;
+//  tsScript.Clear ; da quando è array non devo fare clear
 
 
 
@@ -10624,7 +10928,8 @@ begin
        aPath.Free;
 
        aPlayer.Stamina := aPlayer.Stamina - cost_tac;
-       TsScript.add ('sc_ST,' + aPlayer.ids +',' + IntToStr(cost_tac)) ;
+       aPlayer.xpDevA := aPlayer.xpDevA + 1;
+       TsScript[incMove].add ('sc_ST,' + aPlayer.ids +',' + IntToStr(cost_tac)) ;
        ACT := '0';
        aPlayer.tmp:=0;
        if (aPlayer.TalentId1 = TALENT_ID_TOUGHNESS) or (aPlayer.TalentId2 = TALENT_ID_TOUGHNESS) then
@@ -10644,7 +10949,7 @@ begin
        aPlayer.xpTal[TALENT_ID_FAUL] := aPlayer.xpTal[TALENT_ID_FAUL] + 1;
        aPlayer.xpTal[TALENT_ID_MARKING] := aPlayer.xpTal[TALENT_ID_MARKING] + 1;
 
-        TsScript.add ( 'sc_DICE,' + IntTostr(aPlayer.CellX) + ',' + Inttostr(aPlayer.CellY) +','+  IntTostr(aRnd) +','+
+        TsScript[incMove].add ( 'sc_DICE,' + IntTostr(aPlayer.CellX) + ',' + Inttostr(aPlayer.CellY) +','+  IntTostr(aRnd) +','+
         IntTostr (aPlayer.Defense) + ',Tackle,'+ aPlayer.ids+','+IntTostr(Roll.value) + ','+ Roll.fatigue+ '.0' +','+IntToStr(aPlayer.tmp));
 
        ACT := '0';
@@ -10662,12 +10967,13 @@ begin
 
        aRnd2:= Roll2.value + Ball.Player.ballControl + Ball.Player.tmp ;  // se a 0 perchè underpressure, il talento gli conferisce minimo 1
        Ball.Player.xp_ballControl:= Ball.Player.xp_ballControl + 1;
+       Ball.Player.xpDevA := Ball.Player.xpDevA + 1;
        Ball.Player.xpTal[TALENT_ID_POWER] := Ball.Player.xpTal[TALENT_ID_POWER] + 1;
        if aRnd2 < 0 then aRnd2 :=0;
        ExceptPlayers.Add(ball.player);
 
 
-        TsScript.add ( 'sc_DICE,' + IntTostr(Ball.Player.CellX) + ',' + Inttostr(Ball.Player.CellY) +','+  IntTostr(aRnd2) +','+
+        TsScript[incMove].add ( 'sc_DICE,' + IntTostr(Ball.Player.CellX) + ',' + Inttostr(Ball.Player.CellY) +','+  IntTostr(aRnd2) +','+
         IntTostr (  Ball.Player.ballControl ) +',Ball.Control,'+  Ball.Player.ids+','+IntTostr(Roll2.value) + ',' +Roll2.fatigue+ '.' +ACT +','+IntTostr(Ball.Player.tmp));
 
        // Tackle ok normale ---> player prende la palla oppure tacle ok10 ma non cella dst libera
@@ -10677,10 +10983,11 @@ begin
         if debug_TACKLE_FAILED then TackleResult := -1;
 
         If ( TackleResult >= TackleDiff ) and (dstCell.X <> -1)  Then begin
+          aPlayer.xpDevT := aPlayer.xpDevT + 2; // premio massimo
           oldPlayerBall := Ball.Player;
           // sostituzione
             // guadagna 1 cella anche se usato se il punteggio è alto anche con pressing precedente
-          TsScript.add ('sc_tackle.ok10,' + aPlayer.ids{sfidante} +',' + oldPlayerBall.ids {cella}
+          TsScript[incMove].add ('sc_tackle.ok10,' + aPlayer.ids{sfidante} +',' + oldPlayerBall.ids {cella}
                                       + ',' + IntTostr(aPlayer.CellX)+',' + IntTostr(aPlayer.CellY)
                                       + ',' + IntTostr(Ball.Player.CellX)+',' + IntTostr(Ball.Player.CellY)
                                       + ',' + IntTostr(dstCell.X)+',' + IntTostr(dstCell.Y)   ) ;
@@ -10702,11 +11009,16 @@ begin
         end
 //        else If ( (aRnd-aRnd2) >= TackleDiff ) and (dstCell.X <> -1)  Then begin
         else if (( TackleResult >= 0 ) and ( TackleResult < TackleDiff )) or (( TackleResult >= TackleDiff ) and (dstCell.X = -1)) then begin
+          if TackleResult < TackleDiff then
+            aPlayer.xpDevT := aPlayer.xpDevT + 1 // premio normale
+            else if TackleResult >= TackleDiff then
+              aPlayer.xpDevT := aPlayer.xpDevT + 2; // premio massimo
+
           // posso anche vincere di 2 ma non avere spazio per muovere
 
           oldPlayerBall := Ball.Player;
 
-          TsScript.add ('sc_tackle.ok,' + aPlayer.ids{sfidante} +',' + oldPlayerBall.ids {cella}
+          TsScript[incMove].add ('sc_tackle.ok,' + aPlayer.ids{sfidante} +',' + oldPlayerBall.ids {cella}
                                       + ',' + IntTostr(aPlayer.CellX)+',' + IntTostr(aPlayer.CellY)
                                       + ',' + IntTostr(Ball.Player.CellX)+',' + IntTostr(Ball.Player.CellY)
                                       + ',' + IntTostr(Ball.Player.CellX)+',' + IntTostr(Ball.Player.CellY)   ) ;
@@ -10721,6 +11033,7 @@ begin
         end
        // else if ( (aRnd-aRnd2) < TackleDiff ) then begin
         else if   TackleResult <= 0    then begin  // tackle fallito , non conta la tacklediff ma la direzione con chance di fallo
+          Ball.Player.xpDevT := Ball.Player.xpDevT + 1;
        // non resetto PROPRE
           // perdo il tackle, valito da che direzione arriva
           case GetTackleDirection (aPlayer.Team,aPlayer.CellX,aPlayer.CellY,Ball.Player.CellX,Ball.Player.CellY) of
@@ -10747,7 +11060,12 @@ begin
                 Injured := 10;
               // se è l'ultimo uomo ( ma non davanti ) la chance di essere espulso è del 100%
               if IsLastMan ( aPlayer ) then begin
-  {$IFDEF ADDITIONAL_MATCHINFO}  MatchInfo.Add( IntToStr(fminute) + '.lastman.' + aPlayer.ids);{$ENDIF}
+  {$IFDEF ADDITIONAL_MATCHINFO}
+                if GameMode = pvp then
+                  MatchInfo.Add( IntToStr(fminute) + '.lastman.' + aPlayer.ids)
+                  else  MatchInfo.Add( IntToStr(fminute) + '.lastman.' + aPlayer.ids+'.'+aPlayer.SurName);
+                  {$ENDIF}
+
                 redCard := 100;
                 YellowCard := 0;
               end;
@@ -10771,7 +11089,7 @@ begin
             fault := fault + 10;
 
           aPlayer.CanSkill := False;
-          TsScript.add ('sc_tackle.no,' + aPlayer.ids{sfidante} +',' + Ball.Player.ids {cella}
+          TsScript[incMove].add ('sc_tackle.no,' + aPlayer.ids{sfidante} +',' + Ball.Player.ids {cella}
                                       + ',' + IntTostr(aPlayer.CellX)+',' + IntTostr(aPlayer.CellY)
                                       + ',' + IntTostr(Ball.Player.CellX)+',' + IntTostr(Ball.Player.CellY)
                                       + ',' + IntTostr(Ball.Player.CellX)+',' + IntTostr(Ball.Player.CellY)   ) ;
@@ -10787,7 +11105,7 @@ begin
 
 
           if aRnd <= fault then begin   // se è fallo
-//            TsScript.add ('sc_tackle.fault,' + aPlayer.ids{sfidante} +',' + Ball.Player.ids {cella}
+//            TsScript[incMove].add ('sc_tackle.fault,' + aPlayer.ids{sfidante} +',' + Ball.Player.ids {cella}
 //                                        + ',' + IntTostr(aPlayer.CellX)+',' + IntTostr(aPlayer.CellY)
 //                                        + ',' + IntTostr(Ball.Player.CellX)+',' + IntTostr(Ball.Player.CellY)
 //                                        + ',' + IntTostr(Ball.Player.CellX)+',' + IntTostr(Ball.Player.CellY)   ) ;
@@ -10800,25 +11118,31 @@ begin
             if aRnd <= Card then begin // cartellino
               aRnd := RndGenerate(100);
               if aRnd <= redCard then begin // cartellino rosso
-                  TsScript.add ('sc_red,' + aPlayer.ids + ',' + IntTostr(Ball.Player.CellX)+',' + IntTostr(Ball.Player.CellY)) ;
+                  TsScript[incMove].add ('sc_red,' + aPlayer.ids + ',' + IntTostr(Ball.Player.CellX)+',' + IntTostr(Ball.Player.CellY)) ;
                   aPlayer.Role := 'N';
                   aPlayer.RedCard :=  1;
                   aPlayer.Gameover := true;
                   aPlayer.CanMove := False;
                   PutInReserveSlot ( aPlayer );
-                  MatchInfo.Add( IntToStr(fminute) + '.rc.' + aPlayer.ids);
+                if GameMode = pvp then
+                  MatchInfo.Add( IntToStr(fminute) + '.rc.' + aPlayer.ids)
+                  else  MatchInfo.Add( IntToStr(fminute) + '.rc.' + aPlayer.ids+'.'+aPlayer.SurName);
+
                   AddSoccerGameOver(aPlayer);
                   RemoveSoccerPlayer(aPlayer);
               end
               else  begin   // cartellino giallo
               // calcolo doppia ammonizione
                   aPlayer.YellowCard :=  aPlayer.YellowCard + 1;
-                  MatchInfo.Add( IntToStr(fminute) + '.yc.' + aPlayer.ids);
+                if GameMode = pvp then
+                  MatchInfo.Add( IntToStr(fminute) + '.yc.' + aPlayer.ids)
+                  else  MatchInfo.Add( IntToStr(fminute) + '.yc.' + aPlayer.ids+'.'+aPlayer.SurName);
+
                   if aPlayer.YellowCard = 1 then
-                    TsScript.add ('sc_yellow,' + aPlayer.ids + ',' + IntTostr(Ball.Player.CellX)+',' + IntTostr(Ball.Player.CellY))
+                    TsScript[incMove].add ('sc_yellow,' + aPlayer.ids + ',' + IntTostr(Ball.Player.CellX)+',' + IntTostr(Ball.Player.CellY))
 
                   else if aPlayer.YellowCard = 2 then begin
-                    TsScript.add ('sc_yellowred,' + aPlayer.ids +',' + IntTostr(Ball.Player.CellX)+',' + IntTostr(Ball.Player.CellY) ) ;
+                    TsScript[incMove].add ('sc_yellowred,' + aPlayer.ids +',' + IntTostr(Ball.Player.CellX)+',' + IntTostr(Ball.Player.CellY) ) ;
                     aPlayer.Role := 'N';
                     aPlayer.Gameover := true;
                     //layer.RedCard :=  1;  no redcard diretto
@@ -10826,12 +11150,14 @@ begin
                     PutInReserveSlot(aPlayer);
                     AddSoccerGameOver(aPlayer);
                     RemoveSoccerPlayer(aPlayer);
-                    MatchInfo.Add( IntToStr(fminute) + '.rc.' + aPlayer.ids);
+                    if GameMode = pvp then
+                      MatchInfo.Add( IntToStr(fminute) + '.rc.' + aPlayer.ids)
+                      else  MatchInfo.Add( IntToStr(fminute) + '.rc.' + aPlayer.ids+'.'+aPlayer.SurName);
                   end;
               end;
             end;
             if aRnd <= injured then begin
-                    TsScript.add ('sc_injured,' + Ball.Player.ids +',' + IntTostr(Ball.Player.CellX)+',' + IntTostr(Ball.Player.CellY) ) ;
+                    TsScript[incMove].add ('sc_injured,' + Ball.Player.ids +',' + IntTostr(Ball.Player.CellX)+',' + IntTostr(Ball.Player.CellY) ) ;
                     Ball.Player.CanMove := False;
 //                    aPlayer.CanSkill := False;
                     Ball.Player.Stamina := 0;
@@ -10949,7 +11275,8 @@ begin
 
 
        aPlayer.Stamina := aPlayer.Stamina - cost_autotac; // 3 tackle normale
-       TsScript.add ('sc_ST,' + aPlayer.ids +',' + IntToStr(cost_autotac) ) ;
+       aPlayer.xpDevA := aPlayer.xpDevA + 1;
+       TsScript[incMove].add ('sc_ST,' + aPlayer.ids +',' + IntToStr(cost_autotac) ) ;
        preRoll := RndGenerate (dice);
        Roll := AdjustFatigue (aPlayer.Stamina , preRoll);
 
@@ -10984,21 +11311,22 @@ begin
        aRnd2:= Roll2.value + Ball.Player.ballControl + Ball.Player.tmp ; //  resiste aigli autotackle e ai tackle  toughness
        Ball.Player.xp_ballControl:= Ball.Player.xp_ballControl + 1;
        Ball.Player.xpTal[TALENT_ID_POWER] :=  Ball.Player.xpTal[TALENT_ID_POWER] +1;
-
+       Ball.Player.xpDevA := Ball.Player.xpDevA + 1;
        if aRnd2 < 0 then aRnd2 :=0;
 
 
       if ( aRnd > aRnd2 )  then begin // Tackle ---> player prende la palla
         {  malus da dietro, e 50% fallo e cartellino }
+        aPlayer.xpdevT := aPlayer.xpdevT + 1;
         oldPlayerBall := Ball.Player;
-        TsScript.add ( 'sc_DICE,' + IntTostr(aPlayer.CellX) + ',' + Inttostr(aPlayer.CellY) +','+  IntTostr(aRnd) +','+
+        TsScript[incMove].add ( 'sc_DICE,' + IntTostr(aPlayer.CellX) + ',' + Inttostr(aPlayer.CellY) +','+  IntTostr(aRnd) +','+
         IntTostr ( aPlayer.Defense )+',Tackle,'+ aPlayer.ids+','+IntTostr(Roll.value)+','+Roll.fatigue+'.0' + ','+IntToStr(aPlayer.tmp));
 
-        TsScript.add ( 'sc_DICE,' + IntTostr(oldPlayerBall.CellX) + ',' + Inttostr(oldPlayerBall.CellY) +','+  IntTostr(aRnd2) +','+
+        TsScript[incMove].add ( 'sc_DICE,' + IntTostr(oldPlayerBall.CellX) + ',' + Inttostr(oldPlayerBall.CellY) +','+  IntTostr(aRnd2) +','+
         IntTostr(oldPlayerBall.ballControl) +',Ball.Control,'+  oldPlayerBall.ids+','+IntTostr(Roll2.value)+','+Roll2.fatigue+ '.' + ACT +','+IntToStr(oldPlayerBall.tmp));
 
         SwapPlayers ( aPlayer, Ball.Player );
-        TsScript.add ('sc_swap,' + aPlayer.ids{sfidante} +',' + oldPlayerBall.ids {cella}
+        TsScript[incMove].add ('sc_swap,' + aPlayer.ids{sfidante} +',' + oldPlayerBall.ids {cella}
         + ',' + IntTostr(Ball.Player.CellX)+',' + IntTostr(Ball.Player.CellY) {celle} + ',' + IntTostr(OldCell.x)+',' + IntTostr(OldCell.Y) {provenienza PlayerB}  ) ;
         Ball.Cells := Ball.Player.Cells;
           result := true;
@@ -11007,25 +11335,27 @@ begin
         //arnd:= 12;
         if( (aRnd-aRnd2) >= TackleDiff ) and (dstCell.X <> -1)  then begin // si sposta in avanti
           // sostituzione
+          aPlayer.xpdevT := aPlayer.xpdevT + 2; // premio massimo
           aPlayer.Cells := dstCell;
-          TsScript.add ('sc_player.move,'+ aPlayer.Ids +','+IntTostr(Ball.CellX)+','+ IntTostr(Ball.CellY)+','+  IntTostr(dstCell.X)+','+ IntTostr(dstCell.Y)  ) ;
-          TsScript.add ('sc_ball.move,'+ IntTostr(Ball.CellX)+','+ IntTostr(Ball.CellY)+','+  IntTostr(dstCell.X)+','+ IntTostr(dstCell.Y)+',0,0'  ) ;
+          TsScript[incMove].add ('sc_player.move,'+ aPlayer.Ids +','+IntTostr(Ball.CellX)+','+ IntTostr(Ball.CellY)+','+  IntTostr(dstCell.X)+','+ IntTostr(dstCell.Y)  ) ;
+          TsScript[incMove].add ('sc_ball.move,'+ IntTostr(Ball.CellX)+','+ IntTostr(Ball.CellY)+','+  IntTostr(dstCell.X)+','+ IntTostr(dstCell.Y)+',0,0'  ) ;
           Ball.CellS := dstCell;
 
         end;
       end
       else begin   // il player non prende la palla. comunque ci ha provato
+        Ball.Player.xpDevT := Ball.Player.xpDevT + 1;
         oldPlayerBall := Ball.Player;
        // non resetto PROPRE
 
-        TsScript.add ( 'sc_DICE,' + IntTostr(aPlayer.CellX) + ',' + Inttostr(aPlayer.CellY) +','+  IntTostr(aRnd) +',' +
+        TsScript[incMove].add ( 'sc_DICE,' + IntTostr(aPlayer.CellX) + ',' + Inttostr(aPlayer.CellY) +','+  IntTostr(aRnd) +',' +
         IntTostr ( aPlayer.Defense )+',Tackle,'+ aPlayer.ids+','+IntTostr(Roll.value)+','+Roll.fatigue+'.0' + '.0'+','+IntToStr(aPlayer.tmp));
-        TsScript.add ( 'sc_DICE,' + IntTostr(oldPlayerBall.CellX) + ',' + Inttostr(oldPlayerBall.CellY) +','+  IntTostr(aRnd2) +','+
+        TsScript[incMove].add ( 'sc_DICE,' + IntTostr(oldPlayerBall.CellX) + ',' + Inttostr(oldPlayerBall.CellY) +','+  IntTostr(aRnd2) +','+
         IntTostr(oldPlayerBall.ballControl ) +',Ball.Control,'+  oldPlayerBall.ids+','+IntTostr(Roll2.value)+','+Roll2.fatigue+ '.' + ACT+','+IntToStr(oldPlayerBall.tmp));
         aPlayer.Cells := ball.Cells;
-     //   TsScript.add ( 'sc_noswap,' + aPlayer.ids{sfidante} +',' + Ball.Player.ids {cella} + ',' + IntTostr(Ball.Player.CellX)+',' + IntTostr(Ball.Player.CellY)
+     //   TsScript[incMove].add ( 'sc_noswap,' + aPlayer.ids{sfidante} +',' + Ball.Player.ids {cella} + ',' + IntTostr(Ball.Player.CellX)+',' + IntTostr(Ball.Player.CellY)
      //    + ',' + IntTostr(OldCell.x)+',' + IntTostr(OldCell.Y) {provenienza PlayerB}   ) ;
-        TsScript.add ('sc_player.move,'+ aPlayer.Ids +','+IntTostr(OldCell.X)+','+ IntTostr(OldCell.Y)+','+  IntTostr(aPlayer.cellX)+','+ IntTostr(aPlayer.cellY)  ) ;
+        TsScript[incMove].add ('sc_player.move,'+ aPlayer.Ids +','+IntTostr(OldCell.X)+','+ IntTostr(OldCell.Y)+','+  IntTostr(aPlayer.cellX)+','+ IntTostr(aPlayer.cellY)  ) ;
       end;
     end;
 end;
@@ -11625,10 +11955,11 @@ begin
 
 
   // informo il client
-  TsScript.add ('SERVER_COR,' + aplayer.ids + ','+ IntTostr(aPlayer.CellX) +',' + inttostr(aPlayer.CellY) + ',' +
+  TsScript[incMove].add ('SERVER_COR,' + aplayer.ids + ','+ IntTostr(aPlayer.CellX) +',' + inttostr(aPlayer.CellY) + ',' +
                                                 IntTostr(CornerMap.HeadingCellA [0].X) + ',' + IntTostr(CornerMap.HeadingCellA [0].Y)) ;
   aPlayer.Stamina := aPlayer.Stamina - cost_cor;
-  TsScript.add ('ST,' + aPlayer.ids +',' + IntToStr(cost_cor) ) ;
+  aPlayer.xpDevA := aPlayer.xpDevA + 1;
+  TsScript[incMove].add ('ST,' + aPlayer.ids +',' + IntToStr(cost_cor) ) ;
 
   preRoll := RndGenerate (dice);
   Roll := AdjustFatigue(aPlayer.Stamina,PreRoll);
@@ -11640,7 +11971,7 @@ begin
   if debug_SetAlwaysGol then arnd := 20;
 
   BonusDefenseHeading := 0;
-        TsScript.add ( 'sc_DICE,' + IntTostr(CornerMap.CornerCell.X) + ',' + Inttostr(CornerMap.CornerCell.Y) +','+  IntTostr(aRnd) +',' +
+        TsScript[incMove].add ( 'sc_DICE,' + IntTostr(CornerMap.CornerCell.X) + ',' + Inttostr(CornerMap.CornerCell.Y) +','+  IntTostr(aRnd) +',' +
         IntToStr(aPlayer.Passing ) +',Crossing,'+ aPlayer.ids+','+IntTostr(Roll.value)+','+Roll.fatigue+ '.0'+','+IntTostr(aPlayer.tmp));
       if (aRnd >= COR_D2_MIN) and (aRnd <= COR_D2_MAX) then begin  //  palla a headingD [2]
         Ball.Cells :=  Point (CornerMap.HeadingCellD [2].X , CornerMap.HeadingCellD [2].Y);
@@ -11684,15 +12015,17 @@ begin
   // ooa= 3 player corner attaccanti  ood= 3 player corner difensori
 
             aHeadingFriend.Stamina := aHeadingFriend.Stamina - cost_hea ;                // ogni mossa costa stamina
-            aHeadingFriend.xp_Heading := aHeadingFriend.xp_Heading + 1;
+            aheadingFriend.xpDevA := aheadingFriend.xpDevA + 1;
+            //aHeadingFriend.xp_Heading := aHeadingFriend.xp_Heading + 1;
             aHeadingFriend.xpTal[TALENT_ID_HEADING] :=  aHeadingFriend.xpTal[TALENT_ID_HEADING] + 1;
 
             aHeadingOpponent.Stamina := aHeadingOpponent.Stamina - cost_hea;             // ogni mossa costa stamina
+            aHeadingOpponent.xpDevA := aHeadingOpponent.xpDevA + 1;
             aHeadingOpponent.xp_Heading := aHeadingOpponent.xp_Heading + 1;
             aHeadingOpponent.xpTal[TALENT_ID_HEADING] :=  aHeadingOpponent.xpTal[TALENT_ID_HEADING] + 1;
 
-            TsScript.add ('sc_ST,' + aHeadingFriend.ids +',' + IntToStr(cost_hea) ) ;    // info per il client
-            TsScript.add ('sc_ST,' + aHeadingOpponent.ids +',' + IntToStr(cost_hea) ) ;  // info per il client
+            TsScript[incMove].add ('sc_ST,' + aHeadingFriend.ids +',' + IntToStr(cost_hea) ) ;    // info per il client
+            TsScript[incMove].add ('sc_ST,' + aHeadingOpponent.ids +',' + IntToStr(cost_hea) ) ;  // info per il client
 
             // prima provano i difensori di testa , se falliscono rimane il portiere.
               aHeadingFriend.tmp := aHeadingFriend.tmp +1;
@@ -11707,11 +12040,11 @@ begin
              preRoll3 := RndGenerate (dice);
              Roll3 := AdjustFatigue(aHeadingFriend.Stamina,preRoll3);
              aRnd3:=  aHeadingFriend.Heading +  Roll3.value;
-             aHeadingFriend.xp_Heading :=  aHeadingFriend.xp_Heading + 1 + aHeadingFriend.tmp;
+             aHeadingFriend.xp_Heading :=  aHeadingFriend.xp_Heading + 1;// + aHeadingFriend.tmp;
 
              if debug_SetAlwaysGol then arnd3 := 20;
 
-             TsScript.add ( 'sc_DICE,' + IntTostr(aHeadingFriend.cellx) + ',' + Inttostr(aHeadingFriend.cellY) +','+  IntTostr(aRnd3) +','+
+             TsScript[incMove].add ( 'sc_DICE,' + IntTostr(aHeadingFriend.cellx) + ',' + Inttostr(aHeadingFriend.cellY) +','+  IntTostr(aRnd3) +','+
              IntToStr(aHeadingFriend.Heading)  + ',Heading,'+aHeadingFriend.ids+','+IntTostr(Roll3.value)+','+roll3.fatigue+'.'+ACT+ ',0');
 
 
@@ -11728,21 +12061,23 @@ begin
              Roll2 := AdjustFatigue(aHeadingOpponent.Stamina,preRoll2);
              aRnd2:=  aHeadingOpponent.Heading + BonusDefenseHeading + Roll2.value + aHeadingOpponent.tmp ;
 
-             TsScript.add ( 'sc_DICE,' + IntTostr(aHeadingOpponent.cellx) + ',' + Inttostr(aHeadingOpponent.cellY) +','+  IntTostr(aRnd2) +',' +
+
+             TsScript[incMove].add ( 'sc_DICE,' + IntTostr(aHeadingOpponent.cellx) + ',' + Inttostr(aHeadingOpponent.cellY) +','+  IntTostr(aRnd2) +',' +
              IntToStr(aHeadingOpponent.Heading)  + ',Heading,'+aHeadingOpponent.ids+','+IntTostr(Roll2.value)+','+roll2.fatigue+'.'+ACT+','+IntToStr(BonusDefenseHeading));
 
-//             TsScript.add ('sc_player.move.coacod,' + aHeadingOpponent.ids{sfidante} +',' + aHeadingFriend.ids + ',' + IntTostr(ball.cellx)+',' + IntTostr(ball.celly));
+//             TsScript[incMove].add ('sc_player.move.coacod,' + aHeadingOpponent.ids{sfidante} +',' + aHeadingFriend.ids + ',' + IntTostr(ball.cellx)+',' + IntTostr(ball.celly));
 //             goto cor_crossbar;
 
                 if aRnd2 > Arnd3 then begin   //  se heading difensivo vince
                   tsSpeaker.Add(aHeadingOpponent.Surname +' respinge di testa' );
 
                    if (Ball.CellX = 2) or (ball.CellX = 9) then begin
+                     aHeadingOpponent.xpDevT := aHeadingOpponent.xpDevT + 2; // premio massimo
                      OldCell := aHeadingOpponent.Cells ;
                      SwapPlayers ( aHeadingOpponent, aHeadingFriend);
                     //bounce
                      Ball.Cells:= GetBounceCell  ( aPlayer.CellX,aPlayer.CellY, aHeadingOpponent.CellX, aHeadingOpponent.CellY, 2 , aHeadingOpponent.team);
-                     TsScript.add ('sc_corner.headingdef.swap.bounce,' + aPlayer.Ids +',' + aHeadingFriend.ids + ',' + aHeadingOpponent.ids
+                     TsScript[incMove].add ('sc_corner.headingdef.swap.bounce,' + aPlayer.Ids +',' + aHeadingFriend.ids + ',' + aHeadingOpponent.ids
                                                                + ',' + IntTostr(CornerMap.CornerCell.X)+','+ IntTostr(CornerMap.CornerCell.Y)
                                                                + ',' + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) {celle}
                                                                + ',' + IntTostr(aHeadingFriend.cellx)+',' + IntTostr(aHeadingFriend.celly) {celle}
@@ -11751,8 +12086,9 @@ begin
 
                    end
                    else begin
+                     aHeadingOpponent.xpDevT := aHeadingOpponent.xpDevT + 1; // premio normale
                      Ball.Cells:= GetBounceCell  ( aPlayer.CellX,aPlayer.CellY, aHeadingOpponent.CellX, aHeadingOpponent.CellY, 2 , aHeadingOpponent.team);
-                     TsScript.add ('sc_corner.headingdef.bounce,'  + aPlayer.Ids +',' + aHeadingFriend.ids + ',' + aHeadingOpponent.ids
+                     TsScript[incMove].add ('sc_corner.headingdef.bounce,'  + aPlayer.Ids +',' + aHeadingFriend.ids + ',' + aHeadingOpponent.ids
                                                                + ',' + IntTostr(CornerMap.CornerCell.X)+','+ IntTostr(CornerMap.CornerCell.Y)
                                                                + ',' + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) {celle}
                                                                + ',' + IntTostr(aHeadingOpponent.cellx)+',' + IntTostr(aHeadingOpponent.celly)
@@ -11765,11 +12101,12 @@ begin
                       end;
                       Ball.Player.Shot := Ball.Player.Shot + 1;
                       Ball.Player.BonusFinishingTurn := 1;
+                      Ball.Player.xpDevA := Ball.Player.xpDevA + 1;
                     end;
                   TeamMovesLeft := 1;
   //                AI_moveAll (aPlayer);
   //                if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-                  TsScript.add ('E');
+                  TsScript[incMove].add ('E');
                   exit;
                 end;
 
@@ -11781,7 +12118,7 @@ begin
          if (Ball.CellX = 1) or (ball.CellX = 10) then begin
            OldCell := aHeadingFriend.Cells ;
            SwapPlayers ( aHeadingFriend,aHeadingOpponent );
-                       TsScript.add ('sc_corner.headingatt.swap,' + aHeadingFriend.ids + ',' + aHeadingOpponent.ids
+                       TsScript[incMove].add ('sc_corner.headingatt.swap,' + aHeadingFriend.ids + ',' + aHeadingOpponent.ids
                                                                + ',' + IntTostr(aHeadingFriend.cellx)+',' + IntTostr(aHeadingFriend.celly)
                                                                + ',' + IntTostr(aHeadingOpponent.cellx)+',' + IntTostr(aHeadingOpponent.celly));
 
@@ -11795,20 +12132,24 @@ begin
               Roll4 := AdjustFatigue(aGK.Stamina,preRoll4);
               aRnd4 := Roll4.value +  aGK.Defense + BonusDefenseHeading ;
               aGK.xpTal[TALENT_ID_GoalKeeper] := aGK.xpTal[TALENT_ID_GoalKeeper] + 1;
+              aGK.Stamina := aGK.Stamina - cost_GKheading;
+              aGK.xp_Defense:= aGK.xp_Defense+1;
+              aGK.xpDevA := aGK.xpDevA + 1;
              // aRnd4:= 10;
 
-                 TsScript.add ( 'sc_DICE,' + IntTostr(aGK.CellX) + ',' + Inttostr(aGK.CellY) +','+  IntTostr(aRnd4) +','+
+                 TsScript[incMove].add ( 'sc_DICE,' + IntTostr(aGK.CellX) + ',' + Inttostr(aGK.CellY) +','+  IntTostr(aRnd4) +','+
                  IntTostr(aGK.Defense) +',Defense,'+ aGK.ids+','+IntTostr(Roll4.value)+','+roll4.fatigue+'.0'+','+IntToStr(BonusDefenseHeading));
 
               // o angolo o respinta o gol
               if aRnd4 > aRnd3 then begin // heading ---> il portiere para e c'è il rimbalzo
                 // la palla, che ora è in possesso del portiere , rimbalza e finisce in posizione random che calcolo adesso
+                 aGK.xpDevT := aGK.xpDevT + 1;
                  aCell := GetGKBounceCell (aGK,  aGK.cellX, aGK.CellY,  RndGenerate (2),true );
 
                  Ball.Cells := aCell;
                 // Ball.CellS := Point(0,1);
                  tsSpeaker.Add(aGK.Surname +' para e respinge');
-                 TsScript.add ('sc_corner.bounce.gk,' + aPlayer.ids + ','+ aHeadingFriend.ids + ',' + aGK.ids +','
+                 TsScript[incMove].add ('sc_corner.bounce.gk,' + aPlayer.ids + ','+ aHeadingFriend.ids + ',' + aGK.ids +','
                                               + IntTostr(CornerMap.CornerCell.X)+','+ IntTostr(CornerMap.CornerCell.Y) +','
                                               + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) + ','
                                               + IntTostr(aHeadingFriend.cellx)+',' + IntTostr(aHeadingFriend.celly) + ','
@@ -11826,14 +12167,16 @@ begin
                       end;
                       Ball.Player.Shot := Ball.Player.Shot + 1;
                       Ball.Player.BonusFinishingTurn := 1;
+                      Ball.Player.xpDevA := Ball.Player.xpDevA + 1;
                     end;
-                   TsScript.add ('E'); // semplice bounce GK
+                   TsScript[incMove].add ('E'); // semplice bounce GK
               end
 
               else begin // corner finisce in gol
 // GOL
 
                   // ma c'è sempre il palo.
+                  aheadingFriend.xpDevT := aheadingFriend.xpDevT + 1;
                   if RndGenerate(12) = 12 then begin
 cor_crossbar:
 //aGK := GetOpponentGK ( aHeadingFriend.Team );
@@ -11842,9 +12185,13 @@ cor_crossbar:
                   // se il portiere è fuori dai pali, la palla può rimbalzare in gol più sotto perchè il GK usa defense
                    Ball.Cells := aCell;
                    tsSpeaker.Add(' palo ');
-                                  {$IFDEF ADDITIONAL_MATCHINFO}  MatchInfo.Add( IntToStr(fminute) + '.crossbar.' + aGK.ids);{$ENDIF}
+                                  {$IFDEF ADDITIONAL_MATCHINFO}
+                                      if GameMode = pvp then
+                                        MatchInfo.Add( IntToStr(fminute) + '.crossbar.' + aHeadingFriend.ids)
+                                        else MatchInfo.Add( IntToStr(fminute) + '.crossbar.' + aHeadingFriend.ids);
+                                   {$ENDIF}
 
-                   TsScript.add ('sc_corner.bounce.crossbar,' + aPlayer.ids + ','+ aHeadingFriend.ids + ',' + aGK.ids +','
+                   TsScript[incMove].add ('sc_corner.bounce.crossbar,' + aPlayer.ids + ','+ aHeadingFriend.ids + ',' + aGK.ids +','
                                               + IntTostr(CornerMap.CornerCell.X)+','+ IntTostr(CornerMap.CornerCell.Y) +','
                                               + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) + ','
                                               + IntTostr(aHeadingFriend.cellx)+',' + IntTostr(aHeadingFriend.celly) + ','
@@ -11860,10 +12207,10 @@ cor_crossbar:
                       Ball.Player.BonusFinishingTurn := 1;
                     end;
                    TeamMovesLeft := 1;
-                   TsScript.add ('E'); // semplice bounce GK o palo
+                   TsScript[incMove].add ('E'); // semplice bounce GK o palo
                    Exit;
                   end;
-                   TsScript.add ('sc_corner.gol,' + aPlayer.ids + ','+ aHeadingFriend.ids + ',' + aGK.ids +','
+                   TsScript[incMove].add ('sc_corner.gol,' + aPlayer.ids + ','+ aHeadingFriend.ids + ',' + aGK.ids +','
                                               + IntTostr(CornerMap.CornerCell.X)+','+ IntTostr(CornerMap.CornerCell.Y)+','
                                               + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) + ','
                                               + IntTostr(aHeadingFriend.cellx)+',' + IntTostr(aHeadingFriend.celly) + ','
@@ -11871,11 +12218,16 @@ cor_crossbar:
                                               + IntTostr(aGK.cellX)+',' + IntTostr(aGK.cellY) + ',' +IntTostr(RndGenerate(2)) );
                   inc (Score.gol[aPlayer.team]);
                   Score.lstGol:= Score.lstGol + IntTostr(Minute) + '=' + aHeadingFriend.Ids + ',';
-                  MatchInfo.Add( IntToStr(fminute) + '.golcorner.' + aHeadingFriend.ids);
+
+                    if GameMode = pvp then
+
+                      MatchInfo.Add( IntToStr(fminute) + '.golcorner.' + aHeadingFriend.ids)
+                      else MatchInfo.Add( IntToStr(fminute) + '.golcorner.' + aHeadingFriend.ids +'.'+aHeadingFriend.SurName);
+
                   TeamMovesLeft := 1;
                   LoadDefaultTeamPos ( aGK.Team ) ;
                   TurnChange(TurnMovesStart);
-                  TsScript.add ('E') ;
+                  TsScript[incMove].add ('E') ;
 
               end;
 
@@ -11901,10 +12253,11 @@ begin
   aPlayer.isFK2 := false;
   tsSpeaker.Add( aPlayer.Surname +' batte la punizione cross '   );
   // esc e come server_cro non cro2
-  TsScript.add ('SERVER_CRO,' + aplayer.ids + ','+ IntTostr(aPlayer.CellX) +',' + inttostr(aPlayer.CellY) + ',' +
+  TsScript[incMove].add ('SERVER_CRO,' + aplayer.ids + ','+ IntTostr(aPlayer.CellX) +',' + inttostr(aPlayer.CellY) + ',' +
                                                 IntTostr(CornerMap.HeadingCellA [0].X) + ',' + IntTostr(CornerMap.HeadingCellA [0].Y)) ;
   aPlayer.Stamina := aPlayer.Stamina - cost_cor;
-  TsScript.add ('ST,' + aPlayer.ids +',' + IntToStr(cost_cor) ) ;   // costa come il corner
+  aPlayer.xpDevA := aPlayer.xpDevA + 1;
+  TsScript[incMove].add ('ST,' + aPlayer.ids +',' + IntToStr(cost_cor) ) ;   // costa come il corner
 
   preRoll := RndGenerate (dice);
   Roll := AdjustFatigue(aPlayer.Stamina,preRoll);
@@ -11921,7 +12274,7 @@ begin
   // se la batto bene 8 o 9 il bonusdefense va a -1, quindi può esssere 3, -1 , -2
   // se la batto male il bonus +4, 0, -1 rimane invariato
   // in tutti i casi varia comuqnue la cella e quindi i player che si condfrontano
-        TsScript.add ( 'sc_DICE,' + IntTostr(CornerMap.CornerCell.X) + ',' + Inttostr(CornerMap.CornerCell.Y) +','+  IntTostr(aRnd) +',' +
+        TsScript[incMove].add ( 'sc_DICE,' + IntTostr(CornerMap.CornerCell.X) + ',' + Inttostr(CornerMap.CornerCell.Y) +','+  IntTostr(aRnd) +',' +
         IntToStr(aPlayer.Passing) +',Crossing,'+ aPlayer.ids+','+IntTostr(Roll.value)+','+Roll.fatigue+ '.0'+','+IntToStr(aPlayer.tmp));
 
 
@@ -11946,12 +12299,16 @@ begin
 
       end
       else if (aRnd >= CRO2_A2_MIN) and (aRnd <= CRO2_A2_MAX) then begin  //  palla a headingA [2]
+        aPlayer.xpDevT := aPlayer.xpDevT + 1; // premio normale
+
         Ball.Cells :=  Point (CornerMap.HeadingCellA [2].X , CornerMap.HeadingCellA [2].Y);
         aHeadingFriend := GetSoccerPlayer ( CornerMap.HeadingCellA [2].X , CornerMap.HeadingCellA [2].Y  );
         aHeadingOpponent := GetSoccerPlayer ( CornerMap.HeadingCellD [2].X , CornerMap.HeadingCellD [2].Y  );
         BonusDefenseHeading := BonusDefenseHeading -1;   //3 o anche -2 o -1
       end
       else if (aRnd >= CRO2_A1_MIN) and (aRnd <= CRO2_A1_MAX) then begin  //  palla a headingA [1]
+        aPlayer.xpDevT := aPlayer.xpDevT + 1; // premio normale
+
         Ball.Cells :=  Point (CornerMap.HeadingCellA [1].X , CornerMap.HeadingCellA [1].Y);
         aHeadingFriend := GetSoccerPlayer ( CornerMap.HeadingCellA [1].X , CornerMap.HeadingCellA [1].Y  );
         aHeadingOpponent := GetSoccerPlayer ( CornerMap.HeadingCellD [1].X , CornerMap.HeadingCellD [1].Y  );
@@ -11959,6 +12316,8 @@ begin
 
       end
       else if (aRnd >= CRO2_A0_MIN) and (aRnd <= MAX_LEVEL) then begin  //  palla a headingA [0]
+        aPlayer.xpDevT := aPlayer.xpDevT + 2; // premio massimo
+
         Ball.Cells :=  Point (CornerMap.HeadingCellA [0].X , CornerMap.HeadingCellA [0].Y);
         aHeadingFriend := GetSoccerPlayer ( CornerMap.HeadingCellA [0].X , CornerMap.HeadingCellA [0].Y  );
         aHeadingOpponent := GetSoccerPlayer ( CornerMap.HeadingCellD [0].X , CornerMap.HeadingCellD [0].Y  );
@@ -11968,9 +12327,11 @@ begin
   // esistono per forza 3 coa e 3 cod, per il momento swappo solo dove cade la palla.
 
             aHeadingFriend.Stamina := aHeadingFriend.Stamina - cost_hea ;
-            TsScript.add ('sc_ST,' + aHeadingFriend.ids +',' + IntToStr(cost_hea) ) ;
+            aHeadingFriend.xpDevA := aHeadingFriend.xpDevA + 1;
+            TsScript[incMove].add ('sc_ST,' + aHeadingFriend.ids +',' + IntToStr(cost_hea) ) ;
             aHeadingOpponent.Stamina := aHeadingOpponent.Stamina - cost_hea;
-            TsScript.add ('sc_ST,' + aHeadingOpponent.ids +',' + IntToStr(cost_hea) ) ;
+            aHeadingOpponent.xpDevA := aHeadingOpponent.xpDevA + 1;
+            TsScript[incMove].add ('sc_ST,' + aHeadingOpponent.ids +',' + IntToStr(cost_hea) ) ;
 
             // prima i difensori di testa , se falliscono rimane il portiere.
 
@@ -11984,23 +12345,24 @@ begin
              Roll2 := AdjustFatigue(aHeadingOpponent.Stamina,preRoll2);
              aRnd2:=  aHeadingOpponent.Heading + BonusDefenseHeading + Roll2.value;
              aHeadingOpponent.xp_Heading :=  aHeadingOpponent.xp_Heading + 1;
-             TsScript.add ( 'sc_DICE,' + IntTostr(aHeadingOpponent.cellx) + ',' + Inttostr(aHeadingOpponent.cellY) +','+  IntTostr(aRnd2) +',' +
+             TsScript[incMove].add ( 'sc_DICE,' + IntTostr(aHeadingOpponent.cellx) + ',' + Inttostr(aHeadingOpponent.cellY) +','+  IntTostr(aRnd2) +',' +
              IntToStr(aHeadingOpponent.Heading)  + ',Heading,'+aHeadingOpponent.ids+','+IntTostr(Roll2.value)+','+Roll2.fatigue+'.0'+','+Inttostr(BonusDefenseHeading));
-             TsScript.add ( 'sc_DICE,' + IntTostr(aHeadingFriend.cellx) + ',' + Inttostr(aHeadingFriend.cellY) +','+  IntTostr(aRnd3) +','+
+             TsScript[incMove].add ( 'sc_DICE,' + IntTostr(aHeadingFriend.cellx) + ',' + Inttostr(aHeadingFriend.cellY) +','+  IntTostr(aRnd3) +','+
              IntToStr(aHeadingFriend.Heading)  + ',Heading,'+aHeadingFriend.ids+','+IntTostr(Roll3.value)+','+roll3.fatigue+'.0'+',0');
 
-//             TsScript.add ('sc_player.move.coacod,' + aHeadingOpponent.ids{sfidante} +',' + aHeadingFriend.ids + ',' + IntTostr(ball.cellx)+',' + IntTostr(ball.celly));
+//             TsScript[incMove].add ('sc_player.move.coacod,' + aHeadingOpponent.ids{sfidante} +',' + aHeadingFriend.ids + ',' + IntTostr(ball.cellx)+',' + IntTostr(ball.celly));
 //             goto cor_crossbar;
 
                 if aRnd2 > Arnd3 then begin   //  heading difensivo vince
                   tsSpeaker.Add(aHeadingOpponent.Surname +' respinge di testa' );
 
                    if (Ball.CellX = 2) or (ball.CellX = 9) then begin
+                     aHeadingOpponent.xpDevT := aHeadingOpponent.xpDevT + 2; // premio massimo
                      OldCell := aHeadingOpponent.Cells ;
                      SwapPlayers ( aHeadingOpponent, aHeadingFriend);
                     //bounce
                      Ball.Cells:= GetBounceCell  ( aPlayer.CellX,aPlayer.CellY, aHeadingOpponent.CellX, aHeadingOpponent.CellY, 2 , aHeadingOpponent.team);
-                     TsScript.add ('sc_cro2.headingdef.swap.bounce,' + aPlayer.Ids +',' + aHeadingFriend.ids + ',' + aHeadingOpponent.ids
+                     TsScript[incMove].add ('sc_cro2.headingdef.swap.bounce,' + aPlayer.Ids +',' + aHeadingFriend.ids + ',' + aHeadingOpponent.ids
                                                                + ',' + IntTostr(CornerMap.CornerCell.X)+','+ IntTostr(CornerMap.CornerCell.Y)
                                                                + ',' + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) {celle}
                                                                + ',' + IntTostr(aHeadingFriend.cellx)+',' + IntTostr(aHeadingFriend.celly) {celle}
@@ -12009,8 +12371,9 @@ begin
 
                    end
                    else begin
+                     aHeadingOpponent.xpDevT := aHeadingOpponent.xpDevT + 1; // premio normale
                      Ball.Cells:= GetBounceCell  ( aPlayer.CellX,aPlayer.CellY, aHeadingOpponent.CellX, aHeadingOpponent.CellY, 2 , aHeadingOpponent.team);
-                     TsScript.add ('sc_cro2.headingdef.bounce,'  + aPlayer.Ids +',' + aHeadingFriend.ids + ',' + aHeadingOpponent.ids
+                     TsScript[incMove].add ('sc_cro2.headingdef.bounce,'  + aPlayer.Ids +',' + aHeadingFriend.ids + ',' + aHeadingOpponent.ids
                                                                + ',' + IntTostr(CornerMap.CornerCell.X)+','+ IntTostr(CornerMap.CornerCell.Y)
                                                                + ',' + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) {celle}
                                                                + ',' + IntTostr(aHeadingOpponent.cellx)+',' + IntTostr(aHeadingOpponent.celly)
@@ -12023,11 +12386,12 @@ begin
                       end;
                       Ball.Player.Shot := Ball.Player.Shot + 1;
                       Ball.Player.BonusFinishingTurn := 1;
+                      Ball.Player.xpDevA := Ball.Player.xpDevA + 1;
                     end;
                   TeamMovesLeft := 1;
   //                AI_moveAll (aPlayer);
   //                if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-                  TsScript.add ('E');
+                  TsScript[incMove].add ('E');
                   exit;
                 end;
 
@@ -12039,7 +12403,7 @@ begin
          if (Ball.CellX = 1) or (ball.CellX = 10) then begin
            OldCell := aHeadingFriend.Cells ;
            SwapPlayers ( aHeadingFriend,aHeadingOpponent );
-                       TsScript.add ('sc_cro2.headingatt.swap,' + aHeadingFriend.ids + ',' + aHeadingOpponent.ids
+                       TsScript[incMove].add ('sc_cro2.headingatt.swap,' + aHeadingFriend.ids + ',' + aHeadingOpponent.ids
                                                                + ',' + IntTostr(aHeadingFriend.cellx)+',' + IntTostr(aHeadingFriend.celly)
                                                                + ',' + IntTostr(aHeadingOpponent.cellx)+',' + IntTostr(aHeadingOpponent.celly));
 
@@ -12053,20 +12417,25 @@ begin
               Roll4 := AdjustFatigue(aGK.Stamina,preRoll4);
               aRnd4 := Roll4.value +  aGK.Defense + BonusDefenseHeading ;
               aGK.xpTal[TALENT_ID_GoalKeeper] := aGK.xpTal[TALENT_ID_GoalKeeper] + 1;
+              aGK.Stamina := aGK.Stamina - cost_GKheading;
+              aGK.xp_Defense:= aGK.xp_Defense+1;
+              aGK.xpDevA := aGK.xpDevA + 1;
              // aRnd4:= 10;
 
-                 TsScript.add ( 'sc_DICE,' + IntTostr(aGK.CellX) + ',' + Inttostr(aGK.CellY) +','+  IntTostr(aRnd4) +','+
+                 TsScript[incMove].add ( 'sc_DICE,' + IntTostr(aGK.CellX) + ',' + Inttostr(aGK.CellY) +','+  IntTostr(aRnd4) +','+
                  IntTostr(aGK.Defense ) +',Defense,'+ aGK.ids+','+IntTostr(Roll4.value)+','+roll4.fatigue+'.0'+','+inttostr(BonusDefenseHeading));
 
               // o angolo o respinta o gol
               if aRnd4 > aRnd3 then begin // heading ---> il portiere para e c'è il rimbalzo
                 // la palla, che ora è in possesso del portiere , rimbalza e finisce in posizione random che calcolo adesso
+                 aGK.xpDevT := aGK.xpDevT + 1;
+
                  aCell := GetGKBounceCell (aGK,  aGK.cellX, aGK.CellY,  RndGenerate (2),true );
 
                  Ball.Cells := aCell;
                 // Ball.CellS := Point(0,1);
                  tsSpeaker.Add(aGK.Surname +' para e respinge');
-                 TsScript.add ('sc_cro2.bounce.gk,' + aPlayer.ids + ','+ aHeadingFriend.ids + ',' + aGK.ids +','
+                 TsScript[incMove].add ('sc_cro2.bounce.gk,' + aPlayer.ids + ','+ aHeadingFriend.ids + ',' + aGK.ids +','
                                               + IntTostr(CornerMap.CornerCell.X)+','+ IntTostr(CornerMap.CornerCell.Y) +','
                                               + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) + ','
                                               + IntTostr(aHeadingFriend.cellx)+',' + IntTostr(aHeadingFriend.celly) + ','
@@ -12084,13 +12453,14 @@ begin
                     end;
                     Ball.Player.Shot := Ball.Player.Shot + 1;
                     Ball.Player.BonusFinishingTurn := 1;
+                    Ball.Player.xpDevA := Ball.Player.xpDevA + 1;
                   end;
-                   TsScript.add ('E'); // semplice bounce GK
+                   TsScript[incMove].add ('E'); // semplice bounce GK
               end
 
               else begin // cro2 finisce in gol
 // GOL
-
+                  aheadingFriend.xpDevT := aheadingFriend.xpDevT + 1;
                   // ma c'è sempre il palo.
                   if RndGenerate(12) = 12 then begin
 cor_crossbar:
@@ -12100,9 +12470,14 @@ cor_crossbar:
                   // se il portiere è fuori dai pali, la palla può rimbalzare in gol più sotto perchè il GK usa defense
                    Ball.Cells := aCell;
                    tsSpeaker.Add(' palo ');
-                                  {$IFDEF ADDITIONAL_MATCHINFO}  MatchInfo.Add( IntToStr(fminute) + '.crossbar.' + aGK.ids);{$ENDIF}
 
-                   TsScript.add ('sc_cro2.bounce.crossbar,' + aPlayer.ids + ','+ aHeadingFriend.ids + ',' + aGK.ids +','
+                    {$IFDEF ADDITIONAL_MATCHINFO}
+                    if GameMode = pvp then
+                      MatchInfo.Add( IntToStr(fminute) + '.crossbar.' + aHeadingFriend.ids)
+                      else MatchInfo.Add( IntToStr(fminute) + '.crossbar.' + aHeadingFriend.ids);
+                    {$ENDIF}
+
+                   TsScript[incMove].add ('sc_cro2.bounce.crossbar,' + aPlayer.ids + ','+ aHeadingFriend.ids + ',' + aGK.ids +','
                                               + IntTostr(CornerMap.CornerCell.X)+','+ IntTostr(CornerMap.CornerCell.Y) +','
                                               + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) + ','
                                               + IntTostr(aHeadingFriend.cellx)+',' + IntTostr(aHeadingFriend.celly) + ','
@@ -12116,12 +12491,13 @@ cor_crossbar:
                       end;
                       Ball.Player.Shot := Ball.Player.Shot + 1;
                       Ball.Player.BonusFinishingTurn := 1;
+                      Ball.Player.xpDevA := Ball.Player.xpDevA + 1;
                     end;
                    TeamMovesLeft := 1;
-                   TsScript.add ('E'); // semplice bounce GK o palo
+                   TsScript[incMove].add ('E'); // semplice bounce GK o palo
                    Exit;
                   end;
-                   TsScript.add ('sc_cro2.gol,' + aPlayer.ids + ','+ aHeadingFriend.ids + ',' + aGK.ids +','
+                   TsScript[incMove].add ('sc_cro2.gol,' + aPlayer.ids + ','+ aHeadingFriend.ids + ',' + aGK.ids +','
                                               + IntTostr(CornerMap.CornerCell.X)+','+ IntTostr(CornerMap.CornerCell.Y)+','
                                               + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) + ','
                                               + IntTostr(aHeadingFriend.cellx)+',' + IntTostr(aHeadingFriend.celly) + ','
@@ -12129,11 +12505,14 @@ cor_crossbar:
                                               + IntTostr(aGK.cellX)+',' + IntTostr(aGK.cellY) + ',' +IntTostr(RndGenerate(2)) );
                   inc (Score.gol[aPlayer.team]);
                   Score.lstGol:= Score.lstGol + IntTostr(Minute) + '=' + aHeadingFriend.Ids + ',';
-                  MatchInfo.Add( IntToStr(fminute) + '.golcro2.' + aHeadingFriend.ids);
+                    if GameMode = pvp then
+                      MatchInfo.Add( IntToStr(fminute) + '.golcro2.' + aHeadingFriend.ids)
+                      else MatchInfo.Add( IntToStr(fminute) + '.golcro2.' + aHeadingFriend.ids + '.' + aHeadingFriend.SurName);
+
                   TeamMovesLeft := 1;
                   LoadDefaultTeamPos ( aGK.Team ) ;
                   TurnChange(TurnMovesStart);
-                  TsScript.add ('E') ;
+                  TsScript[incMove].add ('E') ;
 
               end;
 
@@ -12172,7 +12551,7 @@ function TSoccerbrain.AI_Think_sub ( team: Integer; anOutPlayer:TSoccerPlayer; S
 var
   ids: string;
 begin
-
+  // si fanno sempre anche oltre 120+
   if CanDoSub ( Team ) then begin  //not gk
 
     if( AbsDistance(anOutPlayer.CellX, anOutPlayer.CellY,Ball.CellX ,Ball.celly) < 4) then begin
@@ -12336,6 +12715,9 @@ begin
  // se F o M stanno oltre
  // SE M o d stanno più bassi
   Result := none;
+  if Minute >= 120 then // oltre 120 non lo puo' fare
+    Exit;
+
   if Cks <= -1  then begin // perdo e basta
     if team = 0 then begin
       for I := 0 to lstSoccerplayer.count -1 do begin
@@ -12479,6 +12861,32 @@ begin
   lstSameRow.free;
 
 end;
+function TSoccerBrain.AI_ForceRandomMove ( team : Integer ): Boolean;
+var
+  i: Integer;
+  aPlayer : TSoccerPlayer;
+  aplmcell: TPoint;
+begin
+  Result := false;
+  for i := lstSoccerPlayer.Count -1 downto 0 do begin // not gk, sono esclusi
+      aPlayer:= lstSoccerPlayer[i];
+      if aPlayer.Team  <> team then continue;
+      if (aPlayer.team = team) and ( not aPlayer.hasBall) and (aPlayer.canMove) and (aPlayer.TalentId1 <> TALENT_ID_GOALKEEPER) then begin
+
+        aplmCell:= GetRandomCellNOplayer ( aPlayer.CellX, aPlayer.CellY, aPlayer.Speed  );
+        if aplmCell.X <> -1 then begin
+          GetPath (aPlayer.Team , aPlayer.CellX , aPlayer.CellY, aplmcell.x, aplmcell.y, aPlayer.speed{Limit},false{useFlank},false{FriendlyWall},
+                           false{OpponentWall},true{FinalWall},TruncOneDir{OneDir}, aPlayer.MovePath );
+            if aPlayer.MovePath.Count > 0 then begin
+              BrainInput  ( IntTostr(score.TeamGuid [team]) + ',' +'PLM,' + aPlayer.Ids +',' +
+                          IntToStr(aPlayer.MovePath[aPlayer.MovePath.Count-1].X) +','+ IntToStr(aPlayer.MovePath[aPlayer.MovePath.Count-1].Y));
+              Result := true;
+            end;
+        end;
+      end;
+  end;
+
+end;
 function TSoccerbrain.AI_Injured_sub_tactic_stay (Team: integer): TBetterSolution;
 var
   anInjured,aWorstStamina,OutPlayer: TSoccerPlayer;
@@ -12579,6 +12987,10 @@ begin
 
   // TACTICS
   // qui Result = SubCant oppure semplicemente nil oppure candosub = false;  oppure pareggio quindi no sub
+  if fMinute >= 120 then begin   // 120+
+    // non puo' fare tactics
+    goto Tryrows;
+  end;
   if fMinute >= 80 then begin   // 80 su 120
       // Tactic sempre dentro >= 80
       Cks := CheckScore (team);
@@ -12594,6 +13006,7 @@ begin
         Exit;
       // se F +1 M +2
   end;
+
 
   // in ultimo pulisoc le righe
 Tryrows:
@@ -12842,7 +13255,9 @@ begin
   if not Ball.Player.CanSkill  then begin
     aSol := AI_Injured_sub_tactic_stay(team);
     if  (aSol = none) or (aSol = SubAbs4) or (aSol = SubCant) then begin // subCant non arriva mai. candosub è chechata prima
-      BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'PASS'  ); // o ha fatto qualcosa o passo
+      if Minute < 120 then
+        BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'PASS'  ) // o ha fatto qualcosa o passo
+        else AI_ForceRandomMove ( Team );
     end;
       Exit;
   end;
@@ -13002,7 +13417,9 @@ begin
   if not Ball.Player.CanSkill  then begin
     aSol := AI_Injured_sub_tactic_stay(team);
     if  (aSol = none) or (aSol = SubAbs4) or (aSol = SubCant) then begin // subCant non arriva mai. candosub è chechata prima
-      BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'PASS'  ); // o ha fatto qualcosa o passo
+      if Minute < 120 then
+        BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'PASS'  ) // o ha fatto qualcosa o passo
+        else AI_ForceRandomMove ( team );
     end;
       Exit;
   end;
@@ -13212,7 +13629,9 @@ begin
   if not Ball.Player.CanSkill  then begin
     aSol := AI_Injured_sub_tactic_stay(team);
     if  (aSol = none) or (aSol = SubAbs4) or (aSol = SubCant) then begin // subCant non arriva mai. candosub è chechata prima
-      BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'PASS'  ); // o ha fatto qualcosa o passo
+      if Minute < 120 then
+        BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'PASS'  ) // o ha fatto qualcosa o passo
+        else AI_ForceRandomMove (team);
     end;
       Exit;
   end;
@@ -13864,8 +14283,11 @@ begin
         end
       end
       else begin  // se il gk avversario ha la palla
-        if AI_Injured_sub_tactic_stay(team) = none then
-        BrainInput( IntTostr(score.TeamGuid [team]) + ',' +'PASS'  );
+        if AI_Injured_sub_tactic_stay(team) = none then begin
+          if Minute < 120 then
+            BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'PASS'  ) // o ha fatto qualcosa o passo
+          else AI_ForceRandomMove(team);
+        end;
       end;
 end;
 procedure TSoccerbrain.AI_Think_oppball_middle ( Team: integer  );
@@ -14340,8 +14762,11 @@ begin
          ',' + IntToStr(aListToBalldist1[aRnd].MovePath[aListToBalldist1[aRnd].MovePath.Count-1].Y  ) );
       end
       else  begin
-        if AI_Injured_sub_tactic_stay(team) = none then
-        BrainInput(  IntTostr(score.TeamGuid [team]) + ',' +'PASS'  );
+        if AI_Injured_sub_tactic_stay(team) = none then begin
+          if Minute < 120 then
+            BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'PASS'  ) // o ha fatto qualcosa o passo
+          else AI_ForceRandomMove (team);
+        end;
       end;
       aListToBall.Free;
       aListToBalldist1.Free;
@@ -14818,7 +15243,7 @@ var
 
 begin
 
-  TsScript.add ('sc_ai.movetoball');
+  TsScript[incMove].add ('sc_ai.movetoball');
     for P := lstSoccerPlayer.Count -1 downto 0 do begin
       aPlayer := lstSoccerPlayer[p];
       aPlayer.MovePath.Clear ;
@@ -14845,7 +15270,7 @@ begin
         Roll := AdjustFatigue (aList[i].Stamina , preRoll);
         aRnd := Roll.value + aList[i].Speed;
         aList[i].itag := aRnd;
-        TsScript.add ( 'sc_mtbDICE,' + IntTostr(aList[i].CellX) + ',' + Inttostr(aList[i].CellY) +','+  IntTostr(aRnd) +','+
+        TsScript[incMove].add ( 'sc_mtbDICE,' + IntTostr(aList[i].CellX) + ',' + Inttostr(aList[i].CellY) +','+  IntTostr(aRnd) +','+
         IntTostr(aList[i].Speed)+',Speed,'+ aList[i].ids+','+IntTostr(Roll.value)+','+ Roll.fatigue+'.0' );
       end;
 
@@ -14868,7 +15293,7 @@ begin
       aPlayer := aList[aRnd];
 
       // cerco questo player nella lista originale
-      TsScript.add ('sc_player.move,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
+      TsScript[incMove].add ('sc_player.move,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
                       IntTostr(ball.cellX   )+','+ IntTostr( Ball.cellY)  ) ;
       if shpBuff then begin
        aPlayer.BonusSHPTurn := 1;
@@ -14899,8 +15324,8 @@ begin
   OriginalPath := dse_pathplanner.TPath.Create; // decide tra originalPath e Talent che attivano altri path
 
   // meglio tenerla divisa, non è vera AI
-  TsScript.add ('sc_ai.endmovetoball');
-  TsScript.add ('sc_ai.moveall');
+  TsScript[incMove].add ('sc_ai.endmovetoball');
+  TsScript[incMove].add ('sc_ai.moveall');
 
 
   case Ball.cellX of
@@ -15596,7 +16021,7 @@ begin
                 // se con il semplice aimoveall trovo la palla lo faccia, altrimenti valuto i talenti.
              if toball then
 
-              TsScript.add ('sc_player.move,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
+              TsScript[incMove].add ('sc_player.move,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
                                                          IntTostr(dstCell.X   )+','+ IntTostr( dstCell.Y)  )
              else begin
 
@@ -15606,10 +16031,10 @@ begin
                   AI_MovePlayer_DefaultY ( aPlayer ) ;
                   if aPlayer.MovePath.Count > 0 then begin   // se trova il path per marking
                     aPlayer.Stamina := aPlayer.Stamina - cost_plm;
-                    TsScript.add ('sc_ST,' + aPlayer.ids +',' + IntToStr(cost_plm) ) ;
+                    TsScript[incMove].add ('sc_ST,' + aPlayer.ids +',' + IntToStr(cost_plm) ) ;
 
                     dstCell := Point (aPlayer.MovePath[aPlayer.MovePath.Count -1].X,aPlayer.MovePath[aPlayer.MovePath.Count -1].Y) ;
-                    TsScript.add ('sc_pa,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
+                    TsScript[incMove].add ('sc_pa,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
                                   IntTostr(dstCell.X   )+','+ IntTostr( dstCell.Y)  ) ;
                     aPlayer.CellS :=  dstCell;
                     ExceptPlayers.Add(aPlayer); // o me lo ritrovo più avanti nel ciclo
@@ -15627,10 +16052,10 @@ begin
                        GetFavourCellPath( aPlayer, ball.CellX, ball.celly ); // cerfco la cella di favore
                         if aPlayer.MovePath.Count > 0 then begin
                           aPlayer.Stamina := aPlayer.Stamina - cost_plm;
-                          TsScript.add ('sc_ST,' + aPlayer.ids +',' + IntToStr(cost_plm) ) ;
+                          TsScript[incMove].add ('sc_ST,' + aPlayer.ids +',' + IntToStr(cost_plm) ) ;
 
                           dstCell := Point (aPlayer.MovePath[aPlayer.MovePath.Count -1].X,aPlayer.MovePath[aPlayer.MovePath.Count -1].Y) ;
-                          TsScript.add ('sc_pa,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
+                          TsScript[incMove].add ('sc_pa,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
                                         IntTostr(dstCell.X   )+','+ IntTostr( dstCell.Y)  ) ;
                           aPlayer.CellS :=  dstCell;
                           ExceptPlayers.Add(aPlayer); // o me lo ritrovo più avanti nel ciclo
@@ -15644,10 +16069,10 @@ begin
                   GetMarkingPath ( aPlayer );
                   if aPlayer.MovePath.Count > 0 then begin
                       aPlayer.Stamina := aPlayer.Stamina - cost_plm;
-                      TsScript.add ('sc_ST,' + aPlayer.ids +',' + IntToStr(cost_plm) ) ;
+                      TsScript[incMove].add ('sc_ST,' + aPlayer.ids +',' + IntToStr(cost_plm) ) ;
 
                       dstCell := Point (aPlayer.MovePath[aPlayer.MovePath.Count -1].X,aPlayer.MovePath[aPlayer.MovePath.Count -1].Y) ;
-                      TsScript.add ('sc_pa,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
+                      TsScript[incMove].add ('sc_pa,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
                                     IntTostr(dstCell.X   )+','+ IntTostr( dstCell.Y)  ) ;
                       aPlayer.CellS :=  dstCell;
 
@@ -15664,10 +16089,10 @@ begin
                       GetAggressionCellPath( aPlayer, Ball.CellX, Ball.CellY ); // cerco la cella del portatore di palla
                       if aPlayer.MovePath.Count > 0 then begin
                         aPlayer.Stamina := aPlayer.Stamina - cost_plm;
-                        TsScript.add ('sc_ST,' + aPlayer.ids +',' + IntToStr(cost_plm) ) ;
+                        TsScript[incMove].add ('sc_ST,' + aPlayer.ids +',' + IntToStr(cost_plm) ) ;
 
                         dstCell := Point (aPlayer.MovePath[aPlayer.MovePath.Count -1].X,aPlayer.MovePath[aPlayer.MovePath.Count -1].Y) ;
-                        TsScript.add ('sc_pa,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
+                        TsScript[incMove].add ('sc_pa,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
                                       IntTostr(dstCell.X   )+','+ IntTostr( dstCell.Y)  ) ;
                         aPlayer.CellS :=  dstCell;
                       // se fa pressing utomatico ed è a distanza 1 dal portatore di palla avversario
@@ -15704,7 +16129,7 @@ begin
 DoOriginalPath0:
                     CopyPath ( OriginalPath, aPlayer.MovePath   );
                     dstCell := Point (aPlayer.MovePath[aPlayer.MovePath.Count -1].X,aPlayer.MovePath[aPlayer.MovePath.Count -1].Y) ;
-                    TsScript.add ('sc_pa,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
+                    TsScript[incMove].add ('sc_pa,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
                                     IntTostr(dstCell.X   )+','+ IntTostr( dstCell.Y)  ) ;
                     aPlayer.CellS :=  dstCell;
                   end;
@@ -16390,7 +16815,7 @@ DoOriginalPath0:
                 // se con il semplice aimoveall trovo la palla lo faccia, altrimenti valuto i talenti.
              if toball then
 
-              TsScript.add ('sc_player.move,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
+              TsScript[incMove].add ('sc_player.move,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
                                                          IntTostr(dstCell.X   )+','+ IntTostr( dstCell.Y)  )
              else begin
 
@@ -16400,10 +16825,10 @@ DoOriginalPath0:
                   AI_MovePlayer_DefaultY ( aPlayer ) ;
                   if aPlayer.MovePath.Count > 0 then begin   // se trova il path per marking
                     aPlayer.Stamina := aPlayer.Stamina - cost_plm;
-                    TsScript.add ('sc_ST,' + aPlayer.ids +',' + IntToStr(cost_plm) ) ;
+                    TsScript[incMove].add ('sc_ST,' + aPlayer.ids +',' + IntToStr(cost_plm) ) ;
 
                     dstCell := Point (aPlayer.MovePath[aPlayer.MovePath.Count -1].X,aPlayer.MovePath[aPlayer.MovePath.Count -1].Y) ;
-                    TsScript.add ('sc_pa,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
+                    TsScript[incMove].add ('sc_pa,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
                                   IntTostr(dstCell.X   )+','+ IntTostr( dstCell.Y)  ) ;
                     aPlayer.CellS :=  dstCell;
                     ExceptPlayers.Add(aPlayer); // o me lo ritrovo più avanti nel ciclo
@@ -16421,10 +16846,10 @@ DoOriginalPath0:
                        GetFavourCellPath( aPlayer, ball.CellX, ball.celly ); // cerfco la cella di favore
                         if aPlayer.MovePath.Count > 0 then begin
                           aPlayer.Stamina := aPlayer.Stamina - cost_plm;
-                          TsScript.add ('sc_ST,' + aPlayer.ids +',' + IntToStr(cost_plm) ) ;
+                          TsScript[incMove].add ('sc_ST,' + aPlayer.ids +',' + IntToStr(cost_plm) ) ;
 
                           dstCell := Point (aPlayer.MovePath[aPlayer.MovePath.Count -1].X,aPlayer.MovePath[aPlayer.MovePath.Count -1].Y) ;
-                          TsScript.add ('sc_pa,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
+                          TsScript[incMove].add ('sc_pa,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
                                         IntTostr(dstCell.X   )+','+ IntTostr( dstCell.Y)  ) ;
                           aPlayer.CellS :=  dstCell;
                           ExceptPlayers.Add(aPlayer); // o me lo ritrovo più avanti nel ciclo
@@ -16441,10 +16866,10 @@ DoOriginalPath0:
                   GetMarkingPath ( aPlayer );
                   if aPlayer.MovePath.Count > 0 then begin
                     aPlayer.Stamina := aPlayer.Stamina - cost_plm;
-                    TsScript.add ('sc_ST,' + aPlayer.ids +',' + IntToStr(cost_plm) ) ;
+                    TsScript[incMove].add ('sc_ST,' + aPlayer.ids +',' + IntToStr(cost_plm) ) ;
 
                     dstCell := Point (aPlayer.MovePath[aPlayer.MovePath.Count -1].X,aPlayer.MovePath[aPlayer.MovePath.Count -1].Y) ;
-                    TsScript.add ('sc_pa,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
+                    TsScript[incMove].add ('sc_pa,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
                                   IntTostr(dstCell.X   )+','+ IntTostr( dstCell.Y)  ) ;
                     aPlayer.CellS :=  dstCell;
                     ExceptPlayers.Add(aPlayer); // o me lo ritrovo più avanti nel ciclo
@@ -16459,10 +16884,10 @@ DoOriginalPath0:
                       GetAggressionCellPath( aPlayer, Ball.CellX, Ball.CellY ); // cerco la cella del portatore di palla
                       if aPlayer.MovePath.Count > 0 then begin
                         aPlayer.Stamina := aPlayer.Stamina - cost_plm;
-                        TsScript.add ('sc_ST,' + aPlayer.ids +',' + IntToStr(cost_plm) ) ;
+                        TsScript[incMove].add ('sc_ST,' + aPlayer.ids +',' + IntToStr(cost_plm) ) ;
 
                         dstCell := Point (aPlayer.MovePath[aPlayer.MovePath.Count -1].X,aPlayer.MovePath[aPlayer.MovePath.Count -1].Y) ;
-                        TsScript.add ('sc_pa,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
+                        TsScript[incMove].add ('sc_pa,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
                                       IntTostr(dstCell.X   )+','+ IntTostr( dstCell.Y)  ) ;
                         aPlayer.CellS :=  dstCell;
                         ExceptPlayers.Add(aPlayer); // o me lo ritrovo più avanti nel ciclo
@@ -16478,7 +16903,7 @@ DoOriginalPath0:
 DoOriginalPath1:
                     CopyPath ( OriginalPath, aPlayer.MovePath   );
                     dstCell := Point (aPlayer.MovePath[aPlayer.MovePath.Count -1].X,aPlayer.MovePath[aPlayer.MovePath.Count -1].Y) ;
-                    TsScript.add ('sc_pa,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
+                    TsScript[incMove].add ('sc_pa,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
                                     IntTostr(dstCell.X   )+','+ IntTostr( dstCell.Y)  ) ;
                     aPlayer.CellS :=  dstCell;
                   end;
@@ -16503,7 +16928,7 @@ DoOriginalPath1:
  OriginalPath.Free;
 
  ExceptPlayers.Clear ;
- TsScript.add ('sc_ai.endmoveall');
+ TsScript[incMove].add ('sc_ai.endmoveall');
 
 end;
 procedure TSoccerbrain.DeflateBarrier ( aCell: Tpoint; ExceptPlayer: TSoccerPlayer ); // occhio al plurale! exceptplayers è una lista
@@ -16521,7 +16946,7 @@ begin
 
       anOpponent.cells := FindDefensiveCellFree ( anOpponent.Team );
       anOpponent.isFKD3 := False;
-      TsScript.add ('sc_player,'+ anOpponent.Ids +','+IntTostr(aCell.X)+','+ IntTostr(aCell.Y)+','+
+      TsScript[incMove].add ('sc_player,'+ anOpponent.Ids +','+IntTostr(aCell.X)+','+ IntTostr(aCell.Y)+','+
       IntTostr(anOpponent.CellX)+','+ IntTostr(anOpponent.CellY)  ) ;
     end;
   end;
@@ -16638,7 +17063,23 @@ begin
 
 
 end;
-
+procedure TSoccerbrain.UpdateDevi;
+var
+  i:integer;
+begin
+  // Tutti i panchinari. i gameover sono già salvi. Gli injured e i disqulified no
+  for I := lstSoccerReserve.Count -1 downto 1 do begin
+    if (lstSoccerReserve[i].Injured = 0) and (lstSoccerReserve[i].disqualified = 0 ) then
+      lstSoccerReserve[i].xpDevI := lstSoccerReserve[i].xpDevI + 1; // xpdevi quando raggiunge N es.20 stora a +1% devi. poi si resetta a 0 . tutto nel finalizebrain
+  end;
+  for I := lstSoccerPlayer.Count -1 downto 1 do begin
+    if (lstSoccerPlayer[i].Injured = 0) then begin
+      lstSoccerPlayer[i].xpDevI := lstSoccerPlayer[i].xpDevI - 1;
+      if lstSoccerPlayer[i].xpDevI < 0 then
+        lstSoccerPlayer[i].xpDevI := 0;  // xpdevi quando raggiunge 0 non fa nulla. ci pensa xpdeva a decrementare di 1 xpdevi
+    end;
+  end;
+end;
 
 {procedure TSoccerBrain.CreateFormationCells;
 var

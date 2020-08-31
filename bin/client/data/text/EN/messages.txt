@@ -151,8 +151,10 @@ descr_talent_gkmiracle=Ha una chance del 10% di ottenere +1 Difesa sui tiri prec
 descr_talent_gkpenalty=Ha una chance del 10% di ottenere +1 Difesa sui rigori. 
 
 
+lbl_TrainingTalentChance=Training Talent
+lbl_InjuredChance=Injured Chance
+lbl_TrainingChance=Training
 lbl_Talent=Talento
-
 lbl_Talents=Talents
 lbl_Role=Role
 lbl_Surname=Surname
@@ -161,9 +163,11 @@ lbl_Play=Play
 lbl_EndTurn=Pass
 lbl_Round=Turn
 lbl_Round2=Round
+lbl_Simulate=Simulation
 lbl_Formation=Formation
 lbl_Calendar=Calendar
 lbl_Standings=Standings
+lbl_Standing=Table
 lbl_Exit=Exit
 lbl_Thinking=Thinking...
 lbl_Minute=Minute
@@ -195,7 +199,7 @@ lbl_Login=Login
 lbl_Help=Help
 lbl_Refresh=Refresh
 lbl_Wait=Wait
-lbl_MarketValue=Value
+lbl_MarketValue=Market Value
 lbl_Age=Age
 lbl_MatchesLeft=Matches left
 lbl_MatchesLeft2=M. Left
@@ -227,6 +231,8 @@ lbl_Away=Away
 lbl_Close=Close
 lbl_endgame=Game Over
 
+lbl_computemarket=Elaborazione mercato 
+lbl_creatingteams=Creating teams
 lbl_Country=Country
 lbl_Country2=Country
 lbl_Sell=Sell
@@ -241,12 +247,29 @@ lbl_Price=Price
 lbl_Search=Search
 lbl_MaxValue=max value
 warning_nosellgk=Non puoi vendere l'unico portiere che hai.
-warning_max18=Non puoi avere piu' di 18 giocatori.
+warning_max22=Non puoi avere piu' di 22 giocatori.
 warning_nosell_lowprice=Non puoi vendere un giocatore ad un costo inferiore al suo valore di mercato.
+warning_nobuyown=Non puoi comprare un giocatore gia' in tuo possesso.
 lbl_ConfirmBuy=Are you sure?
 
-lbl_ConfirmTeam=Confirm your Team.
+lbl_ConfirmTeam=Confirm your choice?
 lbl_Uniform1=Color 1
 lbl_Uniform2=Color 2
 lbl_UniformNormal=Normal
+lbl_Automatic=Auto
 
+lbl_Continue=Continue
+lbl_Restart=Restart
+lbl_MultiPlayer=MultiPlayer
+lbl_SinglePlayer=Single Player
+lbl_RestartAdvice=Are you sure? Every progress will be lost. 
+
+lbl_Yes=Yes
+lbl_No=No
+
+lbl_warningrestart=You need to restart Time120 for changes to take effect.
+lbl_language=Language
+
+lbl_Topscorers=Top Scorers
+warning_proceed=Next game:
+warning_nomatchsaved=The game will be not saved. Are you sure?

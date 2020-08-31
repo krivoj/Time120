@@ -13,7 +13,8 @@ uses
   ExceptionLog7,
   Vcl.Forms,
   Server in 'Server.pas' {FormServer},
-  SoccerBrainv3 in 'SoccerBrainv3.pas';
+  SoccerBrainv3 in 'SoccerBrainv3.pas',
+  utilities in 'utilities.pas';
 
 {$R *.res}
 

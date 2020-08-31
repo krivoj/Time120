@@ -12,12 +12,13 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics, System.Hash , DateUtils,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Strutils,generics.collections, generics.defaults, Data.DB,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Strutils,generics.collections, generics.defaults,
   Vcl.ExtCtrls, Vcl.Mask, Vcl.Grids, inifiles, System.Types, FolderDialog,
 
   ZLIBEX,
   Soccerbrainv3,
-//  shotcellsv1,
+  utilities,
+  //  shotcellsv1,
 //  AIFieldv1,
 //  TVAICrossingAreaCellsv1,
 
@@ -28,14 +29,12 @@ uses
   DSE_GRID,
   DSE_Misc,
 
-  MyAccess, DBAccess,
+  MyAccess, DBAccess, Data.DB,
 
   OverbyteIcsWndControl, OverbyteIcsWSocket, OverbyteIcsWSocketS, OverbyteIcsWSocketTS, Vcl.ComCtrls ;
 
 const gender ='fm';
 const PlayerCountStart = 15;
-type
-  TTheArray = array[0..21] of string;    // le celle a sinistra della porta dove vengono posizionate le riserve
 
 type TAuthInfo = record                         // usato durante il login in TFormServer.TcpserverDataAvailable
   GmLevel: Integer;                             // gm=1 il client può mandare comandi di utilità come spostare manualmente la palla
@@ -55,41 +54,6 @@ type TServerOpponent = record
   UserName: string;
   bot : Boolean;
   CliId : Integer;
-end;
-type TFinalFormation = record
-  Guid : String;
-  Cells: TPoint;
-  Stamina: Integer;
-  Role: string;
-end;
-type TBasePlayer = record
-  Surname: string;
-  Attributes : string;
-  MatchesLeft : Integer;
-  MatchesPlayed: Integer;
-  Injured_Penalty1: byte;
-  Injured_Penalty2: byte;
-  Injured_Penalty3: byte;
-  devA1: byte;
-  devA2: byte;
-  devA3: byte;
-  devT1: byte;
-  devT2: byte;
-  devT3: byte;
-  Face: Integer;
-
-  TalentId1: byte;
-  TalentId2: byte;
-
-  DefaultSpeed: ShortInt;
-  DefaultDefense: ShortInt;
-  DefaultPassing : ShortInt;
-  DefaultBallControl: ShortInt;
-  DefaultShot : ShortInt;
-  DefaultHeading : ShortInt;
-
-
-
 end;
 
 
@@ -115,11 +79,9 @@ type TBrainManager = class
     function GetbrainStream ( brain: TSoccerBrain) : string;
   procedure FinalizeBrain (brain: TSoccerBrain );
     procedure DecodeBrainIds ( brainIds: string; var MyYear, MyMonth, MyDay, MyHour, MyMin, MySec: string );
-    procedure calc_injured (aPlayer: TSoccerPlayer);
       function RndGenerate( Upper: integer ): integer;
       function RndGenerate0( Upper: integer ): integer;
       function RndGenerateRange( Lower, Upper: integer ): integer;
-      function GetFitnessModifier ( fitness: integer ): integer;
 
   function FindBrain ( ids: string  ): TSoccerbrain;  overload;
   function FindBrain ( CliId: integer ): TSoccerbrain; overload;
@@ -280,16 +242,11 @@ type
     function RemoveFromSpectator(Cliid: integer ): boolean;
 
     procedure CreateAndLoadMatch ( fm:Char; brain: TSoccerBrain; GuidTeam0, GuidTeam1: integer; Username0, UserName1: string  );
-      function Buff_or_Debuff_4 ( aPlayer: TSoccerPlayer; buff,Max_stat:Integer): Boolean;
     procedure CreateMatchBOTvsBOT ( fm:Char;  GuidTeam0, GuidTeam1: integer; Username0, UserName1: string );
-    function CreateFormationTeam (fm:Char; Guidteam: integer ): Boolean; // la elabora e la stora nel db
       function CreateRandomPlayer ( fm :Char; Country: integer; EnableTalent2: boolean ) : TBasePlayer;
       function CreatePresetPlayer ( fm :Char; Country, index: integer ) : TBasePlayer;
-      function CreateSurname ( Country: Integer ): string;
-      function NextReserveSlot ( ReserveSlot: TTheArray ) :Integer;// per il create_formation e reset_formation. il brain ha il proprio reserveslòot t,x
-      procedure CleanReserveSlot ( ReserveSlot: TTheArray );
-      function CreateTalentLevel2 ( aBasePlayer: TBasePlayer ) : Byte;
-    procedure CreateFormationsPreset;
+      function CreateSurname ( fm : Char; Country: Integer ): string;
+      function CreateTalentLevel2 ( fm :Char; aBasePlayer: TBasePlayer ) : Byte;
 
     procedure CreateRandomBotMatch ( fm :char) ;
     procedure CreateRewards;
@@ -314,12 +271,11 @@ type
       function can10 (  const at : TAttributeName; var aPlayer: TSoccerPlayer ): boolean;
     function TrylevelUpTalent  ( fm : Char;Guid, Talent : integer; aValidPlayer: TValidPlayer ): TLevelUp;
       function Player2BasePlayer ( aPlayer: TSoccerPlayer ) : TBasePlayer;
-      function isReserveSlot (CellX, CellY: integer): boolean;
-      function isReserveSlotFormation (CellX, CellY: integer): boolean;
   end;
 
 const EndofLine = 'ENDSOCCER';
 const GLOBAL_COOLDOWN = 200;  // 200 misslisecondi tra un input e l'altro del client, altrimenti è spam/cheating
+const MIN_DEVA=5; MIN_DEVT = 5; MIN_DEVI =1; MAX_DEVA=30; MAX_DEVT=30; MAX_DEVI=20;
 
 var
   FormServer: TFormServer;
@@ -330,7 +286,6 @@ var
   xpNeedTal: array [1..NUM_TALENT] of integer;                    // come i talenti sul db f_game.talents. xp necessaria per trylevelup del talento
   Queue: TObjectList<TWSocketThrdClient>;
   RandGen: TtdBasePRNG;
-  FormationsPreset: TList<TFormation>;
   Mutex,MutexMarket,MutexLockbrain: cardinal;
   dir_log: string;
   MySqlServerGame,  MySqlServerWorld,  MySqlServerAccount: string; // le 3 tabelle del DB: account, world e Game
@@ -338,7 +293,6 @@ var
   Rewards : array [1..4, 1..20] of Integer;
   mfaces : array[1..6] of Integer;
   ffaces : array[1..6] of Integer;
-  injured_penalty, Growth, Talent: array [1..3] of Integer;
 
   mp_template: array [0..PlayerCountStart-1] of Integer;
   PresetF : array[0..PlayerCountStart-1] of string;
@@ -990,27 +944,31 @@ begin
     for I := 0 to qPlayers.RecordCount -1 do begin
       // nota: se un player è stato comprato sul mercato non crea problemi se non al valore di mercato
       aGuidTeam := qPlayers.FieldByName('team').asinteger;
-      matches_Played := qPlayers.FieldByName('matches_played').asinteger;
+      matches_Played := qPlayers.FieldByName('matches_played').asinteger;   // il tempo passa per tutti. invecchiano tutti.
       matches_left := qPlayers.FieldByName('matches_left').asinteger;
       Inc(matches_Played);
       Dec(matches_left);
 
+          //
+          // CASO FINE CARRIERA
+          //
+          if matches_left <= 0 then begin // fine carriera
+            aGuidTeam := 0; // i player con Guidteam 0 sono da gestire poi sul DB
+            MyQueryUpdate.SQL.text := 'UPDATE ' +brain.Gender + '_game.players SET team = 0'+ // 0 se a fine carriera
+                                                            ' WHERE guid = ' + qPlayers.FieldByName('guid').asstring ;
+            MyQueryUpdate.Execute;
 
-      if matches_left <= 0 then begin // fine carriera
-        aGuidTeam := 0; // i player con Guidteam 0 sono da gestire poi sul DB
-        MyQueryUpdate.SQL.text := 'UPDATE ' +brain.Gender + '_game.players SET team = 0'+ // 0 se a fine carriera
-                                                        ' WHERE guid = ' + qPlayers.FieldByName('guid').asstring ;
-        MyQueryUpdate.Execute;
-
-        // questo è il LOG
-        qTransfers := TMyQuery.Create(nil);
-        qTransfers.Connection := ConnGame;   // game
-        qTransfers.SQL.text := 'INSERT INTO '+brain.Gender +'_game.transfers SET action="e", seller=' +  IntToStr(brain.Score.TeamGuid [T]) +
-                                                            ' , buyer=' + IntToStr(brain.Score.TeamGuid [T]) +
-                                                            ' , playerguid=' + qPlayers.FieldByName('guid').asstring + ' , price=0';
-        qTransfers.Execute;
-        goto MyStoreDone;
-      end;
+            // questo è il LOG
+            qTransfers := TMyQuery.Create(nil);
+            qTransfers.Connection := ConnGame;   // game
+            qTransfers.SQL.text := 'INSERT INTO '+brain.Gender +'_game.transfers SET action="e", seller=' +  IntToStr(brain.Score.TeamGuid [T]) +
+                                                                ' , buyer=' + IntToStr(brain.Score.TeamGuid [T]) +
+                                                                ' , playerguid=' + qPlayers.FieldByName('guid').asstring + ' , price=0';
+            qTransfers.Execute;
+            goto MyStoreDone;
+          end;
+          //
+          //
 
       disqualified  :=  qPlayers.FieldByName('disqualified').asinteger;
       if disqualified > 0 then
@@ -1076,15 +1034,12 @@ begin
 
                 // ristrutturo il Player del brain con i dati del db
                 aPlayer.Age:= Trunc(  matches_Played  div SEASON_MATCHES) + 18 ;
-                aPlayer.Injured_Penalty [0] := qPlayers.FieldByName('injured_penalty1').asinteger;
-                aPlayer.Injured_Penalty [1] := qPlayers.FieldByName('injured_penalty2').asinteger;
-                aPlayer.Injured_Penalty [2] := qPlayers.FieldByName('injured_penalty3').asinteger;
-                aPlayer.devA [0] := qPlayers.FieldByName('deva1').asinteger;  // chance di sviluppare un attributo per fascia di età
-                aPlayer.devA [1] := qPlayers.FieldByName('deva2').asinteger;
-                aPlayer.devA [2] := qPlayers.FieldByName('deva3').asinteger;
-                aPlayer.devT [0] := qPlayers.FieldByName('devt1').asinteger;  // chance di sviluppare un talento per fascia di età
-                aPlayer.devT [1] := qPlayers.FieldByName('devt2').asinteger;
-                aPlayer.devT [2] := qPlayers.FieldByName('devt3').asinteger;
+                aPlayer.devA := qPlayers.FieldByName('deva').asinteger;  // chance di sviluppare un attributo per  età
+                aPlayer.devT := qPlayers.FieldByName('devt').asinteger;
+                aPlayer.devI := qPlayers.FieldByName('devi').asinteger;
+                aPlayer.xpDevA := qPlayers.FieldByName('xpdeva').asinteger;  // xp dev
+                aPlayer.xpDevT := qPlayers.FieldByName('xpdevt').asinteger;
+                aPlayer.xpDevI := qPlayers.FieldByName('xpdevi').asinteger;
                 aPlayer.DefaultSpeed := qPlayers.FieldByName('Speed').asinteger;
                 aPlayer.DefaultDefense :=  qPlayers.FieldByName('Defense').AsInteger;
                 aPlayer.DefaultPassing :=  qPlayers.FieldByName('Passing').AsInteger;
@@ -1115,8 +1070,8 @@ begin
                 tsHistory.commaText := qPlayers.FieldByName('history').asString; // <-- 6 attributes
                 aPlayer.History_Speed         := StrToInt( tsHistory[0]);
                 aPlayer.History_Defense       := StrToInt( tsHistory[1]);
-                aPlayer.History_BallControl   := StrToInt( tsHistory[2]);
-                aPlayer.History_Passing       := StrToInt( tsHistory[3]);
+                aPlayer.History_Passing       := StrToInt( tsHistory[2]);
+                aPlayer.History_BallControl   := StrToInt( tsHistory[3]);
                 aPlayer.History_Shot          := StrToInt( tsHistory[4]);
                 aPlayer.History_Heading       := StrToInt( tsHistory[5]);
                 tsHistory.Free;
@@ -1132,7 +1087,7 @@ begin
           91..99: injured := brain.RndGenerateRange( 11,17 );
           100:begin // possibile perdita attributo
                 injured := brain.RndGenerateRange( 18, 38 );
-                calc_injured( aPlayer); // è calc_xp ma in perdita di 1    . Modifica default e history
+                calc_injured_attribute_lost( aPlayer); // è calc_xp ma in perdita di 1    . Modifica default e history
               end;
         end;
 
@@ -1159,11 +1114,11 @@ begin
 
       if aGuidTeam <> 0 then   // sopra potrebbe essere giunto a fine carriera
       // l'update riguarda tutti
-      TextHistory := IntToStr(aPlayer.history_Speed) + ',' + IntToStr(aPlayer.history_Defense) + ',' + IntToStr(aPlayer.history_BallControl) + ',' +
-      IntToStr(aPlayer.history_Passing) + ',' + IntToStr(aPlayer.history_Shot) + ',' + IntToStr(aPlayer.history_Heading);
+      TextHistory := IntToStr(aPlayer.history_Speed) + ',' + IntToStr(aPlayer.history_Defense) + ',' + IntToStr(aPlayer.history_Passing) + ',' +
+      IntToStr(aPlayer.history_BallControl) + ',' + IntToStr(aPlayer.history_Shot) + ',' + IntToStr(aPlayer.history_Heading);
 
-      TextXP := IntToStr(aPlayer.xp_Speed) + ',' + IntToStr(aPlayer.xp_Defense) + ',' + IntToStr(aPlayer.xp_BallControl) + ',' +
-      IntToStr(aPlayer.xp_Passing) + ',' + IntToStr(aPlayer.xp_Shot) + ',' + IntToStr(aPlayer.xp_Heading) +',';
+      TextXP := IntToStr(aPlayer.xp_Speed) + ',' + IntToStr(aPlayer.xp_Defense) + ',' + IntToStr(aPlayer.xp_Passing) + ',' +
+      IntToStr(aPlayer.xp_BallControl) + ',' + IntToStr(aPlayer.xp_Shot) + ',' + IntToStr(aPlayer.xp_Heading) +',';
       for indexTal := 1 to NUM_TALENT do begin // f_game.talents
         TextXP := TextXP + IntToStr(aPlayer.xpTal[indexTal]) + ',';
       end;
@@ -1238,11 +1193,11 @@ MyStoreDone:
     else begin // female
       case Rank[0] of
         1:Money[0]:= Money[0] + (600 * brain.Score.Points[0]);
-        2:Money[0]:= Money[0] + (480 * brain.Score.Points[0]);
-        3:Money[0]:= Money[0] + (460 * brain.Score.Points[0]);
-        4:Money[0]:= Money[0] + (340 * brain.Score.Points[0]);
-        5:Money[0]:= Money[0] + (220 * brain.Score.Points[0]);
-        6:Money[0]:= Money[0] + (100 * brain.Score.Points[0]);
+        2:Money[0]:= Money[0] + (450 * brain.Score.Points[0]);
+        3:Money[0]:= Money[0] + (320 * brain.Score.Points[0]);
+        4:Money[0]:= Money[0] + (200 * brain.Score.Points[0]);
+        5:Money[0]:= Money[0] + (100 * brain.Score.Points[0]);
+        6:Money[0]:= Money[0] + (60 * brain.Score.Points[0]);
       end;
     end;
 
@@ -1357,20 +1312,8 @@ MyStoreDone:
         ValidPlayer.history := qPlayers.FieldByName ('history').AsString;
         ValidPlayer.xp := qPlayers.FieldByName ('xp').AsString;
 
-        case ValidPlayer.Age of
-          18..24: begin
-            ValidPlayer.chancelvlUp := qPlayers.FieldByName ('deva1').AsInteger;
-            ValidPlayer.chancetalentlvlUp :=  qPlayers.FieldByName ('devt1').AsInteger;
-          end;
-          25..30: begin
-            ValidPlayer.chancelvlUp := qPlayers.FieldByName ('deva2').AsInteger;
-            ValidPlayer.chancetalentlvlUp :=  qPlayers.FieldByName ('devt2').AsInteger;
-          end;
-          31..33: begin
-            ValidPlayer.chancelvlUp := qPlayers.FieldByName ('deva3').AsInteger;
-            ValidPlayer.chancetalentlvlUp :=  qPlayers.FieldByName ('devt3').AsInteger;
-          end;
-        end;
+        ValidPlayer.chancelvlUp := qPlayers.FieldByName ('deva').AsInteger;
+        ValidPlayer.chancetalentlvlUp :=  qPlayers.FieldByName ('devt').AsInteger;
 
 
         FormServer.TrylevelUpTalent('f', qPlayers.FieldByName('guid').AsInteger,ValidPlayer.talentID1, ValidPlayer  );
@@ -1396,7 +1339,7 @@ Skip:
           GKpresent := true;
         end;
 
-        if FormServer.isReserveSlotFormation ( qPlayers.FieldByName('formation_x').AsInteger, qPlayers.FieldByName('formation_y').AsInteger) then
+        if isReserveSlotFormation ( qPlayers.FieldByName('formation_x').AsInteger, qPlayers.FieldByName('formation_y').AsInteger) then
         brain.ReserveSlot [ T, qPlayers.FieldByName('formation_x').AsInteger] := qPlayers.FieldByName('guid').AsString;
         qPlayers.Next;
       end;
@@ -1418,20 +1361,18 @@ Skip:
       MatchesLeft := (38*15) - MatchesPlayed;
       if not GKpresent then begin
         aBasePlayer.TalentId1 := TALENT_ID_GOALKEEPER; // sovrascrivo
-          if RndGenerate(100) <= aBasePlayer.devA1 then        // creo il secondo talento , fascia 1 molto giovane.
-            aBasePlayer.TalentId2 := FormServer.CreateTalentLevel2 (  aBasePlayer ); // ottiene un talent2 per GK
+          if RndGenerate(100) <= aBasePlayer.devT then        // creo il secondo talento
+            aBasePlayer.TalentId2 := FormServer.CreateTalentLevel2 ( brain.Gender, aBasePlayer ); // ottiene un talent2 per GK
       end;
 
       qPlayers.SQL.text := 'INSERT into ' +brain.Gender + '_game.players'+' (Team,Name,Matches_Played,Matches_Left,'+
-                                    'injured_penalty1,injured_penalty2,injured_penalty3,'+
-                                    'deva1,deva2,deva3,devt1,devt2,devt3,'+
+                                    'deva,devt,devi,xpdeva,xpdevt,xpdevi,'+
                                     'talentid1, talentid2, speed,defense,passing,ballcontrol,heading,shot,injured,totyellowcard,disqualified,country,face,'+
                                     'formation_x, formation_y,young)'+
                                     ' VALUES ('+
                                     IntToStr(brain.Score.TeamGuid [T]) +',"'+ aBasePlayer.Surname +'",'+ IntToStr(MatchesPlayed)+','+ IntToStr(MatchesLeft)+','+
-                                    IntToStr(aBasePlayer.Injured_Penalty1)+','+IntToStr(aBasePlayer.Injured_Penalty2)+','+IntToStr(aBasePlayer.Injured_Penalty3)+','+
-                                    IntToStr(aBasePlayer.deva1)+','+IntToStr(aBasePlayer.deva2)+','+IntToStr(aBasePlayer.deva3)+','+
-                                    IntToStr(aBasePlayer.devt1)+','+IntToStr(aBasePlayer.devt2)+','+IntToStr(aBasePlayer.devt3)+','+
+                                    IntToStr(aBasePlayer.deva)+','+IntToStr(aBasePlayer.devt)+','+IntToStr(aBasePlayer.devi)+','+
+                                    IntToStr(aBasePlayer.xpdeva)+','+IntToStr(aBasePlayer.xpdevt)+','+IntToStr(aBasePlayer.xpdevi)+','+
                                     IntToStr(aBasePlayer.TalentId1) + ',' + IntToStr(aBasePlayer.TalentId2) + ','  +  aBasePlayer.Attributes +','+
                                     '0,0,0,'+IntToStr( brain.Score.Country[T]) +','+ IntToStr(aBasePlayer.Face) +','+ //injured,totyellowcard,disqualified, face
                                      IntToStr(aReserveSlot.X)+ ',-1,'+young+')';
@@ -1466,68 +1407,6 @@ Skip:
   qPlayers.Free;
   Conngame.Connected := false;
   Conngame.Free;
-
-end;
-procedure TBrainManager.calc_injured (aPlayer: TSoccerPlayer);
-var
-  aRnd,percA: Integer;
-begin
-  PercA := 0;
-  case aPlayer.Age of
-    18..24: begin
-      percA := aPlayer.Injured_Penalty [0];
-    end;
-    25..30: begin
-      percA := aPlayer.Injured_Penalty [1];
-    end;
-    31..33: begin
-      percA := aPlayer.Injured_Penalty [2];
-    end;
-  end;
-
-  aRnd := RndGenerate( 100 );
-  if aRnd <= PercA then begin
-    aRnd := RndGenerate0(5);
-    case aRnd of
-      0: begin
-        if aPlayer.DefaultSpeed > 1 then begin
-          aPlayer.DefaultSpeed := aPlayer.DefaultSpeed - 1;
-          aPlayer.History_Speed := aPlayer.History_Speed - 1;
-        end;
-      end;
-      1: begin
-        if aPlayer.DefaultDefense > 1 then begin
-          aPlayer.DefaultDefense := aPlayer.DefaultDefense - 1;
-          aPlayer.History_Defense := aPlayer.History_Defense - 1;
-        end;
-      end;
-      2: begin
-        if aPlayer.DefaultBallControl > 1 then begin
-          aPlayer.DefaultBallControl := aPlayer.DefaultBallControl - 1;
-          aPlayer.History_BallControl := aPlayer.History_BallControl - 1;
-        end;
-      end;
-      3: begin
-        if aPlayer.DefaultPassing > 1 then begin
-          aPlayer.DefaultPassing := aPlayer.DefaultPassing - 1;
-          aPlayer.History_Passing := aPlayer.History_Passing - 1;
-        end;
-      end;
-      4: begin
-        if aPlayer.defaultShot > 1 then begin
-          aPlayer.DefaultShot := aPlayer.DefaultShot - 1;
-          aPlayer.History_Shot := aPlayer.History_Shot - 1;
-        end;
-      end;
-      5: begin
-        if aPlayer.DefaultHeading > 1 then begin
-          aPlayer.DefaultHeading := aPlayer.DefaultHeading - 1;
-          aPlayer.History_Heading := aPlayer.History_Heading - 1;
-        end;
-      end;
-    end;
-  end;
-
 
 end;
 
@@ -1671,7 +1550,6 @@ begin
   MutexLockBrain:=CreateMutex(nil,false,'lockbrain');
   RandGen := TtdCombinedPRNG.Create(0, 0);
 
-  FormationsPreset := TList<TFormation>.Create;
   CreateFormationsPreset;
 
   ini := TIniFile.Create  ( ExtractFilePath(Application.ExeName) + 'server.ini');
@@ -1755,46 +1633,6 @@ begin
 
   ini.Free;
 
-// random player sia F che M  injured,growth,talent
-  injured_penalty[1]:=1;
-  injured_penalty[2]:=3;
-  injured_penalty[3]:=6;
-  //     38*7..38*12:begin    // 25..30
-  injured_penalty[1]:=2;
-  injured_penalty[2]:=4;
-  injured_penalty[3]:=8;
-
-  //   38*13..38*15:begin    // 31..33
-  injured_penalty[1]:=4;
-  injured_penalty[2]:=8;
-  injured_penalty[3]:=12;
-
-  // growth
-  // case MatchesPlayed of
-  //   0..38*6:begin    // 18..24 anni
-  Growth[1]:=5;
-  Growth[2]:=15;
-  Growth[3]:=30;
-  //   38*7..38*12:begin    // 25..30
-  Growth[1]:=5;
-  Growth[2]:=10;
-  Growth[3]:=20;
-  //   38*13..38*15:begin    // 31..33
-  Growth[1]:=1;
-  Growth[2]:=5;
-  Growth[3]:=10;
-
-  Talent[1]:=8;
-  Talent[2]:=12;
-  Talent[3]:=16;
-  //   38*7..38*12:begin    // 25..30
-  Talent[1]:=4;
-  Talent[2]:=8;
-  Talent[3]:=12;
-  //   38*13..38*15:begin    // 31..33
-  Talent[1]:=2;
-  Talent[2]:=4;
-  Talent[3]:=8;
 
   // mathes played preset
   mp_template[0]:= 7; // stagioni giocate
@@ -1850,7 +1688,6 @@ procedure TFormServer.FormDestroy(Sender: TObject);
 var
   i: Integer;
 begin
-  FormationsPreset.Free;
   RandGen.Free;
   Queue.Free;
   BrainManager.Free;
@@ -2422,6 +2259,15 @@ begin
         // 0=FREEKICK1_ATTACK.SETUP 1=fkf1 o3o4
           TSoccerBrain(Cli.Brain).BrainInput ( IntToStr(Cli.GuidTeams[Cli.ActiveGenderN]) + ',' + ts[0] +  ',' + ts[1]);
       end
+      else if ts[0] ='AUTO'  then begin
+//          validate_aiteam (ts.CommaText, cli);
+//          if cli.sReason <> '' then  goto cheat;
+        if TSoccerBrain(Cli.Brain).Score.TeamGuid[0] = Cli.GuidTeams[Cli.ActiveGenderN] then
+          TSoccerBrain(Cli.Brain).Score.AI[0]:= not TSoccerBrain(Cli.Brain).Score.AI[0]
+        else if TSoccerBrain(Cli.Brain).Score.TeamGuid[1] = Cli.GuidTeams[Cli.ActiveGenderN] then
+          TSoccerBrain(Cli.Brain).Score.AI[1]:= not TSoccerBrain(Cli.Brain).Score.AI[1];
+
+      end
 
 
 (* GM COMMANDS *)
@@ -2695,7 +2541,7 @@ o o o o o o
         if aPlayer.xp_Defense >= xp_DEFENSE_POINTS then begin
           aPlayer.xp_Defense := aPlayer.xp_Defense - xp_DEFENSE_POINTS;
           tsXP[1]:= IntToStr(aPlayer.xp_Defense );
-          if aPlayer.DefaultShot >= 3 then goto MyExit; // difesa / shot        . esce con result.value = false
+          if aPlayer.DefaultShot >= F_DEFENSESHOT then goto MyExit; // difesa / shot        . esce con result.value = false
           if aRnd <= aValidPlayer.chancelvlUp then begin
             if aPlayer.DefaultDefense < 6 then begin
               if aPlayer.DefaultDefense +1 = 6 then Result.value :=   Can6 ( atDefense, aPlayer )
@@ -2752,7 +2598,7 @@ o o o o o o
         if aPlayer.xp_Shot >= xp_SHOT_POINTS then begin
           aPlayer.xp_Shot := aPlayer.xp_Shot - xp_Shot_POINTS;
           tsXP[4]:= IntToStr(aPlayer.xp_Shot );
-            if aPlayer.DefaultDefense >= 3 then goto MyExit;; // difesa / shot
+            if aPlayer.DefaultDefense >= F_DEFENSESHOT then goto MyExit;; // difesa / shot
           if aRnd <= aValidPlayer.chancelvlUp then begin
             if aPlayer.DefaultShot < 6 then begin
               if aPlayer.DefaultShot +1 = 6 then Result.value :=Can6 ( atShot , aPlayer)
@@ -2774,7 +2620,7 @@ o o o o o o
           aPlayer.xp_Heading := aPlayer.xp_Heading - xp_Heading_POINTS;
           tsXP[5]:= IntToStr(aPlayer.xp_Heading );
           if aRnd <= aValidPlayer.chancelvlUp then begin
-            if aPlayer.History_Heading = 0  then begin // Heading incrementa solo una volta
+//            if aPlayer.History_Heading < 2  then begin // Heading incrementa solo 2 volte
               if aPlayer.DefaultHeading < 6 then begin
                 if aPlayer.DefaultHeading + 1 = 6 then Result.value :=Can6 ( atHeading, aPlayer )
                 else begin
@@ -2784,7 +2630,7 @@ o o o o o o
                   Result.value:= True;
                 end;
               end;
-            end;
+//            end;
           end;
         end;
       end;
@@ -2812,7 +2658,7 @@ o o o o o o
         if aPlayer.xp_Defense >= xp_DEFENSE_POINTS then begin
           aPlayer.xp_Defense := aPlayer.xp_Defense - xp_DEFENSE_POINTS;
           tsXP[1]:= IntToStr(aPlayer.xp_Defense );
-          if aPlayer.DefaultShot >= 4 then goto MyExit; // difesa / shot   4 e non 5
+          if aPlayer.DefaultShot >= M_DEFENSESHOT then goto MyExit; // difesa / shot   4 e non 5
           if aRnd <= aValidPlayer.chancelvlUp then begin
             if aPlayer.DefaultDefense < 10 then begin
               if aPlayer.DefaultDefense +1 = 10 then Result.value :=  Can10 ( atDefense, aPlayer )
@@ -2869,7 +2715,7 @@ o o o o o o
         if aPlayer.xp_Shot >= xp_SHOT_POINTS then begin
           aPlayer.xp_Shot := aPlayer.xp_Shot - xp_Shot_POINTS;
           tsXP[4]:= IntToStr(aPlayer.xp_Shot );
-            if aPlayer.DefaultDefense >= 4 then goto MyExit;; // difesa / shot
+            if aPlayer.DefaultDefense >= M_DEFENSESHOT then goto MyExit;; // difesa / shot
           if aRnd <= aValidPlayer.chancelvlUp then begin
             if aPlayer.DefaultShot < 10 then begin
               if aPlayer.DefaultShot +1 = 10 then Result.value :=Can10 ( atShot , aPlayer)
@@ -2891,7 +2737,7 @@ o o o o o o
           aPlayer.xp_Heading := aPlayer.xp_Heading - xp_Heading_POINTS;
           tsXP[5]:= IntToStr(aPlayer.xp_Heading );
           if aRnd <= aValidPlayer.chancelvlUp then begin
-            if aPlayer.History_Heading = 0  then begin // Heading incrementa solo una volta
+//            if aPlayer.History_Heading < 2 then begin // Heading incrementa solo 2 volte
               if aPlayer.DefaultHeading < 10 then begin
                 if aPlayer.DefaultHeading + 1 = 10 then Result.value :=Can10 ( atHeading, aPlayer )
                 else begin
@@ -2901,7 +2747,7 @@ o o o o o o
                   Result.value:= True;
                 end;
               end;
-            end;
+  //          end;
           end;
         end;
       end;
@@ -3009,7 +2855,7 @@ TryTalent:
         Result.value:= True;
         if RndGenerate(100) <= aValidPlayer.chancetalentlvlUp then begin       // creo il secondo talento , fascia 1 molto giovane.
           aBasePlayer := Player2BasePlayer ( aPlayer ) ;
-          aPlayer.TalentId2 := CreateTalentLevel2 (  aBasePlayer ); // ottiene un talent2 per GK
+          aPlayer.TalentId2 := CreateTalentLevel2 ( fm, aBasePlayer ); // ottiene un talent2 per GK
         end;
       end;
     end;
@@ -3075,12 +2921,9 @@ MyExit:
 end;
 function TFormServer.Player2BasePlayer ( aPlayer: TSoccerPlayer ) : TBasePlayer;
 begin
-  Result.devA1 :=   aPlayer.devA [0];
-  Result.devA2 :=   aPlayer.devA [1];
-  Result.devA3 :=   aPlayer.devA [2];
-  Result.devT1 :=   aPlayer.devT [0];
-  Result.devT2 :=   aPlayer.devT [1];
-  Result.devT3 :=   aPlayer.devT [2];
+  Result.devA :=   aPlayer.devA;
+  Result.devT :=   aPlayer.devT;
+  Result.devI :=   aPlayer.devI;
 
   Result.DefaultSpeed := aPlayer.DefaultSpeed;
   Result.Defaultdefense := aPlayer.Defaultdefense;
@@ -3092,18 +2935,6 @@ begin
   Result.TalentId1 := aPlayer.TalentId1;
   Result.TalentId2 := aPlayer.TalentId2;
 
-end;
-function TFormServer.isReserveSlot (CellX, CellY: integer): boolean;
-begin
-  Result:= false;
-  if CellY < 0 then
-    result := True;
-end;
-function TFormServer.isReserveSlotFormation (CellX, CellY: integer): boolean;
-begin
-  Result:= false;
-  if (CellY < 0) then    // -1
-    result := True;
 end;
 
 function TFormServer.can6 (  const at : TAttributeName; var aPlayer: TSoccerPlayer ): boolean;
@@ -3239,10 +3070,7 @@ begin
 
   qPlayers := TMyQuery.Create(nil);
   qPlayers.Connection := ConnGame;   // game
-  qPlayers.SQL.text := 'SELECT guid,Team,Name,Matches_Played,Matches_Left,'+
-                                                  'talentid1,talentid2, speed,defense,passing,ballcontrol,heading,shot,stamina,'+
-                                                  'formation_x,formation_y,injured,totyellowcard,disqualified,xp,history,onmarket,face,fitness,morale,country'+
-                                                  ' from '+fm+'_game.players WHERE team =' + IntToStr(GuidTeam)+' and young=0' ;
+  qPlayers.SQL.text := 'SELECT * from '+fm+'_game.players WHERE team =' + IntToStr(GuidTeam)+' and young=0' ;
 
   qPlayers.Execute ;
 
@@ -3271,7 +3099,7 @@ begin
     tmpb := qPlayers.FieldByName('talentid2').AsInteger;
     MM.Write( @tmpb, sizeof(byte) );
     tmpi := qPlayers.FieldByName('stamina').AsInteger;
-    MM.Write( @tmpi, sizeof(ShortInt) );
+    MM.Write( @tmpi, sizeof(SmallInt) );
 
     tmpb:= qPlayers.FieldByName('speed').AsInteger;
     MM.Write( @tmpb , sizeof(ShortInt) );
@@ -3312,11 +3140,24 @@ begin
     country:= qPlayers.FieldByName('country').AsInteger;
     MM.Write( @country , sizeof(word) );
 
+    tmpi := qPlayers.FieldByName('DevA').asinteger;
+    MM.Write( @tmpi , sizeof(word) );
+    tmpi := qPlayers.FieldByName('DevT').asinteger;
+    MM.Write( @tmpi , sizeof(word) );
+    tmpi := qPlayers.FieldByName('DevI').asinteger;
+    MM.Write( @tmpi , sizeof(word) );
+
     tmps := qPlayers.FieldByName('history').AsString;
     MM.Write( @tmps , length ( tmps ) +1 );      // +1 byte 0 indica lunghezza stringa
     tmps := qPlayers.FieldByName('xp').AsString;
     MM.Write( @tmps , length ( tmps ) +1 );      // +1 byte 0 indica lunghezza stringa
 
+    tmpi := qPlayers.FieldByName('xpDevA').asinteger;
+    MM.Write( @tmpi , sizeof(word) );
+    tmpi := qPlayers.FieldByName('xpDevT').asinteger;
+    MM.Write( @tmpi , sizeof(word) );
+    tmpi := qPlayers.FieldByName('xpDevI').asinteger;
+    MM.Write( @tmpi , sizeof(word) );
 
     qPlayers.Next;
 
@@ -3814,7 +3655,7 @@ var
   ServerOpponent: array [0..1] of TServerOpponent;
   aBrain: TSoccerBrain;
   OpponentBOT: TServerOpponent;
-  BrainIDS: string;
+  BrainIDS, aCommaText: string;
   cli :TWSocketClient;
   label vsBots;
 begin
@@ -3896,16 +3737,22 @@ vsBots:
     BrainIDS :=  GetBrainIds ( Queue[i].ActiveGender, IntToStr(ServerOpponent[0].GuidTeam ) , IntToStr(ServerOpponent[1].GuidTeam )) ;
 
     // creo un brain che lavori in una data cartella
-    aBrain := TSoccerBrain.create ( Brainids );
-
+    aBrain := TSoccerBrain.create ( Brainids, Queue[i].ActiveGender, 0,0,0,0);
+    aBrain.GameMode := pvp;
     // se è un bot preparo la formazione direttamente sul db
     if ServerOpponent[0].bot then begin
-      if not CreateFormationTeam  (Queue[i].ActiveGender, ServerOpponent[0].GuidTeam) then
-        Exit;
+      aCommaText := pvpCreateFormationTeam  ( MySqlServerGame, Queue[i].ActiveGender, ServerOpponent[0].GuidTeam);
+      if aCommaText  = '' then
+        Exit
+      else store_formation( Queue[i].ActiveGender , aCommaText );
+
     end;
     if ServerOpponent[1].bot then begin
-      if not CreateFormationTeam  (Queue[i].ActiveGender, ServerOpponent[1].GuidTeam) then
-        Exit;
+      aCommaText := pvpCreateFormationTeam  ( MySqlServerGame, Queue[i].ActiveGender, ServerOpponent[1].GuidTeam);
+      if aCommaText  = '' then
+        Exit
+      else store_formation( Queue[i].ActiveGender , aCommaText );
+
     end;
     // creo in quella data cartella match.ini
     //LI LEGO PER SEMPRE
@@ -3983,7 +3830,7 @@ end;
 procedure TFormServer.CreateMatchBOTvsBOT (  fm : Char; GuidTeam0, GuidTeam1: integer; Username0, UserName1: string );
 var
   abrain: TSoccerBrain;
-  BrainIDS: string;
+  BrainIDS,aCommaText: string;
 begin
     // creo e svuoto la dir_data.brainIds  e la relativa ftp
     // qui creo effettivamente il match anche tra bot
@@ -3992,13 +3839,18 @@ begin
     //    GuidTeam1:=33;
     BrainIDS := getBrainIds ( fm ,IntToStr(GuidTeam0 ) , IntToStr(GuidTeam1 )) ;
     // creo un brain che lavori in una data cartella
-    aBrain := TSoccerBrain.create ( Brainids);
+    aBrain := TSoccerBrain.create ( Brainids, fm,0 ,0,0,0);
+    aBrain.GameMode := pvp;
+
   //  aBrain.ShotCells := BrainManager.ShotCells; // Assegno le shotCells
   //  abrain.aiField := BrainManager.AIField;
 
     //  è un bot preparo la formazione direttamente sul db
-      CreateFormationTeam  (fm, GuidTeam0);
-      CreateFormationTeam  (fm, GuidTeam1);
+      aCommaText := pvpCreateFormationTeam  (  MySqlServerGame, fm, GuidTeam0);
+      store_formation( fm , aCommaText );
+      aCommaText := pvpCreateFormationTeam  ( MySqlServerGame, fm, GuidTeam1);
+      store_formation( fm , aCommaText );
+
       aBrain.dir_log := dir_log  ;
       if CheckBox2.Checked then begin
          // aBrain.dir_log := dir_log;
@@ -4044,7 +3896,7 @@ begin
 
   brain.Minute := 1;
 
-  brain.GameStarted := True;
+    brain.GameStarted := True;
   brain.FlagEndGame := False;
   brain.ShpBuff :=  false;
   brain.incMove :=  0;
@@ -4099,14 +3951,14 @@ begin
 
     qTeams := TMyQuery.Create(nil);
     qTeams.Connection := ConnGame;   // game
-    qTeams.SQL.text := 'SELECT guid,country,worldteam,uniforma,uniformh,rank,mi,season,matchesplayed from ' +fm+'_game.teams WHERE guid = ' + IntToStr(GuidTeam[i]);
+    qTeams.SQL.text := 'SELECT * from ' +fm+'_game.teams WHERE guid = ' + IntToStr(GuidTeam[i]);
     qTeams.Execute;
 
 
 
     MyQueryWT := TMyQuery.Create(nil);
     MyQueryWT.Connection := ConnGame;   // world
-    MyQueryWT.SQL.text := 'SELECT name, country from world.teams WHERE guid = ' + qTeams.FieldByName('worldteam').AsString ;
+    MyQueryWT.SQL.text := 'SELECT * from world.teams WHERE guid = ' + qTeams.FieldByName('worldteam').AsString ;
     MyQueryWT.Execute;
 
 
@@ -4119,6 +3971,7 @@ begin
     brain.Score.TeamMI [i] := qTeams.fieldbyname ('mi').AsInteger;
     brain.Score.Season [i] := qTeams.fieldbyname ('season').AsInteger;
     brain.Score.SeasonRound [i] := qTeams.fieldbyname ('matchesplayed').AsInteger + 1;
+    brain.Score.TeamSubs [i] := 0;
 
     if i = 0 then
       brain.Score.Uniform [i] :=  qTeams.fieldbyname ('uniformh').asstring
@@ -4142,10 +3995,7 @@ begin
   for TT := 0 to 1 do begin
 
 
-    qPlayers.SQL.text := 'SELECT guid,Team,Name,Matches_Played,Matches_Left,'+
-                                                    'talentid1, talentid2,speed,defense,passing,ballcontrol,heading,shot,stamina,'+
-                                                    'formation_x,formation_y,injured,totyellowcard,disqualified,face,country'+
-                                                    ' from ' +fm+'_game.players WHERE team =' + IntToStr(GuidTeam[TT]) + ' and young=0';
+    qPlayers.SQL.text := 'SELECT * from ' +fm+'_game.players WHERE team =' + IntToStr(GuidTeam[TT]) + ' and young=0';
 
     qPlayers.Execute ;
 
@@ -4294,34 +4144,6 @@ MyContinue:
   //inc (brain.incMove);
 
 
-end;
-function TformServer.Buff_or_Debuff_4 ( aPlayer: TSoccerPlayer; buff,Max_stat:Integer): Boolean;
-var
-  Ts:TStringList;
-  aRnd,aValue:Integer;
-begin
-  Result := False;
-  Ts:= TStringList.Create;
-  Ts.CommaText :=  aPlayer.Attributes;// legge i default
-  aRnd := RndGenerateRange(1,4) ; // difesa,passing,ballcontrol,shot
-  aValue := StrToInt(Ts[aRnd]);
-  if Buff > 0 then begin
-    if aValue < Max_stat then begin  // F e M  se è già al massimo, non fa nulla
-      aValue := aValue + 1;
-      Ts[aRnd] := IntToStr ( aValue );
-      aPlayer.Attributes := Ts.CommaText; // setta automaticamente i defaults
-      Result := True;
-    end;
-  end
-  else if Buff < 0 then begin // debuff morale
-    if aValue > 1 then begin  // F e M  se è già al massimo, non fa nulla
-      aValue := aValue - 1;
-      Ts[aRnd] := IntToStr ( aValue );
-      aPlayer.Attributes := Ts.CommaText; // setta automaticamente i defaults
-      Result := True;
-    end;
-  end;
-  Ts.Free;
 end;
 function TFormServer.CreateGameTeam ( fm :char;  cli: TWSocketThrdClient;  WorldTeamGuid: string ): integer;
 //  cli.cliid=account: integer;
@@ -4507,14 +4329,12 @@ begin
 
       // li salvo nel DB e ottengono un guid ids. La successiva lettura contenie ids (f_game.players.guid)
       qPlayers.SQL.text := 'INSERT into ' + fm  + '_game.players (Team,Name,Matches_Played,Matches_Left,'+
-                                    'injured_penalty1,injured_penalty2,injured_penalty3,'+
-                                    'deva1,deva2,deva3,devt1,devt2,devt3,'+
+                                    'deva,devt,devi,xpdeva,xpdevt,xpdevi,'+
                                     'talentid1, speed,defense,passing,ballcontrol,heading,shot,injured,totyellowcard,disqualified,face,country,fitness,morale)'+
                                     ' VALUES ('+
                                     IntToStr(GuidGameTeam) +',"'+ aBasePlayer.Surname +'",'+ IntToStr(aBasePlayer.MatchesPlayed)+','+ IntToStr(aBasePlayer.MatchesLeft)+','+
-                                    IntToStr(aBasePlayer.Injured_Penalty1)+','+IntToStr(aBasePlayer.Injured_Penalty2)+','+IntToStr(aBasePlayer.Injured_Penalty3)+','+
-                                    IntToStr(aBasePlayer.deva1)+','+IntToStr(aBasePlayer.deva2)+','+IntToStr(aBasePlayer.deva3)+','+
-                                    IntToStr(aBasePlayer.devt1)+','+IntToStr(aBasePlayer.devt2)+','+IntToStr(aBasePlayer.devt3)+','+
+                                    IntToStr(aBasePlayer.deva)+','+IntToStr(aBasePlayer.devt)+','+IntToStr(aBasePlayer.devi)+','+
+                                    IntToStr(aBasePlayer.xpdeva)+','+IntToStr(aBasePlayer.xpdevt)+','+IntToStr(aBasePlayer.xpdevi)+','+
                                     IntToStr(aBasePlayer.TalentId1) + ',' + aBasePlayer.Attributes +','+
                                     '0,0,0,' + IntToStr(aBasePlayer.Face) +','+ country +','+IntTostr(fitness)+','+morale //injured,totyellowcard,disqualified
                                     +')';
@@ -4537,7 +4357,7 @@ begin
 
 
 end;
-Function TFormServer.CreateSurname ( Country:integer ) : String;
+Function TFormServer.CreateSurname ( fm : Char; Country:integer ) : String;
 var
   ConnWorld : TMyConnection ;
   MyQuerySU: TMyQuery;
@@ -4558,7 +4378,7 @@ begin
 
 
 
-  if Country =6 then begin // solo russia cognomi femminili / maschili
+  if (Country =6) and (fm ='f') then begin // solo russia cognomi femminili / maschili
     tmp := MyQuerySU.FieldByName('name').AsString;
     // La maggior parte dei cognomi russi cambia al femminile con l'aggiunta della lettera "-a" (Ivanova, Sorokina);
     // si modificano in -skaja nel caso di terminazione in -skij (Moskovskaja) mentre rimangono invariati in caso di finale in "-ich" e "-ko".
@@ -4590,7 +4410,7 @@ Function TFormServer.CreatePresetPlayer ( fm :Char; Country, index:integer ) : T
 var
   ts: TStringList;
 begin
-  Result.Surname :=  CreateSurname ( Country );
+  Result.Surname :=  CreateSurname ( fm , Country );
   if fm ='f' then
     Result.face := rndGenerate ( ffaces[country])
   else  Result.face := rndGenerate ( mfaces[country]);
@@ -4617,18 +4437,14 @@ begin
     Result.TalentId1 :=  PresetFT[index]
   else Result.TalentId1 :=  PresetMT[index];
 
-  // questi valori sempre random
-  Result.Injured_Penalty1 := injured_penalty [rndGenerate (3)]; //    0..38*6:begin    // 18..24 anni
-  Result.Injured_Penalty2 := injured_penalty [rndGenerate (3)];//     38*7..38*12:begin    // 25..30
-  Result.Injured_Penalty3 := injured_penalty [rndGenerate (3)];//   38*13..38*15:begin    // 31..33
 
-  Result.deva1 := Growth [rndGenerate (3)];//   0..38*6:begin    // 18..24 anni
-  Result.deva2 := Growth [rndGenerate (3)];//   38*7..38*12:begin    // 25..30
-  Result.deva3 := Growth [rndGenerate (3)];//   38*13..38*15:begin    // 31..33
+  Result.deva := 5;
+  Result.devt := 5;
+  Result.devi := 1;
 
-  Result.devt1 := Talent [rndGenerate (3)];
-  Result.devt2 := Talent [rndGenerate (3)];
-  Result.devt3 := Talent [rndGenerate (3)];
+  Result.xpdeva := 0;
+  Result.xpdevt := 0;
+  Result.xpdevi := 0;
 
 end;
 Function TFormServer.CreateRandomPlayer ( fm :Char; Country : integer;  EnableTalent2: boolean ) : TBasePlayer;
@@ -4638,8 +4454,8 @@ var
   BaseStat: string;
   label retryf,retrym;
 begin
-  // usata per creare un giovane . usa devt1 chance per i tlaneti
-  Result.Surname :=  CreateSurname ( Country );
+  // usata per creare un giovane . usa devt chance per i tlaneti
+  Result.Surname :=  CreateSurname ( fm, Country );
   if fm ='f' then
     Result.face := rndGenerate ( ffaces[country])
   else  Result.face := rndGenerate ( mfaces[country]);
@@ -4677,24 +4493,19 @@ retryf:
     Result.DefaultHeading := StrToInt( ts[5] );
 //    ts.Free;
 
+    Result.deva := 5;
+    Result.devt := 5;
+    Result.devi := 1;
 
-    Result.Injured_Penalty1 := injured_penalty [rndGenerate (3)]; //    0..38*6:begin    // 18..24 anni
-    Result.Injured_Penalty2 := injured_penalty [rndGenerate (3)];//     38*7..38*12:begin    // 25..30
-    Result.Injured_Penalty3 := injured_penalty [rndGenerate (3)];//   38*13..38*15:begin    // 31..33
-
-    Result.deva1 := Growth [rndGenerate (3)];//   0..38*6:begin    // 18..24 anni
-    Result.deva2 := Growth [rndGenerate (3)];//   38*7..38*12:begin    // 25..30
-    Result.deva3 := Growth [rndGenerate (3)];//   38*13..38*15:begin    // 31..33
-
-    Result.devt1 := Talent [rndGenerate (3)];
-    Result.devt2 := Talent [rndGenerate (3)];
-    Result.devt3 := Talent [rndGenerate (3)];
+    Result.xpdeva := 0;
+    Result.xpdevt := 0;
+    Result.xpdevi := 0;
 
 
     Result.TalentId1 := 0;
     Result.TalentId2 := 0;
 
-    if RndGenerate(100) <= Result.devt1 then begin    // se talentChance > 0
+    if RndGenerate(100) <= Result.devt then begin    // se talentChance > 0
       Result.TalentId1 := rndgenerate(NUM_TALENT);    // creo un talento
       if Result.TalentId1 = TALENT_ID_GOALKEEPER then begin
         Result.DefaultShot := 1; // al minimo per non impacciare defense
@@ -4703,8 +4514,8 @@ retryf:
         Result.Attributes := ts.CommaText;
       end;
         if EnableTalent2 then begin
-          if RndGenerate(100) <= Result.devt1 then        // creo il secondo talento
-            Result.TalentId2 := CreateTalentLevel2 ( Result );
+          if RndGenerate(100) <= Result.devt then        // creo il secondo talento
+            Result.TalentId2 := CreateTalentLevel2 ( fm,Result );
         end;
     end;
     ts.Free;
@@ -4733,24 +4544,18 @@ retrym:
     Result.DefaultHeading := StrToInt( ts[5] );
     //ts.Free;
 
-    Result.Injured_Penalty1 := injured_penalty [rndGenerate (3)]; //    0..38*6:begin    // 18..24 anni
-    Result.Injured_Penalty2 := injured_penalty [rndGenerate (3)];//     38*7..38*12:begin    // 25..30
-    Result.Injured_Penalty3 := injured_penalty [rndGenerate (3)];//   38*13..38*15:begin    // 31..33
+    Result.deva := 5;
+    Result.devt := 5;
+    Result.devi := 1;
 
-    Result.deva1 := Growth [rndGenerate (3)];//   0..38*6:begin    // 18..24 anni
-    Result.deva2 := Growth [rndGenerate (3)];//   38*7..38*12:begin    // 25..30
-    Result.deva3 := Growth [rndGenerate (3)];//   38*13..38*15:begin    // 31..33
-
-    Result.devt1 := Talent [rndGenerate (3)];
-    Result.devt2 := Talent [rndGenerate (3)];
-    Result.devt3 := Talent [rndGenerate (3)];
-
-
+    Result.xpdeva := 0;
+    Result.xpdevt := 0;
+    Result.xpdevi := 0;
 
     Result.TalentId1 := 0;
     Result.TalentId2 := 0;
 
-    if RndGenerate(100) <= Result.devt1 then begin    // se talentChance > 0
+    if RndGenerate(100) <= Result.devt then begin    // se talentChance > 0
       Result.TalentId1 := rndgenerate(NUM_TALENT);    // creo un talento
       if Result.TalentId1 = TALENT_ID_GOALKEEPER then begin
         Result.DefaultShot := 1; // al minimo per non impacciare defense
@@ -4759,8 +4564,8 @@ retrym:
         Result.Attributes := ts.CommaText;
       end;
         if EnableTalent2 then begin
-          if RndGenerate(100) <= Result.devt1 then        // creo il secondo talento
-            Result.TalentId2 := CreateTalentLevel2 ( Result );
+          if RndGenerate(100) <= Result.devt then        // creo il secondo talento
+            Result.TalentId2 := CreateTalentLevel2 ( fm, Result );
         end;
     end;
     ts.Free;
@@ -4768,366 +4573,6 @@ retrym:
 
 
 end;
-
-function TFormServer.CreateFormationTeam (fm : Char; Guidteam: integer ): Boolean;
-var
-  i,T,ii, pcount,D,M,F: Integer;
-  ini : TInifile;
-  aPlayer,aGK: TSoccerPlayer;
-  lstPlayers,lstPlayersDB: TObjectList<TSoccerPlayer>;
-  FinalFormation : array[1..11] of TFinalFormation;
-  lstGK: TObjectList<TSoccerPlayer>;
-  talentid1,talentid2,AT: string;
-  aF: TFormation;
-  ts : TStringList;
-  ReserveSlot : TTheArray;
-  aReserveSlot: Integer;
-  found: Boolean;
-  OldfinalFormation: string;
-  ConnGame :  TMyConnection;
-  qPlayers :  TMyQuery;
-  label nextplayer,NoFormation,MyExit;
-
-begin
-
-  Result := False;
-  CleanReserveSlot ( ReserveSlot );
-  (* la stora nel db *)
-
-  ConnGame := TMyConnection.Create(nil);
-  Conngame.Server := MySqlServerGame;
-  Conngame.Username:='root';
-  Conngame.Password:='root';
-  Conngame.Database:=fm + '_game';
-  Conngame.Connected := True;
-
-  qPlayers := TMyQuery.Create(nil);
-  qPlayers.Connection := ConnGame;   // game
-  qPlayers.SQL.Text :=  'SELECT guid,Team,Name,Matches_Played,Matches_Left,'+
-                                                  'talentid1,talentid2, speed,defense,passing,ballcontrol,heading,shot,stamina,'+
-                                                  'formation_x,formation_y,injured,totyellowcard,disqualified'+
-                                                  ' from ' +fm + '_game.players WHERE team =' + IntToStr(GuidTeam)+' and young =0';
-  qPlayers.Execute;
-
-
-  // azzero tutto
-//  qPlayers.SQL.text := 'UPDATE f_game.players set formation_x = 0, formation_Y = 0 WHERE team =' + IntToStr(GuidTeam);
-//  qPlayers.Execute ;
-
-
-
-  lstPlayers:= TObjectList<TSoccerPlayer>.Create(false); // lista locale
-  lstPlayersDB:= TObjectList<TSoccerPlayer>.Create(true); // lista locale  che elimina tutti gli oggetti
-  for I := 0 to qPlayers.RecordCount -1 do begin
-
-//    if qPlayers.FieldByName ( 'disqualified').AsInteger > 0 then goto NoFormation;
-//    if qPlayers.FieldByName ( 'injured').AsInteger > 0 then goto NoFormation;
-
-      AT := qPlayers.FieldByName('speed').Asstring + ',' + qPlayers.FieldByName('defense').Asstring +
-            ',' + qPlayers.FieldByName('passing').Asstring + ',' + qPlayers.FieldByName('ballcontrol').Asstring  +
-            ',' + qPlayers.FieldByName('shot').Asstring + ',' + qPlayers.FieldByName('heading').Asstring;
-
-
-    aPlayer := TSoccerPlayer.create(0,0,0,qPlayers.FieldByName ( 'guid').AsString,'','',AT,
-                                   qPlayers.FieldByName('talentid1').AsInteger,qPlayers.FieldByName('talentid2').AsInteger);//0,0,0 non hanno importanza qui
-    aPlayer.disqualified :=  qPlayers.FieldByName ( 'disqualified').AsInteger;
-    aPlayer.Injured :=  qPlayers.FieldByName ( 'injured').AsInteger;
-    if aPlayer.Injured > 0 then  begin
-      aPlayer.Stamina:=0;
-      aPlayer.Speed:=1;
-      aPlayer.Defense:=1;
-      aPlayer.Passing:=1;
-      aPlayer.Ballcontrol:=1;
-      aPlayer.Shot:=1;
-      aPlayer.Heading:=1;
-    end
-    else aPlayer.Stamina := qPlayers.FieldByName ( 'stamina').AsInteger;
-
-
-
-    lstPlayers.add ( aPlayer);
-    lstPlayersDB.add ( aPlayer);
-    aPlayer.AIFormationCellX :=  i;   // azzero tutto
-    aPlayer.AIFormationCellY :=  -1;
-
-
-    qPlayers.next;
-  end;
-
-  // lstPlayers contiene il db ma non squalificati o infortunati
-  // FinalFormation i dati finali da storare nel db
-
-  // Metto il portiere. il portiere è sempre presente. non può essere venduto se solo 1. viene generato un giovane gk se manca dalla rosa perchè
-  // il gk originale raggiunge una certa età
-
-  // storo tutto nel db
-    ts := TStringList.Create;
-    ts.Add('setformation');
-
-    lstGK:= TObjectList<TSoccerPlayer>.Create(false);
-    for I := 0 to lstPlayers.Count -1 do begin
-      if lstPlayers[i].TalentId1 = TALENT_ID_GOALKEEPER then begin
-        aGK:= lstPlayers[i];
-        lstGk.Add (aGK);
-      end;
-    end;
-
-    if lstGK.Count <= 0 then begin
-      lstGK.Free;
-      goto MyExit;
-    end;
-
-    lstGK.sort(TComparer<TSoccerPlayer>.Construct(
-    function (const L, R: TSoccerPlayer): integer
-    begin
-      Result := R.defense - L.defense;
-    end
-    ));
-
-    FinalFormation [1].Guid := lstGK[0].Ids;
-    FinalFormation [1].cells := Point ( 3, 11 );
-    FinalFormation [1].Stamina := lstGK[0].Stamina ;
-    FinalFormation [1].role := 'G' ;
-    Ts.Add(  FinalFormation [1].Guid  + '=3:11' );
-
-    // a questo punto devo eliminare un giocatore goalkeeper tra i presenti.
-    for I := lstPlayers.Count -1 downto 0 do begin
-    // gli altri GK sono per forza tutti panchinari
-      if (lstPlayers[i].TalentId1 = TALENT_ID_GOALKEEPER )  then begin
-        lstPlayers.Delete(i);  // elimino il gk regolare e anche gli altri GK. lstPlayerDB li rimette in panchina
-      end;
-    end;
-
-    lstGK.Free;
-
- //  elimino da lstPlayers i disqialified  , gli injured hanno stamina 0 . li elimino comunque qui
-    for I := lstPlayers.Count -1 downto 0 do begin
-      if (lstPlayers[i].disqualified > 0) or (lstPlayers[i].injured > 0) then begin
-        lstPlayers.Delete(i);
-      end;
-    end;
-
-
-  // prendo una formazione da una lista di preset
-  // DIF - MID - FOR
-    pcount := 2; // dopo il gk
-    af:= FormationsPreset[ RndGenerate0( FormationsPreset.Count -1 )];
-   // af:= FormationsPreset[ FormationsPreset.Count -1 ];
-
-    lstPlayers.sort(TComparer<TSoccerPlayer>.Construct(
-    function (const L, R: TSoccerPlayer): integer
-    begin
-      Result := R.defense - L.defense;
-    end
-    ));
-
-
-    // ordino prima in base al talento buff, poi in base al best defense, passing,shot
-    for I :=  0 to lstPlayers.Count -1  do begin
-      if lstPlayers[I].TalentId2 = TALENT_ID_BUFF_DEFENSE then begin
-        if i > 0 then begin
-          lstPlayers.Exchange( i, 0 );
-          Break;
-        end;
-      end;
-
-    end;
-
-    for D := 1 to aF.D do begin
-      if lstPlayers.Count > 0 then begin
-        FinalFormation [pcount].Guid := lstPlayers[0].ids;
-        FinalFormation [pcount].cells := Point ( aF.Cells[pcount].X , aF.Cells[pcount].Y );
-        FinalFormation [pcount].Stamina := lstPlayers[0].Stamina ;
-        FinalFormation [pcount].role := 'D' ;
-        Ts.Add( lstPlayers[0].ids  + '=' + IntToStr(aF.Cells[pcount].X) + ':' + IntToStr(aF.Cells[pcount].Y ));
-        lstPlayers.Delete(0);  // elimino il Difensore D dalla lista
-        Inc(pcount);
-      end;
-    end;
-
-
-    lstPlayers.sort(TComparer<TSoccerPlayer>.Construct(
-    function (const L, R: TSoccerPlayer): integer
-    begin
-      Result := R.passing - L.passing;
-    end
-    ));
-
-    // ordino prima in base al talento buff, poi in base al best defense, passing,shot
-    for I :=  0 to lstPlayers.Count -1  do begin
-      if lstPlayers[I].TalentId2 = TALENT_ID_BUFF_MIDDLE then begin
-        if i > 0 then begin
-          lstPlayers.Exchange( i, 0 );
-          Break;
-        end;
-      end;
-
-    end;
-
-    for M := 1 to aF.M do begin
-      if lstPlayers.Count > 0 then begin
-        FinalFormation [pcount].Guid := lstPlayers[0].ids;
-        FinalFormation [pcount].cells := Point ( aF.Cells[pcount].X , aF.Cells[pcount].Y );
-        FinalFormation [pcount].Stamina := lstPlayers[0].Stamina ;
-        FinalFormation [pcount].role := 'M' ;
-        Ts.Add( lstPlayers[0].ids  + '=' + IntToStr(aF.Cells[pcount].X) + ':' + IntToStr(aF.Cells[pcount].Y ));
-        lstPlayers.Delete(0);  // elimino il Centrocampista M dalla lista
-        Inc(pcount);
-      end;
-    end;
-
-    lstPlayers.sort(TComparer<TSoccerPlayer>.Construct(
-    function (const L, R: TSoccerPlayer): integer
-    begin
-      Result := R.shot - L.shot;
-     // Result := R.heading - L.heading;
-    end
-    ));
-
-    // ordino prima in base al talento buff, poi in base al best defense, passing,shot
-    for I :=  0 to lstPlayers.Count -1  do begin
-      if lstPlayers[I].TalentId2 = TALENT_ID_BUFF_FORWARD then begin
-        if i > 0 then begin
-          lstPlayers.Exchange( i, 0 );
-          Break;
-        end;
-      end;
-
-    end;
-
-    for F := 1 to aF.F do begin
-      if lstPlayers.Count > 0 then begin
-        FinalFormation [pcount].Guid := lstPlayers[0].ids;
-        FinalFormation [pcount].cells := Point ( aF.Cells[pcount].X , aF.Cells[pcount].Y );
-        FinalFormation [pcount].Stamina := lstPlayers[0].Stamina ;
-        FinalFormation [pcount].role := 'F' ;
-        Ts.Add( lstPlayers[0].ids  + '=' + IntToStr(aF.Cells[pcount].X) + ':' + IntToStr(aF.Cells[pcount].Y ));
-        lstPlayers.Delete(0);  // elimino l'attccante F dalla lista
-        Inc(pcount);
-      end;
-    end;
-
-  // poi elimino quelli con stamina bassa 60. provo a sostituirli con stamina > 60.
-  // mi sono rimasti i player nella lstPlayers, li ordino in base al ruolo da ricoprire
-
-  // elimino a priori dai possibili sostituti
-    for I := lstPlayers.Count -1 downto 0 do begin
-      if lstPlayers[i].Stamina <= 60 then
-        lstPlayers.Delete(i);
-    end;
-
-
-    for I := 2 to 11 do begin
-      if lstPlayers.Count > 0 then begin
-        if FinalFormation [i].Stamina <= 60 then begin
-
-          if FinalFormation [i].Role = 'D' then begin
-            lstPlayers.sort(TComparer<TSoccerPlayer>.Construct(
-            function (const L, R: TSoccerPlayer): integer
-            begin
-              Result := R.defense - L.defense;
-            end
-            ));
-          end
-          else if FinalFormation [i].Role = 'M' then begin
-            lstPlayers.sort(TComparer<TSoccerPlayer>.Construct(
-            function (const L, R: TSoccerPlayer): integer
-            begin
-              Result := R.passing - L.passing;
-            end
-            ));
-          end
-          else if FinalFormation [i].Role = 'F' then begin
-            lstPlayers.sort(TComparer<TSoccerPlayer>.Construct(
-            function (const L, R: TSoccerPlayer): integer
-            begin
-              Result := R.shot - L.shot;
-             // Result := R.heading - L.heading;
-            end
-            ));
-          end;
-          // qui è quello ordinato in base a difesa, passaggio o tiro e quello che entra non può avere stamina bassa -60 (rimossi sopra)
-
-          // modifico la finalformation
-          OldfinalFormation := FinalFormation [i].Guid;
-          FinalFormation [i].Guid := lstPlayers[0].ids;
-          FinalFormation [i].Stamina := lstPlayers[0].Stamina ;
-          // modifico la TS
-          for T := 0 to ts.Count -1 do begin
-            if ts.Names[T] = OldfinalFormation then begin
-              Ts[T]:= FinalFormation [i].Guid + '=' + IntToStr(FinalFormation[i].Cells.X  ) + ':' + IntToStr(FinalFormation[i].Cells.Y );
-              Break;
-            end;
-          end;
-          lstPlayers.Delete(0);  // elimino il player dalla lista
-
-        end;
-
-      end;
-
-    end;
-
-    // qui gli 11 titolari sono schierati correttamente. devo aggiungere a ts le riserve ovvero tutti coloro che sono player ma non in ts.commatext
-    // creo la TS con gli 11 titolari di finalformation
-
-
-    for I := lstPlayersDB.Count -1 downto 0 do begin  //  lstPlayersDB contiene tutti dal db
-      // tutti gli ids che non sono presenti in FinalFormation vanno in panchina
-      found := False;
-      
-      for ii := 1 to 11 do begin
-        if FinalFormation [ii].Guid = lstPlayersDB[i].Ids  then begin // è presente nei 11 titolari
-          found := True;
-          Break;
-        end;
-      end;
-
-      if not found then begin   // se nopn è prsente nei 11 titolati lo metto in panchina e lo aggiungo in coda alla ts
-        aReserveSlot := NextReserveSlot ( ReserveSlot );
-        ReserveSlot [aReserveSlot] :=  lstPlayersDB[i].Ids;
-        lstPlayersDB[i].AIFormationCellX := aReserveSlot;
-        lstPlayersDB[i].AIFormationCellY := -1; // fisso -1
-
-        Ts.Add( lstPlayersDB[i].ids  + '=' +
-        IntToStr(lstPlayersDB[i].AIFormationCellX  ) + ':' +
-        IntToStr(lstPlayersDB[i].AIFormationCellY ));
-      end;
-      
-    end;
-
-    store_formation( fm ,Ts.CommaText );
-    Result := True;
-Myexit:
-    lstPlayers.Free;
-    lstPlayersDB.Free;
-     ts.Free;
-    { si può giocare anche in meno di 7 giocatori }
-    qPlayers.free;
-    Conngame.Connected:= False;
-    Conngame.Free;
-end;
-
-function TFormServer.NextReserveSlot ( ReserveSlot: TTheArray ): Integer;
-var
-  x: Integer;
-begin
-
-    for x := 0 to 21 do begin
-      if ReserveSlot [x] = '' then begin
-        Result := x;
-        Exit;
-      end;
-    end;
-end;
-procedure TFormServer.CleanReserveSlot ( ReserveSlot: TTheArray );
-var
-  x: Integer;
-begin
-    for x := 0 to 21 do begin
-      ReserveSlot [x] := '';
-    end;
-end;
-
 procedure TFormServer.validate_getteamsbycountry ( const CommaText: string; Cli:TWSocketThrdClient  );
 var
   ts: TStringList;
@@ -6616,7 +6061,7 @@ begin
 end;
 procedure TFormServer.validate_setformation ( CommaText: string; Cli:TWSocketThrdClient  );
 var
-  i,i2,guid,disqualified: Integer;
+  i,i2,guid: Integer;
   ts: TStringList;
   strCells: string;
   tscells: TStringList;
@@ -6635,8 +6080,8 @@ begin
   for I := 0 to ts.Count - 1 do begin
     Guid := StrToIntDef(  ts.Names [i] , 0  );
     // validate player. dal cli risale al guidteam (cli.guidteam)
-    disqualified:=0;
     aValidPlayer:= validate_player (  guid,Cli);
+
     if cli.sReason <> '' then Exit;
     strCells:= ts.ValueFromIndex [i];
     tscells:= TStringList.Create ;
@@ -6676,7 +6121,7 @@ begin
     end;
 
 
-    if (PositionCellX > 0) and  (PositionCellY > -1)  and (disqualified > 0) then begin
+    if (PositionCellX > 0) and  (PositionCellY > -1)  and ( aValidPlayer.disqualified > 0) then begin
       cli.sReason := 'Player disqualified ' + IntToStr( guid) + ' ' + strCells;
       tscells.Free;
       ts.Free;
@@ -6858,9 +6303,7 @@ begin
 
   qPlayers := TMyQuery.Create(nil);
   qPlayers.Connection := ConnGame;   // game
-  qPlayers.SQL.text := 'SELECT guid, disqualified, Matches_Played,deva1,deva2,deva3,devt1,devt2,devt3,history,xp,' +
-                                  'speed,defense,passing,ballcontrol,shot,heading,talentid1,talentid2 '+
-                                  'from ' +cli.ActiveGender  +'_game.players WHERE team =' +
+  qPlayers.SQL.text := 'SELECT * from ' +cli.ActiveGender  +'_game.players WHERE team =' +
                                   IntToStr(Cli.GuidTeams[Cli.ActiveGenderN] ) + ' and guid = ' + IntToStr(guid)+' and young=0';
   qPlayers.Execute ;
 
@@ -6886,20 +6329,8 @@ begin
     Result.history := qPlayers.FieldByName ('history').AsString;
     Result.xp := qPlayers.FieldByName ('xp').AsString;
 
-    case Result.Age of
-      18..24: begin
-        Result.chancelvlUp := qPlayers.FieldByName ('deva1').AsInteger;
-        Result.chancetalentlvlUp :=  qPlayers.FieldByName ('devt1').AsInteger;
-      end;
-      25..30: begin
-        Result.chancelvlUp := qPlayers.FieldByName ('deva2').AsInteger;
-        Result.chancetalentlvlUp :=  qPlayers.FieldByName ('devt2').AsInteger;
-      end;
-      31..33: begin
-        Result.chancelvlUp := qPlayers.FieldByName ('deva3').AsInteger;
-        Result.chancetalentlvlUp :=  qPlayers.FieldByName ('devt3').AsInteger;
-      end;
-    end;
+    Result.chancelvlUp := qPlayers.FieldByName ('deva').AsInteger;
+    Result.chancetalentlvlUp :=  qPlayers.FieldByName ('devt').AsInteger;
 
   end;
 
@@ -7196,223 +6627,6 @@ begin
 
 end;
 
-procedure TFormServer.CreateFormationsPreset;
-var
-  aF: TFormation;
-
-begin
-  aF.d := 5; af.m:=4; aF.f:=1;
-
-  af.cells[2]:= Point (0,9);
-  af.cells[3]:= Point (2,9);
-  af.cells[4]:= Point (3,9);
-  af.cells[5]:= Point (4,9);
-  af.cells[6]:= Point (6,9);
-
-  af.cells[7]:= Point (0,6);
-  af.cells[8]:= Point (3,6); // cella obbligata
-  af.cells[9]:= Point (4,6);
-  af.cells[10]:= Point (6,6);
-
-  af.cells[11]:= Point (3,3);
-
-  FormationsPreset.add(af);
-
-  aF.d := 5; af.m:=4; aF.f:=1;
-
-  af.cells[2]:= Point (1,9);
-  af.cells[3]:= Point (2,9);
-  af.cells[4]:= Point (3,9);
-  af.cells[5]:= Point (4,9);
-  af.cells[6]:= Point (5,9);
-
-  af.cells[7]:= Point (0,6);
-  af.cells[8]:= Point (3,6); // cella obbligata
-  af.cells[9]:= Point (4,6);
-  af.cells[10]:= Point (6,6);
-
-  af.cells[11]:= Point (3,3);
-  FormationsPreset.add(af);
-
-
-  aF.d := 5; af.m:=3; aF.f:=2;
-  af.cells[2]:= Point (0,9);
-  af.cells[3]:= Point (2,9);
-  af.cells[4]:= Point (3,9);
-  af.cells[5]:= Point (4,9);
-  af.cells[6]:= Point (6,9);
-
-  af.cells[7]:= Point (1,6);
-  af.cells[8]:= Point (3,6); // cella obbligata
-  af.cells[9]:= Point (5,6);
-
-  af.cells[10]:= Point (2,3);
-  af.cells[11]:= Point (4,3);
-  FormationsPreset.add(af);
-
-  aF.d := 5; af.m:=3; aF.f:=2;
-  af.cells[2]:= Point (1,9);
-  af.cells[3]:= Point (2,9);
-  af.cells[4]:= Point (3,9);
-  af.cells[5]:= Point (4,9);
-  af.cells[6]:= Point (5,9);
-
-  af.cells[7]:= Point (1,6);
-  af.cells[8]:= Point (3,6); // cella obbligata
-  af.cells[9]:= Point (5,6);
-
-  af.cells[10]:= Point (2,3);
-  af.cells[11]:= Point (4,3);
-
-  FormationsPreset.add(af);
-
-
-  aF.d := 4; af.m:=4; aF.f:=2;
-  af.cells[2]:= Point (1,9);
-  af.cells[3]:= Point (2,9);
-  af.cells[4]:= Point (3,9);
-  af.cells[5]:= Point (4,9);
-
-  af.cells[6]:= Point (4,6);
-  af.cells[7]:= Point (1,6);
-  af.cells[8]:= Point (3,6); // cella obbligata
-  af.cells[9]:= Point (5,6);
-
-  af.cells[10]:= Point (2,3);
-  af.cells[11]:= Point (4,3);
-
-  FormationsPreset.add(af);
-
-  aF.d := 4; af.m:=4; aF.f:=2;
-  af.cells[2]:= Point (1,9);
-  af.cells[3]:= Point (2,9);
-  af.cells[4]:= Point (3,9);
-  af.cells[5]:= Point (4,9);
-
-  af.cells[6]:= Point (4,6);
-  af.cells[7]:= Point (2,6);
-  af.cells[8]:= Point (3,6); // cella obbligata
-  af.cells[9]:= Point (5,6);
-
-  af.cells[10]:= Point (2,3);
-  af.cells[11]:= Point (4,3);
-
-  FormationsPreset.add(af);
-
-  aF.d := 4; af.m:=4; aF.f:=2;
-  af.cells[2]:= Point (1,9);
-  af.cells[3]:= Point (2,9);
-  af.cells[4]:= Point (3,9);
-  af.cells[5]:= Point (4,9);
-
-  af.cells[6]:= Point (0,6);
-  af.cells[7]:= Point (2,6);
-  af.cells[8]:= Point (3,6); // cella obbligata
-  af.cells[9]:= Point (6,6);
-
-  af.cells[10]:= Point (1,3);
-  af.cells[11]:= Point (5,3);
-
-  FormationsPreset.add(af);
-
-  aF.d := 4; af.m:=3; aF.f:=3;
-  af.cells[2]:= Point (1,9);
-  af.cells[3]:= Point (2,9);
-  af.cells[4]:= Point (3,9);
-  af.cells[5]:= Point (4,9);
-
-  af.cells[6]:= Point (0,6);
-  af.cells[7]:= Point (2,6);
-  af.cells[8]:= Point (3,6); // cella obbligata
-
-  af.cells[9]:= Point (3,3);
-  af.cells[10]:= Point (1,3);
-  af.cells[11]:= Point (5,3);
-
-  FormationsPreset.add(af);
-
-  aF.d := 4; af.m:=3; aF.f:=3;
-  af.cells[2]:= Point (1,9);
-  af.cells[3]:= Point (2,9);
-  af.cells[4]:= Point (3,9);
-  af.cells[5]:= Point (4,9);
-
-  af.cells[6]:= Point (4,6);
-  af.cells[7]:= Point (2,6);
-  af.cells[8]:= Point (3,6); // cella obbligata
-
-  af.cells[9]:= Point (3,3);
-  af.cells[10]:= Point (0,3);
-  af.cells[11]:= Point (6,3);
-
-  FormationsPreset.add(af);
-
-  aF.d := 3; af.m:=4; aF.f:=3;
-  af.cells[2]:= Point (4,9);
-  af.cells[3]:= Point (2,9);
-  af.cells[4]:= Point (3,9);
-
-  af.cells[5]:= Point (0,6);
-  af.cells[6]:= Point (6,6);
-  af.cells[7]:= Point (2,6);
-  af.cells[8]:= Point (3,6); // cella obbligata
-
-  af.cells[9]:= Point (3,3);
-  af.cells[10]:= Point (0,3);
-  af.cells[11]:= Point (6,3);
-
-  FormationsPreset.add(af);
-
-  aF.d := 3; af.m:=5; aF.f:=2;
-  af.cells[2]:= Point (4,9);
-  af.cells[3]:= Point (2,9);
-  af.cells[4]:= Point (3,9);
-
-  af.cells[5]:= Point (0,6);
-  af.cells[6]:= Point (6,6);
-  af.cells[7]:= Point (2,6);
-  af.cells[8]:= Point (3,6); // cella obbligata
-  af.cells[9]:= Point (4,6);
-
-  af.cells[10]:= Point (0,3);
-  af.cells[11]:= Point (6,3);
-
-  FormationsPreset.add(af);
-
-  aF.d := 3; af.m:=5; aF.f:=2;
-  af.cells[2]:= Point (4,9);
-  af.cells[3]:= Point (2,9);
-  af.cells[4]:= Point (3,9);
-
-  af.cells[5]:= Point (0,6);
-  af.cells[6]:= Point (6,6);
-  af.cells[7]:= Point (2,6);
-  af.cells[8]:= Point (3,6); // cella obbligata
-  af.cells[9]:= Point (4,6);
-
-  af.cells[10]:= Point (2,3);
-  af.cells[11]:= Point (4,3);
-
-  // 6 attaccanti
-  FormationsPreset.add(af);
-
-  aF.d := 2; af.m:=2; aF.f:=6;
-  af.cells[2]:= Point (4,9);
-  af.cells[3]:= Point (2,9);
-
-  af.cells[4]:= Point (3,6);
-  af.cells[5]:= Point (0,6);
-
-  af.cells[6]:= Point (0,3);
-  af.cells[7]:= Point (1,3);
-  af.cells[8]:= Point (2,3); // cella obbligata
-  af.cells[9]:= Point (3,3);
-  af.cells[10]:= Point (4,3);
-  af.cells[11]:= Point (5,3);
-
-  FormationsPreset.add(af);
-
-end;
 
 procedure TFormServer.Button2Click(Sender: TObject);
 var
@@ -7711,6 +6925,7 @@ var
   MyBrain: TSoccerBrain;
   Buf3 : array [0..8191] of AnsiChar;
   MM : TMemoryStream;
+  ids :string;
 
 begin
   FolderDialog1.Directory := dir_log;
@@ -7741,8 +6956,8 @@ begin
     sf.Free;
     Exit;
   end;
-
-  MyBrain := TSoccerBrain.create (  JustFileNameL (FolderDialog1.Directory) );
+  ids := JustFileNameL (FolderDialog1.Directory);
+  MyBrain := TSoccerBrain.create (  ids, ids[1],0 ,0,0,0);
   MM.LoadFromFile( FolderDialog1.Directory   + '\' + sf.ListFiles[sf.ListFiles.Count-1]);
   CopyMemory( @Buf3[0], MM.Memory, MM.size );
 
@@ -7949,8 +7164,8 @@ MyBrain.TeamCorner :=  Ord( buf3[ cur ]);
     TalentID2 := Ord( buf3[ cur ]);
     Cur := Cur + 1;
 
-    aStamina := Ord( buf3[ cur ]);
-    Cur := Cur + 1;
+    aStamina := PWORD(@buf3 [ cur ])^;
+    Cur := Cur + 2;
 
     DefaultSpeed := Ord( buf3[ cur ]);
     Cur := Cur + 1;
@@ -8105,8 +7320,8 @@ aPlayer.isCOF := Boolean( Ord( buf3[ cur ]));
     TalentID2 := Ord( buf3[ cur ]);
     Cur := Cur + 1;
 
-    aStamina := Ord( buf3[ cur ]);
-    Cur := Cur + 1;
+    aStamina := PWORD(@buf3 [ cur ])^;
+    Cur := Cur + 2;
 
     DefaultSpeed := Ord( buf3[ cur ]);
     Cur := Cur + 1;
@@ -8266,20 +7481,8 @@ begin
     ValidPlayer.history := qPlayers.FieldByName ('history').AsString;
     ValidPlayer.xp := qPlayers.FieldByName ('xp').AsString;
 
-    case ValidPlayer.Age of
-      18..24: begin
-        ValidPlayer.chancelvlUp := qPlayers.FieldByName ('deva1').AsInteger;
-        ValidPlayer.chancetalentlvlUp :=  qPlayers.FieldByName ('devt1').AsInteger;
-      end;
-      25..30: begin
-        ValidPlayer.chancelvlUp := qPlayers.FieldByName ('deva2').AsInteger;
-        ValidPlayer.chancetalentlvlUp :=  qPlayers.FieldByName ('devt2').AsInteger;
-      end;
-      31..33: begin
-        ValidPlayer.chancelvlUp := qPlayers.FieldByName ('deva3').AsInteger;
-        ValidPlayer.chancetalentlvlUp :=  qPlayers.FieldByName ('devt3').AsInteger;
-      end;
-    end;
+    ValidPlayer.chancelvlUp := qPlayers.FieldByName ('deva').AsInteger;
+    ValidPlayer.chancetalentlvlUp :=  qPlayers.FieldByName ('devt').AsInteger;
 
 
     alvlUp := TrylevelUpTalent('f', qPlayers.FieldByName('guid').AsInteger, RndGenerate(NUM_TALENT), ValidPlayer  );
@@ -8330,21 +7533,8 @@ begin
     ValidPlayer.history := qPlayers.FieldByName ('history').AsString;
     ValidPlayer.xp := qPlayers.FieldByName ('xp').AsString;
 
-    case ValidPlayer.Age of
-      18..24: begin
-        ValidPlayer.chancelvlUp := qPlayers.FieldByName ('deva1').AsInteger;
-        ValidPlayer.chancetalentlvlUp :=  qPlayers.FieldByName ('devt1').AsInteger;
-      end;
-      25..30: begin
-        ValidPlayer.chancelvlUp := qPlayers.FieldByName ('deva2').AsInteger;
-        ValidPlayer.chancetalentlvlUp :=  qPlayers.FieldByName ('devt2').AsInteger;
-      end;
-      31..33: begin
-        ValidPlayer.chancelvlUp := qPlayers.FieldByName ('deva3').AsInteger;
-        ValidPlayer.chancetalentlvlUp :=  qPlayers.FieldByName ('devt3').AsInteger;
-      end;
-    end;
-
+    ValidPlayer.chancelvlUp := qPlayers.FieldByName ('deva').AsInteger;
+    ValidPlayer.chancetalentlvlUp :=  qPlayers.FieldByName ('devt').AsInteger;
 
     alvlUp := TrylevelUpTalent('m', qPlayers.FieldByName('guid').AsInteger, RndGenerate(NUM_TALENT), ValidPlayer  );
   //  if alvlUp.value then
@@ -8407,20 +7597,8 @@ begin
     ValidPlayer.history := qPlayers.FieldByName ('history').AsString;
     ValidPlayer.xp := qPlayers.FieldByName ('xp').AsString;
 
-    case ValidPlayer.Age of
-      18..24: begin
-        ValidPlayer.chancelvlUp := qPlayers.FieldByName ('deva1').AsInteger;
-        ValidPlayer.chancetalentlvlUp :=  qPlayers.FieldByName ('devt1').AsInteger;
-      end;
-      25..30: begin
-        ValidPlayer.chancelvlUp := qPlayers.FieldByName ('deva2').AsInteger;
-        ValidPlayer.chancetalentlvlUp :=  qPlayers.FieldByName ('devt2').AsInteger;
-      end;
-      31..33: begin
-        ValidPlayer.chancelvlUp := qPlayers.FieldByName ('deva3').AsInteger;
-        ValidPlayer.chancetalentlvlUp :=  qPlayers.FieldByName ('devt3').AsInteger;
-      end;
-    end;
+    ValidPlayer.chancelvlUp := qPlayers.FieldByName ('deva').AsInteger;
+    ValidPlayer.chancetalentlvlUp :=  qPlayers.FieldByName ('devt').AsInteger;
 
 
     alvlUp := TrylevelUpTalent( 'f', qPlayers.FieldByName('guid').AsInteger, ValidPlayer.talentID1 , ValidPlayer  );
@@ -8451,20 +7629,8 @@ begin
     ValidPlayer.history := qPlayers.FieldByName ('history').AsString;
     ValidPlayer.xp := qPlayers.FieldByName ('xp').AsString;
 
-    case ValidPlayer.Age of
-      18..24: begin
-        ValidPlayer.chancelvlUp := qPlayers.FieldByName ('deva1').AsInteger;
-        ValidPlayer.chancetalentlvlUp :=  qPlayers.FieldByName ('devt1').AsInteger;
-      end;
-      25..30: begin
-        ValidPlayer.chancelvlUp := qPlayers.FieldByName ('deva2').AsInteger;
-        ValidPlayer.chancetalentlvlUp :=  qPlayers.FieldByName ('devt2').AsInteger;
-      end;
-      31..33: begin
-        ValidPlayer.chancelvlUp := qPlayers.FieldByName ('deva3').AsInteger;
-        ValidPlayer.chancetalentlvlUp :=  qPlayers.FieldByName ('devt3').AsInteger;
-      end;
-    end;
+    ValidPlayer.chancelvlUp := qPlayers.FieldByName ('deva').AsInteger;
+    ValidPlayer.chancetalentlvlUp :=  qPlayers.FieldByName ('devt').AsInteger;
 
 
     alvlUp:= TrylevelUpTalent( 'm', qPlayers.FieldByName('guid').AsInteger, ValidPlayer.talentID1 , ValidPlayer  );
@@ -8486,23 +7652,38 @@ begin
 
 end;
 
-function TFormServer.CreateTalentLevel2 ( aBasePlayer: TBasePlayer ) : Byte;  // può tornare anche 0
+function TFormServer.CreateTalentLevel2 ( fm :Char; aBasePlayer: TBasePlayer ) : Byte;  // può tornare anche 0
 var
   aList : TList<Integer>;
   i: integer;
+  MiddleLevel: Byte;
   procedure Add_Common_buffs;
   begin
-   if aBasePlayer.DefaultDefense >= 3 then      // i buff comuni a tutti
-    aList.Add (TALENT_ID_BUFF_DEFENSE);
+    if fm = 'f' then begin
+     if aBasePlayer.DefaultDefense >= 3 then      // i buff comuni a tutti
+      aList.Add (TALENT_ID_BUFF_DEFENSE);
 
-   if aBasePlayer.DefaultPassing >= 3 then
-    aList.Add (TALENT_ID_BUFF_MIDDLE);
+     if aBasePlayer.DefaultPassing >= 3 then
+      aList.Add (TALENT_ID_BUFF_MIDDLE);
 
-   if aBasePlayer.DefaultShot >= 3 then
-    aList.Add (TALENT_ID_BUFF_FORWARD);
+     if aBasePlayer.DefaultShot >= 3 then
+      aList.Add (TALENT_ID_BUFF_FORWARD);
+    end
+    else if fm = 'm' then begin
+     if aBasePlayer.DefaultDefense >= 5 then      // i buff comuni a tutti
+      aList.Add (TALENT_ID_BUFF_DEFENSE);
+
+     if aBasePlayer.DefaultPassing >= 5 then
+      aList.Add (TALENT_ID_BUFF_MIDDLE);
+
+     if aBasePlayer.DefaultShot >= 5 then
+      aList.Add (TALENT_ID_BUFF_FORWARD);
+    end;
   end;
 begin
   // Riempe una lista di possibili Talent2 ( Talenti di livello 1 + eventuali talent Level 2 )
+  if fm = 'f' then MiddleLevel := 3
+  else if fm='m' then MiddleLevel := 5;
 
   aList:= TList<Integer>.Create;
   case aBasePlayer.TalentId1 of
@@ -8522,7 +7703,7 @@ begin
 
      Add_Common_Buffs;                             // i buff comuni a tutti
 
-     if aBasePlayer.DefaultDefense >= 3 then       // 128 prereq difesa 3 TALENT_ID_CHALLENGE  --> 5% chance +1 autotackle
+     if aBasePlayer.DefaultDefense >= MiddleLevel then       // 128 prereq difesa 3/5 TALENT_ID_CHALLENGE  --> 5% chance +1 autotackle
       aList.Add (TALENT_ID_ADVANCED_CHALLENGE);
 
     end;
@@ -8536,7 +7717,7 @@ begin
 
      Add_Common_Buffs;                             // i buff comuni a tutti
 
-     if aBasePlayer.DefaultDefense >= 3 then       // 129 prereq difesa 3 TALENT_ID_TOUGHNESS  --> 5% chance +1 tackle
+     if aBasePlayer.DefaultDefense >= MiddleLevel then       // 129 prereq difesa 3/5 TALENT_ID_TOUGHNESS  --> 5% chance +1 tackle
       aList.Add (TALENT_ID_ADVANCED_TOUGHNESS);
 
     end;
@@ -8550,7 +7731,7 @@ begin
 
      Add_Common_Buffs;                             // i buff comuni a tutti
 
-     if aBasePlayer.DefaultBallControl >= 3 then   // 130 prereq ballcontrol 3 TALENT_ID_POWER  --> 5% chance +1 resist tackle
+     if aBasePlayer.DefaultBallControl >= MiddleLevel then   // 130 prereq ballcontrol 3/5 TALENT_ID_POWER  --> 5% chance +1 resist tackle
       aList.Add (TALENT_ID_ADVANCED_POWER);
 
     end;
@@ -8564,10 +7745,12 @@ begin
 
       Add_Common_Buffs;                             // i buff comuni a tutti
 
+     if aBasePlayer.DefaultPassing >= MiddleLevel then begin
       aList.Add (TALENT_ID_ADVANCED_CROSSING);     // 131 prereq TALENT_ID_CROSSING  -->  5% chance +2 crossing
       aList.Add (TALENT_ID_PRECISE_CROSSING);      // 137 prereq TALENT_ID_CROSSING  --> +1 crossing dal fondo
-
+     end;
     end;
+
     TALENT_ID_LONGPASS: begin
 
       for I := 2 to NUM_TALENT do begin  // Aggiunge tutti i talenti di livello 1 tranne sè stesso e il GK
@@ -8601,10 +7784,12 @@ begin
 
       Add_Common_Buffs;                             // i buff comuni a tutti
 
-      aList.Add (TALENT_ID_ADVANCED_DRIBBLING);     // 133 // +2 totale dribbling  . strutture alzano questa chance
-      aList.Add (TALENT_ID_SUPER_DRIBBLING);      // 138 // prereq talent dribbling --> dribbling +3 chance 15%
-
+     if aBasePlayer.DefaultBallControl >= MiddleLevel then begin
+      aList.Add (TALENT_ID_ADVANCED_DRIBBLING);     // 133 // prereq passing3/5 +2 totale dribbling  . strutture alzano questa chance
+      aList.Add (TALENT_ID_SUPER_DRIBBLING);      // 138 // prereq passing3/5 talent dribbling --> dribbling +3 chance 15%
+     end;
     end;
+
     TALENT_ID_BULLDOG: begin
       for I := 2 to NUM_TALENT do begin  // Aggiunge tutti i talenti di livello 1 tranne sè stesso e il GK
         if (i =  TALENT_ID_BULLDOG) then
@@ -8682,10 +7867,12 @@ begin
       end;
 
      Add_Common_Buffs;                            // i buff comuni a tutti
-     aList.Add (TALENT_ID_ADVANCED_BOMB);     // 136   prereq tiro 3 talent bomb --> 5% chance che si attivi da solo tiro +2 su powershot, non precision.shot
-  //   if aBasePlayer.DefaultShot >= 3 then
-  //     aList.Add (TALENT_ID_VOLLEY);            // id falloso   prereq tiro 3 talent bomb -->
+     if aBasePlayer.DefaultShot >= MiddleLevel then begin
 
+       aList.Add (TALENT_ID_ADVANCED_BOMB);     // 136   prereq tiro 3/5 talent bomb --> 5% chance che si attivi da solo tiro +2 su powershot, non precision.shot
+    //   if aBasePlayer.DefaultShot >= 3 then
+    //     aList.Add (TALENT_ID_VOLLEY);            // id falloso   prereq tiro 3 talent bomb -->
+     end;
     end;
     TALENT_ID_FAUL: begin
       for I := 2 to NUM_TALENT do begin  // Aggiunge tutti i talenti di livello 1 tranne sè stesso e il GK
@@ -8760,16 +7947,6 @@ begin
 
 end;
 
-function TBrainManager.GetFitnessModifier ( fitness: integer ): integer;
-begin
-  case Fitness of
-    0: if rndgenerate(50) <= 50 then
-      Result := -REGEN_STAMINA;
-    1: Result := 0;
-    2: if rndgenerate(50) <= 50 then
-      Result := +REGEN_STAMINA;
-  end;
-end;
 
  // Possibili combinazioni talenti
 //  TALENT_ID_GOALKEEPER     = 1;  // può giocare in porta
@@ -8916,20 +8093,8 @@ begin
     ValidPlayer.history := qPlayers.FieldByName ('history').AsString;
     ValidPlayer.xp := qPlayers.FieldByName ('xp').AsString;
 
-    case ValidPlayer.Age of
-      18..24: begin
-        ValidPlayer.chancelvlUp := qPlayers.FieldByName ('deva1').AsInteger;
-        ValidPlayer.chancetalentlvlUp :=  qPlayers.FieldByName ('devt1').AsInteger;
-      end;
-      25..30: begin
-        ValidPlayer.chancelvlUp := qPlayers.FieldByName ('deva2').AsInteger;
-        ValidPlayer.chancetalentlvlUp :=  qPlayers.FieldByName ('devt2').AsInteger;
-      end;
-      31..33: begin
-        ValidPlayer.chancelvlUp := qPlayers.FieldByName ('deva3').AsInteger;
-        ValidPlayer.chancetalentlvlUp :=  qPlayers.FieldByName ('devt3').AsInteger;
-      end;
-    end;
+    ValidPlayer.chancelvlUp := qPlayers.FieldByName ('deva').AsInteger;
+    ValidPlayer.chancetalentlvlUp :=  qPlayers.FieldByName ('devt').AsInteger;
 
     tsXP := TStringList.Create;
     tsXP.commaText := ValidPlayer.xp; // <-- init importante 18 talenti
@@ -9025,20 +8190,9 @@ begin
     ValidPlayer.history := qPlayers.FieldByName ('history').AsString;
     ValidPlayer.xp := qPlayers.FieldByName ('xp').AsString;
 
-    case ValidPlayer.Age of
-      18..24: begin
-        ValidPlayer.chancelvlUp := qPlayers.FieldByName ('deva1').AsInteger;
-        ValidPlayer.chancetalentlvlUp :=  qPlayers.FieldByName ('devt1').AsInteger;
-      end;
-      25..30: begin
-        ValidPlayer.chancelvlUp := qPlayers.FieldByName ('deva2').AsInteger;
-        ValidPlayer.chancetalentlvlUp :=  qPlayers.FieldByName ('devt2').AsInteger;
-      end;
-      31..33: begin
-        ValidPlayer.chancelvlUp := qPlayers.FieldByName ('deva3').AsInteger;
-        ValidPlayer.chancetalentlvlUp :=  qPlayers.FieldByName ('devt3').AsInteger;
-      end;
-    end;
+    ValidPlayer.chancelvlUp := qPlayers.FieldByName ('deva').AsInteger;
+    ValidPlayer.chancetalentlvlUp :=  qPlayers.FieldByName ('devt').AsInteger;
+
     tsXP := TStringList.Create;
     tsXP.commaText := ValidPlayer.xp; // <-- init importante 18 talenti
     // rispettare esatto ordine

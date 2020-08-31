@@ -128,54 +128,54 @@
 #define DAConsts_SNoKeyFields 64557
 #define DAConsts_SBadTableInfoName 64558
 #define DAConsts_SBadStatementType 64559
-#define Data_DBConsts_STextTrue 64560
-#define Data_DBConsts_SParameterNotFound 64561
-#define Data_DBConsts_SInvalidVersion 64562
-#define Data_DBConsts_SBadFieldType 64563
-#define Data_DBConsts_SProviderSQLNotSupported 64564
-#define Data_DBConsts_SProviderExecuteNotSupported 64565
-#define Data_DBConsts_SDataSetUnidirectional 64566
-#define Data_DBConsts_SUnassignedVar 64567
-#define Data_DBConsts_SRecordNotFound 64568
-#define Data_DBConsts_SBcdOverflow 64569
-#define Data_DBConsts_SInvalidBcdValue 64570
-#define Data_DBConsts_SCouldNotParseTimeStamp 64571
-#define Data_DBConsts_SInvalidSqlTimeStamp 64572
-#define DSE_PathPlanner_SMissingStateFactory 64573
-#define DSE_PathPlanner_SInvalidNeighborRequest 64574
+#define Data_DBConsts_SNestedDataSetClass 64560
+#define Data_DBConsts_STextFalse 64561
+#define Data_DBConsts_STextTrue 64562
+#define Data_DBConsts_SParameterNotFound 64563
+#define Data_DBConsts_SInvalidVersion 64564
+#define Data_DBConsts_SBadFieldType 64565
+#define Data_DBConsts_SProviderSQLNotSupported 64566
+#define Data_DBConsts_SProviderExecuteNotSupported 64567
+#define Data_DBConsts_SDataSetUnidirectional 64568
+#define Data_DBConsts_SUnassignedVar 64569
+#define Data_DBConsts_SRecordNotFound 64570
+#define Data_DBConsts_SBcdOverflow 64571
+#define Data_DBConsts_SInvalidBcdValue 64572
+#define Data_DBConsts_SCouldNotParseTimeStamp 64573
+#define Data_DBConsts_SInvalidSqlTimeStamp 64574
 #define System_ZLibConst_sTargetBufferTooSmall 64575
-#define Data_DBConsts_SInvalidCalcType 64576
-#define Data_DBConsts_SFieldReadOnly 64577
-#define Data_DBConsts_SDuplicateIndexName 64578
-#define Data_DBConsts_SNoIndexForFields 64579
-#define Data_DBConsts_SIndexNotFound 64580
-#define Data_DBConsts_SDBDuplicateName 64581
-#define Data_DBConsts_SCircularDataLink 64582
-#define Data_DBConsts_SLookupInfoError 64583
-#define Data_DBConsts_SDataSourceChange 64584
-#define Data_DBConsts_SDataSetOpen 64585
-#define Data_DBConsts_SNotEditing 64586
-#define Data_DBConsts_SDataSetClosed 64587
-#define Data_DBConsts_SDataSetEmpty 64588
-#define Data_DBConsts_SDataSetReadOnly 64589
-#define Data_DBConsts_SNestedDataSetClass 64590
-#define Data_DBConsts_STextFalse 64591
-#define Data_DBConsts_SFieldNameMissing 64592
-#define Data_DBConsts_SDuplicateFieldName 64593
-#define Data_DBConsts_SFieldNotFound 64594
-#define Data_DBConsts_SFieldAccessError 64595
-#define Data_DBConsts_SFieldValueError 64596
-#define Data_DBConsts_SFieldRangeError 64597
-#define Data_DBConsts_SBcdFieldRangeError 64598
-#define Data_DBConsts_SInvalidIntegerValue 64599
-#define Data_DBConsts_SInvalidBoolValue 64600
-#define Data_DBConsts_SInvalidFloatValue 64601
-#define Data_DBConsts_SFieldTypeMismatch 64602
-#define Data_DBConsts_SFieldSizeMismatch 64603
-#define Data_DBConsts_SInvalidVarByteArray 64604
-#define Data_DBConsts_SFieldOutOfRange 64605
-#define Data_DBConsts_SFieldRequired 64606
-#define Data_DBConsts_SDataSetMissing 64607
+#define Data_DBConsts_SFieldRequired 64576
+#define Data_DBConsts_SDataSetMissing 64577
+#define Data_DBConsts_SInvalidCalcType 64578
+#define Data_DBConsts_SFieldReadOnly 64579
+#define Data_DBConsts_SDuplicateIndexName 64580
+#define Data_DBConsts_SNoIndexForFields 64581
+#define Data_DBConsts_SIndexNotFound 64582
+#define Data_DBConsts_SDBDuplicateName 64583
+#define Data_DBConsts_SCircularDataLink 64584
+#define Data_DBConsts_SLookupInfoError 64585
+#define Data_DBConsts_SDataSourceChange 64586
+#define Data_DBConsts_SDataSetOpen 64587
+#define Data_DBConsts_SNotEditing 64588
+#define Data_DBConsts_SDataSetClosed 64589
+#define Data_DBConsts_SDataSetEmpty 64590
+#define Data_DBConsts_SDataSetReadOnly 64591
+#define Data_DBConsts_SInvalidFieldKind 64592
+#define Data_DBConsts_SUnknownFieldType 64593
+#define Data_DBConsts_SFieldNameMissing 64594
+#define Data_DBConsts_SDuplicateFieldName 64595
+#define Data_DBConsts_SFieldNotFound 64596
+#define Data_DBConsts_SFieldAccessError 64597
+#define Data_DBConsts_SFieldValueError 64598
+#define Data_DBConsts_SFieldRangeError 64599
+#define Data_DBConsts_SBcdFieldRangeError 64600
+#define Data_DBConsts_SInvalidIntegerValue 64601
+#define Data_DBConsts_SInvalidBoolValue 64602
+#define Data_DBConsts_SInvalidFloatValue 64603
+#define Data_DBConsts_SFieldTypeMismatch 64604
+#define Data_DBConsts_SFieldSizeMismatch 64605
+#define Data_DBConsts_SInvalidVarByteArray 64606
+#define Data_DBConsts_SFieldOutOfRange 64607
 #define Vcl_Consts_SStyleClassNotFound 64608
 #define Vcl_Consts_SStyleInvalidHandle 64609
 #define Vcl_Consts_SStyleFormatError 64610
@@ -189,9 +189,9 @@
 #define Vcl_Consts_sBeginInvokeNoHandle 64618
 #define EZLib_SZInvalid 64619
 #define EZip_rsELInvalidPassword 64620
-#define Data_DBConsts_SInvalidFieldSize 64621
-#define Data_DBConsts_SInvalidFieldKind 64622
-#define Data_DBConsts_SUnknownFieldType 64623
+#define DSE_PathPlanner_SMissingStateFactory 64621
+#define DSE_PathPlanner_SInvalidNeighborRequest 64622
+#define Data_DBConsts_SInvalidFieldSize 64623
 #define Vcl_Consts_SPromptArrayTooShort 64624
 #define Vcl_Consts_SPromptArrayEmpty 64625
 #define Vcl_Consts_SUsername 64626
@@ -1226,6 +1226,8 @@ BEGIN
 	DAConsts_SNoKeyFields,	L"Key fields not found"
 	DAConsts_SBadTableInfoName,	L"TableInfo name must be provided"
 	DAConsts_SBadStatementType,	L"Bad statement type"
+	Data_DBConsts_SNestedDataSetClass,	L"Nested dataset must inherit from %s"
+	Data_DBConsts_STextFalse,	L"False"
 	Data_DBConsts_STextTrue,	L"True"
 	Data_DBConsts_SParameterNotFound,	L"Parameter '%s' not found"
 	Data_DBConsts_SInvalidVersion,	L"Unable to load bind parameters"
@@ -1239,9 +1241,9 @@ BEGIN
 	Data_DBConsts_SInvalidBcdValue,	L"%s is not a valid BCD value"
 	Data_DBConsts_SCouldNotParseTimeStamp,	L"Could not parse SQL TimeStamp string"
 	Data_DBConsts_SInvalidSqlTimeStamp,	L"Invalid SQL date/time values"
-	DSE_PathPlanner_SMissingStateFactory,	L"Unable to start search, missing factory"
-	DSE_PathPlanner_SInvalidNeighborRequest,	L"Invalid neighbor request, index out of range"
 	System_ZLibConst_sTargetBufferTooSmall,	L"ZLib error: target buffer may be too small"
+	Data_DBConsts_SFieldRequired,	L"Field '%s' must have a value"
+	Data_DBConsts_SDataSetMissing,	L"Field '%s' has no dataset"
 	Data_DBConsts_SInvalidCalcType,	L"Field '%s' cannot be a calculated or lookup field"
 	Data_DBConsts_SFieldReadOnly,	L"Field '%s' cannot be modified"
 	Data_DBConsts_SDuplicateIndexName,	L"Duplicate index name '%s'"
@@ -1256,8 +1258,8 @@ BEGIN
 	Data_DBConsts_SDataSetClosed,	L"Cannot perform this operation on a closed dataset"
 	Data_DBConsts_SDataSetEmpty,	L"Cannot perform this operation on an empty dataset"
 	Data_DBConsts_SDataSetReadOnly,	L"Cannot modify a read-only dataset"
-	Data_DBConsts_SNestedDataSetClass,	L"Nested dataset must inherit from %s"
-	Data_DBConsts_STextFalse,	L"False"
+	Data_DBConsts_SInvalidFieldKind,	L"Invalid FieldKind"
+	Data_DBConsts_SUnknownFieldType,	L"Field '%s' is of an unknown type"
 	Data_DBConsts_SFieldNameMissing,	L"Field name missing"
 	Data_DBConsts_SDuplicateFieldName,	L"Duplicate field name '%s'"
 	Data_DBConsts_SFieldNotFound,	L"Field '%s' not found"
@@ -1272,8 +1274,6 @@ BEGIN
 	Data_DBConsts_SFieldSizeMismatch,	L"Size mismatch for field '%s', expecting: %d actual: %d"
 	Data_DBConsts_SInvalidVarByteArray,	L"Invalid variant type or size for field '%s'"
 	Data_DBConsts_SFieldOutOfRange,	L"Value of field '%s' is out of range"
-	Data_DBConsts_SFieldRequired,	L"Field '%s' must have a value"
-	Data_DBConsts_SDataSetMissing,	L"Field '%s' has no dataset"
 	Vcl_Consts_SStyleClassNotFound,	L"Style class '%s' not found"
 	Vcl_Consts_SStyleInvalidHandle,	L"Invalid style handle"
 	Vcl_Consts_SStyleFormatError,	L"Invalid style format"
@@ -1287,9 +1287,9 @@ BEGIN
 	Vcl_Consts_sBeginInvokeNoHandle,	L"Cannot call BeginInvoke on a control with no parent or window handle"
 	EZLib_SZInvalid,	L"Invalid ZStream operation!"
 	EZip_rsELInvalidPassword,	L"ZIP: Invalid Password"
+	DSE_PathPlanner_SMissingStateFactory,	L"Unable to start search, missing factory"
+	DSE_PathPlanner_SInvalidNeighborRequest,	L"Invalid neighbor request, index out of range"
 	Data_DBConsts_SInvalidFieldSize,	L"Invalid field size"
-	Data_DBConsts_SInvalidFieldKind,	L"Invalid FieldKind"
-	Data_DBConsts_SUnknownFieldType,	L"Field '%s' is of an unknown type"
 	Vcl_Consts_SPromptArrayTooShort,	L"Length of value array must be >= length of prompt array"
 	Vcl_Consts_SPromptArrayEmpty,	L"Prompt array must not be empty"
 	Vcl_Consts_SUsername,	L"&Username"
