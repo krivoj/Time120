@@ -159,6 +159,8 @@ end;
 
   procedure AllRainXp ( var aPlayer: TSoccerPlayer);
 
+  procedure CompleteAllDivisions ( Country : Integer );
+
   procedure GetBuildInfo(var V1, V2, V3, V4: Word);
   function kfVersionInfo: String;
 
@@ -5262,8 +5264,11 @@ begin
 
 
 end;
-
-
+procedure CompleteAllDivisions ( Country : Integer );
+begin
+//  if ThisDivision .round then
+  
+end;
 procedure MakeDelay ( interval: integer);
 var
   start: Integer;

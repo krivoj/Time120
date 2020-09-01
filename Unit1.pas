@@ -29,27 +29,29 @@
     //      CompleteDivisions;
 //      createnewseason;
 
+
      errore flags su qualcosa, forse lop
 
      come fa ad arrivare al 150??????
      MANCA UNO SPRITERESET E TUTTO AMDREBBE
 
-     errore sul back INTERRUPT riguardo agli sprites
+     dopo interrupt non funziona piu' AI auto
 
     dopo il gol su freekick non ha fatto il deflatebarrier ma neanche il reset del gol.
     rifare la schermata gol roundborder come minimo
-    usare tsspeaker
+
     showmatchinfo finire bene.
+    panel iniziali, a parte login, rifare con SE_MENU
 
     finire le skill sia effetto che help
 
-    la skill -16 o +16 dove si settano? sono subspritemainsk . vanno bene, ma dove vengono settate x e y ?
     fare ? per help su ogni btnmenu_ e dove c'è bisogno. apre l'help se_help   btnhelp_attributes _talents
 
     bug lastman. ricalcolare le condizioni . anche la nuova versione forse non va bene. c'è sicuro errore perchè compare al 44' di una partita
     islastman diventa islastman ( aplayer, ballplayer)
 
     testare gameover e fare nextMF usare minute per continuare
+
     FARE AIthinkdev Animazioni per sviluppo attributo o talento.
 
 
@@ -58,6 +60,7 @@
 
     migliorare icone
     stadi diversi , ambienti più caldi con pubblico più grande
+    .tmp da mettere come variabili gender  TALENT_ID_ADVANCED_CROSSING ha bisogno di +2 dal fondo
 
     ischeatingball è  da rifare. Isolare la palla tenendo conto dle fatto che i Gk può finire il turno con la palla tra le mani.
     verificare se il gk può ricevere un shp e applicare il concetto di palla infuocata  --> non puoi giocare 3 mosse move +1 il gk da via la palla.
@@ -65,6 +68,7 @@
 
     icona skill short.passing piede+palla
 
+    fare talento quando riceve passaggiocorot prova a fare un dribbling a costo 0
     // --------------------- PVP ----------------------------
     pvp cl_splash.gameover aggiungere miGain, rank e stelle in showgameover
 
@@ -74,7 +78,6 @@
     pvp = per il momento non cambiare. LOADAML fare tutte le nuove coords spritelabel
 
 
-    .tmp da mettere come variabili gender  TALENT_ID_ADVANCED_CROSSING ha bisogno di +2 dal fondo
 
     pvp standings, icone mappamondo, country, fra il team. you e il team. il team è la somma di tutti i team come il tuo. refresh ogni 24 ore.
       anzi alcune query ogni settimana. tutto su dbforge in mantanaince
@@ -109,14 +112,15 @@
    pvp ordinare per performance  i cmd dal client ?
    gestire incrossbarposition, ingolposition con nextsound? per liberarlo dai pixel precisi.
 
-    ssl con passwordrandom
-    Aggiorno classifica cannonieri ?
+   pvp ssl con passwordrandom
+   pvp cannonieri
 
     aggiunta di 2 talenti
       talento Volley+2 prereq: bomb. volley si attiva anche con roll 9.
 
       TALENT_ID_PLAYMAKER estensione livello 2:
       talento se gioca centro 234(sua metacampo) ha +2 passaggio  +3male ( regista ) . solo sua metacampo
+        usare tsspeaker
 
     Valutare se Pos (tiro potente) può innescare autogol
 
@@ -722,6 +726,7 @@ type
 
 
   procedure AllBrainThink;
+  procedure ShowNewSeason ( Season : integer ) ;
 
   public
     { Public declarations }
@@ -1481,17 +1486,17 @@ begin
       //WaitForSingleObject(MutexAnimation, INFINITE);
       //tutto bene poi arriva il fallo
       while incMoveAllProcessed [LastMoveBrain] = false do begin // fino a quando c'è l'animazione non fa ai_think
-        Application.ProcessMessages;
+       // Application.ProcessMessages;
         ThreadCurrentIncMove.OnTimer (ThreadCurrentIncMove);
         mainThread.OnTimer (mainThread);
         SE_Theater1.thrdAnimate.OnTimer(SE_Theater1.thrdAnimate);
       end;
-       // o l'ultima parte della animazione viene troncata e non spariscono le mainskillused
+       // ritardo necessario o l'ultima parte della animazione viene troncata e non spariscono le mainskillused
       while ( SE_ball.IsAnySpriteMoving  ) or (SE_players.IsAnySpriteMoving ) do begin
 //        Application.ProcessMessages ;
         se_Theater1.thrdAnimate.OnTimer (se_Theater1.thrdAnimate);
       end;
-      SpriteReset;
+//      SpriteReset;
 
       AllBrainThink; // viene chiamata qui dopo ogni mia mossa e in i_tuc cioè quando la AI deve cominciare a giocare
       //ReleaseMutex(MutexAnimation);
@@ -1518,27 +1523,30 @@ var
 begin
 // il mercato si pensa dopo le partite
   if MyActiveGender = 'm' then begin
-    // se tempo di mercato
-//    ShowLoading;
-//    AllOtherTeamsThinkMarket;
+//    ShowLoading;  fare se_loading 5 pallini
+    AllOtherTeamsThinkMarket ('m',10);
 
     NextMF := 'f'
   end
   else Begin
-    // se tempo di mercato
 //    ShowLoading;
-//    AllOtherTeamsThinkMarket;
+    AllOtherTeamsThinkMarket ('f',10);
 
     NextMF :='m';
 
-    ActiveRound := ActiveRound + 1;
-    if ActiveRound > DivisionMatchCount[Mydivision] then begin
-      ActiveSeason := ActiveSeason + 1;
-//      CompleteDivisions;
-//      createnewseason;
+    // Le divisioni a 30 giornate terminano prima . Dopo vengono giocate solo le divisioni 1 e 2
+    if (( ActiveRound =  38+1 ) and (MyDivision <= 2 )) or  (( ActiveRound =  30+1 ) and (MyDivision > 2 ) ) then begin
+      if ( ActiveRound =  30+1 ) and (MyDivision > 2 ) then begin
+      // Mostro in SE_Live il button 'prossima stagione' al posto di play
+      // Se la mia divisione è finita ed è a 30 giornate devo attendere il completamento di tutti i campionati
+      //    con CompleteAllDivisions  // completa le divisioni a 38 giornate, altrimenti sono già finite e (2.0 coppe) CreateNewSeason (ActiveSeason+1);
+      // Se mia division è a 38 giornate, quelle a 30 si sono fermate e non aprtono in startallmatches. Sono pronte per CreateNewSeason
+        ShowNewSeason ( ActiveSeason + 1 ) ;
+      end;
     end;
   End;
 
+  // salvo ActiveRound anche a 31 o 39 così mostrerò il button 'new season' al caricamento
   ini := TIniFile.Create( dir_saves + 'index.ini' );
   ini.WriteInteger('setup','season',ActiveSeason);
   ini.WriteInteger('setup','round',ActiveRound);
@@ -1548,6 +1556,22 @@ begin
 
 
 end;
+procedure TForm1.ShowNewSeason( Season : integer ) ;
+var
+  aSprite :SE_Sprite;
+begin
+
+  aSprite := SE_MainInterface.FindSprite ('btnmenu_play');
+  aSprite.Visible := false;
+  aSprite := SE_MainInterface.FindSprite ('btnmenu_confirmformation');
+  aSprite.Visible := False;
+  aSprite := SE_MainInterface.FindSprite( 'btnmenu_newseason' );
+  aSprite.Visible := true;
+
+  aSprite.Labels[0].lText := IntToStr(Season);
+
+end;
+
 procedure TForm1.ComboBox1CloseUp(Sender: TObject);
 var
   ini : TIniFile;
@@ -2012,12 +2036,12 @@ begin
   aBtnSprite:=SE_AML.CreateSprite(bmp.Bitmap ,'btnmenu_back',1,1,1000,100,YMAINBUTTON,true,1200 );
   aBtnSprite.TransparentForced := true;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'sub',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'back',90-40,56-40,true );
 
   aBtnSprite:=SE_AML.CreateSprite(bmp.Bitmap ,'btnmenu_refresh',1,1,1000,720,YMAINBUTTON,true,1200 );
   aBtnSprite.TransparentForced := true;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'refresh.bmp', 'sub',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'refresh.bmp', 'refresh',90-40,56-40,true );
 
   bmp.Free;
 end;
@@ -2036,21 +2060,21 @@ begin
 //  aBtnSprite.Labels.Add( aSpriteLabel);
   aBtnSprite.TransparentForced := true;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'sub',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'back',90-40,56-40,true );
 
   aBtnSprite:=SE_Standings.CreateSprite(bmp.Bitmap ,'btnmenu_back1',1,1,1000,(180*2)+90,YMAINBUTTON,true,1200 );
 //  aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize, '<',true  );
 //  aBtnSprite.Labels.Add( aSpriteLabel);
   aBtnSprite.TransparentForced := true;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'backward1.bmp', 'sub',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'backward1.bmp', 'back1',90-40,56-40,true );
 
   aBtnSprite:=SE_Standings.CreateSprite(bmp.Bitmap ,'btnmenu_forward1',1,1,1000,(180*3)+90,YMAINBUTTON,true,1200 );
 //  aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize, '>', true  );
 //  aBtnSprite.Labels.Add( aSpriteLabel);
   aBtnSprite.TransparentForced := true;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'forward1.bmp', 'sub',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'forward1.bmp', 'forw1',90-40,56-40,true );
 
   bmp.Free;
 
@@ -2161,34 +2185,34 @@ begin
   aBtnSprite:=SE_Market.CreateSprite(dir_interface + 'button.bmp' ,'btnmenu_back',1,1,1000,90,YMAINBUTTON,true,1200 );
   aBtnSprite.TransparentForced := true;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'sub',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'back',90-40,56-40,true );
 
   if GameMode = pvp then begin
     aBtnSprite:=SE_Market.CreateSprite(dir_interface + 'button.bmp' ,'btnmenu_refresh',1,1,1000,(180*2)+90,YMAINBUTTON,true,1200 );
     aBtnSprite.TransparentForced := true;
     aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-    aBtnSprite.AddSubSprite( dir_interface +'refresh.bmp', 'sub',90-40,56-40,true );
+    aBtnSprite.AddSubSprite( dir_interface +'refresh.bmp', 'refresh',90-40,56-40,true );
   end
   else if GameMode = pve then begin
     aBtnSprite:=SE_Market.CreateSprite(dir_interface + 'button.bmp' ,'btnmenu_back2',1,1,1000,(180)+90,YMAINBUTTON,true,1200 );
     aBtnSprite.TransparentForced := true;
     aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-    aBtnSprite.AddSubSprite(dir_interface +'backward2.bmp', 'sub',90-40,56-40,true );
+    aBtnSprite.AddSubSprite(dir_interface +'backward2.bmp', 'back2',90-40,56-40,true );
 
     aBtnSprite:=SE_Market.CreateSprite(dir_interface + 'button.bmp','btnmenu_back1',1,1,1000,(180*2)+90,YMAINBUTTON,true,1200 );
     aBtnSprite.TransparentForced := true;
     aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-    aBtnSprite.AddSubSprite(dir_interface +'backward1.bmp', 'sub',90-40,56-40,true );
+    aBtnSprite.AddSubSprite(dir_interface +'backward1.bmp', 'back1',90-40,56-40,true );
 
     aBtnSprite:=SE_Market.CreateSprite(dir_interface + 'button.bmp','btnmenu_forward1',1,1,1000,(180*3)+90,YMAINBUTTON,true,1200 );
     aBtnSprite.TransparentForced := true;
     aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-    aBtnSprite.AddSubSprite(dir_interface +'forward1.bmp', 'sub',90-40,56-40,true );
+    aBtnSprite.AddSubSprite(dir_interface +'forward1.bmp', 'forw1',90-40,56-40,true );
 
     aBtnSprite:=SE_Market.CreateSprite(dir_interface + 'button.bmp' ,'btnmenu_forward2',1,1,1000,(180*4)+90,YMAINBUTTON,true,1200 );
     aBtnSprite.TransparentForced := true;
     aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-    aBtnSprite.AddSubSprite(dir_interface +'forward2.bmp', 'sub',90-40,56-40,true );
+    aBtnSprite.AddSubSprite(dir_interface +'forward2.bmp', 'forw2',90-40,56-40,true );
   end;
 
   aSprite := SE_Market.CreateSprite(dir_interface + 'money.bmp','gold', 1,1,1000,1300,YMAINBUTTON,true,1200);
@@ -2287,7 +2311,7 @@ begin
   //aBtnSprite.Labels.Add( aSpriteLabel);
   aBtnSprite.TransparentForced := true;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'sub',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'close',90-40,56-40,true );
   bmp.Free;
 
 
@@ -2372,27 +2396,27 @@ begin
   aBtnSprite:=SE_CountryTeam.CreateSprite(bmp.Bitmap ,'btnmenu_back',1,1,1000,90,YMAINBUTTON,true,1200 );
   aBtnSprite.TransparentForced := true;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'sub',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'back',90-40,56-40,true );
 
   aBtnSprite:=SE_CountryTeam.CreateSprite(bmp.Bitmap ,'btnmenu_back2',1,1,1000,180+90,YMAINBUTTON,true,1200 );
   aBtnSprite.TransparentForced := true;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'backward2.bmp', 'sub',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'backward2.bmp', 'back2',90-40,56-40,true );
 
   aBtnSprite:=SE_CountryTeam.CreateSprite(bmp.Bitmap ,'btnmenu_back1',1,1,1000,(180*2)+90,YMAINBUTTON,true,1200 );
   aBtnSprite.TransparentForced := true;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'backward1.bmp', 'sub',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'backward1.bmp', 'back1',90-40,56-40,true );
 
   aBtnSprite:=SE_CountryTeam.CreateSprite(bmp.Bitmap ,'btnmenu_forward1',1,1,1000,(180*3)+90,YMAINBUTTON,true,1200 );
   aBtnSprite.TransparentForced := true;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'forward1.bmp', 'sub',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'forward1.bmp', 'forw1',90-40,56-40,true );
 
   aBtnSprite:=SE_CountryTeam.CreateSprite(bmp.Bitmap ,'btnmenu_forward2',1,1,1000,(180*4)+90,YMAINBUTTON,true,1200 );
   aBtnSprite.TransparentForced := true;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'forward2.bmp', 'sub',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'forward2.bmp', 'forw2',90-40,56-40,true );
 
   bmp.Free;
 
@@ -2598,12 +2622,12 @@ begin
   aBtnSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btnmenu_back',1,1,1000,90,YMAINBUTTON,true,1200 );
   aBtnSprite.TransparentForced := true;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'sub',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'back',90-40,56-40,true );
 
   aBtnSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btnmenu_sell',1,1,1000,180+90,YMAINBUTTON,true ,1200);
   aBtnSprite.TransparentForced := true;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'sell.bmp', 'sub',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'sell.bmp', 'sell',90-40,56-40,true );
   SE_PlayerDetails.CreateSprite(bmpQuestion.Bitmap ,'btnhelp_sellcanceldismiss',1,1,1000,(180*4)+90+xBtnMenuHelp ,YMAINBUTTON,true,1201 );
 
   // Panel Sell e Dismiss
@@ -2613,12 +2637,12 @@ begin
   aBtnSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btnmenu_cancelsell',1,1,1000,(180*2)+90,YMAINBUTTON,true,1200 );
   aBtnSprite.TransparentForced := true;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'cancelsell.bmp', 'sub',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'cancelsell.bmp', 'cancel',90-40,56-40,true );
 
   aBtnSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btnmenu_dismiss',1,1,1000,(180*3)+90,YMAINBUTTON,true ,1200);
   aBtnSprite.TransparentForced := true;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'dismiss.bmp', 'sub',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'dismiss.bmp', 'dismiss',90-40,56-40,true );
 
   // Panel Sell e Dismiss
   PanelDismiss.left := aBtnSprite.Position.X + (aBtnSprite.BMPCurrentFrame.Width div 2);
@@ -2829,7 +2853,7 @@ begin
   aBtnSprite:=SE_TacticsSubs.CreateSprite(bmp.Bitmap ,'btnmenu_back',1,1,1000,100,YMAINBUTTON,true ,1200);
   aBtnSprite.TransparentForced := true;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'sub',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'back',90-40,56-40,true );
 //  aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize, Translate('lbl_Back') ,true  );
 //  aBtnSprite.Labels.Add( aSpriteLabel);
   bmp.Free;
@@ -2864,7 +2888,7 @@ begin
   aBtnSprite:=SE_Help.CreateSprite(bmp.Bitmap ,'btnmenu_closehelp',1,1,1000,90,YMAINBUTTON,true,1200 );
   aBtnSprite.TransparentForced := True;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'sub',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'back',90-40,56-40,true );
   bmp.Free;
 
 end;
@@ -2912,25 +2936,25 @@ begin
   aBtnSprite:=SE_Live.CreateSprite(bmp.Bitmap ,'btnmenu_tactics',1,1,1000,Xbtntactics,YMAINBUTTON,true,1200 );
   aBtnSprite.TransparentForced := True;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'tactics.bmp', 'sub',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'tactics.bmp', 'tactics',90-40,56-40,true );
 
 
   aBtnSprite:=SE_Live.CreateSprite(bmp.Bitmap ,'btnmenu_subs',1,1,1000,XbtnSubs,YMAINBUTTON,true,1200 );
   aBtnSprite.TransparentForced := True;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'subs.bmp', 'sub',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'subs.bmp', 'subs',90-40,56-40,true );
 
   aBtnSprite:=SE_LIVE.CreateSprite(dir_interface + 'button.bmp' , 'btnmenu_skillpass',1,1,1000,XbtnPass,YMAINBUTTON,true,1200 );
   aBtnSprite.TransparentForced := True;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_skill +'pass.bmp', 'sub',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_skill +'pass.bmp', 'pass',90-40,56-40,true );
 
   if GameMode = Pve then begin
 
     aBtnSprite:=SE_Live.CreateSprite(bmp.Bitmap ,'btnmenu_back',1,1,1000,XbtnExit,YMAINBUTTON,true,1200 );
     aBtnSprite.TransparentForced := True;
     aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-    aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'sub',90-40,56-40,true );
+    aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'back',90-40,56-40,true );
 
   end;
 
@@ -2961,7 +2985,7 @@ begin
   aBtnSprite:=SE_Spectator.CreateSprite(bmp.Bitmap ,'btnmenu_exit',1,1,1000,90,YMAINBUTTON,true ,1200);
   aBtnSprite.TransparentForced := true;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'sub',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'exit',90-40,56-40,true );
 
   aBtnSprite:=SE_Spectator.CreateSprite(bmp.Bitmap ,'btnmenu_overridecolor',1,1,1000, (180*7)+90,YMAINBUTTON,true,1200 );
   aBtnSprite.TransparentForced := True;
@@ -3071,7 +3095,7 @@ begin
   //aBtnSprite.Labels.Add( aSpriteLabel);
   aBtnSprite.TransparentForced := True;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'exit.bmp', 'sub',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'exit.bmp', 'exit',90-40,56-40,true );
   bmp.Free;
 
   bmp := SE_Bitmap.Create ( dir_interface + 'button.bmp');
@@ -3084,7 +3108,7 @@ begin
   aBtnSprite:=SE_MainInterface.CreateSprite(bmp.Bitmap ,'btnmenu_reset',1,1,1000,(180*2)+90,YMAINBUTTON,true ,1200);
   aBtnSprite.TransparentForced := True;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite( dir_interface +'reset.bmp', 'sub',90-40,56-40,true );
+  aBtnSprite.AddSubSprite( dir_interface +'reset.bmp', 'reset',90-40,56-40,true );
   SE_MainInterface.CreateSprite(bmpQuestion.Bitmap ,'btnhelp_reset',1,1,1000,(180*2)+90+xBtnMenuHelp ,YMAINBUTTON+yBtnMenuHelp,true,1201 );
 
 
@@ -3092,14 +3116,14 @@ begin
   aBtnSprite:=SE_MainInterface.CreateSprite(bmp.Bitmap ,'btnmenu_market',1,1,1000,(180*3)+90,YMAINBUTTON,true ,1200);
   aBtnSprite.TransparentForced := True;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite ( dir_interface +'market.bmp', 'sub',90-40,56-40,true );
+  aBtnSprite.AddSubSprite ( dir_interface +'market.bmp', 'market',90-40,56-40,true );
   SE_MainInterface.CreateSprite(bmpQuestion.Bitmap ,'btnhelp_market',1,1,1000,(180*3)+90+xBtnMenuHelp ,YMAINBUTTON+yBtnMenuHelp,true,1201 );
 
   if GameMode = pvp then begin
     aBtnSprite:=SE_MainInterface.CreateSprite(bmp.Bitmap ,'btnmenu_watchlive',1,1,1000,(180*4)+90,YMAINBUTTON,true,1200 );
     aBtnSprite.TransparentForced := True;
     aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-    aBtnSprite.AddSubSprite( dir_interface +'watchlive.bmp', 'sub',90-40,56-40,true );
+    aBtnSprite.AddSubSprite( dir_interface +'watchlive.bmp', 'watch',90-40,56-40,true );
     SE_MainInterface.CreateSprite(bmpQuestion.Bitmap ,'btnhelp_watchlive',1,1,1000,(180*4)+90+xBtnMenuHelp ,YMAINBUTTON+yBtnMenuHelp,true,1201 );
   end;
 
@@ -3108,7 +3132,7 @@ begin
 //  aBtnSprite.Labels.Add( aSpriteLabel);
   aBtnSprite.TransparentForced := True;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'standings.bmp', 'sub',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'standings.bmp', 'standings',90-40,56-40,true );
   SE_MainInterface.CreateSprite(bmpQuestion.Bitmap ,'btnhelp_standings',1,1,1000,(180*5)+90+xBtnMenuHelp ,YMAINBUTTON+yBtnMenuHelp,true,1201 );
 
 //  aBtnSprite:=SE_MainInterface.CreateSprite(bmp.Bitmap ,'btnmenu_info',1,1,1000,(180*6)+90,YMAINBUTTON,true,1200 );
@@ -3116,23 +3140,33 @@ begin
 //  aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
 //  bmp.Free;
 
-  // btn_play e btn_confirmformation
+  // btn_play e btn_confirmformation e NewSeason
   aBtnSprite:=SE_MainInterface.CreateSprite(bmp.Bitmap ,'btnmenu_play',1,1,1000,(180*7)+90,YMAINBUTTON,true,1200 );
  // aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize,Translate('lbl_Play'),true  );
  // aBtnSprite.Labels.Add( aSpriteLabel);
   aBtnSprite.TransparentForced := True;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'play.bmp', 'sub',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'play.bmp', 'play',90-40,56-40,true );
   SE_MainInterface.CreateSprite(bmpQuestion.Bitmap ,'btnhelp_play',1,1,1000,(180*7)+90+xBtnMenuHelp ,YMAINBUTTON+yBtnMenuHelp,true,1201 );
 
 
   aBtnSprite:=SE_MainInterface.CreateSprite(bmp.Bitmap ,'btnmenu_confirmformation',1,1,1000,(180*7)+90,YMAINBUTTON,true,1200 );
   aBtnSprite.TransparentForced := True;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'GreenCheckMark.bmp', 'sub',90-32,56-32,true );
+  aBtnSprite.AddSubSprite(dir_interface +'GreenCheckMark.bmp', 'confirm',90-32,56-32,true );
   SE_MainInterface.CreateSprite(bmpQuestion.Bitmap ,'btnhelp_confirmformation',1,1,1000,(180*7)+90+xBtnMenuHelp ,YMAINBUTTON+yBtnMenuHelp,true,1201 );
-  bmp.Free;
 
+
+  aBtnSprite:=SE_MainInterface.CreateSprite(bmp.Bitmap ,'btnmenu_newseason',1,1,1000,(180*7)+90,YMAINBUTTON,true,1200 );
+  aBtnSprite.TransparentForced := True;
+  aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
+  aBtnSprite.AddSubSprite(dir_interface +'newseason.bmp', 'newseason',90-32,56-32,true );
+  bmp.Free;
+  aSpriteLabel := SE_SpriteLabel.create( 0,34,'Calibri',clRed,clBlack,40, '' ,true  , 1, dt_Center  );
+  aSpriteLabel.lFontStyle := [fsbold];
+  aSpriteLabel.lFontQuality := fqDefault;
+  aBtnSprite.Labels.Add( aSpriteLabel);
+  aBtnSprite.Visible := false;
 
   // male female un po' in alto
   bmp := SE_Bitmap.Create ( 120,44);
@@ -3184,7 +3218,7 @@ begin
   aBtnSprite:=SE_PreMatch.CreateSprite(bmp.Bitmap ,'btnmenu_back',1,1,1000,90,YMAINBUTTON,true,1200 );
   aBtnSprite.TransparentForced := True;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'sub',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'back',90-40,56-40,true );
   bmp.Free;
 
 
@@ -3194,7 +3228,7 @@ begin
   aBtnSprite.Labels.Add( aSpriteLabel);
   aBtnSprite.TransparentForced := True;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite ( dir_interface +'simulate.bmp', 'sub',90-40,56-40,true );
+  aBtnSprite.AddSubSprite ( dir_interface +'simulate.bmp', 'simulate',90-40,56-40,true );
   bmp.Free;
 
 
@@ -3206,7 +3240,7 @@ begin
  // aBtnSprite.Labels.Add( aSpriteLabel);
   aBtnSprite.TransparentForced := True;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'play.bmp', 'sub',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'play.bmp', 'play',90-40,56-40,true );
   bmp.Free;
 
 end;
@@ -4499,7 +4533,7 @@ begin
 
     // da qui in poi sol oparte grafica
     aSprite:=SE_MainInterface.FindSprite ('btnmenu_uniform' );
-    aSprite.AddSubSprite(dir_tmp + 'color0.bmp','sub',90-32,56-32,true);   // sono 64x64, non 80x80
+    aSprite.AddSubSprite(dir_tmp + 'color0.bmp','uniform',90-32,56-32,true);   // sono 64x64, non 80x80
 
 
     // qui GuidTeam e rank. SE_Rank contiene solo questi 2 sprites e non è cliccabile. non ci sono mousedown o mousemove
@@ -4615,7 +4649,7 @@ begin
       aBtnSprite:=SE_Loading.CreateSprite(dir_interface + 'button.bmp' ,'btnmenu_cancelqueue',1,1,1000,720,YMAINBUTTON,true,1200 );
       aBtnSprite.TransparentForced := True;
       aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-      aBtnSprite.AddSubSprite( dir_interface +'arrowl.bmp', 'sub',90-40,56-40,true );
+      aBtnSprite.AddSubSprite( dir_interface +'arrowl.bmp', 'cancel',90-40,56-40,true );
     end;
   end;
 
@@ -4825,8 +4859,13 @@ begin
 end;
 procedure TForm1.RefreshCheckFormationMemory;
 var
-  aSpritePlay, aSpriteConfirmFormation : SE_Sprite;
+  aSpriteNewSeason,aSpritePlay, aSpriteConfirmFormation : SE_Sprite;
 begin
+  // se ho caricato o sono giunto a visualizzare newseason non puoi premere altro , inutile confirmformation e play
+  aSpriteNewSeason := SE_MainInterface.FindSprite ('btnmenu_newseason');
+  if aSpriteNewSeason.Visible then
+    exit;
+
 
   aSpritePlay := SE_MainInterface.FindSprite ('btnmenu_play');
   aSpritePlay.Visible := false;
@@ -6168,7 +6207,7 @@ begin
   end
   else if MyBrain.w_FreeKick2  then begin
     if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
-      tcp.SendStr( 'CRO2' + endofline);
+      MyBrain.BrainInput ( IntToStr(MyGuidTeam)+ ',CRO2' );
     end;
   end
   else if MyBrain.w_Fka3 then begin
@@ -6234,8 +6273,9 @@ begin
   end
   else if MyBrain.w_CornerKick  then begin
     CornerSetBall;
+
     if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
-        tcp.SendStr( 'COR' + endofline);
+      MyBrain.BrainInput (IntToStr(MyGuidTeam)+ ',COR' );
     end;
   end;
 
@@ -7168,8 +7208,15 @@ begin
     end;
   end
   else if MyBrain.w_FreeKick2  then begin
-    if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
-      tcp.SendStr( 'CRO2' + endofline);
+    if GameMode = pve then begin
+      if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
+        tcp.SendStr( 'CRO2' + endofline);
+      end;
+    end
+    else if GameMode = pve then begin
+      if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
+        MyBrain.BrainInput ( IntToStr(MyGuidTeam)+ ',CRO2' );
+      end;
     end;
   end
   else if MyBrain.w_Fka3 then begin
@@ -7235,9 +7282,18 @@ begin
   end
   else if MyBrain.w_CornerKick  then begin
     CornerSetBall;
-    if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
-        tcp.SendStr( 'COR' + endofline);
+    if GameMode = pvp then begin
+      if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
+          tcp.SendStr( 'COR' + endofline);
+      end;
+    end
+    else if GameMode = pve then begin
+      if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
+        MyBrain.BrainInput ( IntToStr(MyGuidTeam)+ ',COR' );
+      end;
+
     end;
+
   end;
 
   //devo farlo qui
@@ -9727,7 +9783,7 @@ begin
     //RoundBorder ( bmp.Bitmap );
    // if aPlayer.Team = 1 then
     aPlayer.se_sprite.AddSubSprite( dir_skill + Ts[1]+'.bmp'  ,'mainskill',
-      (aPlayer.se_sprite.BmpCurrentFrame.Width div 2) , (aPlayer.se_sprite.BmpCurrentFrame.Height div 2), true ) ;
+      (aPlayer.se_sprite.Bmp.Width div 2)-16 , (aPlayer.se_sprite.Bmp.Height div 2), true ) ;        // 16 è metà di subsprite. subsprite va 0 0 non al centro
    // aSubSprite := aPlayer.se_sprite.FindSubSprite('mainskill');
    // aSubSprite.LifeSpan := ShowRollLifeSpan ;
 
@@ -11397,7 +11453,7 @@ begin
     for C := 1 to 6 do begin  // 6 countries  1 country 1.08   6 country 2.43
       SE_Loading.CreateSprite( dir_interface + 'circleon.bmp' , 'circleon'+ IntTostr(C),1,1,1000,(1440 div 2)+ pix[C], 720 div 2,true,2000 );
       SE_Theater1.thrdAnimate.OnTimer (SE_Theater1.thrdAnimate);
-      StartAllMatches ( MyActiveGender , ActiveSeason, C, ActiveRound, true  );
+      StartAllMatches ( MyActiveGender , ActiveSeason, C, ActiveRound, true  );  // i campionati a 30 team finiti non creano brain.
     end;
 
 
@@ -11493,7 +11549,8 @@ end;
 procedure TForm1.ScreenFormation_SE_MainInterface ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
 var
  aSprite : SE_Sprite;
- I: integer;
+ I,C: integer;
+ ini : TIniFile;
 begin
 
   if aSpriteClicked.Guid = 'btnmenu_exit' then begin
@@ -11577,7 +11634,7 @@ begin
     aSprite := SE_MainInterface.FindSprite('btnhelp_play' ); // tornano visible con CLose su Uniform
     aSprite.visible := False;
 
-    if MyActiveGender = 'm' then begin
+    if MyActiveGender = 'm' then begin    // sovrapposizione
 
       aSprite := SE_Rank.FindSprite('token' ); // tornano visible con CLose su Uniform
       aSprite.visible := False;
@@ -11592,6 +11649,28 @@ begin
 
     aSprite := SE_MainInterface.FindSprite('btnmenu_reset' ); // tornano visible con CLose su Uniform
     aSprite.visible := False;
+
+  end
+  else if aSpriteClicked.Guid = 'btnmenu_newseason' then begin
+
+   // Se la mia divisione è finita ed è a 30 giornate devo attendere il completamento di tutti i campionati
+   //    con CompleteAllDivisions  // completa le divisioni a 38 giornate, altrimenti sono già finite e (2.0 coppe) CreateNewSeason (ActiveSeason+1);
+   // Se mia division è a 38 giornate, quelle a 30 si sono fermate e non partono in startallmatches. Sono pronte per CreateNewSeason
+    for C := 1 to 6 do begin     // ciclo per country per determinare
+     // showloading 5 pallini
+      CompleteAllDivisions ( C );  // crea i brain e gioca in emulation
+    end;
+    for C := 1 to 6 do begin     // ciclo per country per determinare
+    // CreateNewSeason ( C ); // inverte retrocessi e promossi
+    end;
+    ActiveSeason := ActiveSeason + 1;
+    ActiveRound := 1;
+    ini := TIniFile.Create( dir_saves + 'index.ini' );
+    ini.WriteInteger('setup','season',ActiveSeason);
+    ini.WriteInteger('setup','round',ActiveRound);
+    ini.WriteInteger('setup','division',MyDivision);// settata in CreateNewSeason  quando trova MyGuidTeam
+    ini.WriteString('setup','nextmf','m');
+    ini.Free;
 
   end
   else if aSpriteClicked.Guid = 'btnmenu_play' then begin
@@ -12660,6 +12739,12 @@ begin
     end
     else if aSpriteClicked.sTag = 'liveback' then begin
 
+      MyBrain.Score.AI[0]:= false; // ferma eventuali ai_think
+      MyBrain.Score.AI[1]:= false;
+
+      while ( SE_ball.IsAnySpriteMoving  ) or (SE_players.IsAnySpriteMoving ) do begin
+        se_Theater1.thrdAnimate.OnTimer (se_Theater1.thrdAnimate);
+      end;
       InterruptLiveGame;
 
     end
@@ -13182,6 +13267,9 @@ begin
       if not MyBrain.Finished then
         CreateYesNo ( Translate('warning_nomatchsaved'),'', 'liveback')
       else begin
+        while ( SE_ball.IsAnySpriteMoving  ) or (SE_players.IsAnySpriteMoving ) do begin
+          se_Theater1.thrdAnimate.OnTimer (se_Theater1.thrdAnimate);
+        end;
 
         CloseLiveRound;
       end;
@@ -13224,8 +13312,8 @@ begin
   else if aSpriteClicked.Guid = 'btnmenu_auto' then begin
     if GameMode = pvp then begin
         tcp.SendStr(  'AUTO' + EndOfline );
-    end;
-   // else if GameMode = pve then begin
+    end
+    else if GameMode = pve then begin
       if (MyBrain.Score.TeamGuid[0]= MyGuidTeam) then begin
         MyBrain.Score.AI [0] := not MyBrain.Score.AI [0];
 
@@ -13258,8 +13346,7 @@ begin
           aSubSprite.lVisible := false;
         end;
       end;
-    if GameMode = pve then begin
-      if myBrain.Score.TeamGuid[ Mybrain.TeamTurn] = MyGuidTeam then
+      if myBrain.Score.TeamGuid[ Mybrain.TeamTurn ] = MyGuidTeam then
         MyBrain.AI_Think(  Mybrain.TeamTurn );
 
     end;
@@ -14408,7 +14495,14 @@ begin
         end;
         se_dragGuid.DeleteSubSprite('surname');
         SE_DragGuid := nil;
-        tcp.SendStr( 'TACTIC,' + aPlayer.ids + ',' + IntToStr(CellX) + ',' + IntToStr(CellY) + EndOfLine );// il server risponde con clientLoadbrain
+        if GameMode = pvp then begin
+          tcp.SendStr( 'TACTIC,' + aPlayer.ids + ',' + IntToStr(CellX) + ',' + IntToStr(CellY) + EndOfLine );// il server risponde con clientLoadbrain
+        end
+        else if GameMode = pve then begin
+          if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
+            MyBrain.BrainInput ( IntToStr(MyGuidTeam)+ ',TACTIC,' + aPlayer.ids + ',' + IntToStr(CellX) + ',' + IntToStr(CellY)  );
+          end;
+        end;
         HideFP_Friendly_ALL;
         fGameScreen := ScreenLive;
         Exit;
@@ -14450,7 +14544,14 @@ begin
           se_dragGuid.DeleteSubSprite('surname');
           SE_DragGuid := nil;
           HideFP_Friendly_ALL;
-          tcp.SendStr( 'SUB,' + aPlayer.ids + ',' + aPlayer2.ids + EndOfLine );// il server risponde con clientLoadbrain
+          if GameMode = pvp then begin
+            tcp.SendStr( 'SUB,' + aPlayer.ids + ',' + aPlayer2.ids + EndOfLine );// il server risponde con clientLoadbrain
+          end
+          else if GameMode = pve then begin
+            if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
+              MyBrain.BrainInput ( IntToStr(MyGuidTeam)+ ',SUB,' + aPlayer.ids + ',' + aPlayer2.ids );
+            end;
+          end;
           fGameScreen := ScreenLive;
           Exit;
         end
@@ -14922,14 +15023,14 @@ begin
             LoadAnimationScript // riempe animationScript.  alla fine il thread chiama  ClientLoadBrainMM
           else begin
             incMoveAllProcessed [CurrentIncMove] := true; // se è vuota dico che è stata processata
-            SpriteReset;
+            //SpriteReset;
           end;
         end;
       end
       else begin   // l oscript non è stato processato. se è vuoto dico qui che è stato processato o l0altro trhead non lo fa
         if  Mybrain.tsScript [CurrentIncMove].Count = 0 then begin
           incMoveAllProcessed [CurrentIncMove] := true;
-          SpriteReset;
+          //SpriteReset;
         end;
       end;
     end;
@@ -15253,6 +15354,10 @@ begin
       aSprite := SE_MainInterface.FindSprite('btnmenu_m');
       aSprite.Alpha := 255;
     end;
+    if ((ActiveRound = 31) and (MyDivision > 2)) or ((ActiveRound = 39) and (MyDivision <= 2)) then begin
+      ShowNewSeason( ActiveSeason + 1 );
+    end;
+
 
   end
   else if fGameScreen = ScreenPlayerDetails then begin
@@ -16804,6 +16909,7 @@ var
   Filename,aCommaText: string; // per motivi di lunghezza codice
   aBrain: TSoccerBrain;
   aSprite : SE_Sprite;
+  aSubSprite: SE_SubSprite;
   fY: boolean;
   label others;
 begin
@@ -16812,7 +16918,7 @@ begin
 
   for D := 1 to 5 do begin
 
-    if (D > 2) and ( Round > 30 ) then Continue; // Quei campionati si fermano li'. advanceNextMF setta round es. 17 e le divisioni 1 e 2 continuano
+    if (D > 2) and ( Round > 30 ) then Continue; // Quei campionati si fermano li'. advanceNextMF setta round es. 31 e le divisioni 1 e 2 continuano
 
     Filename :=dir_Saves + Gender + 'S' + Format('%.3d', [Season]) + 'C' + Format('%.3d', [Country]) + 'D' + Format('%.1d', [D] ) + '.ini';
     ini := TIniFile.Create(Filename ) ;
@@ -16854,6 +16960,11 @@ begin
 
 
         if not simulation then begin
+            aSprite := SE_Live.FindSprite('btnmenu_auto');
+            aSubSprite := aSprite.FindSubSprite('autooff');
+            aSubSprite.lVisible := true;
+            aSubSprite := aSprite.FindSubSprite('autoon');
+            aSubSprite.lVisible := false;
 
             pveSynchBrain; // sincronizza la grica sprite all'ultimo incMove
             WaitForSingleObject(MutexPveSyncBrain,INFINITE);
