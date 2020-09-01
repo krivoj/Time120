@@ -271,3 +271,4 @@ lbl_language=Lingua
 lbl_Topscorers=Classifica marcatori
 warning_proceed=Prossima partita:
 warning_nomatchsaved=La partita non verra' salvata. Sei sicuro? 
+lbl_warning=Attenzione!

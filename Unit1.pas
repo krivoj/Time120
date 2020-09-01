@@ -29,12 +29,18 @@
     //      CompleteDivisions;
 //      createnewseason;
 
+     errore flags su qualcosa, forse lop
 
+     come fa ad arrivare al 150??????
+     MANCA UNO SPRITERESET E TUTTO AMDREBBE
 
+     errore sul back INTERRUPT riguardo agli sprites
+
+    dopo il gol su freekick non ha fatto il deflatebarrier ma neanche il reset del gol.
+    rifare la schermata gol roundborder come minimo
     usare tsspeaker
     showmatchinfo finire bene.
 
-    fareachtung fatta bene e anche yes no, con titolo verificare.
     finire le skill sia effetto che help
 
     la skill -16 o +16 dove si settano? sono subspritemainsk . vanno bene, ma dove vengono settate x e y ?
@@ -595,7 +601,7 @@ type
     procedure HideFP_Friendly_ALL;
 
     // Animation
-    procedure pveSynchBrain; deprecated;
+    procedure pveSynchBrain;
     procedure ClientLoadBrainMM ( incMove: Byte) ;  // carica il brain e lo script
     function ClientLoadScript ( incMove: Byte) : Integer;               // riempe TAnimationScript
     procedure Anim ( Script: string );                                  // esegue TAnimationScript
@@ -658,8 +664,7 @@ type
       procedure ClientLoadAML;
       procedure ClientLoadCountries ( index: Integer);
       procedure ClientLoadTeams ( index: Integer);
-      procedure ClientLoadMatchInfo;  // dinamico. rimuove e ricrea sprites. Troppe informazioni. Fa uso di SE_score
-      procedure ShowMatchInfo ( posX,posY: Integer; MatchInfoString: string) ;  // dinamico. rimuove e ricrea sprites. Troppe informazioni. Fa uso di SE_MatchInfo
+      procedure ShowMatchInfo ( posX,posY,StartIndex: Integer; MatchInfoString: string) ;  // dinamico. rimuove e ricrea sprites. Troppe informazioni. Fa uso di SE_MatchInfo
       procedure ClientLoadStandings ( Season, Country, Division : integer ) ; // parametri utili per display di altre nazione ecc...; // solo pve ;
       procedure ShowLoading;
 
@@ -669,6 +674,8 @@ type
     procedure HideStadiumAndPlayers;
     procedure ShowStadiumAndPlayers( Stadium : integer )  ;
 
+        procedure InterruptLiveGame; // Interrompe liveGame a partita in corso, lstbrain.clear etc.. fino alla screenformation
+        procedure CloseLiveRound; // chiude il liveGame a partita finita, completematch, finalize, lstbrain.clear etc.. fino alla screenformation
 
 
 
@@ -743,6 +750,7 @@ var
 
   xpNeedTal: array [1..NUM_TALENT] of integer;  // come i talenti sul db game.talents. xp necessaria per trylevelup del talento
   MutexAnimation : Cardinal;
+  MutexClientLoadbrain,MutexPveSyncBrain: Cardinal;
   oldCellXMouseMove, oldCellYMouseMove: Integer;
   oldbrain,MyBrain: TSoccerBrain;
   MyBrainFormation: TSoccerBrain;
@@ -775,7 +783,7 @@ var
   Score: Tscore;
 
   SE_DragGuid: Se_Sprite; // sprite che sto spostando con il drag and drop
-  Animating:Boolean;
+  //Animating:Boolean;
 //  StringTalents: array [1..NUM_TALENT] of string;
   StringTalents: array [0..255] of string;
   LstSkill: array[0..13] of string; // 13 skill totali
@@ -1413,9 +1421,17 @@ end;
 procedure TForm1.Button9Click(Sender: TObject);
 begin
 {$ifdef tools}
-  if GCD <= 0 then begin
-    tcp.SendStr(  'setturn,' + EditN2.Text +  EndofLine  );
-    GCD := GCD_DEFAULT;
+  if Gamemode = pvp then begin
+    if GCD <= 0 then begin
+      tcp.SendStr(  'setturn,' + EditN2.Text +  EndofLine  );
+      GCD := GCD_DEFAULT;
+    end;
+  end
+  else begin
+    MyBrain.incMove := StrtoInt(EditN2.Text);
+    if MyBrain.incMove >= 120
+      then MyBrain.FlagEndGame:= True;
+
   end;
 {$endif tools}
 
@@ -1463,9 +1479,20 @@ begin
       end;
 
       //WaitForSingleObject(MutexAnimation, INFINITE);
-     // if ( SE_ball.IsAnySpriteMoving  ) or (SE_players.IsAnySpriteMoving ) or ( Animating ) then begin
-     //   Application.ProcessMessages;
-     // end;
+      //tutto bene poi arriva il fallo
+      while incMoveAllProcessed [LastMoveBrain] = false do begin // fino a quando c'è l'animazione non fa ai_think
+        Application.ProcessMessages;
+        ThreadCurrentIncMove.OnTimer (ThreadCurrentIncMove);
+        mainThread.OnTimer (mainThread);
+        SE_Theater1.thrdAnimate.OnTimer(SE_Theater1.thrdAnimate);
+      end;
+       // o l'ultima parte della animazione viene troncata e non spariscono le mainskillused
+      while ( SE_ball.IsAnySpriteMoving  ) or (SE_players.IsAnySpriteMoving ) do begin
+//        Application.ProcessMessages ;
+        se_Theater1.thrdAnimate.OnTimer (se_Theater1.thrdAnimate);
+      end;
+      SpriteReset;
+
       AllBrainThink; // viene chiamata qui dopo ogni mia mossa e in i_tuc cioè quando la AI deve cominciare a giocare
       //ReleaseMutex(MutexAnimation);
       // tutti gli input rispondono qui ( anche subs e tactics o pass) quindi qui agisce l'ai
@@ -1474,10 +1501,11 @@ begin
       // se la mia partita è finita, completo tutte le altre, poi finalizzo quando tutti i match sono finiti
 
         pveForceGameOver;
-        CompleteAllMatches;
-        pveFinalizeAllBrain;
-        lstbrain.Clear;
-        AdvanceMFRound;
+        // qui sotto lo faccio sul back della partita
+//        CompleteAllMatches;
+//        pveFinalizeAllBrain;
+//        lstbrain.Clear;
+//        AdvanceMFRound;
     end;
 
   end;
@@ -1629,7 +1657,8 @@ begin
   MyBrain.incMove := 0; // +1 nella ricerca .ini
 
   MutexAnimation:=CreateMutex(nil,false,'tsscript');
-
+  MutexClientLoadbrain:=CreateMutex(nil,false,'clientloadbrain');
+  MutexPveSyncBrain:=CreateMutex(nil,false,'pvesynchbrain');
   //SE_GridCountryTeam.Active := false;
 
 
@@ -1888,6 +1917,8 @@ begin
   lstPLayerMarket.Free;
 
   CloseHandle(MutexAnimation);
+  CloseHandle(MutexClientLoadbrain);
+  CloseHandle(MutexPveSyncBrain);
   lstbrain.Free;
 
 //  If MyBrainFormation <> nil then MyBrainFormation.free;
@@ -5178,7 +5209,8 @@ begin
   WaitForSingleObject ( MutexAnimation, INFINITE );
 
   GCD := GCD - SE_ThreadTimer ( Sender).Interval;
-  if (GameScreen = ScreenLive) or (GameScreen = ScreenSpectator ) then Begin
+  if (GameScreen = ScreenLive) or (GameScreen = ScreenSpectator ) or (GameScreen = ScreenFreeKick) or (GameScreen = ScreenPenalty)
+  or (GameScreen = ScreenCorner)  then Begin
 
     if AnimationScript.Index = -1 then begin
      ReleaseMutex ( MutexAnimation );
@@ -5230,7 +5262,7 @@ begin
     {$ifdef tools}
       toolSpin.Visible := false;
     {$endif tools}
-      Animating:= True;
+      //Animating:= True;
       SE_Circles.Visible := false;
       if GameScreen = ScreenLive then begin
         SE_TacticsSubs.visible := False;
@@ -5244,8 +5276,8 @@ begin
       anim (AnimationScript.Ts[ AnimationScript.Index ]); // muove gli sprite
       AnimationScript.Index := AnimationScript.Index + 1;
 
-//      if AnimationScript.Index >=  AnimationScript.Ts.Count -1 then
-//        AnimationScript.Reset;
+      if AnimationScript.Index >=  AnimationScript.Ts.Count -1 then
+        incMoveAllProcessed [CurrentIncMove] := true;
 
     end
     else begin
@@ -5255,6 +5287,7 @@ begin
 
       while ( SE_ball.IsAnySpriteMoving  ) or (SE_players.IsAnySpriteMoving ) do begin
         Application.ProcessMessages ;
+        se_Theater1.thrdAnimate.OnTimer (se_Theater1.thrdAnimate);
       end;
        ReleaseMutex ( MutexAnimation );
     {$ifdef tools}
@@ -5263,8 +5296,7 @@ begin
     {$endif tools}
 
 
-
-      Animating:= false;
+      //Animating:= false;
       if GameScreen = ScreenLive then begin
         SE_TacticsSubs.visible := False;
         aSprite := SE_LIVE.FindSprite('btnmenu_tactics');
@@ -5281,7 +5313,7 @@ begin
       //  pveSynchBrain;
 
       SpriteReset;
-//      UpdateSubSprites;
+     // UpdateSubSprites;
       incMoveAllProcessed [CurrentIncMove] := True; // caricato e completamente eseguito
     //    inc ( CurrentIncMove );
     end;
@@ -5739,6 +5771,10 @@ begin
     Mybrain.Ball.SE_Sprite.AnimationInterval := ANIMATION_BALL_LOW ;
 
   refresh_teamnames;
+
+  // SE_players.ProcessSprites(2000);
+  // SE_Ball.ProcessSprites(2000);
+
 end;
 procedure TForm1.CornerSetBall;
 var
@@ -5902,6 +5938,7 @@ var
   UniformBitmap : array[0..1] of SE_Bitmap;
   UniformBitmapGK: SE_bitmap;
 begin
+  WaitForSingleObject(MutexPveSyncBrain,INFINITE);
 
   SE_Skills.Visible := False;
   se_players.RemoveAllSprites ;
@@ -5995,7 +6032,7 @@ begin
   se_ball.ProcessSprites(2000);
   aFieldPointSpr := SE_Fieldpoints.FindSprite(IntToStr (MyBrain.Ball.CellX ) + '.' + IntToStr (MyBrain.Ball.CellY ));
   // la palla potrebbe essere anche fuori, quindi in FieldPointsOut o FieldPointsSpecial
-   bmp:= SE_Bitmap.Create (dir_interface + 'animball.bmp');
+  bmp:= SE_Bitmap.Create (dir_interface + 'animball.bmp');
   bmp.Stretch(40*6,40);
   // setto la palla con i dati del mybrain currentIncmove. poi l'ultimo buf3 mi setterà il mybrain attuale
   if Mybrain.Ball.Player <> nil then begin
@@ -6223,6 +6260,7 @@ begin
 
   end;
   SetGlobalCursor(crHandPoint );
+  ReleaseMutex (  MutexPveSyncBrain );
 
      //if (not AudioCrowd.Playing) and ( not btnAudioStadium.Down) then begin
      // AudioCrowd.Play;
@@ -6259,6 +6297,7 @@ var
   UniformBitmapGK: SE_bitmap;
   aBallSprite: SE_Sprite;
 begin
+  WaitForSingleObject(MutexClientLoadbrain,INFINITE);
   SE_Skills.Visible := False;
     se_players.RemoveAllSprites ;
 {      for I := 0 to SE_players.SpriteCount -1 do begin
@@ -6288,7 +6327,7 @@ begin
   dataStr := SS.DataString;
   SS.Free;
 
-//  if GameMode = pvp then
+  if GameMode = pvp then
     if RightStr(dataStr,2) <> 'IS' then Exit;
 
 
@@ -7223,6 +7262,7 @@ begin
   end;
   SetGlobalCursor(crHandPoint );
   Refresh_teamnames;
+  ReleaseMutex(MutexClientLoadbrain);
 
      //if (not AudioCrowd.Playing) and ( not btnAudioStadium.Down) then begin
      // AudioCrowd.Play;
@@ -7477,7 +7517,7 @@ begin
 //    aPlayer:= MyBrain.GetSoccerPlayer2(ids);
 
 end;
-procedure TForm1.ShowMatchInfo ( posX,posY: Integer; MatchInfoString: string) ;
+procedure TForm1.ShowMatchInfo ( posX,posY,StartIndex: Integer; MatchInfoString: string) ; // standings startindex=5
 var
   y: Integer;
   matchinfo,tmp: TStringList;
@@ -7507,7 +7547,7 @@ begin
   aSprite:=SE_matchInfo.CreateSprite(bmp.Bitmap ,'scoreframemf',1,1,1000, posX ,posY ,false,2 );
   bmp.Free;
 
-  for y:= 5 to MatchInfo.Count -1 do begin         //   es. MatchInfo[y] 19.golprs.454.surname 45.sub.126.durname1.138.surname2
+  for y:= StartIndex to MatchInfo.Count -1 do begin         //   es. MatchInfo[y] 19.golprs.454.surname 45.sub.126.durname1.138.surname2
     tmp.DelimitedText := MatchInfo[y];
 
     aSpriteLabel := SE_SpriteLabel.create(0,BaseY,'Calibri',clWhite,clblack, 12,tmp[0] + '''',true ,1, dt_left);
@@ -7583,110 +7623,6 @@ begin
 
 end;
 
-procedure TForm1.ClientLoadMatchInfo;
-var
-  y: Integer;
-  tmp: TStringList;
-  bmp: SE_Bitmap;
-  aSprite : SE_Sprite;
-  aSpriteLabel : SE_SpriteLabel;
-  BaseY,XScoreFrame,YScoreFrame : integer;
-  const Xbmp = 30; XDescr = 60;
-begin
-  if MyBrain.MatchInfo.Count = 0 then
-    Exit;
-
-  SE_Score.RemoveAllSprites('scoreframemf');
-  SE_Score.ProcessSprites(2000);
-
-  aSprite := SE_Score.FindSprite('scorescore');
-  XScoreFrame := aSprite.Position.X;
-  YScoreFrame := aSprite.Position.Y + aSprite.bmp.Height;
-
-  bmp := SE_Bitmap.Create ( 250, MyBrain.MatchInfo.Count * 22 );// dinamico con aggiunta di spritelabels
-  bmp.Bitmap.Canvas.Brush.Color :=  clBlack;
-  bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
-  aSprite:=SE_Score.CreateSprite(bmp.Bitmap ,'scoreframemf',1,1,1000, XScoreFrame ,YScoreFrame+ (bmp.Height div 2),false,2 );
-  bmp.Free;
-
-  { parsing della matchinfo }
-  tmp := TStringList.Create;
-  tmp.Delimiter := '.';
-  tmp.StrictDelimiter := True;
-  BaseY :=0;
-  for y:= 0 to MyBrain.MatchInfo.Count -1 do begin         // es. MyBrain.MatchInfo[y] 19.golprs.454  45.sub.126.138
-    tmp.DelimitedText := MyBrain.MatchInfo[y];
-
-    aSpriteLabel := SE_SpriteLabel.create(0,BaseY,'Calibri',clWhite,clblack, 12,tmp[0] + '''',true ,1, dt_left);
-    aSprite.Labels.Add(aSpriteLabel);
-
-    if tmp[1] = 'sub' then begin
-      aSprite.AddSubSprite(dir_interface + 'infoinout.bmp','infoinout'+IntToStr(y),Xbmp,BaseY,True );
-      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, MyBrain.GetSoccerPlayerALL( tmp[2] ).SurName + '--->'+ MyBrain.GetSoccerPlayerALL( tmp[3] ).SurName,true ,1, dt_left);
-      aSprite.Labels.Add(aSpriteLabel);
-    end
-    else if ( pos ('gol', tmp[1], 1 ) <> 0) and  (  pos ('4', tmp[1], 1 )  = 0)  then begin // gol normali, prs,pos,prs3pos3,gol.volley,gol.crossing
-      aSprite.AddSubSprite(dir_interface + 'infogolball.bmp','infogolball'+IntToStr(y),Xbmp,BaseY,True );
-      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, MyBrain.GetSoccerPlayerALL( tmp[2] ).SurName,true,1, dt_left );
-      aSprite.Labels.Add(aSpriteLabel);
-    end
-    else if ( pos ('gol', tmp[1], 1 ) <> 0) and  (  pos ('4', tmp[1], 1 ) <> 0)  then begin // gol su rigore
-      aSprite.AddSubSprite(dir_interface + 'infopenaltygol.bmp','infopenaltygol'+IntToStr(y),Xbmp,BaseY,True );
-      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, MyBrain.GetSoccerPlayerALL( tmp[2] ).SurName,true,1, dt_left );
-      aSprite.Labels.Add(aSpriteLabel);
-    end
-    else if ( pos ('4fail', tmp[1], 1 ) <> 0) then begin // rigore fallito
-      aSprite.AddSubSprite(dir_interface + 'infopenaltyfail.bmp','infopenaltyfail'+IntToStr(y),Xbmp,BaseY,True );
-      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, MyBrain.GetSoccerPlayerALL( tmp[2] ).SurName,true,1, dt_left );
-      aSprite.Labels.Add(aSpriteLabel);
-    end
-    else if ( pos ('yc', tmp[1], 1 ) <> 0) then begin
-      aSprite.AddSubSprite(dir_interface + 'infoyellow.bmp','infoyellow'+IntToStr(y),Xbmp,BaseY,True );
-      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, MyBrain.GetSoccerPlayerALL( tmp[2] ).SurName,true,1, dt_left );
-      aSprite.Labels.Add(aSpriteLabel);
-    end
-    {$IFDEF  TOOLS}
-    else if ( pos ('crossbar', tmp[1], 1 ) <> 0) then begin
-      aSprite.AddSubSprite(dir_interface + 'infocrossbar.bmp','infocrossbar'+IntToStr(y),Xbmp,BaseY,True);
-      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12,'', true ,1, dt_left);
-      aSprite.Labels.Add(aSpriteLabel);
-    end
-    else if ( pos ('corner', tmp[1], 1 ) <> 0) then begin
-      aSprite.AddSubSprite(dir_interface + 'infocorner.bmp','infocorner'+IntToStr(y),Xbmp,BaseY,True);
-      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12,'', true,1, dt_left );
-      aSprite.Labels.Add(aSpriteLabel);
-    end
-    else if ( pos ('freekick3', tmp[1], 1 ) <> 0) then begin
-      aSprite.AddSubSprite(dir_interface + 'infofreekick3.bmp','infofreekick3'+IntToStr(y),Xbmp,BaseY,True);
-      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, '' ,true,1, dt_left );
-      aSprite.Labels.Add(aSpriteLabel);
-    end
-    else if ( pos ('freekick4', tmp[1], 1 ) <> 0) then begin
-      aSprite.AddSubSprite(dir_interface + 'infofreekick4.bmp','infofreekick4'+IntToStr(y),Xbmp,BaseY,True);
-      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, '' ,true ,1, dt_left);
-      aSprite.Labels.Add(aSpriteLabel);
-    end
-    else if ( pos ('lastman', tmp[1], 1 ) <> 0) then begin
-      aSprite.AddSubSprite(dir_interface + 'infolastman.bmp','infolastman'+IntToStr(y),Xbmp,BaseY,True);
-      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, '',true,1, dt_left );
-      aSprite.Labels.Add(aSpriteLabel);
-    end
-    {$ENDIF TOOLS}
-    else if ( pos ('rc', tmp[1], 1 ) <> 0) then begin
-      aSprite.AddSubSprite(dir_interface + 'infored.bmp','infored'+IntToStr(y),Xbmp,BaseY,True);
-      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, MyBrain.GetSoccerPlayerALL( tmp[2] ).SurName,true,1, dt_left);
-      aSprite.Labels.Add(aSpriteLabel);
-    end;
-
-
-
-    BaseY := BaseY + 22;
-
-  end;
-
-  tmp.Free;
-
-end;
 
 procedure Tform1.i_injured ( ids: string );
 //var
@@ -9792,6 +9728,9 @@ begin
    // if aPlayer.Team = 1 then
     aPlayer.se_sprite.AddSubSprite( dir_skill + Ts[1]+'.bmp'  ,'mainskill',
       (aPlayer.se_sprite.BmpCurrentFrame.Width div 2) , (aPlayer.se_sprite.BmpCurrentFrame.Height div 2), true ) ;
+   // aSubSprite := aPlayer.se_sprite.FindSubSprite('mainskill');
+   // aSubSprite.LifeSpan := ShowRollLifeSpan ;
+
   //  else
   //  aMainSkillSubSprite := SE_SubSprite.create( bmp  ,'mainskill',
    //   (aPlayer.se_sprite.BmpCurrentFrame.Width div 2) - (bmp.Width div 2) , (aPlayer.se_sprite.BmpCurrentFrame.Height div 2), true,true );
@@ -10286,7 +10225,7 @@ begin
 
   end
   else if ts[0]= 'cl_splash.gameover' then begin
-    ClientLoadMatchInfo;
+    ShowMatchInfo ( SE_Theater1.Width div 2, SE_Theater1.Height div 2,0, MyBrain.MatchInfo.CommaText ) ;
     Sleep(2000);
     AnimationScript.Reset ;
     if LiveMatch then begin
@@ -10447,7 +10386,7 @@ begin
   end;
 
   ts.free;
-  Application.ProcessMessages ;
+//  Application.ProcessMessages ;
 
 
 
@@ -10479,7 +10418,7 @@ begin
 
     aPlayer:=  MyBrainformation.GetSoccerPlayerALL (IntToStr(SE_BackGround.Tag));
     if StrToIntDef(edtSell.Text,0) < aPlayer.MarketValue then begin
-        CreateInfoError ('Attenzione!', Translate ('warning_nosell_lowprice'),'screenplayerdetails');
+        CreateInfoError ( Translate ('lbl_warning'), Translate ('warning_nosell_lowprice'),'screenplayerdetails');
         edtSell.Text := IntToStr( aPlayer.MarketValue);
         Exit;
     end;
@@ -10493,7 +10432,7 @@ begin
           tGK := tGK +1;
       end;
       if (tGK = 1) then begin
-        CreateInfoError ( 'Attenzione!', Translate ('warning_nosellgk'),'screenplayerdetails');
+        CreateInfoError ( Translate ('lbl_warning'), Translate ('warning_nosellgk'),'screenplayerdetails');
         Exit;
       end;
     end;
@@ -11083,7 +11022,7 @@ begin
 
   aSprite := SE_Skills.FindSprite('wheelskillname');
   aSprite.Labels[0].lText:= Capitalize(Translate( 'skill_' + SelectedPlayer.ActiveSkills.Names[Index_WheelSkill] )  );
- // Memo1.Lines.Add(  'text ' + aSprite.Labels[0].lText );
+  aSprite.sTag :=  SelectedPlayer.ActiveSkills.Names [Index_WheelSkill];
 
 
 
@@ -11098,6 +11037,7 @@ begin
   bmp.Bitmap.Canvas.Brush.Color :=  clGray;
   bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
   aSprite := SE_Skills.CreateSprite ( bmp.Bitmap,'wheelskillnamebottom',1,1,1000, SE_Theater1.Width div 2 , 764 , true,10 ) ;
+  aSprite.sTag :=  SelectedPlayer.ActiveSkills.Names [Index_WheelSkill];
   bmp.Free;
 
 
@@ -11439,7 +11379,7 @@ begin
     GameScreen := ScreenWaitingLive;
 
     SE_Theater1.thrdAnimate.OnTimer (SE_Theater1.thrdAnimate);
-     // gamestart
+     // startgame
     StartAllMatches ( MyActiveGender , ActiveSeason, MyGuidCountry, ActiveRound, false  );
 
   end
@@ -11539,7 +11479,7 @@ retry:
     ShowLoading; //da fare   .gli sprite sono ancora in memoria
 
 
-    //    CompleteAllMatches; sono già completati proprio qui sopra
+    //  CompleteAllMatches; sono già completati proprio qui sopra
     pveFinalizeAllBrain;
     lstbrain.clear;
     AdvanceMFRound;
@@ -11674,7 +11614,7 @@ begin
          ClientLoadPreMatch ;
        end
        else begin
-         CreateInfoError ( 'Attenzione!', Capitalize(Translate ('warning_proceed')),'screenformation');
+         CreateInfoError ( Translate ('lbl_warning'), Capitalize(Translate ('warning_proceed')) + ' ' +  Translate('lbl_'+UpperCase(NextMF))  ,'screenformation');
        end;
      end;
     end
@@ -11938,7 +11878,7 @@ begin
           edtSell.Text  := IntToStr(aPlayer.MarketValue);
         end
         else begin
-          CreateInfoError ('Attenzione!', Translate ('lbl_ErrorMarketMax'),'screenplayerdetails');
+          CreateInfoError (Translate ('lbl_warning'), Translate ('lbl_ErrorMarketMax'),'screenplayerdetails');
 
         end;
       end;
@@ -12057,7 +11997,7 @@ begin
     ClientLoadStandings( ActiveSeason, MyGuidCountry, MyDivision );
   end
   else if LeftStr(aSpriteClicked.Guid,15) = 'standings_round' then begin
-    ShowMatchInfo ( mouse.CursorPos.X + 200 , mouse.CursorPos.Y+200,  aSpriteClicked.Labels[aSpriteClicked.Mousey div Rowh].stag);
+    ShowMatchInfo ( mouse.CursorPos.X + 200 , mouse.CursorPos.Y+200,5,  aSpriteClicked.Labels[aSpriteClicked.Mousey div Rowh].stag);
 //    ShowMessage(aSpriteClicked.Labels[aSpriteClicked.Mousey div Rowh].stag);
   end;
 end;
@@ -12719,27 +12659,9 @@ begin
       Exit;
     end
     else if aSpriteClicked.sTag = 'liveback' then begin
-      WaitForSingleObject ( MutexAnimation, INFINITE );
-      ShowLoading;
-      while (se_ball.IsAnySpriteMoving ) or (se_players.IsAnySpriteMoving )  do begin
-        se_Theater1.thrdAnimate.OnTimer (se_Theater1.thrdAnimate);
-        application.ProcessMessages ;
-      end;
-      SE_players.RemoveAllSprites;
-      aSprite := SE_ball.FindSprite('ball');
-      SE_ball.RemoveSprite(aSprite);
-      SE_interface.RemoveAllSprites;
-      SE_Numbers.RemoveAllSprites;
 
-      MyBrain := oldbrain;
-      GameScreen := ScreenFormation;
-      ClientLoadFormation;
+      InterruptLiveGame;
 
-      for I := lstbrain.Count -1 downto 0 do begin
-        lstbrain.Delete(i);
-      end;
-
-      ReleaseMutex( MutexAnimation );
     end
     else if GameScreen = ScreenSelectTeam then begin
       if Gamemode = pvp  then begin
@@ -13260,8 +13182,8 @@ begin
       if not MyBrain.Finished then
         CreateYesNo ( Translate('warning_nomatchsaved'),'', 'liveback')
       else begin
-        GameScreen := ScreenFormation;
-        ClientLoadFormation;
+
+        CloseLiveRound;
       end;
 
     end;
@@ -13336,6 +13258,11 @@ begin
           aSubSprite.lVisible := false;
         end;
       end;
+    if GameMode = pve then begin
+      if myBrain.Score.TeamGuid[ Mybrain.TeamTurn] = MyGuidTeam then
+        MyBrain.AI_Think(  Mybrain.TeamTurn );
+
+    end;
 
     //end;
   end
@@ -13577,7 +13504,7 @@ begin
     else if GameScreen = ScreenLive then begin
     // qui comincia il live. può cliccare l'engine SE_skills o l'engine SE_Live per accedere a sub e tactis. Anche SE_players e SE_fieldPoints
       if lstSprite[i].Engine = SE_Skills then begin
-        if se_players.IsAnySpriteMoving or se_ball.IsAnySpriteMoving  or Animating then  exit;
+        if se_players.IsAnySpriteMoving or se_ball.IsAnySpriteMoving   then  exit;
         ScreenLive_SE_Skills ( lstSprite[i], Button );
         Exit;
       end
@@ -13590,12 +13517,12 @@ begin
         Exit;
       end
       else if lstSprite[i].Engine = SE_Players then begin  //se_players arriva prima di fieldpoints
-        if se_players.IsAnySpriteMoving or se_ball.IsAnySpriteMoving  or Animating then  exit;
+        if se_players.IsAnySpriteMoving or se_ball.IsAnySpriteMoving   then  exit;
         ScreenLive_SE_Players ( lstSprite[i], Button ); // no exit. gli spritesClicked devono passare tutti da qui. SE_fieldPoints. SE_players è ignorato
         continue;   // deve processare anche  SE_FieldPoints
       end
       else if lstSprite[i].Engine = SE_FieldPoints then begin
-        if se_players.IsAnySpriteMoving or se_ball.IsAnySpriteMoving  or Animating then  exit;
+        if se_players.IsAnySpriteMoving or se_ball.IsAnySpriteMoving   then  exit;
         ScreenLive_SE_FieldPoints ( lstSprite[i], Button ); // no exit. gli spritesClicked devono passare tutti da qui. SE_fieldPoints. SE_players è ignorato
       end
       else if  lstSprite[i].Engine = se_GameOver then begin
@@ -13710,8 +13637,8 @@ begin
     end
     else if lstSprite[i].Engine = SE_Score  then begin
       if lstSprite[i].Guid = 'scorescore' then begin
-          ScoreMouseMove := True;
-          ClientLoadMatchInfo;
+        ScoreMouseMove := True;
+        ShowMatchInfo ( SE_Theater1.Width div 2, SE_Theater1.Height div 2, 0,MyBrain.MatchInfo.CommaText ) ;
       end
       else if lstSprite[i].Guid = 'scorenick0' then begin
          ScoreNick := True;
@@ -14263,7 +14190,7 @@ begin
       end
       else begin
         PanelBuy.Visible := false;
-        CreateInfoError ('Attenzione!',Translate ('warning_nobuyown'),'screenmarket');
+        CreateInfoError (Translate ('lbl_warning'),Translate ('warning_nobuyown'),'screenmarket');
 
       end;
     end;
@@ -14271,7 +14198,7 @@ begin
   end
   else begin
     PanelBuy.Visible := false;
-    CreateInfoError ('Attenzione!',Translate ('warning_max22'),'screenmarket');
+    CreateInfoError (Translate ('lbl_warning'),Translate ('warning_max22'),'screenmarket');
   end;
 
 end;
@@ -14674,7 +14601,7 @@ begin
         SpriteReset;
         // se è la prima volta, ricevo una partita terminata
         if (mybrain.finished) then begin //and   (Mybrain.Score.TeamGuid [0]  = MyGuidTeam ) or (Mybrain.Score.TeamGuid [1]  = MyGuidTeam ) then begin
-          ClientLoadMatchInfo;
+          ShowMatchInfo ( SE_Theater1.Width div 2, SE_Theater1.Height div 2,0, MyBrain.MatchInfo.CommaText ) ;
         end
         else
           ThreadCurrentIncMove.Enabled := true; // eventuale splahscreen compare tramite tsscript e obbliga al pulsante exit. 30 seconplay se c'è il suo guidteam
@@ -14931,7 +14858,7 @@ begin
   // disino in 2 parti per pvp e pve
   WaitForSingleObject ( MutexAnimation, INFINITE );
 
-  if ( SE_ball.IsAnySpriteMoving  ) or (SE_players.IsAnySpriteMoving ) or ( Animating ) then begin
+  if ( SE_ball.IsAnySpriteMoving  ) or (SE_players.IsAnySpriteMoving )  then begin
     ReleaseMutex(MutexAnimation);
     Exit;
   end;
@@ -14993,12 +14920,17 @@ begin
 
           if  Mybrain.tsScript [CurrentIncMove].Count > 0 then
             LoadAnimationScript // riempe animationScript.  alla fine il thread chiama  ClientLoadBrainMM
-          else incMoveAllProcessed [CurrentIncMove] := true; // se è vuota dico che è stata processata
+          else begin
+            incMoveAllProcessed [CurrentIncMove] := true; // se è vuota dico che è stata processata
+            SpriteReset;
+          end;
         end;
       end
       else begin   // l oscript non è stato processato. se è vuoto dico qui che è stato processato o l0altro trhead non lo fa
-        if  Mybrain.tsScript [CurrentIncMove].Count = 0 then
+        if  Mybrain.tsScript [CurrentIncMove].Count = 0 then begin
           incMoveAllProcessed [CurrentIncMove] := true;
+          SpriteReset;
+        end;
       end;
     end;
 
@@ -15193,7 +15125,7 @@ begin
     WaitForSingleObject ( MutexAnimation, INFINITE );
     AnimationScript.Reset;
     FirstLoadOK:= False;
-    Animating := false;
+    //Animating := false;
     ReleaseMutex(MutexAnimation );
     LastTcpIncMove := 0;
     CurrentIncMove := 0;
@@ -15219,7 +15151,7 @@ begin
     WaitForSingleObject ( MutexAnimation, INFINITE );
     AnimationScript.Reset;
     FirstLoadOK:= False;
-    Animating := false;
+    //Animating := false;
     ReleaseMutex(MutexAnimation );
     LastTcpIncMove := 0;
     CurrentIncMove := 0;
@@ -15299,7 +15231,7 @@ begin
     WaitForSingleObject ( MutexAnimation, INFINITE );
     AnimationScript.Reset;
     FirstLoadOK:= False;
-    Animating := false;
+    //Animating := false;
     ReleaseMutex(MutexAnimation );
     LastTcpIncMove := 0;
     CurrentIncMove := 0;
@@ -16037,8 +15969,9 @@ begin
 
   bmp :=SE_Bitmap.Create ( 500, 32 );
   aSprite := SE_PreMatch.CreateSprite( bmp.Bitmap , 'param1',1,1,1000, (form1.Width div 2), (form1.height div 2) - 70  ,true,2 );
-  aSpriteLabel := SE_SpriteLabel.create(-1,0,'Calibri',clWhite-1,clBlack,20,'',true,1, dt_center);
+  aSpriteLabel := SE_SpriteLabel.create(-1,0,'Calibri',clYellow,clBlack,18,'',true,1, dt_center);
   aSprite.Labels.Add(aSpriteLabel);
+  aSpriteLabel.lFontStyle := [fsBold];
   aSpriteLabel.lFontQuality := fqdefault;
   bmp.Free;
   aSprite.Labels[0].lText :=  Capitalize(Translate('lbl_Season')) + ' '+  Capitalize(Translate('lbl_Round2')) +' ' + IntToStr(Activeround) + '          ('+
@@ -16046,8 +15979,7 @@ begin
 
   bmp :=SE_Bitmap.Create ( 500, 32 );
   aSprite := SE_PreMatch.CreateSprite( bmp.Bitmap , 'param2',1,1,1000, (form1.Width div 2), (form1.height div 2) - 20  ,true,2 );
-  aSpriteLabel := SE_SpriteLabel.create(-1,0,'Calibri',clYellow,clBlack,20,'',true,1, dt_center);
-  aSpriteLabel.lFontStyle := [fsBold];
+  aSpriteLabel := SE_SpriteLabel.create(-1,0,'Calibri',clWhite-1,clBlack,16,'',true,1, dt_center);
   aSpriteLabel.lFontQuality := fqdefault;
   aSprite.Labels.Add(aSpriteLabel);
   bmp.Free;
@@ -16552,9 +16484,9 @@ procedure TForm1.pveForceGameOver ;
 var
   asprite : SE_Sprite;
 begin
-  ClientLoadMatchInfo;
+  ShowMatchInfo( SE_Theater1.Width div 2, SE_Theater1.Height div 2,0, MyBrain.MatchInfo.CommaText );
   SE_Live.HideAllSprites;
-  asprite:= SE_Live.FindSprite('btnmenu_exit' );
+  asprite:= SE_Live.FindSprite('btnmenu_back' );
   asprite.Visible := True;
 end;
 
@@ -16569,109 +16501,101 @@ var
 begin
   // è tutto dinamico. il button elimina tutti gli sprites
   // 3 label: endgame, team e risultato , icona + money, e le star con il rank . le creo qui in showGameOver e le distruggo sul button
+  if GameMode = pvp then begin
 
-  SE_GameOver.RemoveAllSprites;
-  SE_GameOver.ProcessSprites(2000);
-  // copiata e incollata dal server
-  if MyBrain.Score.TeamGuid[0]= MyGuidTeam then begin
-    index := 0;
-    if MyBrain.Score.gol[0] > MyBrain.Score.gol[1] then
-      miGain := 2
-    else if MyBrain.Score.gol[0] = MyBrain.Score.gol[1] then
-      miGain := 0
-    else if MyBrain.Score.gol[0] < MyBrain.Score.gol[1] then
-      miGain := -3;
-  end
-  else if MyBrain.Score.TeamGuid[1]= MyGuidTeam then begin
-    index := 1;
-    if MyBrain.Score.gol[1] > MyBrain.Score.gol[0] then
-      miGain := 3
-    else if MyBrain.Score.gol[1] = MyBrain.Score.gol[0] then
-      miGain := 1
-    else if MyBrain.Score.gol[1] < MyBrain.Score.gol[0] then
-      miGain := -2;
-  end;
-
-  if Mybrain.Gender='m' then begin
-    case MyBrain.Score.rank[index] of
-      1:MoneyGain := (1000 * miGain);
-      2:MoneyGain := (800 * miGain);
-      3:MoneyGain := (600 * miGain);
-      4:MoneyGain := (400 * miGain);
-      5:MoneyGain := (200 * miGain);
-      6:MoneyGain := (100 * miGain);
+    SE_GameOver.RemoveAllSprites;
+    SE_GameOver.ProcessSprites(2000);
+    // copiata e incollata dal server
+    if MyBrain.Score.TeamGuid[0]= MyGuidTeam then begin
+      index := 0;
+      if MyBrain.Score.gol[0] > MyBrain.Score.gol[1] then
+        miGain := 2
+      else if MyBrain.Score.gol[0] = MyBrain.Score.gol[1] then
+        miGain := 0
+      else if MyBrain.Score.gol[0] < MyBrain.Score.gol[1] then
+        miGain := -3;
+    end
+    else if MyBrain.Score.TeamGuid[1]= MyGuidTeam then begin
+      index := 1;
+      if MyBrain.Score.gol[1] > MyBrain.Score.gol[0] then
+        miGain := 3
+      else if MyBrain.Score.gol[1] = MyBrain.Score.gol[0] then
+        miGain := 1
+      else if MyBrain.Score.gol[1] < MyBrain.Score.gol[0] then
+        miGain := -2;
     end;
 
-  end
-  else begin // female
-    case MyBrain.Score.rank[index] of
-      1:MoneyGain := (600 * miGain);
-      2:MoneyGain := (480 * miGain);
-      3:MoneyGain := (460 * miGain);
-      4:MoneyGain := (340 * miGain);
-      5:MoneyGain := (220 * miGain);
-      6:MoneyGain := (100 * miGain);
+    if Mybrain.Gender='m' then begin
+      case MyBrain.Score.rank[index] of
+        1:MoneyGain := (1000 * miGain);
+        2:MoneyGain := (800 * miGain);
+        3:MoneyGain := (600 * miGain);
+        4:MoneyGain := (400 * miGain);
+        5:MoneyGain := (200 * miGain);
+        6:MoneyGain := (100 * miGain);
+      end;
+
+    end
+    else begin // female
+      case MyBrain.Score.rank[index] of
+        1:MoneyGain := (600 * miGain);
+        2:MoneyGain := (480 * miGain);
+        3:MoneyGain := (460 * miGain);
+        4:MoneyGain := (340 * miGain);
+        5:MoneyGain := (220 * miGain);
+        6:MoneyGain := (100 * miGain);
+      end;
+
+      ViewMatch := True;
     end;
 
-    ViewMatch := True;
+    // è tutto dinamico. il button elimina tutti gli sprites
+    // 3 label: endgame, team e risultato , icona + money, e le star con il rank . le creo qui in showGameOver e le distruggo sul button
+
+    // label End_Game
+    // label teamName and Score
+
+    // money
+    if MoneyStarVisible then begin
+
+      SE_GameOver.CreateSprite(dir_interface + 'money.bmp','gold', 1,1,1000,540,300,true,1200);
+
+      bmp := SE_Bitmap.Create (300,22);
+      bmp.Bitmap.Canvas.Brush.Color :=  clGray;
+      bmp.Bitmap.Canvas.FillRect(Rect( 0,0,bmp.Width,bmp.Height));
+      if MoneyGain > 0 then
+        MoneyGainS := '+ ' + IntToStr(MoneyGain)
+          else if MoneyGain < 0 then
+            MoneyGainS := '- ' + IntToStr(MoneyGain);
+
+      aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clYellow,clBlack,16, MoneyGainS ,True ,1,dt_left );
+      aSprite := SE_GameOver.CreateSprite(bmp.bitmap,'money', 1,1,1000,490,400,true,1200);
+      aSprite.Labels.Add(aSpriteLabel);
+      bmp.Free;
+         { TODO : fare bene star 44 }
+      // star del colore del rank attuale. in caso di passaggio rank su questa partita finita, si vede per un attimo ancora il vecchio colore qui.
+      SE_GameOver.CreateSprite(dir_interface + '\star\24\star' + IntTostr(MyBrain.Score.Rank [index]) +'.bmp','star', 1,1,1000,305,300,true,1200);
+
+      bmp := SE_Bitmap.Create (300,22);
+      bmp.Bitmap.Canvas.Brush.Color :=  clGray;
+      bmp.Bitmap.Canvas.FillRect(Rect( 0,0,bmp.Width,bmp.Height));
+      if MiGain > 0 then
+        MiGainS := '+ ' + IntToStr(MiGain)
+          else if MiGain < 0 then
+            MiGainS := '- ' + IntToStr(MiGain);
+
+      aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clYellow,clBlack,16, MiGainS ,True ,1,dt_left );
+      aSprite := SE_GameOver.CreateSprite(bmp.bitmap,'money', 1,1,1000,490,300,true,1200);
+      aSprite.Labels.Add(aSpriteLabel);
+      bmp.Free;
+
+    end;
+
+    SE_GameOver.Visible := True;
+  end
+  else if GameMode= pve then begin
+//    ClientLoadMatchInfo;
   end;
-
-  // è tutto dinamico. il button elimina tutti gli sprites
-  // 3 label: endgame, team e risultato , icona + money, e le star con il rank . le creo qui in showGameOver e le distruggo sul button
-
-  // backframe
-  SE_GameOver.CreateSprite(dir_interface + 'bguniform.bmp' ,'frameback',1,1,1000,720,450,false,1 ); // 400x200
-
-  //close
-  bmp := SE_Bitmap.Create ( dir_interface + 'button.bmp' );
-  aBtnSprite:=SE_GameOver.CreateSprite(bmp.Bitmap ,'btnmenu_back',1,1,1000,720,450,true,1200 );
-//  aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize, Translate('lbl_Tactics') ,true  );
-//  aBtnSprite.Labels.Add( aSpriteLabel);
-  aBtnSprite.TransparentForced := True;
-  aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite( dir_interface +'arrowl.bmp', 'sub',90-40,56-40,True );
-  bmp.Free;
-
-  // label End_Game
-  // label teamName and Score
-
-  // money
-  if MoneyStarVisible then begin
-
-    SE_GameOver.CreateSprite(dir_interface + 'money.bmp','gold', 1,1,1000,540,300,true,1200);
-
-    bmp := SE_Bitmap.Create (300,22);
-    bmp.Bitmap.Canvas.Brush.Color :=  clGray;
-    bmp.Bitmap.Canvas.FillRect(Rect( 0,0,bmp.Width,bmp.Height));
-    if MoneyGain > 0 then
-      MoneyGainS := '+ ' + IntToStr(MoneyGain)
-        else if MoneyGain < 0 then
-          MoneyGainS := '- ' + IntToStr(MoneyGain);
-
-    aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clYellow,clBlack,16, MoneyGainS ,True ,1,dt_left );
-    aSprite := SE_GameOver.CreateSprite(bmp.bitmap,'money', 1,1,1000,490,400,true,1200);
-    aSprite.Labels.Add(aSpriteLabel);
-    bmp.Free;
-       { TODO : fare bene star 44 }
-    // star del colore del rank attuale. in caso di passaggio rank su questa partita finita, si vede per un attimo ancora il vecchio colore qui.
-    SE_GameOver.CreateSprite(dir_interface + '\star\24\star' + IntTostr(MyBrain.Score.Rank [index]) +'.bmp','star', 1,1,1000,305,300,true,1200);
-
-    bmp := SE_Bitmap.Create (300,22);
-    bmp.Bitmap.Canvas.Brush.Color :=  clGray;
-    bmp.Bitmap.Canvas.FillRect(Rect( 0,0,bmp.Width,bmp.Height));
-    if MiGain > 0 then
-      MiGainS := '+ ' + IntToStr(MiGain)
-        else if MiGain < 0 then
-          MiGainS := '- ' + IntToStr(MiGain);
-
-    aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clYellow,clBlack,16, MiGainS ,True ,1,dt_left );
-    aSprite := SE_GameOver.CreateSprite(bmp.bitmap,'money', 1,1,1000,490,300,true,1200);
-    aSprite.Labels.Add(aSpriteLabel);
-    bmp.Free;
-
-  end;
-
-  SE_GameOver.Visible := True;
 
 end;
 
@@ -16691,10 +16615,10 @@ begin
   aPlayer := MyBrainFormation.GetSoccerPlayerALL ( tslocal[1] );
    { TODO : da tradurre in messages }
   if tslocal[2] <> '0' then begin
-    CreateInfoError ('Attenzione!',aPlayer.SurName + ' è appena migliorato!','screenplayerdetails' );
+    CreateInfoError (Translate ('lbl_warning'),aPlayer.SurName + ' è appena migliorato!','screenplayerdetails' );
   end
   else begin
-    CreateInfoError ( 'Attenzione!','Purtroppo ' + aPlayer.SurName + ' non è riuscito a migliorare.','screenplayerdetails' );
+    CreateInfoError ( Translate ('lbl_warning'),'Purtroppo ' + aPlayer.SurName + ' non è riuscito a migliorare.','screenplayerdetails' );
   end;
 
   tslocal.Delete(0); // elimino guid e value già usati
@@ -16727,10 +16651,10 @@ begin
   aPlayer := MyBrainFormation.GetSoccerPlayerALL ( tslocal[1] );
 
   if tslocal[2] <> '0' then begin
-    CreateInfoError ('Attenzione!',aPlayer.SurName + ' ha nuovi talenti!','screenplayerdetails' );
+    CreateInfoError (Translate ('lbl_warning'),aPlayer.SurName + ' ha nuovi talenti!','screenplayerdetails' );
   end
   else begin
-    CreateInfoError ('Attenzione!','Purtroppo ' + aPlayer.SurName + ' non è riuscito a sviluppare il talento','screenplayerdetails' );
+    CreateInfoError (Translate ('lbl_warning'),'Purtroppo ' + aPlayer.SurName + ' non è riuscito a sviluppare il talento','screenplayerdetails' );
   end;
 
   tslocal.Delete(0); // elimino la o lt ,guid e value già usati
@@ -16851,20 +16775,14 @@ begin
   aSprite.BlendMode := SE_BlendAlpha;
   bmp.Free;
 
-  bmp :=SE_Bitmap.Create ( 500, 24 );
-  aSprite := SE_InfoError.CreateSprite( bmp.Bitmap , 'param1',1,1,1000, (form1.Width div 2), (form1.height div 2) - 160  ,true,2 );
-  aSpriteLabel := SE_SpriteLabel.create(-1,0,'Calibri',clWhite-1,clBlack,20,param1,true,1,dt_center);
-  aSprite.Labels.Add(aSpriteLabel);
-  aSpriteLabel.lFontQuality := fqdefault;
-  bmp.Free;
-
-  bmp :=SE_Bitmap.Create ( 500, 200 );
-  aSprite := SE_InfoError.CreateSprite( bmp.Bitmap , 'param2',1,1,1000, (form1.Width div 2), (form1.height div 2) - 140  ,true,2 );
-  aSpriteLabel := SE_SpriteLabel.create(-1,0,'Calibri',clYellow,clBlack,20,param2,true,1,dt_center);
+  aSpriteLabel := SE_SpriteLabel.create(0,0,'Calibri',clYellow,clBlack,16,param1,true,1,dt_center);
   aSpriteLabel.lFontStyle := [fsBold];
+  aSprite.Labels.Add(aSpriteLabel);
+  aSpriteLabel.lFontQuality := fqdefault;
+
+  aSpriteLabel := SE_SpriteLabel.create(0,64,'Calibri',clWhite-1,clBlack,14,param2,true,1,dt_center);
   aSpriteLabel.lFontQuality := fqdefault;
   aSprite.Labels.Add(aSpriteLabel);
-  bmp.Free;
 
   bmp :=SE_Bitmap.Create ( 120, 24 );
   bmp.Canvas.Brush.Color := clGray;
@@ -16922,7 +16840,7 @@ begin
         {$endIF  tools}
 
         pveCreateMatch ( Season, Country, Round,  ts2[0],ts2[1],ts2[2], ts2[3], aBrain );
-        if (ts2[0]='15')  or (ts2[2]='15') then asm int 3 ; end;
+
 
 
         Application.ProcessMessages ;
@@ -16933,8 +16851,26 @@ begin
 
         MyBrain:= aBrain; //<--- è già assegnato
         MyBrain.Start;
+
+
+        if not simulation then begin
+
+            pveSynchBrain; // sincronizza la grica sprite all'ultimo incMove
+            WaitForSingleObject(MutexPveSyncBrain,INFINITE);
+            ReleaseMutex(MutexClientLoadbrain);
+            SpriteReset;
+            GameScreen := ScreenLive;
+
+          if aBrain.Score.TeamGuid[0] <> MyGuidTeam then begin // per avviare il gioco
+            aBrain.AI_Think( 0 ); // 0 è il team
+          end
+          else begin
+            PostMessage ( Application.Handle, $2CCC,0,0);
+            application.ProcessMessages;
+          end;
+        end;
       end
-      else begin
+      else begin   // se Non è la mia partita
 others:
         if Rndgenerate (100) <= CREATEFORMATION_FORCEYOUNG then
           fY := True
@@ -16968,35 +16904,18 @@ others:
   // da qui in poi solo grafica per la propria partita, quindi esco con simulation
 
   //  MyBrain.MMbraindata è il file.IS ( in Tcp spedito ) che contiene script e nuove posizioni
-  PostMessage ( Application.Handle, 50,0,0);   // per qualche oscuro motivo il primo postmessage non va, quindi devo fare sotto la copymemory
-  application.ProcessMessages;
-  MM3[CurrentIncMove].Clear; // MM3[MyBrain.incMove].Clear;
-  MM3[CurrentIncMove].CopyFrom ( MyBrain.MMbraindata, 0);
-  CopyMemory( @Buf3[CurrentIncMove], mm3[CurrentIncMove].Memory , mm3[CurrentIncMove].size  ); // copia del buf per non essere sovrascritti
+//  MM3[CurrentIncMove].Clear; // MM3[MyBrain.incMove].Clear;
+//  MM3[CurrentIncMove].CopyFrom ( MyBrain.MMbraindata, 0);
+//  CopyMemory( @Buf3[CurrentIncMove], mm3[CurrentIncMove].Memory , mm3[CurrentIncMove].size  ); // copia del buf per non essere sovrascritti
 
-  if not FirstLoadOK  then begin   // avvio partita se è la prima volta
-    CurrentIncMove := 0;
-    ClientLoadBrainMM(CurrentIncMove);
-//    pveSynchBrain;
-    // ClientLoadBrainMM (CurrentIncMove) ;   // (incmove)
-    FirstLoadOK := True;
-    for I := 0 to 255 do begin
-     incMoveAllProcessed [i] := false;
-   //  incMoveReadTcp [i] := false;
-    end;
-  //  for I := 0 to CurrentIncMove do begin
-     // caricato e completamente eseguito
-//     incMoveAllProcessed [i] := true;
-    // incMoveReadTcp [i] := true;
-   // end;
-  end;
 
-  SpriteReset;
+  //SpriteReset;
+  //PostMessage ( Application.Handle, $2CCC,0,0);
   ThreadCurrentIncMove.Enabled := true;
 
   aSprite := SE_Live.FindSprite('btnmenu_overridecolor');
   aSprite.SubSprites[0].lBmp.LoadFromFileBMP( dir_tmp + 'color1.bmp');
-  GameScreen := ScreenLive;
+ // GameScreen := ScreenLive;
 
  // MM3[MyBrain.incMove].SaveToFile( dir_data + IntToStr(MyBrain.incMove) + '.IS');
 
@@ -17875,6 +17794,59 @@ end;
 procedure TForm1.sfSavesValidateFile(Sender: TObject; ValidMaskInclude, ValidMaskExclude, ValidAttributes: Boolean; var Accept: Boolean);
 begin
   DeleteFile( SE_SearchFiles(Sender).CurrentDirectory + SE_SearchFiles(Sender).CurrentFilename );
+end;
+procedure TForm1.InterruptLiveGame;
+var
+  aSprite : SE_sprite;
+begin
+  WaitForSingleObject ( MutexAnimation, INFINITE );
+  ShowLoading;
+  while (se_ball.IsAnySpriteMoving ) or (se_players.IsAnySpriteMoving )  do begin
+    se_Theater1.thrdAnimate.OnTimer (se_Theater1.thrdAnimate);
+    application.ProcessMessages ;
+  end;
+  SE_players.RemoveAllSprites;
+  aSprite := SE_ball.FindSprite('ball');
+  SE_ball.RemoveSprite(aSprite);
+  SE_interface.RemoveAllSprites;
+  SE_Numbers.RemoveAllSprites;
+
+  MyBrain := oldbrain;
+  GameScreen := ScreenFormation;
+  ClientLoadFormation;
+
+  lstbrain.Clear;
+
+  ReleaseMutex( MutexAnimation );
+end;
+procedure TForm1.CloseLiveRound;
+var
+  aSprite : SE_sprite;
+begin
+  WaitForSingleObject ( MutexAnimation, INFINITE );
+  while (se_ball.IsAnySpriteMoving ) or (se_players.IsAnySpriteMoving )  do begin
+    se_Theater1.thrdAnimate.OnTimer (se_Theater1.thrdAnimate);
+    application.ProcessMessages ;
+  end;
+  ShowLoading;
+  se_Theater1.thrdAnimate.OnTimer (se_Theater1.thrdAnimate);
+  SE_players.RemoveAllSprites;
+  aSprite := SE_ball.FindSprite('ball');
+  SE_ball.RemoveSprite(aSprite);
+  SE_interface.RemoveAllSprites;
+  SE_Numbers.RemoveAllSprites;
+
+  MyBrain := oldbrain;
+
+  Application.ProcessMessages ;
+  CompleteAllMatches;
+  pveFinalizeAllBrain;
+  lstbrain.Clear;
+  AdvanceMFRound;
+  GameScreen := ScreenFormation;
+  ClientLoadFormation;
+  ReleaseMutex( MutexAnimation );
+
 end;
 
 end.
