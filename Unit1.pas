@@ -25,20 +25,17 @@
 
     face paint shop pro 9 blackpencil 80 30  ufficiale
 
-    FARE:
-    //      CompleteDivisions;
-//      createnewseason;
-
+    verificare AI forse autotackle anche su move di 1 sola casella
 
      errore flags su qualcosa, forse lop
 
      come fa ad arrivare al 150??????
-     MANCA UNO SPRITERESET E TUTTO AMDREBBE
+
 
      dopo interrupt non funziona piu' AI auto
 
     dopo il gol su freekick non ha fatto il deflatebarrier ma neanche il reset del gol.
-    rifare la schermata gol roundborder come minimo
+    rifare la schermata gol roundborder come minimo . posizionato sulla porta, non al centro
 
     showmatchinfo finire bene.
     panel iniziali, a parte login, rifare con SE_MENU
@@ -408,6 +405,7 @@ type
     SE_matchInfo: SE_Engine;
     sfSaves: SE_SearchFiles;
     SE_Circles: SE_Engine;
+    Button12: TButton;
 
 // General
     function ChangeResolution(XResolution, YResolution, Depth: DWORD): boolean;
@@ -552,6 +550,7 @@ type
     procedure ComboBox1CloseUp(Sender: TObject);
     procedure ComboBox1KeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure sfSavesValidateFile(Sender: TObject; ValidMaskInclude, ValidMaskExclude, ValidAttributes: Boolean; var Accept: Boolean);
+    procedure Button12Click(Sender: TObject);
 
   private
     { Private declarations }
@@ -585,7 +584,7 @@ type
 
     // interface
     procedure CreateSplash (x,y,w,h: Integer; aString: string; msLifespan, FontSize: integer; FontColor,BackColor: TColor; Transparent: boolean) ;
-    procedure RemoveChancesAndInfo  ; deprecated;
+    procedure CreateMovingLifeSpan (posX,posY, relativeDestX,relativeDestY: Integer;speed:Single; aString: string; msLifespan,FontSize: integer; FontStyle: TFontStyles; FontColor,BackColor: TColor; Transparent: boolean) ;    procedure RemoveChancesAndInfo  ; deprecated;
     procedure CornerSetBall;
     procedure PenaltySetBall;
     procedure CornerSetPlayer ( aPlayer: TsoccerPlayer);
@@ -727,6 +726,7 @@ type
 
   procedure AllBrainThink;
   procedure ShowNewSeason ( Season : integer ) ;
+  procedure CompleteAllDivisions ( Season, FromRound, Country : Integer );   // simile all'inizio a startallmatches ma cicla anche per e m e f
 
   public
     { Public declarations }
@@ -1207,6 +1207,18 @@ begin
     AllOtherTeamsThinkMarket ( GenderS[g] , 100 );
   end;
   GameScreen := ScreenFormation;
+end;
+
+procedure TForm1.Button12Click(Sender: TObject);
+var
+  aSprite: SE_Sprite;
+begin
+  {$IFDEF  tools}
+  aSprite := SE_ball.FindSprite('door1');
+  CreateMovingLifeSpan (aSprite.Position.X,aSprite.Position.Y, 0,-80, 3, 'GOAL!!!',600,12, [fsbold], clwhite -1, clblack, true) ;
+  aSprite := SE_Players.Sprites[5];
+  CreateMovingLifeSpan (aSprite.Position.X,aSprite.Position.Y, 0,-80, 3, Translate('lbl_fault')+'!',600,12, [], clwhite -1, clblack, true) ;
+  {$EndIF  tools}
 end;
 
 procedure TForm1.Button1Click(Sender: TObject);
@@ -5879,6 +5891,46 @@ begin
   HideChances;
   AnimationScript.Reset ;
 end;
+procedure Tform1.CreateMovingLifeSpan (posX,posY, relativeDestX,relativeDestY: Integer;Speed:Single; aString: string; msLifespan,FontSize: integer;FontStyle: TFontStyles; FontColor,BackColor: TColor; Transparent: boolean) ;
+var
+
+  bmp: SE_Bitmap;
+  aSprite : SE_Sprite;
+  aSpriteLabel : SE_SpriteLabel;
+  h: integer;
+  R: Trect;
+begin
+
+  SE_LifeSpan.RemoveAllSprites;
+  HideFP_Friendly_ALL;
+  R.Left := 0;
+  R.Top := 0;
+  R.Right := (Se_theater1.VirtualWidth);
+  R.Bottom := (Se_theater1.VirtualHeight);
+
+  bmp:= SE_Bitmap.Create(Se_theater1.VirtualWidth,Se_theater1.VirtualHeight);
+  bmp.Bitmap.Canvas.Font.Name := 'Calibri';
+  bmp.Bitmap.Canvas.Font.Size := Fontsize;
+  h:=DrawText( bmp.Bitmap.canvas.handle, PChar(aString), length(aString), R, dt_wordbreak or DT_CALCRECT);
+  bmp.Free;
+
+  bmp:= SE_Bitmap.Create(R.Width,R.Height);
+  bmp.Bitmap.Canvas.Brush.color := BackColor;
+  bmp.Bitmap.Canvas.FillRect(rect(0,0,bmp.Width ,bmp.Height ));
+
+  aSprite := SE_LifeSpan.CreateSprite( bmp.Bitmap , '', 1,1,1000,posX,posY,True,1  );
+  aSprite.LifeSpan := msLifespan;
+  aSpriteLabel := SE_SpriteLabel.create( 0-1,0,'Calibri',clWhite-1,clBlack,FontSize, aString ,True  ,1, dt_Center);
+  aSpriteLabel.lFontStyle :=  FontStyle;
+  aSprite.Labels.add (aSpriteLabel);
+
+
+  aSprite.MoverData.Speed := Speed;
+  aSprite.MoverData.Destination := Point ( posX+relativeDestX,posY+relativeDestY );
+
+  bmp.Free;
+end;
+
 procedure Tform1.CreateSplash (x,y,w,h: Integer; aString: string; msLifespan,FontSize: integer; FontColor,BackColor: TColor; Transparent: boolean) ;
 var
   TextSize : TSize;
@@ -9616,7 +9668,7 @@ end;
 
 procedure TForm1.Anim ( Script: string );
 var
-  i,rndY,posY: Integer;
+  i,rndY,posX,posY: Integer;
   ts: TstringList;
   aPoint: TPoint;
   netgol,head,halfY: Integer;
@@ -9625,6 +9677,8 @@ var
 //  aCell,aCell2: TSoccerCell;
   aPlayer,aPlayer2, aTackle, aGK, aBarrierPlayer : TSoccerPlayer;
   aSubSprite: SE_SubSprite;
+  aSprite : SE_sprite;
+
   srcCellX, srcCellY, dstCellX, dstCellY,Z : integer; // Source e destination Cells
   Dst, TmpX,tmpY: integer;
   CornerMap: TCornerMap;
@@ -9870,6 +9924,7 @@ begin
     aFieldPointSpr := SE_FieldPoints.FindSprite( ts[2]+'.'+ts[3] );
     seSprite:= SE_LifeSpan.CreateSprite(dir_interface + 'faul.bmp' ,'fault',1,1,10,aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y,true ,1 );
     seSprite.LifeSpan := ShowFaultLifeSpan;
+    CreateMovingLifeSpan (aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y, 0,-80, 3, Translate('lbl_fault')+'!',600,12, [], clwhite -1, clblack, true) ;
     playsound ( pchar (dir_sound +  'faul.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
 
   end
@@ -9877,6 +9932,7 @@ begin
     aFieldPointSpr := SE_FieldPoints.FindSprite( ts[2]+'.'+ts[3] );
     seSprite:= SE_LifeSpan.CreateSprite(dir_interface + 'faulred.bmp' ,'fault',1,1,10,aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y,true ,1 );
     seSprite.LifeSpan := ShowFaultLifeSpan;
+    CreateMovingLifeSpan (aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y, 0,-80, 3, Translate('lbl_fault')+'!',600,12, [], clwhite -1, clblack, true) ;
     playsound ( pchar (dir_sound +  'faul.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
 
      // sul server: TsScript.add ('sc_fault.cheatballgk,' + intTostr(TeamFaultFavour) +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
@@ -9886,6 +9942,7 @@ begin
     aFieldPointSpr := SE_FieldPoints.FindSprite( ts[2]+'.'+ts[3] );
     seSprite:= SE_LifeSpan.CreateSprite(dir_interface + 'faulred.bmp' ,'fault',1,1,10,aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y,true ,1 );
     seSprite.LifeSpan := ShowFaultLifeSpan;
+    CreateMovingLifeSpan (aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y, 0,-80, 3, Translate('lbl_fault')+'!',600,12, [], clwhite -1, clblack, true) ;
     playsound ( pchar (dir_sound +  'faul.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
 // sul server:  TsScript.add ('sc_fault.cheatball,' + intTostr(TeamFaultFavour) + ',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
 
@@ -9897,11 +9954,14 @@ begin
     aFieldPointSpr := SE_FieldPoints.FindSprite( ts[2]+'.'+ts[3] );
     seSprite:= SE_LifeSpan.CreateSprite(dir_interface + 'faulred.bmp' ,'fault',1,1,10,aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y,true,1  );
     seSprite.LifeSpan := ShowFaultLifeSpan;
+    CreateMovingLifeSpan (aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y, 0,-80, 3, Translate('lbl_RedCard')+'!',600,12, [], clRed, clblack, true) ;
     i_red(ts[1]);
 
   end
   else if ts[0] = 'cl_injured' then begin
 
+    aFieldPointSpr := SE_FieldPoints.FindSprite( ts[2]+'.'+ts[3] );
+    CreateMovingLifeSpan (aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y, 0,-80, 3, Translate('lbl_Injured')+'!',600,12, [], clPurple, clblack, true) ;
     i_injured(ts[1]);
   end
   else if ts[0] = 'cl_yellow' then begin    // ids cellx celly
@@ -9909,6 +9969,7 @@ begin
     aFieldPointSpr := SE_FieldPoints.FindSprite( ts[2]+'.'+ts[3] );
     seSprite:= SE_LifeSpan.CreateSprite(dir_interface + 'faulyellow.bmp' ,'fault',1,1,10,aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y,true ,1 );
     seSprite.LifeSpan := ShowFaultLifeSpan;
+    CreateMovingLifeSpan (aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y, 0,-80, 3, Translate('lbl_YellowCard')+'!',600,12, [], clYellow, clblack, true) ;
     i_Yellow(ts[1]);
   end
   else if ts[0] = 'cl_yellowred' then begin
@@ -9917,6 +9978,8 @@ begin
     aFieldPointSpr := SE_FieldPoints.FindSprite( ts[2]+'.'+ts[3] );
     seSprite:= SE_LifeSpan.CreateSprite(dir_interface + 'faulyellowred.bmp' ,'fault',1,1,10,aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y,true ,1 );
     seSprite.LifeSpan := ShowFaultLifeSpan;
+    CreateMovingLifeSpan (aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y-20, 0,-80, 3, Translate('lbl_YellowCard')+'!',600,12, [], clYellow, clblack, true) ;
+    CreateMovingLifeSpan (aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y, 0,-80, 3, Translate('lbl_RedCard')+'!',600,12, [], clRed, clblack, true) ;
     i_red(ts[1]);
 
   end
@@ -10270,14 +10333,22 @@ begin
           Mybrain.Ball.se_sprite.MoverData.Destination := Point(  aFieldPointSpr.Position.X - PixelsGolDeep , aFieldPointSpr.Position.Y);
           BackColor := MyBrain.Score.DominantColor[0];
           FontColor := GetContrastColor(MyBrain.Score.DominantColor[0]);
+          aSprite := SE_ball.FindSprite('door0');
+          posX := aSprite.Position.X;
+
         end;
         11: begin
           Mybrain.Ball.se_sprite.MoverData.Destination := Point(  aFieldPointSpr.Position.X + PixelsGolDeep, aFieldPointSpr.Position.Y);
           BackColor := MyBrain.Score.DominantColor[1];
           FontColor := GetContrastColor(MyBrain.Score.DominantColor[1]);
+          aSprite := SE_ball.FindSprite('door1');
+          posX := aSprite.Position.X;
         end;
       end;
-      CreateSplash (se_theater1.VirtualBitmap.Width div 2,se_theater1.VirtualBitmap.Height div 2,400,200, 'GOL !!!', 2000,24, FontColor,BackColor, false) ;
+
+
+      CreateMovingLifeSpan (posX,posY, 0,-100, 3, 'GOAL!!!',800,12, [fsbold], clwhite -1, clblack, true) ;
+      //CreateSplash (se_theater1.VirtualBitmap.Width div 2,se_theater1.VirtualBitmap.Height div 2,400,200, 'GOAL !!!', 2000,24, FontColor,BackColor, false) ;
 
   end
   else if ts[0]= 'cl_splash.gameover' then begin
@@ -11658,10 +11729,11 @@ begin
    // Se mia division è a 38 giornate, quelle a 30 si sono fermate e non partono in startallmatches. Sono pronte per CreateNewSeason
     for C := 1 to 6 do begin     // ciclo per country per determinare
      // showloading 5 pallini
-      CompleteAllDivisions ( C );  // crea i brain e gioca in emulation
+      CompleteAllDivisions ( ActiveSeason,ActiveRound, C );  // crea i brain e gioca in emulation . è come fare emulationBrain per tutte le partite rimaste
+     // qui fatte anche pvefinalizebrain e tutte le giornate sono aggiornate fino alla 38
     end;
     for C := 1 to 6 do begin     // ciclo per country per determinare
-    // CreateNewSeason ( C ); // inverte retrocessi e promossi
+      CreateNewSeason (ActiveSeason + 1, C, dir_saves ); // inverte retrocessi e promossi
     end;
     ActiveSeason := ActiveSeason + 1;
     ActiveRound := 1;
@@ -12733,6 +12805,7 @@ begin
       MyGuidTeam := 0;
       SE_yesNo.RemoveAllSprites;
       ShowLoading;
+      SE_Theater1.thrdAnimate.OnTimer(SE_Theater1.thrdAnimate);
       DeleteSaves;
       btnContinueClick (btnContinue);
       Exit;
@@ -17957,6 +18030,62 @@ begin
   GameScreen := ScreenFormation;
   ClientLoadFormation;
   ReleaseMutex( MutexAnimation );
+
+end;
+procedure TForm1.CompleteAllDivisions ( Season, FromRound, Country : Integer );   // simile all'inizio a startallmatches ma cicla anche per e m e f
+var
+  ini : TiniFile;
+  i,D,M,G,R: integer;
+  ts2 : TStringlist;
+  Filename,aCommaText: string; // per motivi di lunghezza codice
+  fy : Boolean;
+  aBrain: TSoccerBrain;
+  const GenderS ='fm';
+begin
+  ts2 := Tstringlist.create;
+  ts2.StrictDelimiter := True;
+  // qui mi occupo solo di 1 country
+  for D := 1 to 5 do begin
+
+    if ((D > 2) and ( FromRound > 30 )) or ((D <= 2) and ( FromRound > 38 )) then
+      Continue; // tutti i campionati si fermano li'.
+    for G := 1 to 2 do begin
+
+      Filename := dir_Saves + GenderS[G] + 'S' + Format('%.3d', [Season]) + 'C' + Format('%.3d', [Country]) + 'D' + Format('%.1d', [D] ) + '.ini';
+      ini := TIniFile.Create(Filename ) ;
+      lstbrain.Clear;        // 10 partite alla volta e poi finalize
+      for R := FromRound to 38 do begin
+
+        for M := 1 to DivisionMatchCount[D]  do begin
+          ts2.commatext := ini.ReadString('round' + IntToStr(R), 'match' + IntToStr(M),''  );
+
+          if Rndgenerate (100) <= CREATEFORMATION_FORCEYOUNG then
+            fY := True
+            ELSE fY:= FALSE;
+
+          aCommaText := pveCreateFormationTeam   ( dir_Saves + GenderS[G] + ts2[0] + '.120', GenderS[G], StrToInt(ts2[0]), fY ) ; // la AI generata al volo
+            WriteTeamFormation (  GenderS[G] , ts2[0] , dir_Saves , aCommaText );
+          aCommaText := pveCreateFormationTeam   (  dir_Saves + GenderS[G] + ts2[2] + '.120', GenderS[G], StrToInt(ts2[2]),fY ) ; // la AI generata al volo
+            WriteTeamFormation (  GenderS[G] , ts2[2] , dir_Saves , aCommaText );
+          aBrain:= TSoccerBrain.Create ('other',GenderS[G], Season , Country, D, R) ; // no ids
+          aBrain.GameMode := pve;
+          aBrain.pvePostMessage := false;  // non manda OnappMessage
+          pveCreateMatch ( Season, Country, R,   ts2[0],ts2[1],ts2[2], ts2[3], aBrain );
+          lstbrain.Add(aBrain);
+
+          EmulationBrain (lstBrain [i], dir_saves);   // --> dopo finalizebrain comunque avverrà, qui spargo solo dati in  memoria a brain-lstsoccerplayerALL
+          lstBrain [i].Finished := true;
+        end;
+
+          pveFinalizeAllbrain;
+          lstbrain.Free;
+      end;
+    end;
+  end;
+
+
+  ts2.free;
+
 
 end;
 

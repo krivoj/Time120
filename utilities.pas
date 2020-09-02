@@ -159,7 +159,8 @@ end;
 
   procedure AllRainXp ( var aPlayer: TSoccerPlayer);
 
-  procedure CompleteAllDivisions ( Country : Integer );
+
+  procedure CreateNewSeason ( NewSeason , Country : Integer; dirSaves:string );
 
   procedure GetBuildInfo(var V1, V2, V3, V4: Word);
   function kfVersionInfo: String;
@@ -5264,10 +5265,47 @@ begin
 
 
 end;
-procedure CompleteAllDivisions ( Country : Integer );
+procedure CreateNewSeason ( NewSeason , Country : Integer; dirSaves:string );
+var
+  I,G,D,T,TeamCount: Integer;
+  lstTeam: TobjectList<TeamStanding>;
+  lstScorers: TobjectList<TopScorer>;
+  ini : TIniFile;
+  ts2 : TStringList;
+  aTeamStanding : TeamStanding;
+  aTopScorer : TopScorer;
+  const GenderS='fm';
 begin
-//  if ThisDivision .round then
-  
+
+  ts2 := Tstringlist.create;
+  ts2.StrictDelimiter := True;
+
+
+  lstTeam := TobjectList<TeamStanding>.Create(True);
+  lstScorers := TobjectList<TopScorer>.Create(True);
+
+  for G := 1 to 2 do begin
+
+    TeamCount := 16;           // manuale divisione per divisione da 1 a 5
+    ini:= TIniFile.Create(dirSaves + genderS[G] + 'S' + Format('%.3d', [NewSeason-1]) + 'C' + Format('%.3d', [Country]) + 'D' + Format('%.1d', [5] ) + '.ini') ;
+    for T := 1 to TeamCount do begin
+      ts2.commatext := ini.ReadString('standing' , IntToStr(T) ,''  );
+      aTeamStanding:= TeamStanding.Create;
+      aTeamStanding.Guid := StrToInt( ts2[0]);
+      aTeamStanding.Name := ts2[1];
+      aTeamStanding.Points := 0;// StrToInt (ts2[2]);
+      lstTeam.add ( aTeamStanding );
+    end;
+    Calc_Standing ( genderS[G], NewSeason-1, Country, 5, dirSaves, lstTeam, lstScorers ) ;
+    //le prime 4 vanno in divisione 4. devo andare a prendere le ultime 4
+
+    lstTeam.Clear;
+    lstScorers.Clear;
+
+
+  end;
+
+
 end;
 procedure MakeDelay ( interval: integer);
 var

@@ -312,6 +312,15 @@ object Form1: TForm1
       TabOrder = 29
       OnClick = Button11Click
     end
+    object Button12: TButton
+      Left = 144
+      Top = 776
+      Width = 75
+      Height = 25
+      Caption = 'test lifepspan'
+      TabOrder = 30
+      OnClick = Button12Click
+    end
   end
   object PanelMain: SE_Panel
     Left = 32
