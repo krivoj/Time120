@@ -104,7 +104,7 @@ end;
 
   type Array22 = array [0..21] of TBasePlayer;
   function CreateCalendars ( idCountry, Season, MyGuidTeam,MyGuidCountry: Integer; MyGuidTeamName, CountryName, dirData, dirSaves, dir_interface: string; var Engine:SE_Engine): string;
-    procedure WriteCalendar ( season, idCountry, division,teamCount: Integer; var tsTHISrank: TStringList; dirData, dirSaves: string );
+    procedure WriteCalendar ( season, idCountry, division,teamCount: Integer; var tsTHISrank: TStringList; dirData, dirSaves: string ); // rigenera anche i result
       procedure CreateResultsPreset(filename: string);// lo cra per ogni country e division
 
   procedure CreateTeams ( idCountry, Season, nFacesM,nFacesF: Integer; dirData, dirSaves: string);
@@ -4942,6 +4942,7 @@ begin
         aPlayer:= aBrain.lstSoccerPlayer[i];
         TotMarketValue [T] := TotMarketValue [T] + aBrain.lstSoccerPlayer[i].MarketValue;
         AllRainXp (aPlayer); // xp attributes 12 sparsi, xp_talent valuto, xpDeva+xpdevT 12 sparsi, devi fisso -120 ai panchinari
+//        aPlayer.Stamina := aPlayer.Stamina
       end;
     end;
     for I := 0 to aBrain.lstSoccerGameOver.Count -1 do begin // i 6  o meno sostiutiti sono in gameover
@@ -5268,8 +5269,10 @@ end;
 procedure CreateNewSeason ( NewSeason , Country : Integer; dirSaves:string );
 var
   I,G,D,T,TeamCount: Integer;
-  lstTeam: TobjectList<TeamStanding>;
-  lstScorers: TobjectList<TopScorer>;
+  lstTeam: array[1..5] of TobjectList<TeamStanding>;
+  lstScorers: array[1..5] of TobjectList<TopScorer>;
+  lstTeamTmp: TobjectList<TeamStanding>;
+  lstScorersTmp: TobjectList<TopScorer>;
   ini : TIniFile;
   ts2 : TStringList;
   aTeamStanding : TeamStanding;
@@ -5280,30 +5283,79 @@ begin
   ts2 := Tstringlist.create;
   ts2.StrictDelimiter := True;
 
+  lstTeamTmp:= TobjectList<TeamStanding>.Create(True);
+  lstScorersTmp := TobjectList<TopScorer>.Create(True);
+  for I := 1 to 5 do begin
+    lstTeam[i] := TobjectList<TeamStanding>.Create(True);
+    lstScorers[i] := TobjectList<TopScorer>.Create(True);
+  end;
 
-  lstTeam := TobjectList<TeamStanding>.Create(True);
-  lstScorers := TobjectList<TopScorer>.Create(True);
+
 
   for G := 1 to 2 do begin
 
-    TeamCount := 16;           // manuale divisione per divisione da 1 a 5
-    ini:= TIniFile.Create(dirSaves + genderS[G] + 'S' + Format('%.3d', [NewSeason-1]) + 'C' + Format('%.3d', [Country]) + 'D' + Format('%.1d', [5] ) + '.ini') ;
-    for T := 1 to TeamCount do begin
-      ts2.commatext := ini.ReadString('standing' , IntToStr(T) ,''  );
-      aTeamStanding:= TeamStanding.Create;
-      aTeamStanding.Guid := StrToInt( ts2[0]);
-      aTeamStanding.Name := ts2[1];
-      aTeamStanding.Points := 0;// StrToInt (ts2[2]);
-      lstTeam.add ( aTeamStanding );
-    end;
-    Calc_Standing ( genderS[G], NewSeason-1, Country, 5, dirSaves, lstTeam, lstScorers ) ;
-    //le prime 4 vanno in divisione 4. devo andare a prendere le ultime 4
+    for D := 5 DownTo 2 do begin // le divisioni vanno da 5 a 2 e si passano sempre le prime e le ultime 4
 
-    lstTeam.Clear;
-    lstScorers.Clear;
+      ini:= TIniFile.Create(dirSaves + genderS[G] + 'S' + Format('%.3d', [NewSeason-1]) + 'C' + Format('%.3d', [Country]) + 'D' + Format('%.1d', [D] ) + '.ini') ;
+      for T := 1 to DivisionMatchCount[D] do begin
+        ts2.commatext := ini.ReadString('standing' , IntToStr(T) ,''  );
+        aTeamStanding:= TeamStanding.Create;
+        aTeamStanding.Guid := StrToInt( ts2[0]);
+        aTeamStanding.Name := ts2[1];
+        aTeamStanding.Points := 0;// StrToInt (ts2[2]);
+        lstTeam[D].add ( aTeamStanding );
+      end;
+      Calc_Standing ( genderS[G], NewSeason-1, Country, D, dirSaves, lstTeam[D], lstScorers[5] ) ;
+      //le prime 4 vanno in divisione 4. devo andare a prendere le ultime 4 della divisone 4
+      for T := 1 to DivisionMatchCount[D-1] do begin
+        ts2.commatext := ini.ReadString('standing' , IntToStr(T) ,''  );
+        aTeamStanding:= TeamStanding.Create;
+        aTeamStanding.Guid := StrToInt( ts2[0]);
+        aTeamStanding.Name := ts2[1];
+        aTeamStanding.Points := 0;// StrToInt (ts2[2]);
+        lstTeam[D-1].add ( aTeamStanding );
+      end;
+      Calc_Standing ( genderS[G], NewSeason-1, Country, D-1, dirSaves, lstTeam[D-1], lstScorers[D-1] ) ;
+
+      lstTeamTmp.add (lstTeam[D].Items[0] ); // i primi 4  in temp
+      lstTeamTmp.add (lstTeam[D].Items[1] );
+      lstTeamTmp.add (lstTeam[D].Items[2] );
+      lstTeamTmp.add (lstTeam[D].Items[3] );
+
+      lstTeam[D].Items[0] := lstTeam[D-1].Items[lstTeam[D-1].count -1]; // gli ultimi 4 della divsione 4 vanno in divisione 5
+      lstTeam[D].Items[1] := lstTeam[D-1].Items[lstTeam[D-1].count -2];
+      lstTeam[D].Items[2] := lstTeam[D-1].Items[lstTeam[D-1].count -3];
+      lstTeam[D].Items[3] := lstTeam[D-1].Items[lstTeam[D-1].count -4];
+
+      lstTeam[D-1].Items[lstTeam[D-1].count -1] := lstTeamTmp[0];   // i primi 4 della divisione 5 vanno in divisione 4
+      lstTeam[D-1].Items[lstTeam[D-1].count -2] := lstTeamTmp[1];
+      lstTeam[D-1].Items[lstTeam[D-1].count -3] := lstTeamTmp[2];
+      lstTeam[D-1].Items[lstTeam[D-1].count -4] := lstTeamTmp[3];
+
+
+    end;
+
+
+    // Salvo la nuova season. devo ricreare i calendari non come il createcalendars iniziale. devo rimescolare anche la base
+    // o il nuovo calendario avrà le stesse partite della vecchia stagione.
+
+    for I := 1 to 5 do begin // passo da f a m
+      lstTeam[i].Clear;
+      lstScorers[i].Clear;
+    end;
+      lstTeamTmp.Clear;
+      lstScorersTmp.Clear;
 
 
   end;
+
+  for I := 1 to 5 do begin
+    lstTeam[i].Free;
+    lstScorers[i].Free;
+  end;
+
+  lstTeamTmp.Free;
+  lstScorersTmp.Free;
 
 
 end;

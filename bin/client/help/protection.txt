@@ -1,0 +1,1 @@
+Protezione aggiunge temporaneamente 2 al Controllo di palla, ma non ti potrai muovere o passare la palla. Utile per resistere ai contrasti.

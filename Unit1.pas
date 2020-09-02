@@ -25,6 +25,18 @@
 
     face paint shop pro 9 blackpencil 80 30  ufficiale
 
+    nella calc_standings aggiungere if = sort per differenza gol teamstandings deve avere anche GF GS
+    // Salvo la nuova season. devo ricreare i calendari non come il createcalendars iniziale. devo rimescolare anche la base
+    // o il nuovo calendario avrà le stesse partite della vecchia stagione. fare sort diverso all'inizio dei team.sort random
+    // applicare sort random anche a createcalendars
+
+    in emulationbrain sotrrare anbche stamina secondo rainstamina. occhio al GK
+
+    fare mousemove help anch esui talenti di livello 2 che si trovano solo a destra in se-playerdetails
+    help x buffdm,f corner frekick 2,3 penalty    Corner.Kick, crossing stay, free
+    help compare se frekick compare altro ? questionmark
+
+    replay deve tornare ad andare
     verificare AI forse autotackle anche su move di 1 sola casella
 
      errore flags su qualcosa, forse lop
@@ -32,10 +44,14 @@
      come fa ad arrivare al 150??????
 
 
-     dopo interrupt non funziona piu' AI auto
+
+     dopo interrupt non funziona piu' AI auto. forse va in 2.0
 
     dopo il gol su freekick non ha fatto il deflatebarrier ma neanche il reset del gol.
-    rifare la schermata gol roundborder come minimo . posizionato sulla porta, non al centro
+
+descr_skill_BuffD=Buff Difesa  Muro difensivo
+descr_skill_BuffM=Buff Centrocampo  Centrocampo solido
+descr_skill_BuffF=Buff Attacco   Attacco spietato
 
     showmatchinfo finire bene.
     panel iniziali, a parte login, rifare con SE_MENU
@@ -51,7 +67,7 @@
 
     FARE AIthinkdev Animazioni per sviluppo attributo o talento.
 
-
+    talente convergi verso il centro
     creare più formazioni , forse bug nella fatigue
 
 
@@ -65,7 +81,7 @@
 
     icona skill short.passing piede+palla
 
-    fare talento quando riceve passaggiocorot prova a fare un dribbling a costo 0
+    fare talento quando riceve passaggiocorot prova a fare un dribbling a costo 0 puo' drbblare di nuovo
     // --------------------- PVP ----------------------------
     pvp cl_splash.gameover aggiungere miGain, rank e stelle in showgameover
 
@@ -700,7 +716,6 @@ type
     function RndGenerate0( Upper: integer ): integer;
     function RndGenerateRange( Lower, Upper: integer ): integer;
 
-    function findlstSkill (SkillName: string ): integer;
     function findPlayerMyBrainFormation ( guid: string ): TSoccerPlayer;
     function CheckFormationTeamMemory : Boolean; // in memoria mybrainformation lstsoccerplayer.formationcellX
       procedure RefreshCheckFormationMemory;
@@ -791,7 +806,6 @@ var
   //Animating:Boolean;
 //  StringTalents: array [1..NUM_TALENT] of string;
   StringTalents: array [0..255] of string;
-  LstSkill: array[0..13] of string; // 13 skill totali
   ShowPixelInfo: Boolean;
 
   keyTimer : Word;
@@ -1056,6 +1070,8 @@ var
   pbSprite : SE_SpriteProgressBar;
 begin
   GameMode := pve;
+
+
   pbSprite := SE_SpriteProgressBar ( SE_Score.FindSprite('scorebartime'));
   pbSprite.Visible := false;
 
@@ -1832,22 +1848,6 @@ begin
 
   StringTalents[250] :=  'gkmiracle';
   StringTalents[251] :=  'gkpenalty';
-
-
-  LstSkill[0]:= 'Move';
-  LstSkill[1]:= 'Short.Passing';
-  LstSkill[2]:= 'Lofted.Pass';
-  LstSkill[3]:= 'Crossing';
-  LstSkill[4]:= 'Precision.Shot';
-  LstSkill[5]:= 'Power.Shot';
-  LstSkill[6]:= 'Dribbling';
-  LstSkill[7]:= 'Protection';
-  LstSkill[8]:= 'Tackle';
-  LstSkill[9]:= 'Pressing';
-  LstSkill[10]:= 'Corner.Kick';
-  LstSkill[11]:= 'BuffD';
-  LstSkill[12]:= 'BuffM';
-  LstSkill[13]:= 'BuffF';
 
   btnConfirmSell.Caption := Translate('lbl_Confirm');
   btnBackSell.Caption := Translate('lbl_Back');
@@ -11399,17 +11399,6 @@ begin
   end;
 end;
 
-function TForm1.findlstSkill (SkillName: string ): integer;
-var
-  i: Integer;
-begin
-  for I := Low(LstSkill) to High(LstSkill) do begin
-    if lstSkill[i]=SkillName then begin
-      Result := i;
-      Exit;
-      end;
-    end;
-end;
 function TForm1.GetDominantColor ( Team: integer  ): TColor;
 var
   Ts: TStringList;
@@ -12249,7 +12238,6 @@ var
   aSubSprite :SE_SubSprite;
 begin
   if aSpriteClicked.Guid = 'btnmenu_exit' then begin
-    if GCD <= 0 then begin
       if ViewReplay then begin
         //AudioCrowd.Stop;
         ToolSpin.Visible := false;
@@ -12265,10 +12253,11 @@ begin
         SE_ball.RemoveSprite(aBallSprite);
         SE_interface.RemoveAllSprites;
         SE_Numbers.RemoveAllSprites;
-        GameScreen := ScreenLogin;
+        GameScreen := ScreenMain;
       end
       else if viewMatch then begin
         //AudioCrowd.Stop;
+      if GCD <= 0 then begin
         tcp.SendStr( 'closeviewmatch' + EndofLine);
         ShowLoading;
         viewMatch := False;
@@ -12285,9 +12274,9 @@ begin
         Sleep(1000);
         tcp.SendStr( 'getformation' + EndofLine);
 
-      end;
 
-      GCD := GCD_DEFAULT;
+        GCD := GCD_DEFAULT;
+      end;
     end;
   end
   else if aSpriteClicked.Guid = 'btnmenu_overridecolor' then begin
