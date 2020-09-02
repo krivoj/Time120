@@ -25,12 +25,12 @@
 
     face paint shop pro 9 blackpencil 80 30  ufficiale
 
-    nella calc_standings aggiungere if = sort per differenza gol teamstandings deve avere anche GF GS
     // Salvo la nuova season. devo ricreare i calendari non come il createcalendars iniziale. devo rimescolare anche la base
     // o il nuovo calendario avrà le stesse partite della vecchia stagione. fare sort diverso all'inizio dei team.sort random
     // applicare sort random anche a createcalendars
 
-    in emulationbrain sotrrare anbche stamina secondo rainstamina. occhio al GK
+    in emulationbrain sotrrare anbche stamina secondo rainstamina. occhio al GK  . devo vedere la stamina PRIMA DEL REGEN. il regen lo fa
+    debugin diretta in finalizebrain
 
     fare mousemove help anch esui talenti di livello 2 che si trovano solo a destra in se-playerdetails
     help x buffdm,f corner frekick 2,3 penalty    Corner.Kick, crossing stay, free

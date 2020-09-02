@@ -11,7 +11,7 @@ Type TeamStanding = class
   public
     Guid : Integer;
     Name: string;
-    Points : Integer;
+    Points ,GF,GS: Integer;
 end;
 type TopScorer = class
   private
@@ -4862,7 +4862,17 @@ done:
   lstTeam.Sort(TComparer<TeamStanding>.Construct(
     function (const L, R: TeamStanding): integer
     begin
-      Result := (R.Points )- (L.Points  );
+      if R.Points = L.Points then  begin
+        if (R.GF-R.GS) = (L.GF-L.GS) then  begin
+          if R.GF=L.GF then begin
+            Result := CompareValue( L.GS , R.GS); // invertiti , meglio chi ha subito meno gol ( alla fine è sorteggio automatico )
+          end
+          else Result := CompareValue( R.GF , L.GF);
+        end
+        else Result := CompareValue((R.GF-R.GS) , (L.GF-L.GS));
+      end
+      else Result := CompareValue(R.Points, L.Points);
+
     end
    ));
 
