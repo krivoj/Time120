@@ -160,7 +160,7 @@ end;
   procedure AllRainXp ( var aPlayer: TSoccerPlayer);
 
 
-  procedure CreateNewSeason ( NewSeason , Country : Integer; dirSaves:string );
+  procedure CreateNewSeason ( NewSeason , Country : Integer; dirData, dirSaves:string );
 
   procedure GetBuildInfo(var V1, V2, V3, V4: Word);
   function kfVersionInfo: String;
@@ -174,6 +174,7 @@ end;
 var
   FormationsPreset: TList<TFormation>;
   DivisionMatchCount : array[1..5] of Integer;
+  DivisionRoundCount : array[1..5] of Integer;
 
 
 implementation
@@ -1231,9 +1232,21 @@ begin
   for M := 1 to DivisionMatchCount[aBrain.Division]  do begin
     ts2.commatext := ini.ReadString('round' + IntToStr(aBrain.Round), 'match' + IntToStr(M),''  );
     if (ts2[0] = IntToStr(aBrain.Score.TeamGuid[0])) and (ts2[2] = IntToStr(aBrain.Score.TeamGuid[1])) then begin
-      ini.WriteString('round' + IntToStr(aBrain.Round), 'match' + IntToStr(M),
-      ts2.CommaText + ',' + IntToStr(aBrain.Score.gol[0])+'-'+ IntToStr(aBrain.Score.gol[1]) + ','+ aBrain.MatchInfo.CommaText );
 
+      if ts2.Count = 4 then begin // non c'è il risultato
+        ini.WriteString('round' + IntToStr(aBrain.Round), 'match' + IntToStr(M),
+        ts2.CommaText + ',' + IntToStr(aBrain.Score.gol[0])+'-'+ IntToStr(aBrain.Score.gol[1]) + ','+ aBrain.MatchInfo.CommaText );
+        Continue;
+      end;
+
+      if ts2.Count > 4 then begin
+        ts2[4] := IntToStr(aBrain.Score.gol[0])+'-'+ IntToStr(aBrain.Score.gol[1]) ;
+        ini.WriteString('round' + IntToStr(aBrain.Round), 'match' + IntToStr(M), ts2.CommaText);
+      end;
+      if ts2.Count > 5 then begin
+        ts2[5] := aBrain.MatchInfo.CommaText;
+        ini.WriteString('round' + IntToStr(aBrain.Round), 'match' + IntToStr(M), ts2.CommaText);
+      end
     end;
 
   end;
@@ -2139,6 +2152,8 @@ var
   aF: TFormation;
 
 begin
+//  5-4-1   2 formazioni
+
   aF.d := 5; af.m:=4; aF.f:=1;
 
   af.cells[2]:= Point (0,9);
@@ -2148,7 +2163,7 @@ begin
   af.cells[6]:= Point (6,9);
 
   af.cells[7]:= Point (0,6);
-  af.cells[8]:= Point (3,6); // cella obbligata
+  af.cells[8]:= Point (3,6);
   af.cells[9]:= Point (4,6);
   af.cells[10]:= Point (6,6);
 
@@ -2165,13 +2180,14 @@ begin
   af.cells[6]:= Point (5,9);
 
   af.cells[7]:= Point (0,6);
-  af.cells[8]:= Point (3,6); // cella obbligata
+  af.cells[8]:= Point (3,6);
   af.cells[9]:= Point (4,6);
   af.cells[10]:= Point (6,6);
 
   af.cells[11]:= Point (3,3);
   FormationsPreset.add(af);
 
+//  5-3-2   2 formazioni
 
   aF.d := 5; af.m:=3; aF.f:=2;
   af.cells[2]:= Point (0,9);
@@ -2181,7 +2197,7 @@ begin
   af.cells[6]:= Point (6,9);
 
   af.cells[7]:= Point (1,6);
-  af.cells[8]:= Point (3,6); // cella obbligata
+  af.cells[8]:= Point (3,6);
   af.cells[9]:= Point (5,6);
 
   af.cells[10]:= Point (2,3);
@@ -2196,7 +2212,7 @@ begin
   af.cells[6]:= Point (5,9);
 
   af.cells[7]:= Point (1,6);
-  af.cells[8]:= Point (3,6); // cella obbligata
+  af.cells[8]:= Point (3,6);
   af.cells[9]:= Point (5,6);
 
   af.cells[10]:= Point (2,3);
@@ -2204,6 +2220,7 @@ begin
 
   FormationsPreset.add(af);
 
+//  4-4-2   3 formazioni
 
   aF.d := 4; af.m:=4; aF.f:=2;
   af.cells[2]:= Point (1,9);
@@ -2213,7 +2230,7 @@ begin
 
   af.cells[6]:= Point (4,6);
   af.cells[7]:= Point (1,6);
-  af.cells[8]:= Point (3,6); // cella obbligata
+  af.cells[8]:= Point (3,6);
   af.cells[9]:= Point (5,6);
 
   af.cells[10]:= Point (2,3);
@@ -2229,7 +2246,7 @@ begin
 
   af.cells[6]:= Point (4,6);
   af.cells[7]:= Point (2,6);
-  af.cells[8]:= Point (3,6); // cella obbligata
+  af.cells[8]:= Point (3,6);
   af.cells[9]:= Point (5,6);
 
   af.cells[10]:= Point (2,3);
@@ -2245,13 +2262,15 @@ begin
 
   af.cells[6]:= Point (0,6);
   af.cells[7]:= Point (2,6);
-  af.cells[8]:= Point (3,6); // cella obbligata
+  af.cells[8]:= Point (3,6);
   af.cells[9]:= Point (6,6);
 
   af.cells[10]:= Point (1,3);
   af.cells[11]:= Point (5,3);
 
   FormationsPreset.add(af);
+
+//  4-3-3   3 formazioni
 
   aF.d := 4; af.m:=3; aF.f:=3;
   af.cells[2]:= Point (1,9);
@@ -2261,7 +2280,7 @@ begin
 
   af.cells[6]:= Point (0,6);
   af.cells[7]:= Point (2,6);
-  af.cells[8]:= Point (3,6); // cella obbligata
+  af.cells[8]:= Point (3,6);
 
   af.cells[9]:= Point (3,3);
   af.cells[10]:= Point (1,3);
@@ -2277,7 +2296,41 @@ begin
 
   af.cells[6]:= Point (4,6);
   af.cells[7]:= Point (2,6);
-  af.cells[8]:= Point (3,6); // cella obbligata
+  af.cells[8]:= Point (3,6);
+
+  af.cells[9]:= Point (3,3);
+  af.cells[10]:= Point (0,3);
+  af.cells[11]:= Point (6,3);
+
+  FormationsPreset.add(af);
+
+  aF.d := 4; af.m:=3; aF.f:=3;
+  af.cells[2]:= Point (1,9);
+  af.cells[3]:= Point (2,9);
+  af.cells[4]:= Point (3,9);
+  af.cells[5]:= Point (4,9);
+
+  af.cells[6]:= Point (4,6);
+  af.cells[7]:= Point (5,6);
+  af.cells[8]:= Point (3,6);
+
+  af.cells[9]:= Point (3,3);
+  af.cells[10]:= Point (0,3);
+  af.cells[11]:= Point (6,3);
+
+  FormationsPreset.add(af);
+
+//  3-4-3   2 formazioni
+
+  aF.d := 3; af.m:=4; aF.f:=3;
+  af.cells[2]:= Point (4,9);
+  af.cells[3]:= Point (2,9);
+  af.cells[4]:= Point (3,9);
+
+  af.cells[5]:= Point (0,6);
+  af.cells[6]:= Point (6,6);
+  af.cells[7]:= Point (2,6);
+  af.cells[8]:= Point (3,6);
 
   af.cells[9]:= Point (3,3);
   af.cells[10]:= Point (0,3);
@@ -2291,15 +2344,17 @@ begin
   af.cells[4]:= Point (3,9);
 
   af.cells[5]:= Point (0,6);
-  af.cells[6]:= Point (6,6);
+  af.cells[6]:= Point (5,6);
   af.cells[7]:= Point (2,6);
-  af.cells[8]:= Point (3,6); // cella obbligata
+  af.cells[8]:= Point (3,6);
 
   af.cells[9]:= Point (3,3);
-  af.cells[10]:= Point (0,3);
-  af.cells[11]:= Point (6,3);
+  af.cells[10]:= Point (1,3);
+  af.cells[11]:= Point (5,3);
 
   FormationsPreset.add(af);
+
+//  3-5-2   3 formazioni
 
   aF.d := 3; af.m:=5; aF.f:=2;
   af.cells[2]:= Point (4,9);
@@ -2309,7 +2364,7 @@ begin
   af.cells[5]:= Point (0,6);
   af.cells[6]:= Point (6,6);
   af.cells[7]:= Point (2,6);
-  af.cells[8]:= Point (3,6); // cella obbligata
+  af.cells[8]:= Point (3,6);
   af.cells[9]:= Point (4,6);
 
   af.cells[10]:= Point (0,3);
@@ -2325,7 +2380,7 @@ begin
   af.cells[5]:= Point (0,6);
   af.cells[6]:= Point (6,6);
   af.cells[7]:= Point (2,6);
-  af.cells[8]:= Point (3,6); // cella obbligata
+  af.cells[8]:= Point (3,6);
   af.cells[9]:= Point (4,6);
 
   af.cells[10]:= Point (2,3);
@@ -2333,6 +2388,21 @@ begin
 
   FormationsPreset.add(af);
 
+  aF.d := 3; af.m:=5; aF.f:=2;
+  af.cells[2]:= Point (4,9);
+  af.cells[3]:= Point (2,9);
+  af.cells[4]:= Point (3,9);
+
+  af.cells[5]:= Point (0,6);
+  af.cells[6]:= Point (6,6);
+  af.cells[7]:= Point (2,6);
+  af.cells[8]:= Point (3,6);
+  af.cells[9]:= Point (4,6);
+
+  af.cells[10]:= Point (3,3);
+  af.cells[11]:= Point (4,3);
+
+  FormationsPreset.add(af);
 
 end;
 
@@ -3038,7 +3108,7 @@ var
   SS : TStringStream;
   Buf3 : TArray8192;
   count: Byte;
-  lenteamName, lenUniformH,lenUniformA,talentid1,talentid2,lenSurname,LenHistory,LenXP : Integer;
+  lenteamName, talentid1,talentid2,lenSurname,LenHistory,LenXP : Integer;
   TsHistory,tsXP: TStringList;
 begin
 //  uguale a ClientLoadFormation ma senza grafica
@@ -4894,7 +4964,7 @@ done:
 end;
 procedure EmulationBrain ( aBrain: TSoccerBrain; dirSaves: string);
 var
-  i,T,aRnd,YellowCount,RedCount,InjuredCount,Injured,absGap: Integer;
+  i,T,aRnd,YellowCount,RedCount,InjuredCount,Injured,absGap,subLeft,subDone: Integer;
   TotMarketValue: array[0..1] of Integer;
   aPlayer,aPlayer2 : TSoccerPlayer;
   mm_W,mm_N,mm_L : TMemoryStream;
@@ -4906,7 +4976,7 @@ var
   lst_L : TList<Byte>;
   lst_W2, lst_L2: TList<Byte>;
   Finalresult : TPoint;
-  label retry,team2win;
+  label retry,team2win,skipsub;
 begin
   // il brain è appena formato dalle createformation ma non è partito
   // prendo i 22 titolari in lstsoccerplayer e aggiungo da lstsoccerReserve 6 player (se disponibile) a caso, anche il GK
@@ -4927,32 +4997,46 @@ begin
   //
 
   for T := 0 to 1 do begin
+{$IFDEF  tools}
+//    OutputDebugString( PChar( string(aBrain.Score.Team[T])) );
+//    OutputDebugString( PChar( IntToStr(aBrain.lstSoccerReserve.Count) ) );
+{$endIF  tools}
 
     // faccio effettivamente la SUB come nel brain
-    for I := 0 to imin(2,aBrain.lstSoccerReserve.Count -1) do begin  // o 3 sostituzioni per team o il massimo che si può fare . va bene anche un gk
+    SubDone := 0;
+    subLeft := aBrain.GetTotalReserve(T,true );
+    if subLeft = 0 then goto skipsub;
+    // o 3 sostituzioni per team o il massimo che si può fare . va bene anche un gk
+    while ( SubLeft > 0) do begin
+      if SubDone = 3 then
+        Break;
+      subLeft := aBrain.GetTotalReserve(T,true );  // lo devo aggiornare ogni volta perchè agisce sulle lst ufficiali del brain
+      if subLeft = 0 then goto skipsub;
+
+
       aPlayer :=  aBrain.GetReservePlayerRandom ( T, true ); // anche GK. ci saranno 2 , è lo stesso, tanto la partita non si gioca
-      if aPlayer = nil then // non si sa mai, siamo in emulazione
-        Continue;
       aPlayer2 := aBrain.GetSoccerPlayerRandom( T, true );
-      if aPlayer2 = nil then
-        Continue;
 
       aBrain.AddSoccerPlayer(aPlayer);
       aBrain.RemoveSoccerReserve(aPlayer);
 
       aBrain.AddSoccerGameOver(aPlayer2);
       aBrain.RemoveSoccerPlayer(aPlayer2);
+      inc ( SubDone );
     end;
 
   //
   //  ----------MARKETVALUE E SET RAINXP --------------------------------
   //
+skipsub:
     for I := 0 to aBrain.lstSoccerPlayer.Count -1 do begin // gli 11 titolari
       if aBrain.lstSoccerPlayer[i].Team = T then begin
         aPlayer:= aBrain.lstSoccerPlayer[i];
         TotMarketValue [T] := TotMarketValue [T] + aBrain.lstSoccerPlayer[i].MarketValue;
         AllRainXp (aPlayer); // xp attributes 12 sparsi, xp_talent valuto, xpDeva+xpdevT 12 sparsi, devi fisso -120 ai panchinari
-//        aPlayer.Stamina := aPlayer.Stamina
+        if aPlayer.TalentId1 = TALENT_ID_GOALKEEPER then
+          aPlayer.Stamina := aPlayer.Stamina - RndGenerate(15)
+        else aPlayer.Stamina := aPlayer.Stamina - RndGenerate(30);
       end;
     end;
     for I := 0 to aBrain.lstSoccerGameOver.Count -1 do begin // i 6  o meno sostiutiti sono in gameover
@@ -4960,6 +5044,9 @@ begin
         aPlayer:= aBrain.lstSoccerGameOver[i];
         TotMarketValue [T] := TotMarketValue [T] + aBrain.lstSoccerGameOver[i].MarketValue;
         AllRainXp (aPlayer); // xp attributes 12 sparsi, xp_talent valuto, xpDeva+xpdevT 12 sparsi, devi fisso -120 ai panchinari
+        if aPlayer.TalentId1 = TALENT_ID_GOALKEEPER then
+          aPlayer.Stamina := aPlayer.Stamina - RndGenerate(15)
+        else aPlayer.Stamina := aPlayer.Stamina - RndGenerate(30);
       end;
     end;
 
@@ -5064,8 +5151,9 @@ begin
   end;
 
   absGap := TotMarketValue[0] - TotMarketValue[1];
+
   if TotMarketValue[0] >= TotMarketValue[1] then begin       // alla fine i conti devono tornare per i campionati a 20 squadre: 0 byte nei file es. w.120
-    lst_W2 := lst_W; // inverto i puntatori nel caso altra squadra vinca
+    lst_W2 := lst_W; // sotto inverto i puntatori nel caso altra squadra vinca , qui li rimetto dritti
     lst_L2 := lst_L;
 team2win:
     case absGap of
@@ -5152,7 +5240,7 @@ team2win:
                 finalResult := DeleteFromResults ( aRnd, lst_W2);
               end;
             end;
-            81..90: begin aRnd :=  RndGenerate0(lst_N.Count -1); // 10% pareggo
+            81..90: begin
               if lst_N.Count = 0 then begin
                 Finalresult.X := RndGenerateRange(0,4);
                 Finalresult.Y := Finalresult.X;
@@ -5162,7 +5250,7 @@ team2win:
                 FinalResult := DeleteFromResults ( aRnd, lst_N );
               end;
             end;
-            91..100: begin aRnd :=  RndGenerate0(lst_L.Count -1); // 10% persa
+            91..100: begin
               if lst_L2.Count = 0 then begin
                 Finalresult.Y := RndGenerateRange(2,4);
                 Finalresult.X := RndGenerate0(Finalresult.Y-1);
@@ -5276,7 +5364,7 @@ begin
 
 
 end;
-procedure CreateNewSeason ( NewSeason , Country : Integer; dirSaves:string );
+procedure CreateNewSeason ( NewSeason , Country : Integer; dirData, dirSaves:string );
 var
   I,G,D,T,TeamCount: Integer;
   lstTeam: array[1..5] of TobjectList<TeamStanding>;
@@ -5287,8 +5375,10 @@ var
   ts2 : TStringList;
   aTeamStanding : TeamStanding;
   aTopScorer : TopScorer;
+  tsTHISrank: TStringList;
   const GenderS='fm';
 begin
+  tsTHISrank:= TStringList.create;
 
   ts2 := Tstringlist.create;
   ts2.StrictDelimiter := True;
@@ -5345,16 +5435,36 @@ begin
 
     end;
 
+    // Salvo la nuova season. Creao i nuovi calendari di questa country (uguali per f e m), ma diversi dal preceente in quanto rimescolo prima la tsTHISrank
 
-    // Salvo la nuova season. devo ricreare i calendari non come il createcalendars iniziale. devo rimescolare anche la base
-    // o il nuovo calendario avrà le stesse partite della vecchia stagione.
+    for D := 5 downto 1 do begin
+      if D <= 2 then TeamCount := 20
+        else TeamCount :=16;
+      tsTHISrank.Clear;
+
+      // rimescolo per utilizzare di nuovo il file basecak in dirData
+      lstTeam[D].sort(TComparer<TeamStanding>.Construct(
+      function (const L, R: TeamStanding): integer
+      begin
+        if RndGenerate(100) <= 50 then
+          Result := -1
+          else result := 1;
+      end
+      ));
+
+      for I := 0 to TeamCount -1 do begin
+        tsTHISrank.add ( IntToStr(lstTeam[D].Items[i].Guid) + ',' + lstTeam[D].Items[i].Name );
+      end;
+      WriteCalendar ( NewSeason, Country, D, teamCount ,  tsTHISrank,   dirData, dirSaves  );
+
+    end;
 
     for I := 1 to 5 do begin // passo da f a m
       lstTeam[i].Clear;
       lstScorers[i].Clear;
     end;
-      lstTeamTmp.Clear;
-      lstScorersTmp.Clear;
+    lstTeamTmp.Clear;
+    lstScorersTmp.Clear;
 
 
   end;
@@ -5364,9 +5474,10 @@ begin
     lstScorers[i].Free;
   end;
 
+  ts2.free;
   lstTeamTmp.Free;
   lstScorersTmp.Free;
-
+  tsTHISrank.free;
 
 end;
 procedure MakeDelay ( interval: integer);
@@ -5415,6 +5526,12 @@ initialization
   DivisionMatchCount[3] := 8;
   DivisionMatchCount[4] := 8;
   DivisionMatchCount[5] := 8;
+
+  DivisionRoundCount[1] := 38;
+  DivisionRoundCount[2] := 38;
+  DivisionRoundCount[3] := 30;
+  DivisionRoundCount[4] := 30;
+  DivisionRoundCount[5] := 30;
 
 finalization
   FormationsPreset.Free;

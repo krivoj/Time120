@@ -233,6 +233,7 @@ lbl_endgame=Game Over
 
 lbl_computemarket=Elaborazione mercato 
 lbl_creatingteams=Creating teams
+lbl_creatingdivions=Creating divisions 
 lbl_Country=Country
 lbl_Country2=Country
 lbl_Sell=Sell

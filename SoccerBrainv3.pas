@@ -105,9 +105,9 @@ const cost_autotac = 2;
 const cost_cor = 1;
 const cost_defshot = 1;
 const cost_defdrib = 3;
-const cost_GKprs = 1;
-const cost_GKHeading = 2;
-const cost_GKpos = 3;
+const cost_GKprs = 6;
+const cost_GKHeading = 8;
+const cost_GKpos = 10;
 
 
    const ShortPassRange       = 2;
@@ -822,6 +822,7 @@ end;
     function GetCrossOpponent ( aPlayer:TSoccerPlayer ): TSoccerPlayer;
 
 
+    function GetTotalReserve ( Team: integer; GK:boolean): integer;
     function GetReservePlayerRandom ( Team: integer; GK:boolean): TSoccerPlayer;
     function GetSoccerPlayerRandom ( Team: integer; GK:boolean): TSoccerPlayer;overload;
     function GetSoccerPlayer (X,Y: integer): TSoccerPlayer;overload;
@@ -4167,11 +4168,30 @@ var
   label retry;
 begin
 retry:
-  arnd := RndGenerate (lstSoccerReserve.Count -1 );
+  arnd := RndGenerate0 (lstSoccerReserve.Count -1 );
   aPlayer := lstSoccerReserve[aRnd];
   if ((aPlayer.TalentId1 = TALENT_ID_GOALKEEPER) and (GK = False))  or ( aPlayer.Team <> Team) then
     goto retry;
   Result := aPlayer;
+end;
+function TSoccerBrain.GetTotalReserve ( Team: integer; GK:boolean): integer;
+var
+  aPlayer : TSoccerPlayer;
+  i: Integer;
+begin
+  Result := 0;
+  if lstSoccerReserve.Count = 0 then
+    Exit;
+
+  for I := 0 to lstSoccerReserve.Count -1 do begin
+    aPlayer := lstSoccerReserve[i];
+    if aPlayer.Team = Team Then begin
+      Result := Result + 1;
+      if ((aPlayer.TalentId1 = TALENT_ID_GOALKEEPER) and (GK = False)) then
+      Result := Result - 1;
+    end;
+  end;
+
 end;
 function TSoccerBrain.GetSoccerPlayer2 ( X, Y : integer): TSoccerPlayer;
 var
@@ -12895,7 +12915,6 @@ var
   label Tryrows;
 begin
   // ci deve sempre essere EXIT.
-  result := none;
 
   if CanDoSub ( Team ) then begin  //not gk
     // check injured player

@@ -103,9 +103,9 @@ descr_skill_Tackle=Contrasto
 descr_skill_Pressing=Pressing
 descr_skill_Corner.Kick=Corner
 descr_skill_Volley=Tiro al volo
-descr_skill_BuffD=Buff Difesa
-descr_skill_BuffM=Buff Centrocampo
-descr_skill_BuffF=Buff Attacco
+descr_skill_BuffD=Muro difensivo
+descr_skill_BuffM=Centrocampo solido
+descr_skill_BuffF=Attacco spietato
 
 descr_talent_Goalkeeper=Puo' giocare in porta!
 descr_talent_Challenge=+1 Tackle passivo durante gli spostamenti dell'avversario con la palla.
@@ -231,6 +231,7 @@ lbl_endgame=Fine Partita
 
 lbl_computemarket=Elaborazione mercato 
 lbl_creatingteams=Creazione squadre
+lbl_creatingdivions=Creazione divisioni 
 lbl_Country=Nazione
 lbl_Country2=Nazionalità
 lbl_Sell=Vendi

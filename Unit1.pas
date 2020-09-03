@@ -23,16 +23,17 @@
   }
   { TODO -ctodo prima del rilascio patreon :
 
+    Newseason rimangono risultati di W2 . strano.
+
     face paint shop pro 9 blackpencil 80 30  ufficiale
 
-    // Salvo la nuova season. devo ricreare i calendari non come il createcalendars iniziale. devo rimescolare anche la base
-    // o il nuovo calendario avrà le stesse partite della vecchia stagione. fare sort diverso all'inizio dei team.sort random
-    // applicare sort random anche a createcalendars
+    fare select your coutry, select yoyr team con lus scuro sotto
 
-    in emulationbrain sotrrare anbche stamina secondo rainstamina. occhio al GK  . devo vedere la stamina PRIMA DEL REGEN. il regen lo fa
-    debugin diretta in finalizebrain
 
-    fare mousemove help anch esui talenti di livello 2 che si trovano solo a destra in se-playerdetails
+
+
+    verificare fare mousemove help anch esui talenti di livello 2 che si trovano solo a destra in se-playerdetails
+
     help x buffdm,f corner frekick 2,3 penalty    Corner.Kick, crossing stay, free
     help compare se frekick compare altro ? questionmark
 
@@ -49,16 +50,13 @@
 
     dopo il gol su freekick non ha fatto il deflatebarrier ma neanche il reset del gol.
 
-descr_skill_BuffD=Buff Difesa  Muro difensivo
-descr_skill_BuffM=Buff Centrocampo  Centrocampo solido
-descr_skill_BuffF=Buff Attacco   Attacco spietato
-
     showmatchinfo finire bene.
     panel iniziali, a parte login, rifare con SE_MENU
 
     finire le skill sia effetto che help
 
     fare ? per help su ogni btnmenu_ e dove c'è bisogno. apre l'help se_help   btnhelp_attributes _talents
+    help diviso per lingue
 
     bug lastman. ricalcolare le condizioni . anche la nuova versione forse non va bene. c'è sicuro errore perchè compare al 44' di una partita
     islastman diventa islastman ( aplayer, ballplayer)
@@ -237,6 +235,7 @@ Const PixelsGKTake = 24;
   const MAX_DEVA = 30;
   const MAX_DEVT = 30;
   const MAX_DEVI = 30;
+  const Pix : array[1..5] of Integer =  ( (-40*2), -40 ,0 , +40, (+40*2) );
 
 
 type TStringAlignment = ( TStringCenter, TStringRight);
@@ -422,6 +421,7 @@ type
     sfSaves: SE_SearchFiles;
     SE_Circles: SE_Engine;
     Button12: TButton;
+    Button13: TButton;
 
 // General
     function ChangeResolution(XResolution, YResolution, Depth: DWORD): boolean;
@@ -434,6 +434,7 @@ type
     procedure onAppMessage(var Msg: TMsg; var Handled: Boolean);
     procedure CompleteAllMatches;
     procedure pveFinalizeAllbrain;
+    procedure pveEmulationAllbrain;
     procedure AdvanceMFRound; // aggiunge round o MF
     procedure pveFinalizeBrain  ( aBrain : TSoccerBrain ) ;
     procedure AllOtherTeamsThinkMarket ( fm :Char; Perc: integer );
@@ -567,6 +568,7 @@ type
     procedure ComboBox1KeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure sfSavesValidateFile(Sender: TObject; ValidMaskInclude, ValidMaskExclude, ValidAttributes: Boolean; var Accept: Boolean);
     procedure Button12Click(Sender: TObject);
+    procedure Button13Click(Sender: TObject);
 
   private
     { Private declarations }
@@ -1147,7 +1149,6 @@ begin
     else ViewReplay := false;
   end
   else ViewReplay := false;
-
   sf.Free;
 
   {$endif tools}
@@ -1235,6 +1236,13 @@ begin
   aSprite := SE_Players.Sprites[5];
   CreateMovingLifeSpan (aSprite.Position.X,aSprite.Position.Y, 0,-80, 3, Translate('lbl_fault')+'!',600,12, [], clwhite -1, clblack, true) ;
   {$EndIF  tools}
+end;
+
+procedure TForm1.Button13Click(Sender: TObject);
+var
+  aSprite: SE_Sprite;
+begin
+  ShowNewSeason ( ActiveSeason + 1 ) ;
 end;
 
 procedure TForm1.Button1Click(Sender: TObject);
@@ -1643,6 +1651,15 @@ begin
     pveFinalizeBrain ( lstbrain[i] );
   end;
 
+end;
+procedure TForm1.pveEmulationAllbrain;
+var
+  i: Integer;
+begin
+  for I := lstBrain.Count -1 downto 0 do begin
+    EmulationBrain (lstBrain [i], dir_saves);   // --> dopo finalizebrain comunque avverrà, qui spargo solo dati in  memoria a brain-lstsoccerplayerALL
+    lstBrain [i].Finished := true;
+  end;
 end;
 procedure TForm1.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
@@ -3321,7 +3338,7 @@ begin
   LoadPlayerDetails;
   LoadAml;
   LoadStandings;
-  LoadMarket;
+  // LoadMarket  la carico in SetGameMode  in quanto diversa tra pvp e pve
   LoadSpectator;
   //LoadLive;   la carico in SetGameMode  in quanto diversa tra pvp e pve
   LoadGreen;
@@ -7383,6 +7400,7 @@ begin
   LoadMainInterface;
   LoadLive;
   LoadScore;
+  LoadMarket;
   if aMode = pvp then
     Timer1.Enabled := true
     else Timer1.Enabled := False;
@@ -11481,7 +11499,6 @@ var
   aSpriteLabel : SE_SpriteLabel;
   aSprite: SE_Sprite;
   astring: string;
-  const Pix : array[1..5] of Integer =  ( (-40*2), -40 ,0 , +40, (+40*2) );
   const RowH = 22;
   label retry;
 begin
@@ -11503,12 +11520,10 @@ begin
     // STARTSIMULATION
     GameScreen := ScreenWaitingSimulation; //  --> ShowLoading;
 
-    SE_Loading.CreateSprite( dir_interface + 'circleoff.bmp','circleoff1',1,1,1000,(1440 div 2)-(40*2)  , 720 div 2, true ,1999  );
-    SE_Loading.CreateSprite( dir_interface + 'circleoff.bmp','circleoff2',1,1,1000,(1440 div 2)-(40) , 720 div 2, true  ,1999 );
-    SE_Loading.CreateSprite( dir_interface + 'circleoff.bmp','circleoff3',1,1,1000,1440 div 2 , 720 div 2, true  ,1999 );
-    SE_Loading.CreateSprite( dir_interface + 'circleoff.bmp','circleoff4',1,1,1000,(1440 div 2)+(40) , 720 div 2, true  ,1999 );
-    SE_Loading.CreateSprite( dir_interface + 'circleoff.bmp','circleoff5',1,1,1000,(1440 div 2)+(40*2) , 720 div 2, true ,1999  );
-      { TODO : 6+ countries }
+    for I := 1 to 5 do begin
+      SE_Loading.CreateSprite( dir_interface + 'circleoff.bmp','circleoff'+IntToStr(i),1,1,1000,(1440 div 2) + pix[i]  , 720 div 2, true ,1999  );
+    end;
+
 
     for C := 1 to 6 do begin  // 6 countries  1 country 1.08   6 country 2.43
       SE_Loading.CreateSprite( dir_interface + 'circleon.bmp' , 'circleon'+ IntTostr(C),1,1,1000,(1440 div 2)+ pix[C], 720 div 2,true,2000 );
@@ -11611,6 +11626,7 @@ var
  aSprite : SE_Sprite;
  I,C: integer;
  ini : TIniFile;
+ ts2 : TStringList;
 begin
 
   if aSpriteClicked.Guid = 'btnmenu_exit' then begin
@@ -11716,13 +11732,30 @@ begin
    // Se la mia divisione è finita ed è a 30 giornate devo attendere il completamento di tutti i campionati
    //    con CompleteAllDivisions  // completa le divisioni a 38 giornate, altrimenti sono già finite e (2.0 coppe) CreateNewSeason (ActiveSeason+1);
    // Se mia division è a 38 giornate, quelle a 30 si sono fermate e non partono in startallmatches. Sono pronte per CreateNewSeason
+    ShowLoading;
+//    TsWorldCountries.LoadFromFile ( dir_data + 'countries.csv');
+    for C := 1 to 5 do begin
+      SE_Loading.CreateSprite( dir_interface + 'circleoff.bmp' , 'circleon'+ IntTostr(C),1,1,1000,(1440 div 2)+ pix[C], 720 div 2,true,2000 );
+    end;
+    SE_Theater1.thrdAnimate.OnTimer (SE_Theater1.thrdAnimate);
+
     for C := 1 to 6 do begin     // ciclo per country per determinare
      // showloading 5 pallini
+      SE_Loading.CreateSprite( dir_interface + 'circleon.bmp' , 'circleon'+ IntTostr(C),1,1,1000,(1440 div 2)+ pix[C], 720 div 2,true,2000 );
+      aSprite := SE_Loading.FindSprite('loading');
+      ts2 := TStringList.Create ;
+      ts2.StrictDelimiter := True;
+      ts2.CommaText := TsWorldCountries[C-1];
+
+      aSprite.Labels[0].lText := Capitalize(Translate('lbl_creatingdivions')) +  ' ' + ts2[1] + ': ' + IntToStr(  (100 * C) div TsWorldCountries.Count ) + '%';
+      ts2.free;
+
+      SE_Theater1.thrdAnimate.OnTimer (SE_Theater1.thrdAnimate);
       CompleteAllDivisions ( ActiveSeason,ActiveRound, C );  // crea i brain e gioca in emulation . è come fare emulationBrain per tutte le partite rimaste
      // qui fatte anche pvefinalizebrain e tutte le giornate sono aggiornate fino alla 38
     end;
     for C := 1 to 6 do begin     // ciclo per country per determinare
-      CreateNewSeason (ActiveSeason + 1, C, dir_saves ); // inverte retrocessi e promossi
+      CreateNewSeason (ActiveSeason + 1, C, dir_data, dir_saves ); // inverte retrocessi e promossi
     end;
     ActiveSeason := ActiveSeason + 1;
     ActiveRound := 1;
@@ -12787,7 +12820,7 @@ var
   Engine :SE_Engine;
   i,im,G: integer;
   const GenderS = 'fm';
-  const Pix : array[1..5] of Integer =  ( (-40*2), -40 ,0 , +40, (+40*2) );
+
 begin
   if aSpriteClicked.Guid = 'yes' then begin
     if aSpriteClicked.sTag = 'restartgame' then begin
@@ -12855,12 +12888,10 @@ begin
         //goto loadateam;
         GameScreen := ScreenWaitingCreationSeason;//-->   ShowLoading
         Engine := SE_Loading;
-        SE_Loading.CreateSprite( dir_interface + 'circleoff.bmp','circleoff1',1,1,1000,(1440 div 2)-(40*2)  , 720 div 2, true ,1999  );
-        SE_Loading.CreateSprite( dir_interface + 'circleoff.bmp','circleoff2',1,1,1000,(1440 div 2)-(40) , 720 div 2, true  ,1999 );
-        SE_Loading.CreateSprite( dir_interface + 'circleoff.bmp','circleoff3',1,1,1000,1440 div 2 , 720 div 2, true  ,1999 );
-        SE_Loading.CreateSprite( dir_interface + 'circleoff.bmp','circleoff4',1,1,1000,(1440 div 2)+(40) , 720 div 2, true  ,1999 );
-        SE_Loading.CreateSprite( dir_interface + 'circleoff.bmp','circleoff5',1,1,1000,(1440 div 2)+(40*2) , 720 div 2, true ,1999  );
 
+        for I := 1 to 5 do begin
+          SE_Loading.CreateSprite( dir_interface + 'circleoff.bmp','circleoff'+IntToStr(i),1,1,1000,(1440 div 2) + pix[i]  , 720 div 2, true ,1999  );
+        end;
         SE_Theater1.thrdAnimate.OnTimer (SE_Theater1.thrdAnimate);
 
             if FileExists( dir_Saves + 'mteams.120') then // importante o si sommano  ( SOLO ALL'AVVIO QUI
@@ -15177,7 +15208,7 @@ begin
 
       CurrentIncMove :=  Trunc(toolSpin.Value);
       ClientLoadScript( Trunc(toolSpin.Value) );
-      if Mybrain.tsScript[0].Count = 0 then begin
+      if Mybrain.tsScript[CurrentIncMove].Count = 0 then begin
         ClientLoadBrainMM ( Trunc(toolSpin.Value) );
       end
       else
@@ -17597,10 +17628,30 @@ begin
   // disqualified e injured
   // morale ( non sui GK )
   // per i cannonieri ho guid e surname in InfoMatch. ricalcolo tutti come ricalcolo tutta la classifica ogni volta alla fine.
+
+
   lstPlayersDB:= TObjectList<TSoccerPlayer>.Create(true);
 
 
   for T := 0 to 1 do begin
+
+// ------------------------ DEBUG
+{   if (aBrain.Score.TeamGuid[T]= Myguidteam )  then begin
+    asm int 3; end;
+    for p := 0 to aBrain.lstSoccerPlayer.Count -1 do begin
+      if aBrain.lstSoccerPlayer[p].TalentId1 = 1 then
+        outputdebugstring ( PChar  (  'GK' )) ;
+      outputdebugstring ( PChar  (  IntToStr( 120 -  aBrain.lstSoccerPlayer[p].Stamina)) );
+
+    end;
+    for p := 0 to aBrain.lstSoccerGameOver.Count -1 do begin
+      if aBrain.lstSoccerPlayer[p].TalentId1 = 1 then
+        outputdebugstring ( PChar  (  'GK' )) ;
+      outputdebugstring ( PChar  (  IntToStr( 120 -  aBrain.lstSoccerPlayer[p].Stamina)) );
+
+    end;
+  end;  }
+// ------------------------ END DEBUG
     pveLoadTeam( dir_saves + aBrain.Gender + IntToStr(aBrain.Score.TeamGuid[T])+'.120', aBrain.Gender,aBrain.Score.TeamGuid[T], lstPlayersDB );
     for p := lstPlayersDB.Count -1 downto 0 do begin
       aPlayerDB := lstPlayersDB [p];
@@ -18034,6 +18085,7 @@ begin
   ts2 := Tstringlist.create;
   ts2.StrictDelimiter := True;
   // qui mi occupo solo di 1 country
+  lstbrain.Clear;        // 10 partite alla volta e poi finalize
   for D := 1 to 5 do begin
 
     if ((D > 2) and ( FromRound > 30 )) or ((D <= 2) and ( FromRound > 38 )) then
@@ -18042,8 +18094,7 @@ begin
 
       Filename := dir_Saves + GenderS[G] + 'S' + Format('%.3d', [Season]) + 'C' + Format('%.3d', [Country]) + 'D' + Format('%.1d', [D] ) + '.ini';
       ini := TIniFile.Create(Filename ) ;
-      lstbrain.Clear;        // 10 partite alla volta e poi finalize
-      for R := FromRound to 38 do begin
+      for R := FromRound to DivisionRoundCount[D] do begin
 
         for M := 1 to DivisionMatchCount[D]  do begin
           ts2.commatext := ini.ReadString('round' + IntToStr(R), 'match' + IntToStr(M),''  );
@@ -18061,13 +18112,16 @@ begin
           aBrain.pvePostMessage := false;  // non manda OnappMessage
           pveCreateMatch ( Season, Country, R,   ts2[0],ts2[1],ts2[2], ts2[3], aBrain );
           lstbrain.Add(aBrain);
+{$IFDEF  tools}
+//    OutputDebugString( PChar( string(aBrain.Score.Team[0])  +'-'+ string(aBrain.Score.Team[1])) );
+{$endIF  tools}
 
-          EmulationBrain (lstBrain [i], dir_saves);   // --> dopo finalizebrain comunque avverrà, qui spargo solo dati in  memoria a brain-lstsoccerplayerALL
-          lstBrain [i].Finished := true;
         end;
 
-          pveFinalizeAllbrain;
-          lstbrain.Free;
+        pveEmulationAllBrain;
+        pveFinalizeAllbrain;
+        lstbrain.Clear;        // 10 partite alla volta e poi finalize
+
       end;
     end;
   end;
