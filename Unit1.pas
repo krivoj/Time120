@@ -23,7 +23,8 @@
   }
   { TODO -ctodo prima del rilascio patreon :
 
-    Newseason rimangono risultati di W2 . strano.
+    Trovate BUG in CreateNewSeason . lo sto risolvendo
+    Newseason rimangono risultati di W2 . da fixare: se inverte , al giro dopo sono ancora inverite? il puntatore è locale
 
     face paint shop pro 9 blackpencil 80 30  ufficiale
 
@@ -37,7 +38,7 @@
     help x buffdm,f corner frekick 2,3 penalty    Corner.Kick, crossing stay, free
     help compare se frekick compare altro ? questionmark
 
-    replay deve tornare ad andare
+
     verificare AI forse autotackle anche su move di 1 sola casella
 
      errore flags su qualcosa, forse lop
@@ -16920,15 +16921,15 @@ begin
 
   bmp :=SE_Bitmap.Create ( 500, 32 );
   aSprite := SE_YesNo.CreateSprite( bmp.Bitmap , 'param1',1,1,1000, (form1.Width div 2), (form1.height div 2) - 70  ,true,2 );
-  aSpriteLabel := SE_SpriteLabel.create(-1,0,'Calibri',clWhite-1,clBlack,20,param1,true,1,dt_center);
+  aSpriteLabel := SE_SpriteLabel.create(-1,0,'Calibri',clYellow,clBlack,18,param1,true,1,dt_center);
+  aSpriteLabel.lFontStyle := [fsBold];
   aSprite.Labels.Add(aSpriteLabel);
   aSpriteLabel.lFontQuality := fqdefault;
   bmp.Free;
 
   bmp :=SE_Bitmap.Create ( 500, 32 );
   aSprite := SE_YesNo.CreateSprite( bmp.Bitmap , 'param2',1,1,1000, (form1.Width div 2), (form1.height div 2) - 20  ,true,2 );
-  aSpriteLabel := SE_SpriteLabel.create(-1,0,'Calibri',clYellow,clBlack,20,param2,true,1,dt_center);
-  aSpriteLabel.lFontStyle := [fsBold];
+  aSpriteLabel := SE_SpriteLabel.create(-1,0,'Calibri',clWhite-1,clBlack,18,param2,true,1,dt_center);
   aSpriteLabel.lFontQuality := fqdefault;
   aSprite.Labels.Add(aSpriteLabel);
   bmp.Free;

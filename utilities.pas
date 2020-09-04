@@ -175,7 +175,7 @@ var
   FormationsPreset: TList<TFormation>;
   DivisionMatchCount : array[1..5] of Integer;
   DivisionRoundCount : array[1..5] of Integer;
-
+  DivisionTeamCount : array[1..5] of Integer;
 
 implementation
 var
@@ -1207,7 +1207,7 @@ procedure UpdateCalendar ( aBrain: TsoccerBrain; dirSaves: string );
 var
   ini : TIniFile;
   ts2 : Tstringlist;
-  RoundCount , TeamCount , M: Integer;
+  M: Integer;
 
 begin
   ini:= TIniFile.Create(dirSaves + aBrain.Gender + 'S' + Format('%.3d', [aBrain.Season]) + 'C' + Format('%.3d', [aBrain.Country]) + 'D' + Format('%.1d', [aBrain.Division] ) + '.ini') ;
@@ -1217,16 +1217,6 @@ begin
 
 
 
-  if aBrain.Division <= 2  then begin
-
-    RoundCount := 38;
-    TeamCount := 20;
-  end
-  else begin
-
-    RoundCount := 30;
-    TeamCount := 16;
-  end;
 
   // Scrivo risultato e MatchInfo
   for M := 1 to DivisionMatchCount[aBrain.Division]  do begin
@@ -4860,7 +4850,8 @@ NextRound:
   for M := 1 to DivisionMatchCount[Division] do begin
     ts2.CommaText := ini.ReadString('round' + IntToStr(R), 'match' + IntToStr(M),''  );
     if ts2.Count = 4 then // se non trova il tisultato il round è ancora da giocare. ho finito, esco
-      goto Done;
+    //  goto Done;
+    Continue; // mi permette di settare un round più alto per la fase di vebug
      g0 := StrToInt(ExtractWordL (1,ts2[4],'-' ));
      g1 := StrToInt(ExtractWordL (2,ts2[4],'-' ));
 
@@ -4925,7 +4916,7 @@ skiptopScorers:
 
   end;
   inc (R);
-  if not (R = DivisionMatchCount[Division]) then  // se il round è 38 o 30 ho finito
+  if not (R = DivisionRoundCount[Division]) then  // se il round è 38 o 30 ho finito
     goto NextRound;
 
 done:
@@ -5366,7 +5357,7 @@ begin
 end;
 procedure CreateNewSeason ( NewSeason , Country : Integer; dirData, dirSaves:string );
 var
-  I,G,D,T,TeamCount: Integer;
+  I,G,D,T: Integer;
   lstTeam: array[1..5] of TobjectList<TeamStanding>;
   lstScorers: array[1..5] of TobjectList<TopScorer>;
   lstTeamTmp: TobjectList<TeamStanding>;
@@ -5383,7 +5374,7 @@ begin
   ts2 := Tstringlist.create;
   ts2.StrictDelimiter := True;
 
-  lstTeamTmp:= TobjectList<TeamStanding>.Create(True);
+  lstTeamTmp:= TobjectList<TeamStanding>.Create(false);  // FALSE perchè fa clear
   lstScorersTmp := TobjectList<TopScorer>.Create(True);
   for I := 1 to 5 do begin
     lstTeam[i] := TobjectList<TeamStanding>.Create(True);
@@ -5394,10 +5385,9 @@ begin
 
   for G := 1 to 2 do begin
 
-    for D := 5 DownTo 2 do begin // le divisioni vanno da 5 a 2 e si passano sempre le prime e le ultime 4
-
+    for D := 5 DownTo 1 do begin
       ini:= TIniFile.Create(dirSaves + genderS[G] + 'S' + Format('%.3d', [NewSeason-1]) + 'C' + Format('%.3d', [Country]) + 'D' + Format('%.1d', [D] ) + '.ini') ;
-      for T := 1 to DivisionMatchCount[D] do begin
+      for T := 1 to DivisionTeamCount[D] do begin
         ts2.commatext := ini.ReadString('standing' , IntToStr(T) ,''  );
         aTeamStanding:= TeamStanding.Create;
         aTeamStanding.Guid := StrToInt( ts2[0]);
@@ -5405,44 +5395,33 @@ begin
         aTeamStanding.Points := 0;// StrToInt (ts2[2]);
         lstTeam[D].add ( aTeamStanding );
       end;
-      Calc_Standing ( genderS[G], NewSeason-1, Country, D, dirSaves, lstTeam[D], lstScorers[5] ) ;
+      ini.Free;
+      Calc_Standing ( genderS[G], NewSeason-1, Country, D, dirSaves, lstTeam[D], lstScorers[D] ) ;  // Classifiche caricate per ogni divisione
+    end;
+
+    // Classifiche caricate per ogni divisione
+
+    for D := 5 DownTo 2 do begin // le divisioni vanno da 5 a 2 e si passano sempre le prime e le ultime 4
+
       //le prime 4 vanno in divisione 4. devo andare a prendere le ultime 4 della divisone 4
-      for T := 1 to DivisionMatchCount[D-1] do begin
-        ts2.commatext := ini.ReadString('standing' , IntToStr(T) ,''  );
-        aTeamStanding:= TeamStanding.Create;
-        aTeamStanding.Guid := StrToInt( ts2[0]);
-        aTeamStanding.Name := ts2[1];
-        aTeamStanding.Points := 0;// StrToInt (ts2[2]);
-        lstTeam[D-1].add ( aTeamStanding );
-      end;
-      Calc_Standing ( genderS[G], NewSeason-1, Country, D-1, dirSaves, lstTeam[D-1], lstScorers[D-1] ) ;
 
       lstTeamTmp.add (lstTeam[D].Items[0] ); // i primi 4  in temp
       lstTeamTmp.add (lstTeam[D].Items[1] );
       lstTeamTmp.add (lstTeam[D].Items[2] );
       lstTeamTmp.add (lstTeam[D].Items[3] );
 
-      lstTeam[D].Items[0] := lstTeam[D-1].Items[lstTeam[D-1].count -1]; // gli ultimi 4 della divsione 4 vanno in divisione 5
+      // gli ultimi 4 della divsione 4 vanno in divisione 5
+      lstTeam[D].Items[0].guid := lstTeam[D-1].Items[lstTeam[D-1].count -1].guid;
+
       lstTeam[D].Items[1] := lstTeam[D-1].Items[lstTeam[D-1].count -2];
       lstTeam[D].Items[2] := lstTeam[D-1].Items[lstTeam[D-1].count -3];
       lstTeam[D].Items[3] := lstTeam[D-1].Items[lstTeam[D-1].count -4];
 
-      lstTeam[D-1].Items[lstTeam[D-1].count -1] := lstTeamTmp[0];   // i primi 4 della divisione 5 vanno in divisione 4
-      lstTeam[D-1].Items[lstTeam[D-1].count -2] := lstTeamTmp[1];
-      lstTeam[D-1].Items[lstTeam[D-1].count -3] := lstTeamTmp[2];
-      lstTeam[D-1].Items[lstTeam[D-1].count -4] := lstTeamTmp[3];
+
+    // Salvo la nuova Division D. Creao i nuovi calendari di questa country (uguali per f e m), ma diversi dal preceente in quanto rimescolo prima la tsTHISrank
 
 
-    end;
-
-    // Salvo la nuova season. Creao i nuovi calendari di questa country (uguali per f e m), ma diversi dal preceente in quanto rimescolo prima la tsTHISrank
-
-    for D := 5 downto 1 do begin
-      if D <= 2 then TeamCount := 20
-        else TeamCount :=16;
-      tsTHISrank.Clear;
-
-      // rimescolo per utilizzare di nuovo il file basecak in dirData
+      // rimescolo per utilizzare di nuovo il file basecal in dirData
       lstTeam[D].sort(TComparer<TeamStanding>.Construct(
       function (const L, R: TeamStanding): integer
       begin
@@ -5452,12 +5431,49 @@ begin
       end
       ));
 
-      for I := 0 to TeamCount -1 do begin
+      tsTHISrank.Clear;
+      for I := 0 to DivisionTeamCount[D] -1 do begin
         tsTHISrank.add ( IntToStr(lstTeam[D].Items[i].Guid) + ',' + lstTeam[D].Items[i].Name );
       end;
-      WriteCalendar ( NewSeason, Country, D, teamCount ,  tsTHISrank,   dirData, dirSaves  );
+      WriteCalendar ( NewSeason, Country, D, DivisionTeamCount[D] ,  tsTHISrank,   dirData, dirSaves  );
+
+      // i primi 4 della divisione 5 ( tmp ) vanno in divisione 4
+      // che verrà salvata al giro dopo, quando dalla 3 aggiunge alla 4 le retrocesse
+      // il bug è che entrano a 0 punti e dopo sono ultimi in classfica e tornano giù
+      // devo salvare campo per campo , non posso assegnare un pointer di un pointer
+      lstTeam[D-1].Items[lstTeam[D-1].count -1].Guid := lstTeamTmp[0].Guid  ;
+      lstTeam[D-1].Items[lstTeam[D-1].count -1].Name := lstTeamTmp[0].Name  ;
+      lstTeam[D-1].Items[lstTeam[D-1].count -1].Points := MAXINT  ; // gf e gs non sono importanti
+
+      // adesso la devo riordinare
+      lstTeam[D-1].Items[lstTeam[D-1].count -2] := lstTeamTmp[1]  ;
+      lstTeam[D-1].Items[lstTeam[D-1].count -3] := lstTeamTmp[2]  ;
+      lstTeam[D-1].Items[lstTeam[D-1].count -4] := lstTeamTmp[3]  ;
+
+      lstTeamTmp.Clear;
 
     end;
+    // fuori dal ciclo scrivo la division 1
+
+      tsTHISrank.Clear;
+
+      // rimescolo per utilizzare di nuovo il file basecal in dirData
+      lstTeam[1].sort(TComparer<TeamStanding>.Construct(
+      function (const L, R: TeamStanding): integer
+      begin
+        if RndGenerate(100) <= 50 then
+          Result := -1
+          else result := 1;
+      end
+      ));
+
+      for I := 0 to 19 do begin
+        tsTHISrank.add ( IntToStr(lstTeam[1].Items[i].Guid) + ',' + lstTeam[1].Items[i].Name );
+      end;
+      WriteCalendar ( NewSeason, Country, 1, 20 ,  tsTHISrank,   dirData, dirSaves  );
+
+      // qui verranno calcolate le top dopo SORT di nuovo per points
+
 
     for I := 1 to 5 do begin // passo da f a m
       lstTeam[i].Clear;
@@ -5532,6 +5548,12 @@ initialization
   DivisionRoundCount[3] := 30;
   DivisionRoundCount[4] := 30;
   DivisionRoundCount[5] := 30;
+
+  DivisionTeamCount[1] := 20;
+  DivisionTeamCount[2] := 20;
+  DivisionTeamCount[3] := 16;
+  DivisionTeamCount[4] := 16;
+  DivisionTeamCount[5] := 16;
 
 finalization
   FormationsPreset.Free;

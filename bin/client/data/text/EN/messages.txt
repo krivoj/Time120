@@ -29,9 +29,9 @@ skill_Stay=Stay
 skill_Free=free
 skill_Corner.Kick=Corner Kick
 skill_Volley=Volley
-skill_BuffD=Buff reparto Difesa
-skill_BuffM=Buff reparto Centrocampo
-skill_BuffF=Buff reparto Attacco
+skill_BuffD=Defense wall
+skill_BuffM=Solid midfield
+skill_BuffF=Berseker attack
 
 skill_Intercept=Intercept
 
