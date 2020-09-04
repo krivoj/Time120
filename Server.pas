@@ -7050,8 +7050,8 @@ begin
 
     MyBrain.Gender :=  Char( buf3[ cur ]);
   cur := cur + 1 ;
-  MyBrain.Minute :=  Ord( buf3[ cur ]);
-  cur := cur + 1 ;
+  MyBrain.Minute :=  PWORD(@buf3[ cur ])^;
+  cur := cur + 2 ;
 
 MyBrain.fmilliseconds :=  (PWORD(@buf3[ cur ])^ ) * 1000;
   cur := cur + 2 ;
@@ -7071,8 +7071,8 @@ MyBrain.fmilliseconds :=  (PWORD(@buf3[ cur ])^ ) * 1000;
   cur := cur + 1 ;
   MyBrain.ShpFree :=    Ord( buf3[ cur ]);
   cur := cur + 1 ;
-  MyBrain.incMove :=    Ord( buf3[ cur ]);   // supplementari, rigori, può sforare 255 ?
-  cur := cur + 1 ;
+  MyBrain.incMove :=    PWORD(@buf3[ cur ])^;
+  cur := cur + 2 ;
 
   // aggiungo la palla
 

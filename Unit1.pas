@@ -23,12 +23,11 @@
   }
   { TODO -ctodo prima del rilascio patreon :
 
-    Trovate BUG in CreateNewSeason . lo sto risolvendo
+    Trovate BUG in CreateNewSeason . va tutto bene tranne la division 1 che non sono state sostituite da quelle di division 2
     Newseason rimangono risultati di W2 . da fixare: se inverte , al giro dopo sono ancora inverite? il puntatore è locale
 
     face paint shop pro 9 blackpencil 80 30  ufficiale
 
-    fare select your coutry, select yoyr team con lus scuro sotto
 
 
 
@@ -37,14 +36,12 @@
 
     help x buffdm,f corner frekick 2,3 penalty    Corner.Kick, crossing stay, free
     help compare se frekick compare altro ? questionmark
+    finire le skill sia effetto che help
 
 
     verificare AI forse autotackle anche su move di 1 sola casella
 
      errore flags su qualcosa, forse lop
-
-     come fa ad arrivare al 150??????
-
 
 
      dopo interrupt non funziona piu' AI auto. forse va in 2.0
@@ -54,7 +51,6 @@
     showmatchinfo finire bene.
     panel iniziali, a parte login, rifare con SE_MENU
 
-    finire le skill sia effetto che help
 
     fare ? per help su ogni btnmenu_ e dove c'è bisogno. apre l'help se_help   btnhelp_attributes _talents
     help diviso per lingue
@@ -2119,6 +2115,8 @@ var
   const YOffset = 34; FontSize = 14; W=32; H=32;
 begin
 //format('Number           = %n', [12345.678]));
+  se_Market.RemoveAllSprites;
+  SE_Market.ProcessSprites(2000);
   aSprite:= SE_BackGround.FindSprite('backgroundmarket');
   aSprite.Visible := True;
   // Vengono mostrate 20 player sul mercato circa con un pulsante Refresh
@@ -2127,8 +2125,9 @@ begin
   // qui c'è uno sprite di lableColumns
   BaseY := 100;
   bmp := SE_Bitmap.Create ( 1364,H );
-  bmp.Bitmap.Canvas.Brush.Color :=  clBlue;
+  bmp.Bitmap.Canvas.Brush.Color := $007B5139;
   bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
+  RoundBorder(bmp.bitmap);
   aSprite:=SE_Market.CreateSprite(bmp.Bitmap ,'columns',1,1,1000,720,BaseY-h,false,2 );
   aSprite.Alpha := 230;
   aSprite.BlendMode := SE_BlendAlpha;
@@ -2140,7 +2139,7 @@ begin
   aSpriteLabel := SE_SpriteLabel.create( 72,LY,'Calibri',clWhite-1,clBlack,FontSize,Capitalize(Translate('lbl_Surname')),true , 1, dt_XCenter );
   aSprite.Labels.Add(aSpriteLabel);
 
-  aSpriteLabel := SE_SpriteLabel.create( 1300,LY,'Calibri',clWhite-1,clBlack,FontSize,Capitalize(Translate('lbl_Price')),True , 1, dt_XCenter  );
+  aSpriteLabel := SE_SpriteLabel.create( 1200,LY,'Calibri',clWhite-1,clBlack,FontSize,Capitalize(Translate('lbl_Price')),True , 1, dt_Right  );
   aSprite.Labels.Add(aSpriteLabel);
 
   aSpriteLabel := SE_SpriteLabel.create( 1100,LY,'Calibri',clWhite-1,clBlack,FontSize,Capitalize(Translate('attribute_Fitness')),True , 1, dt_XCenter );
@@ -2178,6 +2177,7 @@ begin
     bmp := SE_Bitmap.Create ( 1364,H );
     bmp.Bitmap.Canvas.Brush.Color :=  clGray;
     bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
+    RoundBorder(bmp.bitmap);
     aSprite:=SE_Market.CreateSprite(bmp.Bitmap ,'market'+IntToStr(i) ,1,1,1000,720,BaseY,false,2 );
     bmp.Free;
     aSprite.Alpha := 230;
@@ -2185,7 +2185,7 @@ begin
 
     aSpriteLabel := SE_SpriteLabel.create( 72,LY,'Calibri',clWhite-1,clBlack,FontSize,'',True , 1, dt_Left  );
     aSprite.Labels.Add(aSpriteLabel);
-    aSpriteLabel := SE_SpriteLabel.create( 1300,LY,'Calibri',clWhite-1,clBlack,FontSize,'',True  , 1, dt_xRight );
+    aSpriteLabel := SE_SpriteLabel.create( 1350,LY,'Calibri',clWhite-1,clBlack,FontSize,'',True  , 1, dt_Right );
     aSprite.Labels.Add(aSpriteLabel);
     aSpriteLabel := SE_SpriteLabel.create( 380,LY,'Calibri',clWhite-1,clBlack,FontSize,'',True , 1, dt_xCenter  );
     aSprite.Labels.Add(aSpriteLabel);
@@ -2407,15 +2407,30 @@ var
 begin
   aSprite:= SE_BackGround.FindSprite('backgroundlogin');
   aSprite.Visible := True;
+
+
   // Vengono mostrate 20 nazioni e team circa con un pulsante Refresh
   BaseY := 100;
+  bmp := SE_Bitmap.Create ( 1364,32 );
+  bmp.Bitmap.Canvas.Brush.Color :=  $007B5139;
+  bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
+  RoundBorder(bmp.Bitmap);
+  aSprite:=SE_CountryTeam.CreateSprite(bmp.Bitmap ,'columns',1,1,1000,720,BaseY-32,false,2 );
+  aSprite.Alpha := 230;
+  aSprite.BlendMode := SE_BlendAlpha;
+  aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clyellow,clBlack,FontSize, '',True , 1, dt_Center   ); // country o team
+  aSpriteLabel.lFontStyle := [fsBold];
+  aSprite.Labels.Add(aSpriteLabel);
+  bmp.Free;
+
   for I := 0 to 19 do begin
-    bmp := SE_Bitmap.Create ( 1300,22 );
-    bmp.Bitmap.Canvas.Brush.Color :=  $007B5139;
+    bmp := SE_Bitmap.Create ( 1364,22 );
+    bmp.Bitmap.Canvas.Brush.Color := clGray;// $007B5139;
     bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
-    aSprite:=SE_CountryTeam.CreateSprite(bmp.Bitmap ,'countryteam'+IntToStr(i) ,1,1,1000,705,BaseY,false,2 );
+    RoundBorder(bmp.bitmap);
+    aSprite:=SE_CountryTeam.CreateSprite(bmp.Bitmap ,'countryteam'+IntToStr(i) ,1,1,1000,720,BaseY,true,2 );
     bmp.Free;
-    aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,FontSize,'',True , 1, dt_Center  ); // country o team
+    aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite-1,clBlack,FontSize,'',True , 1, dt_Center  ); // country o team
     aSprite.Labels.Add(aSpriteLabel);
 
     BaseY := BaseY + YOffset;
@@ -6537,8 +6552,8 @@ begin
 
   MyBrain.Gender :=  Char( buf3[incMove][ cur ]);
   cur := cur + 1 ;
-  MyBrain.Minute :=  Ord( buf3[incMove][ cur ]);
-  cur := cur + 1 ;
+  MyBrain.Minute :=  PWORD(@buf3[incMove][ cur ])^;
+  cur := cur + 2 ;
 
   LocalSeconds  :=  Ord( buf3[incMove][ cur ]);
   MyBrain.fmilliseconds :=  (PWORD(@buf3[incMove][ cur ])^ ) * 1000;
@@ -6559,8 +6574,8 @@ begin
   cur := cur + 1 ;
   MyBrain.ShpFree :=    Ord( buf3[incMove][ cur ]);
   cur := cur + 1 ;
-  MyBrain.incMove :=    Ord( buf3[incMove][ cur ]);   // supplementari, rigori, può sforare 255 ?
-  cur := cur + 1 ;
+  MyBrain.incMove :=  PWORD(@buf3[incMove][ cur ])^;  // supplementari, rigori, può sforare 255 ?
+  cur := cur + 2 ;
   i_tml ( IntToStr( MyBrain.FTeamMovesLeft ) ,  IntToStr( MyBrain.TeamTurn ) )  ;
 
   // aggiungo la palla
@@ -15366,12 +15381,15 @@ begin
     HideAllEnginesExcept ( SE_BackGround,SE_CountryTeam,nil,nil,nil );
     HideStadiumAndPlayers;
 
+    aSprite:= SE_CountryTeam.FindSprite('columns' );
+
     if fGameScreen = ScreenSelectCountry then begin
+      aSprite.Labels[0].lText := Translate('lbl_selectcountry');
       SE_CountryTeam.Tag := 0;
       ClientLoadCountries (0); // indexCT
     end
     else if fGameScreen = ScreenSelectTeam then begin
-
+      aSprite.Labels[0].lText := Translate('lbl_selectteam');
       SE_CountryTeam.Tag := 1;
       ClientLoadTeams (0); // indexCT
     end;
@@ -15818,7 +15836,7 @@ begin
     MM.Write( @BrainManager.lstBrain[i].Score.Country[1], sizeof (word ) );
     MM.Write( @BrainManager.lstBrain[i].Score.Gol[0], sizeof (byte ) );
     MM.Write( @BrainManager.lstBrain[i].Score.Gol[1], sizeof (byte ) );
-    MM.Write( @BrainManager.lstBrain[i].minute, sizeof (byte ) );                       '
+    MM.Write( @BrainManager.lstBrain[i].minute, sizeof (smallint ) );                       '
 
   end;
 }

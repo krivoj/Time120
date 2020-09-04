@@ -275,3 +275,5 @@ lbl_Topscorers=Top Scorers
 warning_proceed=Next game:
 warning_nomatchsaved=The game will be not saved. Are you sure?
 lbl_warning=Warning!
+lbl_selectcountry=Select country
+lbl_selectteam=Select team

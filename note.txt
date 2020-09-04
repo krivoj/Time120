@@ -38,7 +38,11 @@ This project started off as an assignment while studying video game design. Afte
 
 KICKSTARTER
 
+I know there are a hundred thousand independent game developers floating around on the internet, and I'm not going to pretend that I'm radically different from any one of them. I will say that in a sea of wonderful creativity there's still something left to be desired. I miss the 80's and 90's. My games have always been heavily inspired by gaming of the NES and SNES era. If you're looking for modern, artsy fartsy games with lengthy tutorials, I'm probably not going to be making something you're interested in. If you're looking for an oldschool gaming itch to get scratched, I might be able to help!
 
+Everything I've designed tends to hark back to games I've enjoyed growing up in the late 80's and early 90's. Blaster Master, Metroid, Air Fortress, Journey to Silius, and a lot of other classics are all major inspirations for me. Making sure everything I create pays homage to those in some way is very important.
+
+I've participated in a few themed game jams/game showcases, and below are some games to check out~
 
 1-1 44	3-0 18	2-3 6	3-5 1	 
 2-1 39	0-2 15	4-0 5	6-1 1	 

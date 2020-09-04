@@ -5357,7 +5357,7 @@ begin
 end;
 procedure CreateNewSeason ( NewSeason , Country : Integer; dirData, dirSaves:string );
 var
-  I,G,D,T: Integer;
+  I,G,D,T,L: Integer;
   lstTeam: array[1..5] of TobjectList<TeamStanding>;
   lstScorers: array[1..5] of TobjectList<TopScorer>;
   lstTeamTmp: TobjectList<TeamStanding>;
@@ -5405,17 +5405,17 @@ begin
 
       //le prime 4 vanno in divisione 4. devo andare a prendere le ultime 4 della divisone 4
 
-      lstTeamTmp.add (lstTeam[D].Items[0] ); // i primi 4  in temp
-      lstTeamTmp.add (lstTeam[D].Items[1] );
-      lstTeamTmp.add (lstTeam[D].Items[2] );
-      lstTeamTmp.add (lstTeam[D].Items[3] );
+      for I := 0 to 3 do begin
+        lstTeamTmp.add (lstTeam[D].Items[I] ); // i primi della divisione 5 in temp
+      end;
 
-      // gli ultimi 4 della divsione 4 vanno in divisione 5
-      lstTeam[D].Items[0].guid := lstTeam[D-1].Items[lstTeam[D-1].count -1].guid;
-
-      lstTeam[D].Items[1] := lstTeam[D-1].Items[lstTeam[D-1].count -2];
-      lstTeam[D].Items[2] := lstTeam[D-1].Items[lstTeam[D-1].count -3];
-      lstTeam[D].Items[3] := lstTeam[D-1].Items[lstTeam[D-1].count -4];
+      // gli ultimi della divsione 4 vanno in divisione 5
+      L:= -1;
+      for I := 0 to 3 do begin
+        lstTeam[D].Items[I].guid := lstTeam[D-1].Items[lstTeam[D-1].count +l].guid;
+        lstTeam[D].Items[I].name := lstTeam[D-1].Items[lstTeam[D-1].count +l].Name; // Point gd, gs non mi interessano perchè si azzerano
+        Dec(l);
+      end;
 
 
     // Salvo la nuova Division D. Creao i nuovi calendari di questa country (uguali per f e m), ma diversi dal preceente in quanto rimescolo prima la tsTHISrank
@@ -5437,18 +5437,17 @@ begin
       end;
       WriteCalendar ( NewSeason, Country, D, DivisionTeamCount[D] ,  tsTHISrank,   dirData, dirSaves  );
 
-      // i primi 4 della divisione 5 ( tmp ) vanno in divisione 4
+      // i primi della divisione 5 ( tmp ) vanno in divisione 4
       // che verrà salvata al giro dopo, quando dalla 3 aggiunge alla 4 le retrocesse
-      // il bug è che entrano a 0 punti e dopo sono ultimi in classfica e tornano giù
       // devo salvare campo per campo , non posso assegnare un pointer di un pointer
-      lstTeam[D-1].Items[lstTeam[D-1].count -1].Guid := lstTeamTmp[0].Guid  ;
-      lstTeam[D-1].Items[lstTeam[D-1].count -1].Name := lstTeamTmp[0].Name  ;
-      lstTeam[D-1].Items[lstTeam[D-1].count -1].Points := MAXINT  ; // gf e gs non sono importanti
+      L:= -1;
+      for I := 0 to 3 do begin
+        lstTeam[D-1].Items[lstTeam[D-1].count +l].Guid := lstTeamTmp[I].Guid  ;
+        lstTeam[D-1].Items[lstTeam[D-1].count +l].Name := lstTeamTmp[I].Name  ; // gf e gs non sono importanti
+        Dec(l);
+      end;
 
       // adesso la devo riordinare
-      lstTeam[D-1].Items[lstTeam[D-1].count -2] := lstTeamTmp[1]  ;
-      lstTeam[D-1].Items[lstTeam[D-1].count -3] := lstTeamTmp[2]  ;
-      lstTeam[D-1].Items[lstTeam[D-1].count -4] := lstTeamTmp[3]  ;
 
       lstTeamTmp.Clear;
 

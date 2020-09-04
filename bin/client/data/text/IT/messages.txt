@@ -273,3 +273,5 @@ lbl_Topscorers=Classifica marcatori
 warning_proceed=Prossima partita:
 warning_nomatchsaved=La partita non verra' salvata. Sei sicuro? 
 lbl_warning=Attenzione!
+lbl_selectcountry=Seleziona il campionato
+lbl_selectteam=Seleziona la squadra

@@ -196,7 +196,7 @@ type Tscore = record
   BuffD : array[0..1] of ShortInt;
   BuffM : array[0..1] of ShortInt;
   BuffF : array[0..1] of ShortInt;
-  Minute : Integer;
+  Minute : SmallInt;
   AI: array[0..1] of boolean;
   lstGol : string; //2=2434,6=1274 .... poi gestista come Tstringlist
 end;
@@ -590,7 +590,7 @@ end;
       lstSpectator : TList<Integer>;
       brainManager: TObject;
       Score: TScore;
-      incMove : Byte;
+      incMove : SmallInt;
 
       MalusPowerShot: array [1..10] of integer;           // pos modificatori al tiro in porta
       MalusPrecisionShot: array [1..10] of integer;       // prs modificatori al tiro in porta
@@ -10616,11 +10616,11 @@ begin
   MMbraindata.Write( @Score.SeasonRound[1] , sizeof(byte) );
 
   MMbraindata.Write( @fgender, sizeof(byte) );
-  MMbraindata.Write( @fminute, sizeof(byte) );
+  MMbraindata.Write( @fminute, sizeof(SmallInt) );
 
   seconds := (fmilliseconds div 1000);
   MMbraindata.Write( @seconds, sizeof(SmallInt) ); // può andare in negativo oltre 127 o -127 no ShortInt . è millimilliseconds div 1000
-  MMbraindata.Write( @teamturn, sizeof(byte) );    // a chi sta giocare
+  MMbraindata.Write( @teamturn, sizeof(SmallInt) );    // a chi sta giocare
   MMbraindata.Write( @FTeamMovesLeft, sizeof(ShortInt) );   // mosse rimastye
   MMbraindata.Write( @GameStarted, sizeof(byte) );          // il game è attivo
   MMbraindata.Write( @FlagEndGame, sizeof(byte) );          // oltre i 120 turni, in fase di 'recupero'
