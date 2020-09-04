@@ -29,9 +29,9 @@ skill_Stay=Rimani
 skill_Free=Libera
 skill_Corner.Kick=Calcio d'angolo
 skill_Volley=Tiro al volo
-skill_BuffD=Buff reparto Difesa
-skill_BuffM=Buff reparto Centrocampo
-skill_BuffF=Buff reparto Attacco
+skill_BuffD=Muro difensivo
+skill_BuffM=Centrocampo solido
+skill_BuffF=Attacco spietato
 
 skill_Intercept=Anticipo
 
@@ -67,9 +67,9 @@ talent_advanced_aggression=Aggressione 2
 talent_advanced_bomb=Cannonata 2
 talent_precise_crossing=Cross precisi
 talent_super_dribbling=Super Dribbling
-talent_buff_defense=Buff Difesa
-talent_buff_middle=Buff Centrocampo
-talent_buff_forward=Buff Attacco
+talent_buff_defense=Muro difensivo
+talent_buff_middle=Centrocampo solido
+talent_buff_forward=Attacco spietato
 talent_heading=Colpi di testa
 talent_finishing=Finalizzazione
 talent_diving=Cascatore

@@ -513,7 +513,7 @@ begin
   CopyMemory(@MyTeam, @CodeNamePlayer[0], 22 * SizeOf(TBasePlayer));
   if fm = 'f' then
     CodeNamePlayerF ( MyTeam ); // riduco i valori di partenza
-
+  goto MyExit;
 
   MyTeam[ rndgenerate0 ( high(MyTeam) )].Mark := 1; // non lo tocco più a questo giro.
 

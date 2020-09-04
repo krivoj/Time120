@@ -32,8 +32,6 @@
 
 
 
-    verificare fare mousemove help anch esui talenti di livello 2 che si trovano solo a destra in se-playerdetails
-
     help x buffdm,f corner frekick 2,3 penalty    Corner.Kick, crossing stay, free
     help compare se frekick compare altro ? questionmark
     finire le skill sia effetto che help
@@ -41,10 +39,10 @@
 
     verificare AI forse autotackle anche su move di 1 sola casella
 
-     errore flags su qualcosa, forse lop
+    errore flags su qualcosa, forse lop
 
 
-     dopo interrupt non funziona piu' AI auto. forse va in 2.0
+    dopo interrupt non funziona piu' AI auto. forse va in 2.0
 
     dopo il gol su freekick non ha fatto il deflatebarrier ma neanche il reset del gol.
 
@@ -53,7 +51,7 @@
 
 
     fare ? per help su ogni btnmenu_ e dove c'è bisogno. apre l'help se_help   btnhelp_attributes _talents
-    help diviso per lingue
+    help diviso per lingue . finire bene anche descrizione skill buff reparti e marking
 
     bug lastman. ricalcolare le condizioni . anche la nuova versione forse non va bene. c'è sicuro errore perchè compare al 44' di una partita
     islastman diventa islastman ( aplayer, ballplayer)
@@ -7681,7 +7679,7 @@ begin
   tmp := TStringList.Create;
   tmp.Delimiter := '.';
   tmp.StrictDelimiter := True;
-  BaseY :=0;
+  BaseY := 0;
 
   bmp := SE_Bitmap.Create ( 250, MatchInfo.Count * 22 );// dinamico con aggiunta di spritelabels
   bmp.Bitmap.Canvas.Brush.Color :=  clGray;

@@ -67,9 +67,9 @@ talent_advanced_aggression=Aggression 2
 talent_advanced_bomb=Bomb 2
 talent_precise_crossing=Precise Crossing
 talent_super_dribbling=Super Dribbling
-talent_buff_defense=Buff Defense
-talent_buff_middle=Buff Middle
-talent_buff_forward=Buff Forward
+talent_buff_defense=Defense wall
+talent_buff_middle=Solid midfield
+talent_buff_forward=Berseker attack
 talent_heading=Heading
 talent_finishing=Finalizzazione
 talent_diving=Diving
@@ -103,9 +103,9 @@ descr_skill_Tackle=Tackle
 descr_skill_Pressing=Pressing
 descr_skill_Corner.Kick=Corner Kick
 descr_skill_Volley=Volley
-descr_skill_BuffD=Buff Difesa
-descr_skill_BuffM=Buff Centrocampo
-descr_skill_BuffF=Buff Attacco
+descr_skill_BuffD=Defense wall
+descr_skill_BuffM=Solid midfield
+descr_skill_BuffF=Berseker attack
 
 
 descr_talent_Goalkeeper=Can be a Goal Keeper!
