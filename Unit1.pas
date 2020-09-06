@@ -23,11 +23,12 @@
   }
   { TODO -ctodo prima del rilascio patreon :
 
+    i portieri devono gaudagnare meno xp, anche nel brain. 8 a partita sono troppi. oppure invece di 120 arrivo a 180 punti xp.
+    in pvefinalizebrain rimane senza portiere. fare inserimento automatico di un 32 anni
     Newseason rimangono risultati di W2 . da fixare: se inverte , al giro dopo sono ancora inverite? il puntatore è locale
 
     face paint shop pro 9 blackpencil 80 30  ufficiale + molte faces
 
-    detailsplayers --> non mostrare palla su tiro se defense > shot e viceversa
 
     help x buffdm,f corner frekick 2,3 penalty    Corner.Kick, crossing stay, free
     help compare se frekick compare altro ? questionmark
@@ -3602,11 +3603,12 @@ begin
 end;
 procedure TForm1.ShowPlayerdetails ( aPlayer: TSoccerPlayer );
 var
-  i,Diff: Integer;
+  i: Integer;
   aSprite, aBtnSprite,AnimBallSprite: SE_Sprite;
   bmpflags, cBitmap,bmp : SE_Bitmap;
   aSpriteLabel : SE_SpriteLabel;
   pbSprite: SE_SpriteProgressBar;
+  DEFENSESHOT: Integer;
   const BarFontSize = 14; BarFontSizeTalent = 10;
   const FontSize = 14;
 
@@ -3617,6 +3619,10 @@ begin
   SE_BackGround.HideAllSprites;
   aSprite := SE_Background.FindSprite('backgroundplayerdetails');
   aSprite.Visible := True;
+
+  if MyActiveGender = 'f' then
+    DEFENSESHOT := F_DEFENSESHOT
+    else DEFENSESHOT := M_DEFENSESHOT;
 
   // Rimuovo eventuali levelup o talentup per ricrearli di nuovo
   for I := SE_PlayerDetails.SpriteCount -1 downto 0 do begin
@@ -3634,10 +3640,6 @@ begin
     if (LeftStr(SE_PlayerDetails.Sprites[i].Guid,8) = 'btnmenu_') or (LeftStr(SE_PlayerDetails.Sprites[i].Guid,8) = 'btnhelp_') then
       SE_PlayerDetails.Sprites[i].Visible := true;
   end;
-
-  if MyBrain.Gender = 'f' then
-    Diff := F_DEFENSESHOT
-    else Diff := M_DEFENSESHOT;
 
   aSprite := SE_PlayerDetails.FindSprite('playerdetailssurname');
   aSprite.Visible := True;
@@ -3662,9 +3664,9 @@ begin
     end;
   end;
 
-  if aPlayer.TalentId1 = TALENT_ID_GOALKEEPER then goto skipforGK;
   bmp:= SE_Bitmap.Create (dir_interface + 'animball.bmp');
   bmp.Stretch(32*6,32);
+  if aPlayer.TalentId1 = TALENT_ID_GOALKEEPER then goto skipforGK;
 
   aSprite := SE_PlayerDetails.FindSprite('btn_speed');
   aSprite.Visible := True;
@@ -3699,7 +3701,7 @@ begin
     pbSprite.Text :=  IntToStr( aPlayer.xp_defense) + ' / ' + IntToStr(xp_DEFENSE_POINTS) ;
     pbSprite.Value := trunc (aPlayer.xp_defense * 100) div xp_DEFENSE_POINTS;
     pbSprite.Visible := false;
-  if (aPlayer.DefaultDefense < MyBrainFormation.MAX_DEFAULT_DEFENSE) and Not (aPlayer.DefaultShot >= Diff) then  // difesa / shot  // 3 oppure 4 nel caso male
+  if (aPlayer.DefaultDefense < MyBrainFormation.MAX_DEFAULT_DEFENSE)  and ( aPlayer.DefaultShot < DEFENSESHOT) then  // difesa / shot  // 3 oppure 4 nel caso male
     pbSprite.Visible := true;
    if (pbSprite.Visible) and (aPlayer.xp_Defense >= xp_DEFENSE_POINTS) then begin
     AnimBallSprite :=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'levelup_defense',6,1,40,pbSprite.Position.X + (pbSprite.BMP.Width div 2) ,pbSprite.Position.Y,true,4000 );
@@ -3756,9 +3758,9 @@ begin
   pbSprite.Value := trunc (aPlayer.xp_shot * 100 ) div xp_SHOT_POINTS;
   pbSprite.Visible := false;
 
-  if (aPlayer.DefaultShot < MyBrainFormation.MAX_DEFAULT_SHOT) and not( aPlayer.DefaultDefense >= Diff)  then // difesa / shot
+  if (aPlayer.DefaultShot < MyBrainFormation.MAX_DEFAULT_SHOT) and ( aPlayer.DefaultDefense < DEFENSESHOT)  then // difesa / shot
   pbSprite.Visible := true;
-  if (aPlayer.xp_Shot >= xp_SHOT_POINTS) then begin
+  if (pbSprite.Visible) and (aPlayer.xp_Shot >= xp_SHOT_POINTS) then begin
     AnimBallSprite :=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'levelup_shot',6,1,40,pbSprite.Position.X + (pbSprite.BMP.Width div 2) ,pbSprite.Position.Y,true,4000 );
     AnimBallSprite.sTag := '4';
   end;
@@ -17686,6 +17688,9 @@ begin
           pveDeleteFromTeam(aBrain.Gender, StrToInt(aPlayerDB.Ids), aBrain.Score.TeamGuid[T], dir_saves );
           PveDeleteFromMarket( aBrain.Gender, aPlayerDB.Ids, dir_saves );
           lstPlayersDB.Delete(p);
+                  { TODO : bug rimane senza gk }
+
+
           Continue;
         end
         else if aPlayerDB.Age = 30 then begin // allo scoccare dei 30 anni può perdere 1 punto di fitness
