@@ -232,6 +232,7 @@ lbl_endgame=Fine Partita
 lbl_computemarket=Elaborazione mercato 
 lbl_creatingteams=Creazione squadre
 lbl_creatingdivions=Creazione divisioni 
+lbl_elaboratingmatches=Partite in corso
 lbl_Country=Nazione
 lbl_Country2=Nazionalità
 lbl_Sell=Vendi

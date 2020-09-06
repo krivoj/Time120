@@ -23,20 +23,17 @@
   }
   { TODO -ctodo prima del rilascio patreon :
 
-    Trovate BUG in CreateNewSeason . va tutto bene tranne la division 1 che non sono state sostituite da quelle di division 2
     Newseason rimangono risultati di W2 . da fixare: se inverte , al giro dopo sono ancora inverite? il puntatore è locale
 
-    face paint shop pro 9 blackpencil 80 30  ufficiale
+    face paint shop pro 9 blackpencil 80 30  ufficiale + molte faces
 
-
-
-
+    detailsplayers --> non mostrare palla su tiro se defense > shot e viceversa
 
     help x buffdm,f corner frekick 2,3 penalty    Corner.Kick, crossing stay, free
     help compare se frekick compare altro ? questionmark
     finire le skill sia effetto che help
 
-
+    team 83 ha licenziato 2 GK ?
     verificare AI forse autotackle anche su move di 1 sola casella
 
     errore flags su qualcosa, forse lop
@@ -60,7 +57,7 @@
 
     FARE AIthinkdev Animazioni per sviluppo attributo o talento.
 
-    talente convergi verso il centro
+    talento convergi verso il centro
     creare più formazioni , forse bug nella fatigue
 
 
@@ -4673,6 +4670,7 @@ var
   aSpriteLabel : SE_SpriteLabel;
   const FontSize = 14;
 begin
+  Cursor := crHourGlass;
   SE_Loading.RemoveAllSprites;
   SE_Loading.ProcessSprites(2000);
   SE_Loading.Visible := true;
@@ -4695,6 +4693,7 @@ begin
       aBtnSprite.AddSubSprite( dir_interface +'arrowl.bmp', 'cancel',90-40,56-40,true );
     end;
   end;
+  Cursor := crDefault;
 
 end;
 procedure TForm1.CreateFieldPoints;
@@ -11761,7 +11760,7 @@ begin
       ts2.StrictDelimiter := True;
       ts2.CommaText := TsWorldCountries[C-1];
 
-      aSprite.Labels[0].lText := Capitalize(Translate('lbl_creatingdivions')) +  ' ' + ts2[1] + ': ' + IntToStr(  (100 * C) div TsWorldCountries.Count ) + '%';
+      aSprite.Labels[0].lText := Capitalize(Translate('lbl_elaboratingmatches')) +  ' ' + ts2[1] + ': ' + IntToStr(  (100 * C) div TsWorldCountries.Count ) + '%';
       ts2.free;
 
       SE_Theater1.thrdAnimate.OnTimer (SE_Theater1.thrdAnimate);
@@ -11769,8 +11768,13 @@ begin
      // qui fatte anche pvefinalizebrain e tutte le giornate sono aggiornate fino alla 38
     end;
     for C := 1 to 6 do begin     // ciclo per country per determinare
+      SE_Loading.RemoveAllSprites('circleon');
+      SE_Loading.CreateSprite( dir_interface + 'circleon.bmp' , 'circleon'+ IntTostr(C),1,1,1000,(1440 div 2)+ pix[C], 720 div 2,true,2000 );
+      SE_Theater1.thrdAnimate.OnTimer (SE_Theater1.thrdAnimate);
+      aSprite.Labels[0].lText := Capitalize(Translate('lbl_creatingdivions')) +  ' ' + ts2[1] + ': ' + IntToStr(  (100 * C) div TsWorldCountries.Count ) + '%';
       CreateNewSeason (ActiveSeason + 1, C, dir_data, dir_saves ); // inverte retrocessi e promossi
     end;
+
     ActiveSeason := ActiveSeason + 1;
     ActiveRound := 1;
     ini := TIniFile.Create( dir_saves + 'index.ini' );
@@ -11779,6 +11783,7 @@ begin
     ini.WriteInteger('setup','division',MyDivision);// settata in CreateNewSeason  quando trova MyGuidTeam
     ini.WriteString('setup','nextmf','m');
     ini.Free;
+    GameScreen := ScreenFormation;
 
   end
   else if aSpriteClicked.Guid = 'btnmenu_play' then begin

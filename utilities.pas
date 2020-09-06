@@ -513,7 +513,7 @@ begin
   CopyMemory(@MyTeam, @CodeNamePlayer[0], 22 * SizeOf(TBasePlayer));
   if fm = 'f' then
     CodeNamePlayerF ( MyTeam ); // riduco i valori di partenza
-  goto MyExit;
+  //goto MyExit;
 
   MyTeam[ rndgenerate0 ( high(MyTeam) )].Mark := 1; // non lo tocco più a questo giro.
 
@@ -5050,6 +5050,8 @@ skipsub:
   YellowCount := RndGenerate(72); // 4.4 media a partita
   YellowCount := Trunc(YellowCount / 10);
   while YellowCount > 0 do begin
+    OutputDebugString( PChar(aBrain.Score.Team[0] + IntToStr(aBrain.Division) ) );
+    OutputDebugString( PChar(aBrain.Score.Team[1] + IntToStr(aBrain.Division) ) );
     aPlayer := aBrain.GetSoccerPlayerRandom3; // uno qualsisai che ha giocato ma non il GK
     aPlayer.YellowCard := aPlayer.YellowCard +1;  // può accadere che un pplayer sia espulso più volte, è lo stesso. oppure che un sostituito sia ammonito o espulso
     if aPlayer.YellowCard = 2 then
@@ -5360,8 +5362,8 @@ var
   I,G,D,T,L: Integer;
   lstTeam: array[1..5] of TobjectList<TeamStanding>;
   lstScorers: array[1..5] of TobjectList<TopScorer>;
-  lstTeamTmp: TobjectList<TeamStanding>;
-  lstScorersTmp: TobjectList<TopScorer>;
+  lstTeamTmp: array [1..5] of TobjectList<TeamStanding>;
+  lstScorersTmp: array [1..5] of TobjectList<TopScorer>;
   ini : TIniFile;
   ts2 : TStringList;
   aTeamStanding : TeamStanding;
@@ -5374,16 +5376,16 @@ begin
   ts2 := Tstringlist.create;
   ts2.StrictDelimiter := True;
 
-  lstTeamTmp:= TobjectList<TeamStanding>.Create(false);  // FALSE perchè fa clear
-  lstScorersTmp := TobjectList<TopScorer>.Create(True);
-  for I := 1 to 5 do begin
-    lstTeam[i] := TobjectList<TeamStanding>.Create(True);
-    lstScorers[i] := TobjectList<TopScorer>.Create(True);
-  end;
-
-
-
   for G := 1 to 2 do begin
+    for I := 1 to 5 do begin
+      lstTeam[i] := TobjectList<TeamStanding>.Create(True);
+      lstScorers[i] := TobjectList<TopScorer>.Create(True);
+      lstTeamTmp[i]:= TobjectList<TeamStanding>.Create(false);  // FALSE perchè fa clear
+      lstScorersTmp[i] := TobjectList<TopScorer>.Create(True);
+    end;
+
+
+
 
     for D := 5 DownTo 1 do begin
       ini:= TIniFile.Create(dirSaves + genderS[G] + 'S' + Format('%.3d', [NewSeason-1]) + 'C' + Format('%.3d', [Country]) + 'D' + Format('%.1d', [D] ) + '.ini') ;
@@ -5405,8 +5407,11 @@ begin
 
       //le prime 4 vanno in divisione 4. devo andare a prendere le ultime 4 della divisone 4
 
-      for I := 0 to 3 do begin
-        lstTeamTmp.add (lstTeam[D].Items[I] ); // i primi della divisione 5 in temp
+      for I := 0 to 3 do begin                    // i primi di ogni divisione in temp
+        aTeamStanding:= TeamStanding.Create;
+        aTeamStanding.Guid := lstTeam[D].Items[I].Guid;
+        aTeamStanding.Name := lstTeam[D].Items[I].Name;
+        lstTeamTmp[D].add (aTeamStanding );
       end;
 
       // gli ultimi della divsione 4 vanno in divisione 5
@@ -5437,19 +5442,24 @@ begin
       end;
       WriteCalendar ( NewSeason, Country, D, DivisionTeamCount[D] ,  tsTHISrank,   dirData, dirSaves  );
 
-      // i primi della divisione 5 ( tmp ) vanno in divisione 4
+      // es. i primi della divisione 5 ( tmp ) vanno in divisione 4
       // che verrà salvata al giro dopo, quando dalla 3 aggiunge alla 4 le retrocesse
       // devo salvare campo per campo , non posso assegnare un pointer di un pointer
       L:= -1;
       for I := 0 to 3 do begin
-        lstTeam[D-1].Items[lstTeam[D-1].count +l].Guid := lstTeamTmp[I].Guid  ;
-        lstTeam[D-1].Items[lstTeam[D-1].count +l].Name := lstTeamTmp[I].Name  ; // gf e gs non sono importanti
+        lstTeam[D-1].Items[lstTeam[D-1].count +l].Guid := lstTeamTmp[D][I].Guid  ;
+        lstTeam[D-1].Items[lstTeam[D-1].count +l].Name := lstTeamTmp[D][I].Name  ; // gf e gs non sono importanti
         Dec(l);
       end;
 
       // adesso la devo riordinare
-
-      lstTeamTmp.Clear;
+      // rimescolo per utilizzare di nuovo il file basecal in dirData
+      lstTeam[D].sort(TComparer<TeamStanding>.Construct(
+      function (const L, R: TeamStanding): integer
+      begin
+        Result := R.Points - L.Points;
+      end
+      ));
 
     end;
     // fuori dal ciclo scrivo la division 1
@@ -5474,24 +5484,17 @@ begin
       // qui verranno calcolate le top dopo SORT di nuovo per points
 
 
-    for I := 1 to 5 do begin // passo da f a m
-      lstTeam[i].Clear;
-      lstScorers[i].Clear;
+    for I := 1 to 5 do begin   // passo da f a m
+      lstTeamTmp[i].Free;
+      lstTeam[i].Free;
+      lstScorers[i].Free;
+      lstScorersTmp[i].Free;
     end;
-    lstTeamTmp.Clear;
-    lstScorersTmp.Clear;
-
 
   end;
 
-  for I := 1 to 5 do begin
-    lstTeam[i].Free;
-    lstScorers[i].Free;
-  end;
 
   ts2.free;
-  lstTeamTmp.Free;
-  lstScorersTmp.Free;
   tsTHISrank.free;
 
 end;

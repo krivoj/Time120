@@ -4306,16 +4306,19 @@ function TSoccerBrain.GetSoccerPlayerRandom3 : TSoccerPlayer; // cerca chi ha gi
 var
   arnd :Integer;
   i: integer;
-  label retry;
+  label retry,JustAplayer;
 begin
   Result := nil;
 retry:
   arnd := RndGenerate (100 );
   if arnd <= 50 then begin
+JustaPlayer:
     arnd := RndGenerate (lstSoccerPlayer.Count -1 );
     Result := lstSoccerPlayer[aRnd];
   end
   else  begin
+    if lstSoccerGameover.Count <= 0 then
+      goto JustaPlayer;
     arnd := RndGenerate (lstSoccerGameover.Count -1 );
     Result := lstSoccerGameover[aRnd];
   end;
