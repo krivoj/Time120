@@ -118,6 +118,7 @@ end;
   procedure WriteTeamFormation ( fm :Char; GuidTeam, dirSaves, aCommaText: string );
   procedure pveLoadTeam ( Filename:string; fm : Char; Guidteam: integer;var lstPlayersDB : TObjectlist<TSoccerPlayer> );//uguale a ClientLoadFormation ma senza grafica
 
+  function GetTeamRecord ( fm :Char; GuidTeam, dirSaves: string  ): TTeam;
   procedure UpdateCalendar ( aBrain: TsoccerBrain; dirSaves: string );
 
   procedure pveThinkMarket ( fm :Char; Division: Byte; GuidTeam , dirSaves: string); // effettua pvetransfermarket , dismiss, sell,
@@ -5498,6 +5499,37 @@ begin
   tsTHISrank.free;
 
 end;
+function GetTeamRecord ( fm :Char; GuidTeam, dirSaves: string  ): TTeam;
+var
+  MM : TMemoryStream;
+  Buf3 : TArray8192;
+  Cur : Integer;
+begin
+      // getTeamrecord
+  MM := TMemoryStream.Create;
+  MM.LoadFromFile( dirSaves +fm + 'teams.120' );
+  CopyMemory( @Buf3, MM.Memory, MM.Size  );
+  MM.Free;
+
+  Cur := 0;
+
+  while Cur < MM.Size do begin
+
+    Result.guid := PDWORD(@buf3 [ cur ])^;
+    Cur := Cur + 4;
+    Result.Money := PDWORD(@buf3 [ cur ])^;
+    Cur := Cur + 4;
+    Result.Division := ord ( buf3 [ cur ]);
+    Cur := Cur + 1;
+    Result.YoungQueue := ord ( buf3 [ cur ]);
+    Cur := Cur + 1;
+
+    if Result.guid = StrToInt(GuidTeam) then
+      Exit;
+
+  end;
+end;
+
 procedure MakeDelay ( interval: integer);
 var
   start: Integer;

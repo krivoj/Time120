@@ -24,7 +24,7 @@
   { TODO -ctodo prima del rilascio patreon :
 
     i portieri devono gaudagnare meno xp, anche nel brain. 8 a partita sono troppi. oppure invece di 120 arrivo a 180 punti xp.
-    in pvefinalizebrain rimane senza portiere. fare inserimento automatico di un 32 anni
+    in pvefinalizebrain rimane senza portiere. fare inserimento automatico di un 32 anni + gestione youngqueue
     Newseason rimangono risultati di W2 . da fixare: se inverte , al giro dopo sono ancora inverite? il puntatore è locale
 
     face paint shop pro 9 blackpencil 80 30  ufficiale + molte faces
@@ -17642,7 +17642,9 @@ procedure TForm1.pveFinalizeBrain ( aBrain : TSoccerBrain ) ;
 var
   lstPlayersDB: TObjectList<TSoccerPlayer>;
   T,p,ptg,NewStamina,NewMorale,aRnd,indexTal: Integer;
-  aPlayerDB,aPlayerThisGame : TSoccerPlayer;
+  aPlayerDB,aPlayerThisGame, aPlayer : TSoccerPlayer;
+  aTeamRecord: TTeam;
+  Gkcheck: boolean;
   label dev;
 begin
   // Elaboro prima i player, poi i team per i punti e classifica .
@@ -17688,9 +17690,6 @@ begin
           pveDeleteFromTeam(aBrain.Gender, StrToInt(aPlayerDB.Ids), aBrain.Score.TeamGuid[T], dir_saves );
           PveDeleteFromMarket( aBrain.Gender, aPlayerDB.Ids, dir_saves );
           lstPlayersDB.Delete(p);
-                  { TODO : bug rimane senza gk }
-
-
           Continue;
         end
         else if aPlayerDB.Age = 30 then begin // allo scoccare dei 30 anni può perdere 1 punto di fitness
@@ -17701,6 +17700,7 @@ begin
           end;
         end;
 
+        // a fine stagione il player peggiora sempre sulle xp
         aPlayerDB.devA := aPlayerDB.devA - 1;
         aPlayerDB.devT := aPlayerDB.devT - 1;
         aPlayerDB.devI := aPlayerDB.devI + 1;
@@ -17840,6 +17840,38 @@ dev:
     end;
 
 
+
+    // Di nuovo se a fine stagione elaboro la gestione YoungQueue e risolvo problema del GK mancante
+    if ((aBrain.Round = 38) and ( aBrain.Division <= 2 )) or ( (aBrain.Round = 30) and ( aBrain.Division > 2 )) then begin
+    // a fine stagione ci si potrebbe ritrovare senza un GK
+
+      aTeamRecord :=  GetTeamRecord ( aBrain.Gender, IntToStr(aBrain.Score.TeamGuid[T]), dir_Saves  );
+      GKcheck := False;
+      for p := lstPlayersDB.Count -1 downto 0 do begin
+        if lstPlayersDB[p].TalentId1 = TALENT_ID_GOALKEEPER then begin
+          GKcheck := true;
+          Break;
+        end;
+      end;
+      // nota che il GK non può essere stato venduto o licenziato. solo sopra può aver raggiunto la fine carriera. Quindi ora ci sono
+      // 21 players, mai 22
+      if Not Gkcheck then begin // regalo un GK scarso e lo ggiungo alla lstPlayersDB che salvo dopo in SaveTeamStream
+        //aPlayer := pveCreateRandomPlayer (GenderS[G], 32, aBrain.Division, true );
+      //      aPlayer := pveCreateRandomPlayer (fm: Char; Age, Division: integer; Gk: boolean );
+        lstPlayersDB.add ( aPlayer );
+
+      end;
+
+        //Gestion YoungQueue
+      //aTeamRecord.YoungQueue := aTeamRecord.YoungQueue - 1;
+
+        //aPlayer := pveCreateRandomPlayer (GenderS[G], 32, aBrain.Division, true );
+
+     // SaveTeamRecord ( aBrain.Gender, aTeamRecord{.Guid}{, dir_saves ) // Salva youngQueue
+
+
+                  //     pveAddToTeam (fm: Char; guid, FromGuidTeam, ToGuidTeam: integer; ForceGK: boolean dirSaves: string  );
+    end;
 
 
     SaveTeamStream( aBrain.Gender, IntToStr(aBrain.Score.TeamGuid[T]), lstPlayersDB, dir_saves  ); // storo il team aggiornato
