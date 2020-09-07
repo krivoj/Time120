@@ -17641,10 +17641,12 @@ end;
 procedure TForm1.pveFinalizeBrain ( aBrain : TSoccerBrain ) ;
 var
   lstPlayersDB: TObjectList<TSoccerPlayer>;
-  T,p,ptg,NewStamina,NewMorale,aRnd,indexTal: Integer;
+  T,p,ptg,I,NewStamina,NewMorale,aRnd,indexTal,LastInsertId,SubTractLevel: Integer;
   aPlayerDB,aPlayerThisGame, aPlayer : TSoccerPlayer;
   aTeamRecord: TTeam;
   Gkcheck: boolean;
+  ini : TIniFile;
+  tsSurnames, ts2 : TStringList;
   label dev;
 begin
   // Elaboro prima i player, poi i team per i punti e classifica .
@@ -17855,10 +17857,36 @@ dev:
       end;
       // nota che il GK non può essere stato venduto o licenziato. solo sopra può aver raggiunto la fine carriera. Quindi ora ci sono
       // 21 players, mai 22
-      if Not Gkcheck then begin // regalo un GK scarso e lo ggiungo alla lstPlayersDB che salvo dopo in SaveTeamStream
-        //aPlayer := pveCreateRandomPlayer (GenderS[G], 32, aBrain.Division, true );
-      //      aPlayer := pveCreateRandomPlayer (fm: Char; Age, Division: integer; Gk: boolean );
+      if Not Gkcheck then begin // regalo un GK scarso e lo aggiungo alla lstPlayersDB che salvo dopo in SaveTeamStream
+        ini := TIniFile.Create ( dir_Saves + 'index.ini');
+        LastInsertId := ini.ReadInteger( 'setup','LastInsertId', 0 ); // servirà alla nascita di nuovi player . è condiviso tra m e f
+
+        aPlayer:= TSoccerPlayer.create(0,aBrain.Score.TeamGuid[T],0,IntToStr(LastInsertId+1),'','','',0,0);
+
+        if aBrain.gender = 'f' then   // subtractLevel è un range -1 +1  es. 5--> 3,4,5
+          SubTractLevel := 4
+        else SubTractLevel := 7;
+        tsSurnames := TStringList.Create;
+        tsSurnames.LoadFromFile( dir_data + 'surnames.csv' );
+
+        ts2 := TStringList.Create ;
+        for I := tsSurnames.Count -1 downto 0 do begin
+          ts2.CommaText := tsSurnames[i];             // elimino i cognomi di country diverse
+          if ts2[2] <> intTostr ( aBrain.Country) then  // country,surname
+            tsSurnames.Delete(i);
+        end;
+
+        ts2.Free;
+
+        pveCreateRandomPlayer (abrain.gender,  aBrain.Country, 32, mfaces[i],ffaces[i], SubTractLevel, true, tsSurnames, aPlayer );
+        TsSurnames.Free;
+        LastInsertId := LastInsertId + 1;
+        aPlayer.Ids := IntToStr(LastInsertId);
+        aPlayer.GuidTeam := aBrain.Score.TeamGuid[T];
         lstPlayersDB.add ( aPlayer );
+
+        ini.WriteInteger( 'setup','LastInsertId', LastInsertId ); // servirà alla nascita di nuovi player . è condiviso tra m e f
+        ini.Free;
 
       end;
 

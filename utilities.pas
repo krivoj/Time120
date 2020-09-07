@@ -130,6 +130,8 @@ end;
   procedure pveAddToTeam (fm: Char; guid, FromGuidTeam, ToGuidTeam: integer; dirSaves: string );
   procedure pveDeleteFromTeam ( fm:Char; guid, GuidTeam : Integer; dirSaves:string); // riscrive es. f16.120
 
+  procedure pveCreateRandomPlayer (fm: Char; idCountry , Age, nFacesM, nFacesF, SubTractLevel: integer; Gk: boolean; tsSurnames: TStringList; var aPlayer: TsoccerPlayer  );
+
   procedure CreateFormationsPreset;
   function pvpCreateFormationTeam ( DbServer:string; fm : Char; Guidteam: integer; formation : string = ''): string; // uguali, cambia la parte sopra ( per overflow)
   function pveCreateFormationTeam ( Filename:string; fm : Char; Guidteam: integer; ForceYoung: boolean; formation : string = ''): string; // uguali, cambia la parte sopra ( per overflow)
@@ -451,7 +453,124 @@ begin
 
 
 end;
+procedure pveCreateRandomPlayer (fm: Char; idCountry , Age, nFacesM, nFacesF, SubTractLevel: integer; Gk: boolean; tsSurnames: TStringList; var aPlayer:TsoccerPlayer  );
+var
+  MyTeam : Array22;
+  I,pRnd, aRnd, aValue : Integer;
+begin
+  CreateCodeNamePlayer;
+  CopyMemory(@MyTeam, @CodeNamePlayer[0], 22 * SizeOf(TBasePlayer));
+  if fm = 'f' then
+    CodeNamePlayerF ( MyTeam ); // riduco i valori di partenza
 
+  if Gk then begin
+    pRnd:= 0; // zoff
+    MyTeam [ pRnd ].TalentId2 := 0;   // il talentibd1 è Goalkeeper
+  end
+  else begin
+    pRnd := rndgenerate0 ( high(MyTeam));
+    MyTeam [ pRnd ].TalentId1 := 0;
+    MyTeam [ pRnd ].TalentId2 := 0;
+  end;
+
+  if fm = 'm' then
+    aValue := 2
+  else aValue := 1;
+
+
+  for i:= 1 to SubTractLevel do begin
+
+    MyTeam [ pRnd ].DefaultDefense := MyTeam [ pRnd ].DefaultDefense - aValue;
+    MyTeam [ pRnd ].DefaultPassing := MyTeam [ pRnd ].DefaultPassing - aValue;
+    MyTeam [ pRnd ].DefaultBallControl := MyTeam [ pRnd ].DefaultBallControl - aValue;
+    MyTeam [ pRnd ].DefaultShot := MyTeam [ pRnd ].DefaultShot - aValue;
+    MyTeam [ pRnd ].DefaultHeading := MyTeam [ pRnd ].DefaultHeading - aValue;
+
+    if MyTeam [ pRnd ].DefaultDefense <= 0 then MyTeam [ pRnd ].DefaultDefense := 1;
+    if MyTeam [ pRnd ].DefaultPassing <= 0 then MyTeam [ pRnd ].DefaultPassing := 1;
+    if MyTeam [ pRnd ].DefaultBallControl <= 0 then MyTeam [ pRnd ].DefaultBallControl := 1;
+    if MyTeam [ pRnd ].DefaultShot <= 0 then MyTeam [ pRnd ].DefaultShot := 1;
+    if MyTeam [ pRnd ].DefaultHeading <= 0 then MyTeam [ pRnd ].DefaultHeading := 1;
+
+  end;
+
+  if Gk then begin
+    MyTeam [ pRnd ].DefaultSpeed := 1;
+    MyTeam [ pRnd ].DefaultBallControl := 1;
+    MyTeam [ pRnd ].DefaultShot := 1;
+    MyTeam [ pRnd ].DefaultHeading := 1;
+  end;
+  // Ora lo Converto in TsoccerPlayer
+
+  //LastInsertId := LastInsertId + 1; qui non lo tratto perchè non è qui che lo salvo su file
+//  MyTeam[ pRnd ].Guid := LastInsertId;
+//  MyTeam[ pRnd ].GuidTeam := GuidTeam;
+
+
+  aPlayer.country := idCountry;
+  aPlayer.Stamina := 120;
+  aPlayer.Surname := CreateSurname ( fm ,idCountry, Tssurnames  );
+  aPlayer.AIFormationCellX := 0;
+  aPlayer.AIFormationCellY := -1;
+  aPlayer.injured := 0;
+  aPlayer.yellowcard := 0;
+  aPlayer.disqualified := 0;
+//    MyTeam[ pRnd ].onmarket := 0;
+  if fm ='f' then
+    MyTeam[ pRnd ].face := rndGenerate ( nFacesF )
+  else  MyTeam[ pRnd ].face := rndGenerate ( nFacesM );
+
+  aPlayer.fitness := Rndgenerate0(2); // random
+  aPlayer.morale := Rndgenerate0(2);
+
+  aPlayer.devA := RndGenerate(30);
+  aPlayer.devT := RndGenerate(30);
+  aPlayer.devI := RndGenerate(20);
+
+  aPlayer.xpdevA := 0;
+  aPlayer.xpdevT := 0;
+  aPlayer.xpdevI := 0;
+
+  if Age = 0 then
+    aPlayer.Age := RndGenerateRange(18,21); // else Age è quello in entrata, oppure sono dei giovani
+  aPlayer.TalentID1 := MyTeam [ pRnd ].TalentId1; // mantengo quelli sopra . può essere un GK
+  aPlayer.TalentID2 := MyTeam [ pRnd ].TalentId2;
+
+  aPlayer.DefaultSpeed := MyTeam [ pRnd ].DefaultSpeed;
+  aPlayer.DefaultDefense := MyTeam [ pRnd ].DefaultDefense;
+  aPlayer.DefaultPassing := MyTeam [ pRnd ].DefaultPassing;
+  aPlayer.DefaultBallControl := MyTeam [ pRnd ].DefaultBallControl;
+  aPlayer.DefaultShot := MyTeam [ pRnd ].DefaultShot;
+  aPlayer.DefaultHeading := MyTeam [ pRnd ].DefaultHeading;
+  aPlayer.Attributes:= IntTostr( aPlayer.DefaultSpeed) + ',' + IntTostr( aPlayer.DefaultDefense) + ',' + IntTostr( aPlayer.DefaultPassing) + ',' + IntTostr( aPlayer.DefaultBallControl) + ',' +
+               IntTostr( aPlayer.DefaultShot) + ',' + IntTostr( aPlayer.DefaultHeading) ;
+
+//    onmarket := MyBasePlayer.
+//    Cur := Cur + 1;
+
+  aPlayer.DefaultCells := aPlayer.Cells;
+
+  aPlayer.History_Speed         := 0;
+  aPlayer.History_Defense       := 0;
+  aPlayer.History_Passing       := 0;
+  aPlayer.History_BallControl   := 0;
+  aPlayer.History_Shot          := 0;
+  aPlayer.History_Heading       := 0;
+
+  // rispettare esatto ordine dei talenti sul db
+  aPlayer.xp_Speed         := 0;
+  aPlayer.xp_Defense       := 0;
+  aPlayer.xp_Passing       := 0;
+  aPlayer.xp_BallControl   := 0;
+  aPlayer.xp_Shot          := 0;
+  aPlayer.xp_Heading       := 0;
+
+  for i := 1 to NUM_TALENT do begin
+    aPlayer.xpTal[i]:= 0;
+  end;
+
+
+end;
 function PveCreatePlayers ( fm : Char; GuidTeam, Season,idCountry,Division, level, nFacesM,nFacesF,lastInsertId: Integer; tsSurnames: TStringList; dirSaves: string): Integer;
 
 var
@@ -4219,7 +4338,7 @@ begin
   aPlayer.xp_Heading       := MyBasePlayer.xp_Heading;
 
   for IndexTal := 1 to NUM_TALENT do begin
-    aPlayer.xpTal[IndexTal]:= aPlayer.xpTal[IndexTal];
+    aPlayer.xpTal[IndexTal]:= MyBasePlayer.xpTal[IndexTal];
   end;
 
   aPlayer.xpDevA:= MyBasePlayer.xpdevA;
@@ -5542,7 +5661,6 @@ begin
 
 
 end;
-
 initialization
   RandGen := TtdCombinedPRNG.Create(0, 0);
   FormationsPreset := TList<TFormation>.Create;
