@@ -119,6 +119,7 @@ end;
   procedure pveLoadTeam ( Filename:string; fm : Char; Guidteam: integer;var lstPlayersDB : TObjectlist<TSoccerPlayer> );//uguale a ClientLoadFormation ma senza grafica
 
   function GetTeamRecord ( fm :Char; GuidTeam, dirSaves: string  ): TTeam;
+  procedure SaveTeamRecord ( fm :Char; NewTeamrecord: TTeam; dirSaves: string  );
   procedure UpdateCalendar ( aBrain: TsoccerBrain; dirSaves: string );
 
   procedure pveThinkMarket ( fm :Char; Division: Byte; GuidTeam , dirSaves: string); // effettua pvetransfermarket , dismiss, sell,
@@ -456,7 +457,7 @@ end;
 procedure pveCreateRandomPlayer (fm: Char; idCountry , Age, nFacesM, nFacesF, SubTractLevel: integer; Gk: boolean; tsSurnames: TStringList; var aPlayer:TsoccerPlayer  );
 var
   MyTeam : Array22;
-  I,pRnd, aRnd, aValue : Integer;
+  I,pRnd, aRnd, chance ,aValue : Integer;
 begin
   CreateCodeNamePlayer;
   CopyMemory(@MyTeam, @CodeNamePlayer[0], 22 * SizeOf(TBasePlayer));
@@ -473,18 +474,36 @@ begin
     MyTeam [ pRnd ].TalentId2 := 0;
   end;
 
-  if fm = 'm' then
+  if fm = 'm' then begin
+    chance := 30;
     aValue := 2
-  else aValue := 1;
+  end
+  else begin
+    chance := 20;
+    aValue := 1;
+  end;
 
 
   for i:= 1 to SubTractLevel do begin
 
-    MyTeam [ pRnd ].DefaultDefense := MyTeam [ pRnd ].DefaultDefense - aValue;
-    MyTeam [ pRnd ].DefaultPassing := MyTeam [ pRnd ].DefaultPassing - aValue;
-    MyTeam [ pRnd ].DefaultBallControl := MyTeam [ pRnd ].DefaultBallControl - aValue;
-    MyTeam [ pRnd ].DefaultShot := MyTeam [ pRnd ].DefaultShot - aValue;
-    MyTeam [ pRnd ].DefaultHeading := MyTeam [ pRnd ].DefaultHeading - aValue;
+    if RndGenerate(100) <= chance then
+      MyTeam [ pRnd ].DefaultDefense := MyTeam [ pRnd ].DefaultDefense - aValue
+    else MyTeam [ pRnd ].DefaultDefense := MyTeam [ pRnd ].DefaultDefense - aValue * 2;
+
+    if RndGenerate(100) <= chance then
+      MyTeam [ pRnd ].DefaultPassing := MyTeam [ pRnd ].DefaultPassing - aValue
+    else  MyTeam [ pRnd ].DefaultPassing := MyTeam [ pRnd ].DefaultPassing - aValue * 2;
+    if RndGenerate(100) <= chance then
+      MyTeam [ pRnd ].DefaultBallControl := MyTeam [ pRnd ].DefaultBallControl - aValue
+    else MyTeam [ pRnd ].DefaultBallControl := MyTeam [ pRnd ].DefaultBallControl - aValue * 2;
+
+    if RndGenerate(100) <= chance then
+      MyTeam [ pRnd ].DefaultShot := MyTeam [ pRnd ].DefaultShot - aValue
+    else  MyTeam [ pRnd ].DefaultShot := MyTeam [ pRnd ].DefaultShot - aValue * 2;
+
+    if RndGenerate(100) <= chance then
+      MyTeam [ pRnd ].DefaultHeading := MyTeam [ pRnd ].DefaultHeading - aValue
+    else MyTeam [ pRnd ].DefaultHeading := MyTeam [ pRnd ].DefaultHeading - aValue * 2;
 
     if MyTeam [ pRnd ].DefaultDefense <= 0 then MyTeam [ pRnd ].DefaultDefense := 1;
     if MyTeam [ pRnd ].DefaultPassing <= 0 then MyTeam [ pRnd ].DefaultPassing := 1;
@@ -5647,6 +5666,42 @@ begin
       Exit;
 
   end;
+end;
+procedure SaveTeamRecord ( fm :Char; NewTeamrecord: TTeam; dirSaves: string  );
+var
+  MM : TMemoryStream;
+  Buf3 : TArray8192;
+  Cur : Integer;
+  aTeamRecord: TTeam;
+begin
+      // getTeamrecord
+  MM := TMemoryStream.Create;
+  MM.LoadFromFile( dirSaves +fm + 'teams.120' );
+  CopyMemory( @Buf3, MM.Memory, MM.Size  );
+  Cur := 0;
+
+
+  while Cur < MM.Size do begin
+
+    aTeamRecord.guid := PDWORD(@buf3 [ cur ])^;
+    Cur := Cur + 4;
+    aTeamRecord.Money := PDWORD(@buf3 [ cur ])^;
+    Cur := Cur + 4;
+    aTeamRecord.Division := ord ( buf3 [ cur ]);
+    Cur := Cur + 1;
+    aTeamRecord.YoungQueue := ord ( buf3 [ cur ]);
+    Cur := Cur + 1;
+
+     if aTeamRecord.guid = NewTeamrecord.guid then begin
+      MM.Position := Cur - 1;
+      MM.Write(@NewTeamrecord.YoungQueue,1);
+      MM.SaveToFile(dirSaves + fm + 'teams.120' );
+      MM.Free;
+      Exit;
+    end;
+
+  end;
+
 end;
 
 procedure MakeDelay ( interval: integer);

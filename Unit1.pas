@@ -23,8 +23,10 @@
   }
   { TODO -ctodo prima del rilascio patreon :
 
-    i portieri devono gaudagnare meno xp, anche nel brain. 8 a partita sono troppi. oppure invece di 120 arrivo a 180 punti xp.
-    in pvefinalizebrain rimane senza portiere. fare inserimento automatico di un 32 anni + gestione youngqueue
+    i portieri devono gaudagnare meno xp, anche nel brain. 8 a partita sono troppi. oppure invece di 120 arrivo a 180 punti xp solo per GK
+
+    FINITO: in pvefinalizebrain fare gestione youngqueue
+
     Newseason rimangono risultati di W2 . da fixare: se inverte , al giro dopo sono ancora inverite? il puntatore è locale
 
     face paint shop pro 9 blackpencil 80 30  ufficiale + molte faces
@@ -34,7 +36,6 @@
     help compare se frekick compare altro ? questionmark
     finire le skill sia effetto che help
 
-    team 83 ha licenziato 2 GK ?
     verificare AI forse autotackle anche su move di 1 sola casella
 
     errore flags su qualcosa, forse lop
@@ -59,6 +60,7 @@
     FARE AIthinkdev Animazioni per sviluppo attributo o talento.
 
     talento convergi verso il centro
+    talento autorità GK 50% -1 sui cross avversari o 50% +1 defense a heading
     creare più formazioni , forse bug nella fatigue
 
 
@@ -90,6 +92,7 @@
 
   }
   { TODO -csviluppo :
+    in alcune function uso MM e buf3 quando ibuf3 non tratta stringhe quindi posso evitare. Provare a lavorare solo con stream. mm.memory + cur
     campi bagnati -passaggio e controllo di palla, caldo + fatica, freddo + infortuni
      v.2 scommesse o investire su altre squadre
     // coppe solo nella versione 2.0   tempi supplementari regola del 120+!!!
@@ -17857,15 +17860,8 @@ dev:
       end;
       // nota che il GK non può essere stato venduto o licenziato. solo sopra può aver raggiunto la fine carriera. Quindi ora ci sono
       // 21 players, mai 22
-      if Not Gkcheck then begin // regalo un GK scarso e lo aggiungo alla lstPlayersDB che salvo dopo in SaveTeamStream
-        ini := TIniFile.Create ( dir_Saves + 'index.ini');
-        LastInsertId := ini.ReadInteger( 'setup','LastInsertId', 0 ); // servirà alla nascita di nuovi player . è condiviso tra m e f
 
-        aPlayer:= TSoccerPlayer.create(0,aBrain.Score.TeamGuid[T],0,IntToStr(LastInsertId+1),'','','',0,0);
-
-        if aBrain.gender = 'f' then   // subtractLevel è un range -1 +1  es. 5--> 3,4,5
-          SubTractLevel := 4
-        else SubTractLevel := 7;
+        // preparo le ts per gk e gestione youngqueque
         tsSurnames := TStringList.Create;
         tsSurnames.LoadFromFile( dir_data + 'surnames.csv' );
 
@@ -17878,30 +17874,56 @@ dev:
 
         ts2.Free;
 
+        ini := TIniFile.Create ( dir_Saves + 'index.ini');
+
+        if aBrain.gender = 'f' then   // subtractLevel all'interno ha chance 30% 20% di aValue * 2
+          SubTractLevel := 3
+        else SubTractLevel := 5;
+
+      if Not Gkcheck then begin // regalo un GK scarso e lo aggiungo alla lstPlayersDB che salvo dopo in SaveTeamStream
+        LastInsertId := ini.ReadInteger( 'setup','LastInsertId', 0 ); // servirà alla nascita di nuovi player . è condiviso tra m e f
+
+        aPlayer:= TSoccerPlayer.create(0,aBrain.Score.TeamGuid[T],0,IntToStr(LastInsertId+1),'','','',0,0);
+
+
         pveCreateRandomPlayer (abrain.gender,  aBrain.Country, 32, mfaces[i],ffaces[i], SubTractLevel, true, tsSurnames, aPlayer );
-        TsSurnames.Free;
         LastInsertId := LastInsertId + 1;
         aPlayer.Ids := IntToStr(LastInsertId);
         aPlayer.GuidTeam := aBrain.Score.TeamGuid[T];
         lstPlayersDB.add ( aPlayer );
-
         ini.WriteInteger( 'setup','LastInsertId', LastInsertId ); // servirà alla nascita di nuovi player . è condiviso tra m e f
-        ini.Free;
 
       end;
 
-        //Gestion YoungQueue
-      //aTeamRecord.YoungQueue := aTeamRecord.YoungQueue - 1;
+      //Gestione YoungQueue
+      if (aTeamRecord.YoungQueue > 0) and (lstPlayersDB.Count < 22) then begin // se mancava il GK l'ho inserito sopra e potrebbe essere a 22
 
-        //aPlayer := pveCreateRandomPlayer (GenderS[G], 32, aBrain.Division, true );
+        for I := 0 to 1 do begin
+          pveCreateRandomPlayer (abrain.gender,  aBrain.Country, 0, mfaces[i],ffaces[i], SubTractLevel, true, tsSurnames, aPlayer );
+          LastInsertId := LastInsertId + 1;
+          aPlayer.Ids := IntToStr(LastInsertId);
+          aPlayer.GuidTeam := aBrain.Score.TeamGuid[T];
+          lstPlayersDB.add ( aPlayer );
+          ini.WriteInteger( 'setup','LastInsertId', LastInsertId ); // servirà alla nascita di nuovi player . è condiviso tra m e f
+          aTeamRecord.YoungQueue := aTeamRecord.YoungQueue - 1;
 
-     // SaveTeamRecord ( aBrain.Gender, aTeamRecord{.Guid}{, dir_saves ) // Salva youngQueue
+          if lstPlayersDB.Count = 22 then
+            break;
+        end;
+
+      end;
 
 
-                  //     pveAddToTeam (fm: Char; guid, FromGuidTeam, ToGuidTeam: integer; ForceGK: boolean dirSaves: string  );
+      TsSurnames.Free;
+      ini.Free;
+
+
+
+
     end;
 
 
+    SaveTeamRecord ( aBrain.Gender, aTeamRecord, dir_saves ); // Salva youngQueue e GK regalati
     SaveTeamStream( aBrain.Gender, IntToStr(aBrain.Score.TeamGuid[T]), lstPlayersDB, dir_saves  ); // storo il team aggiornato
     // UpdateCalendar. calc_standings è a parte
     { il risultato e matchinfo +  }
