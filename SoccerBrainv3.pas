@@ -4313,13 +4313,13 @@ retry:
   arnd := RndGenerate (100 );
   if arnd <= 50 then begin
 JustaPlayer:
-    arnd := RndGenerate (lstSoccerPlayer.Count -1 );
+    arnd := RndGenerate0 (lstSoccerPlayer.Count -1 );
     Result := lstSoccerPlayer[aRnd];
   end
   else  begin
     if lstSoccerGameover.Count <= 0 then
       goto JustaPlayer;
-    arnd := RndGenerate (lstSoccerGameover.Count -1 );
+    arnd := RndGenerate0 (lstSoccerGameover.Count -1 );
     Result := lstSoccerGameover[aRnd];
   end;
   if (Result.TalentId1 = TALENT_ID_GOALKEEPER) then

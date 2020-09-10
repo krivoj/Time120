@@ -5189,9 +5189,13 @@ skipsub:
   YellowCount := RndGenerate(72); // 4.4 media a partita
   YellowCount := Trunc(YellowCount / 10);
   while YellowCount > 0 do begin
-    OutputDebugString( PChar(aBrain.Score.Team[0] + IntToStr(aBrain.Division) ) );
-    OutputDebugString( PChar(aBrain.Score.Team[1] + IntToStr(aBrain.Division) ) );
+{$IFDEF  tools}
+ //   OutputDebugString( PChar(aBrain.Score.Team[0] + IntToStr(aBrain.Score.TeamGuid[0]) ) );
+ //   OutputDebugString( PChar(aBrain.Score.Team[1] + IntToStr(aBrain.Score.TeamGuid[1]) ) );
+{$endIF  tools}
+  //  if  aBrain.Score.Team[0] = 'Juventus' then asm int 3 ; end;
     aPlayer := aBrain.GetSoccerPlayerRandom3; // uno qualsisai che ha giocato ma non il GK
+
     aPlayer.YellowCard := aPlayer.YellowCard +1;  // può accadere che un pplayer sia espulso più volte, è lo stesso. oppure che un sostituito sia ammonito o espulso
     if aPlayer.YellowCard = 2 then
       aPlayer.RedCard := 1;
@@ -5282,7 +5286,7 @@ skipsub:
     lst_L.Add( tmpb );
   end;
 
-  absGap := TotMarketValue[0] - TotMarketValue[1];
+  absGap := TotMarketValue[0] - TotMarketValue[1];  // diventa un vero abs i ncas odi vittoria esterna. abdrebbe fatto es. case -60000 -1; begin
 
   if TotMarketValue[0] >= TotMarketValue[1] then begin       // alla fine i conti devono tornare per i campionati a 20 squadre: 0 byte nei file es. w.120
     lst_W2 := lst_W; // sotto inverto i puntatori nel caso altra squadra vinca , qui li rimetto dritti
@@ -5292,7 +5296,7 @@ team2win:
       0..60000: begin
         aRnd :=  RndGenerate(100);
           case aRnd of
-            1..20: begin
+            1..30: begin
               if lst_W2.Count = 0 then begin
                 Finalresult.X := RndGenerateRange(2,4);
                 Finalresult.Y := RndGenerate0(Finalresult.X-1);
@@ -5302,7 +5306,7 @@ team2win:
                 finalResult := DeleteFromResults ( aRnd, lst_W2);
               end;
             end;
-            21..80: begin
+            31..70: begin
               if lst_N.Count = 0 then begin
                 Finalresult.X := RndGenerateRange(0,4);
                 Finalresult.Y := Finalresult.X;
@@ -5312,7 +5316,7 @@ team2win:
                 FinalResult := DeleteFromResults ( aRnd, lst_N );
               end;
             end;
-            81..100: begin
+            71..100: begin
               if lst_L2.Count = 0 then begin
                 Finalresult.Y := RndGenerateRange(2,4);
                 Finalresult.X := RndGenerate0(Finalresult.Y-1);
@@ -5404,6 +5408,7 @@ team2win:
   else begin
     lst_W2 := lst_L; // inverto i puntatori
     lst_L2 := lst_W;
+    absGap := Abs(absGap);
     goto team2win;
   end;
 

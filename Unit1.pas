@@ -25,9 +25,11 @@
 
     i portieri devono gaudagnare meno xp, anche nel brain. 8 a partita sono troppi. oppure invece di 120 arrivo a 180 punti xp solo per GK
 
-    FINITO: in pvefinalizebrain fare gestione youngqueue
+    Newseason rimangono adesso i pareggi finicono presto. devo abbassare le percentuali
+    verificare mC001D5l n l .120.  in debug
 
-    Newseason rimangono risultati di W2 . da fixare: se inverte , al giro dopo sono ancora inverite? il puntatore è locale
+    faccio archivio unico e inverto risultati
+    Newseason fare i rewards in denaro
 
     face paint shop pro 9 blackpencil 80 30  ufficiale + molte faces
 
@@ -2504,7 +2506,6 @@ begin
   bmp.Bitmap.Canvas.Brush.Color :=  clBlue;
   bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
   aBtnSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btn_speed',1,1,1000,LabelX,BaseY,true,1000 );
-  aBtnSprite.BlendMode := SE_BlendAverage;
   bmp.Free;
   aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite,clBlack,FontSize,Translate('attribute_Speed'),True, 1, dt_Left   );
   aBtnSprite.Labels.Add(aSpriteLabel);
@@ -3477,8 +3478,8 @@ begin
 
   // le coordinate sono riferite a MainStatsSpr
   if CheckBox1.Checked then
-  aSpriteLabel := SE_SpriteLabel.create(170,7,'Calibri',clWhite,clBlack,14,aPlayer.ids + ' ' + aPlayer.SurName,True ,1, dt_left)
-  else aSpriteLabel := SE_SpriteLabel.create(170,7,'Calibri',clWhite,clBlack,14, aPlayer.SurName,True,1, dt_left );
+  aSpriteLabel := SE_SpriteLabel.create(170,7,'Calibri',clWhite,clBlack,14,aPlayer.ids + ' ' + aPlayer.SurName + ' (' + IntToStr(aPlayer.Age) +  ')',True ,1, dt_left)
+  else aSpriteLabel := SE_SpriteLabel.create(170,7,'Calibri',clWhite,clBlack,14, aPlayer.SurName + ' (' + IntToStr(aPlayer.Age) + ')',True,1, dt_left );
 
   MainStatsSpr.Labels.Add(aSpriteLabel);
 

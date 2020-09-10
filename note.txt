@@ -55,3 +55,45 @@ I've participated in a few themed game jams/game showcases, and below are some g
 
 media ammonizioni 4.4 per partita quindi da 0 a 7.2
 media espulsione 4 ogni 38 partite per squadra quindi ...
+
+interface
+
+const
+   crMyCursor = 1;
+var
+   iconInfo : TIconInfo;
+
+implementation
+
+procedure TForm1.Button1Click(Sender: TObject) ;
+var
+   bmpMask : TBitmap;
+   bmpColor : TBitmap;
+begin
+   bmpMask := TBitmap.Create;
+   bmpColor := TBitmap.Create;
+
+   bmpMask.LoadFromFile('CircleMask.bmp') ;
+   bmpColor.LoadFromFile('Circle.bmp') ;
+
+   with iconInfo do
+   begin
+     fIcon := false;
+     xHotspot := 15;
+     yHotspot := 15;
+     hbmMask := bmpMask.Handle;
+     hbmColor := bmpColor.Handle;
+   end;
+
+   Screen.Cursors[crMyCursor] := CreateIconIndirect(iconInfo) ;
+
+   Screen.Cursor := crMyCursor;
+
+   bmpMask.Free;
+   bmpColor.Free;
+end;
+
+procedure TForm1.FormDestroy(Sender: TObject) ;
+begin
+   DestroyIcon(Screen.Cursors[crMyCursor]) ;
+end;
