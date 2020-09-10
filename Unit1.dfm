@@ -330,6 +330,15 @@ object Form1: TForm1
       TabOrder = 31
       OnClick = Button13Click
     end
+    object Button14: TButton
+      Left = 144
+      Top = 853
+      Width = 75
+      Height = 25
+      Caption = 'lstSoccer'
+      TabOrder = 32
+      OnClick = Button14Click
+    end
   end
   object PanelMain: SE_Panel
     Left = 32

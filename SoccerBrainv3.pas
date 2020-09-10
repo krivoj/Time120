@@ -490,7 +490,7 @@ end;
     debug_Buff100 : Boolean;
 
     procedure SetTeamMovesLeft ( const Value: ShortInt );
-    procedure SetMinute ( const Value: byte );
+    procedure SetMinute ( const Value: SmallInt );
   protected
     public
       GameMode : TGameMode;
@@ -600,7 +600,7 @@ end;
       Ball: Tball;
 
       ShpFree: ShortInt; // può andare in negativo
-      fMinute: byte;
+      fMinute: smallint;
       TeamTurn: byte;
       FTeamMovesLeft : ShortInt;
 
@@ -681,7 +681,7 @@ end;
       function GetOpponentStart (SelectedPlayer: TSoccerPlayer ): TPoint;
 
       property TeamMovesLeft : ShortInt read fTeamMovesLeft write SetTeamMovesLeft;
-      property Minute : byte read fMinute write SetMinute;
+      property Minute : SmallInt read fMinute write SetMinute;
       function FindSwapCOAD (   SwapPlayer: TSoccerPlayer; CornerMap: TCornerMap ): Tpoint;
 
       function exec_tackle ( ids: string):integer;
@@ -5961,13 +5961,13 @@ begin
 
 
 end;
-procedure TSoccerbrain.SetMinute ( const Value: byte );
+procedure TSoccerbrain.SetMinute ( const Value: SmallInt );
 begin
 
    FMinute := value;
-   if FMinute > 60 then begin
-
-   end;
+//   if FMinute > 60 then begin
+//
+//   end;
 
 end;
 procedure TSoccerbrain.TurnChange ( MovesLeft: integer);
@@ -10630,7 +10630,7 @@ begin
   MMbraindata.Write( @finished, sizeof(byte) ); // flag partita finita // oltre i 120 turni, finita
   MMbraindata.Write( @ShpBuff, sizeof(byte) );
   MMbraindata.Write( @ShpFree, sizeof(ShortInt) );
-  MMbraindata.Write( @IncMove, sizeof(byte) ); // supplementari, rigori, può sforare 255 ?
+  MMbraindata.Write( @IncMove, sizeof(smallint) ); // supplementari, rigori, può sforare 255 ?
   MMbraindata.Write( @Ball.Cx, sizeof(ShortInt) );
   MMbraindata.Write( @Ball.cy, sizeof(ShortInt) );
 
@@ -15356,7 +15356,7 @@ begin
           for Y := 0 to 6 do begin
             aPlayer := GetSoccerPlayer ( X,Y);
             if aPlayer = nil then continue;
-         //   if (aPlayer.Ids='p1004') or (aPlayer.Ids='p1006') then asm int 3 end;
+            //if (aPlayer.Ids='3634') then asm int 3 end;
 
             if not aPlayer.CanMove then continue;
             if aPlayer.HasBall then continue;

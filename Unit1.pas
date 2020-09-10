@@ -28,7 +28,7 @@
     Newseason rimangono adesso i pareggi finicono presto. devo abbassare le percentuali
     verificare mC001D5l n l .120.  in debug
 
-    faccio archivio unico e inverto risultati
+    +4 buff corsa ma solo pos
     Newseason fare i rewards in denaro
 
     face paint shop pro 9 blackpencil 80 30  ufficiale + molte faces
@@ -420,6 +420,7 @@ type
     SE_Circles: SE_Engine;
     Button12: TButton;
     Button13: TButton;
+    Button14: TButton;
 
 // General
     function ChangeResolution(XResolution, YResolution, Depth: DWORD): boolean;
@@ -567,6 +568,7 @@ type
     procedure sfSavesValidateFile(Sender: TObject; ValidMaskInclude, ValidMaskExclude, ValidAttributes: Boolean; var Accept: Boolean);
     procedure Button12Click(Sender: TObject);
     procedure Button13Click(Sender: TObject);
+    procedure Button14Click(Sender: TObject);
 
   private
     { Private declarations }
@@ -1149,6 +1151,7 @@ begin
   else ViewReplay := false;
   sf.Free;
 
+
   {$endif tools}
 
 end;
@@ -1241,6 +1244,33 @@ var
   aSprite: SE_Sprite;
 begin
   ShowNewSeason ( ActiveSeason + 1 ) ;
+end;
+
+procedure TForm1.Button14Click(Sender: TObject);
+var
+  i: integer;
+begin
+  {$ifdef tools}
+  memoC.Lines.Clear ;
+  MemoC.Lines.Add( 'Titolari' );
+  for I := MyBrain.lstSoccerPlayer.Count -1 downto 0 do begin
+    MemoC.Lines.Add( MyBrain.lstSoccerPlayer[i].Ids );
+
+  end;
+
+  MemoC.Lines.Add( 'riserve' );
+  for I := MyBrain.lstSoccerReserve.Count -1 downto 0 do begin
+    MemoC.Lines.Add( MyBrain.lstSoccerReserve[i].Ids );
+
+  end;
+
+  MemoC.Lines.Add( 'gameover' );
+  for I := MyBrain.lstSoccerGameOver.Count -1 downto 0 do begin
+    MemoC.Lines.Add( MyBrain.lstSoccerGameOver[i].Ids );
+
+  end;
+  {$endif tools}
+
 end;
 
 procedure TForm1.Button1Click(Sender: TObject);
@@ -10083,6 +10113,10 @@ begin
     dstCellY :=  StrToInt(Ts[5]);
     aPlayer := MyBrain.GetSoccerPlayer(ts[1]);
 
+//    OutputDebugString( PChar(ts[1]) );
+//    if aPlayer = nil then asm int 3 ; end;
+
+
     aFieldPointSpr := SE_FieldPoints.FindSprite(IntToStr (dstCellX ) + '.' + IntToStr (dstCellY ));
     aPlayer.se_sprite.MoverData.Destination := aFieldPointSpr.Position;
 //    aPlayer.Sprite.NotifyDestinationReached := true;
@@ -15659,7 +15693,7 @@ begin
 
     HideAllEnginesExcept ( SE_BackGround,SE_Score,SE_Spectator,nil,nil );
     ShowStadiumAndPlayers(1);
-
+    GameMode := pve;
     LiveMatch := False;
     viewMatch := True;
     MouseWaitFor := WaitForNone;
