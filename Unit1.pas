@@ -25,7 +25,7 @@
 
     i portieri devono gaudagnare meno xp, anche nel brain. 8 a partita sono troppi. oppure invece di 120 arrivo a 180 punti xp solo per GK
 
-    Newseason rimangono adesso i pareggi finicono presto. devo abbassare le percentuali
+    Newseason devo blicnaire bene absGap ora -10 +10  .elimianre totgap etc...
     verificare mC001D5l n l .120.  in debug
 
     +4 buff corsa ma solo pos

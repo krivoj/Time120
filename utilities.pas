@@ -186,6 +186,8 @@ var
   CodeNamePlayer : array [0..21] of TBasePlayer;
   RandGen: TtdBasePRNG;
   MoneyBase : array [1..2,1..5,0..1] of Integer;  // fm, division, money
+  TotGap: Integer;
+  TotMatch: Integer;
 //nction RndGenerate( Upper: integer ): integer;
 //function RndGenerateRange( Lower, Upper: integer ): integer;
 //function RndGenerate0( Upper: integer ): integer;
@@ -5095,7 +5097,8 @@ end;
 procedure EmulationBrain ( aBrain: TSoccerBrain; dirSaves: string);
 var
   i,T,aRnd,YellowCount,RedCount,InjuredCount,Injured,absGap,subLeft,subDone: Integer;
-  TotMarketValue: array[0..1] of Integer;
+  //TotMarketValue: array[0..1] of Integer;
+  TotAttrTalValue: array[0..1] of Integer;
   aPlayer,aPlayer2 : TSoccerPlayer;
   mm_W,mm_N,mm_L : TMemoryStream;
   tmpb : Byte;
@@ -5104,7 +5107,6 @@ var
   lst_W : TList<Byte>;
   lst_N : TList<Byte>;
   lst_L : TList<Byte>;
-  lst_W2, lst_L2: TList<Byte>;
   Finalresult : TPoint;
   label retry,team2win,skipsub;
 begin
@@ -5119,9 +5121,10 @@ begin
   // Spargo xp , xptal, xpdev
   // non faccio altro, il brain verrà finalizzato e poi i team salvati
 //  aBrain.lstSoccerReserve[i].itag
-
-  TotMarketValue[0] := 0;
-  TotMarketValue[1] := 0;
+  TotAttrTalValue[0]:=0;
+  TotAttrTalValue[1]:=0;
+//  TotMarketValue[0] := 0;
+//  TotMarketValue[1] := 0;
   //
   //--------------- YELLOW RED INHURED --------------------------------
   //
@@ -5162,23 +5165,25 @@ skipsub:
     for I := 0 to aBrain.lstSoccerPlayer.Count -1 do begin // gli 11 titolari
       if aBrain.lstSoccerPlayer[i].Team = T then begin
         aPlayer:= aBrain.lstSoccerPlayer[i];
-        TotMarketValue [T] := TotMarketValue [T] + aBrain.lstSoccerPlayer[i].MarketValue;
+       // TotMarketValue [T] := TotMarketValue [T] + aBrain.lstSoccerPlayer[i].MarketValue;
+        TotAttrTalValue [T] := TotAttrTalValue [T] + aBrain.lstSoccerPlayer[i].ActiveAttrTalValue;
         AllRainXp (aPlayer); // xp attributes 12 sparsi, xp_talent valuto, xpDeva+xpdevT 12 sparsi, devi fisso -120 ai panchinari
         if aPlayer.TalentId1 = TALENT_ID_GOALKEEPER then
           aPlayer.Stamina := aPlayer.Stamina - RndGenerate(15)
         else aPlayer.Stamina := aPlayer.Stamina - RndGenerate(30);
       end;
     end;
-    for I := 0 to aBrain.lstSoccerGameOver.Count -1 do begin // i 6  o meno sostiutiti sono in gameover
+   // qui sono in caso di totmarketvalue. se uso attrtal non calcolo i sostituti
+   { for I := 0 to aBrain.lstSoccerGameOver.Count -1 do begin // i 6  o meno sostiutiti sono in gameover
       if aBrain.lstSoccerGameOver[i].Team = T then begin
         aPlayer:= aBrain.lstSoccerGameOver[i];
-        TotMarketValue [T] := TotMarketValue [T] + aBrain.lstSoccerGameOver[i].MarketValue;
+        TotMarketValue [T] := TotMarketValue [T] + aBrain.lstSoccerGameOver[i].ActiveAttrTalValue;
         AllRainXp (aPlayer); // xp attributes 12 sparsi, xp_talent valuto, xpDeva+xpdevT 12 sparsi, devi fisso -120 ai panchinari
         if aPlayer.TalentId1 = TALENT_ID_GOALKEEPER then
           aPlayer.Stamina := aPlayer.Stamina - RndGenerate(15)
         else aPlayer.Stamina := aPlayer.Stamina - RndGenerate(30);
       end;
-    end;
+    end; }
 
   end;
 
@@ -5286,131 +5291,121 @@ skipsub:
     lst_L.Add( tmpb );
   end;
 
-  absGap := TotMarketValue[0] - TotMarketValue[1];  // diventa un vero abs i ncas odi vittoria esterna. abdrebbe fatto es. case -60000 -1; begin
-
-  if TotMarketValue[0] >= TotMarketValue[1] then begin       // alla fine i conti devono tornare per i campionati a 20 squadre: 0 byte nei file es. w.120
-    lst_W2 := lst_W; // sotto inverto i puntatori nel caso altra squadra vinca , qui li rimetto dritti
-    lst_L2 := lst_L;
-team2win:
-    case absGap of
-      0..60000: begin
-        aRnd :=  RndGenerate(100);
-          case aRnd of
-            1..30: begin
-              if lst_W2.Count = 0 then begin
-                Finalresult.X := RndGenerateRange(2,4);
-                Finalresult.Y := RndGenerate0(Finalresult.X-1);
-              end
-              else begin
-                aRnd :=  RndGenerate0(lst_W2.Count -1);
-                finalResult := DeleteFromResults ( aRnd, lst_W2);
-              end;
-            end;
-            31..70: begin
-              if lst_N.Count = 0 then begin
-                Finalresult.X := RndGenerateRange(0,4);
-                Finalresult.Y := Finalresult.X;
-              end
-              else begin
-                aRnd :=  RndGenerate0(lst_N.Count -1); // 60% pareggo
-                FinalResult := DeleteFromResults ( aRnd, lst_N );
-              end;
-            end;
-            71..100: begin
-              if lst_L2.Count = 0 then begin
-                Finalresult.Y := RndGenerateRange(2,4);
-                Finalresult.X := RndGenerate0(Finalresult.Y-1);
-              end
-              else begin
-                aRnd :=  RndGenerate0(lst_L2.Count -1);
-                FinalResult := DeleteFromResults ( aRnd, lst_L2 );
-              end;
-            end;
+//  absGap := TotMarketValue[0] - TotMarketValue[1];  // diventa un vero abs i ncas odi vittoria esterna. abdrebbe fatto es. case -60000 -1; begin
+  absGap := TotAttrTalValue[0] - TotAttrTalValue[1];
+//  TotGap :=  TotGap + absGap;
+ //// Inc(TotMatch);
+ // OutputDebugString(  PChar( IntToStr( TotGap div TotMatch   )) );
+//  if TotAttrTalValue[0] >= TotAttrTalValue[1] then begin       // alla fine i conti devono tornare per i campionati a 20 squadre: 0 byte nei file es. w.120
+  if  ( absGap >= -10) and ( absGap <=10) then begin   // pareggio
+    aRnd :=  RndGenerate(100);
+      case aRnd of
+        1..20: begin
+          if lst_W.Count = 0 then begin
+            Finalresult.X := RndGenerateRange(2,4);
+            Finalresult.Y := RndGenerate0(Finalresult.X-1);
+          end
+          else begin
+            aRnd :=  RndGenerate0(lst_W.Count -1);
+            finalResult := DeleteFromResults ( aRnd, lst_W);
           end;
+        end;
+        21..80: begin
+          if lst_N.Count = 0 then begin
+            Finalresult.X := RndGenerateRange(0,4);
+            Finalresult.Y := Finalresult.X;
+          end
+          else begin
+            aRnd :=  RndGenerate0(lst_N.Count -1); // 60% pareggo
+            FinalResult := DeleteFromResults ( aRnd, lst_N );
+          end;
+        end;
+        81..100: begin
+          if lst_L.Count = 0 then begin
+            Finalresult.Y := RndGenerateRange(2,4);
+            Finalresult.X := RndGenerate0(Finalresult.Y-1);
+          end
+          else begin
+            aRnd :=  RndGenerate0(lst_L.Count -1);
+            FinalResult := DeleteFromResults ( aRnd, lst_L );
+          end;
+        end;
       end;
-      60001..110000: begin
-        aRnd :=  RndGenerate(100);
-          case aRnd of
-            1..60: begin
-              if lst_W2.Count = 0 then begin
-                Finalresult.X := RndGenerateRange(2,4);
-                Finalresult.Y := RndGenerate0(Finalresult.X-1);
-              end
-              else begin
-                aRnd :=  RndGenerate0(lst_W2.Count -1);
-                finalResult := DeleteFromResults ( aRnd, lst_W2);
-              end;
-            end;
-            61..80: begin
-              if lst_N.Count = 0 then begin
-                Finalresult.X := RndGenerateRange(0,4);
-                Finalresult.Y := Finalresult.X;
-              end
-              else begin
-                aRnd :=  RndGenerate0(lst_N.Count -1); // 60% pareggo
-                FinalResult := DeleteFromResults ( aRnd, lst_N );
-              end;
-            end;
-            81..100:begin
-              if lst_L2.Count = 0 then begin
-                Finalresult.Y := RndGenerateRange(2,4);
-                Finalresult.X := RndGenerate0(Finalresult.Y-1);
-              end
-              else begin
-                aRnd :=  RndGenerate0(lst_L2.Count -1);
-                FinalResult := DeleteFromResults ( aRnd, lst_L2 );
-              end;
-            end;
-          end;
-      end
-      else begin
-        aRnd :=  RndGenerate(100);
-          case aRnd of
-            1..80: begin
-              if lst_W2.Count = 0 then begin
-                Finalresult.X := RndGenerateRange(2,4);
-                Finalresult.Y := RndGenerate0(Finalresult.X-1);
-              end
-              else begin
-                aRnd :=  RndGenerate0(lst_W2.Count -1);
-                finalResult := DeleteFromResults ( aRnd, lst_W2);
-              end;
-            end;
-            81..90: begin
-              if lst_N.Count = 0 then begin
-                Finalresult.X := RndGenerateRange(0,4);
-                Finalresult.Y := Finalresult.X;
-              end
-              else begin
-                aRnd :=  RndGenerate0(lst_N.Count -1); // 60% pareggo
-                FinalResult := DeleteFromResults ( aRnd, lst_N );
-              end;
-            end;
-            91..100: begin
-              if lst_L2.Count = 0 then begin
-                Finalresult.Y := RndGenerateRange(2,4);
-                Finalresult.X := RndGenerate0(Finalresult.Y-1);
-              end
-              else begin
-                aRnd :=  RndGenerate0(lst_L2.Count -1);
-                FinalResult := DeleteFromResults ( aRnd, lst_L2 );
-              end;
-            end;
-          end;
+    end
 
-
+  else if  ( absGap > 10) then begin // vittoria in casa
+  aRnd :=  RndGenerate(100);
+    case aRnd of
+      1..80: begin
+        if lst_W.Count = 0 then begin
+          Finalresult.X := RndGenerateRange(2,4);
+          Finalresult.Y := RndGenerate0(Finalresult.X-1);
+        end
+        else begin
+          aRnd :=  RndGenerate0(lst_W.Count -1);
+          finalResult := DeleteFromResults ( aRnd, lst_W);
+        end;
+      end;
+      81..90: begin
+        if lst_N.Count = 0 then begin
+          Finalresult.X := RndGenerateRange(0,4);
+          Finalresult.Y := Finalresult.X;
+        end
+        else begin
+          aRnd :=  RndGenerate0(lst_N.Count -1); // 60% pareggo
+          FinalResult := DeleteFromResults ( aRnd, lst_N );
+        end;
+      end;
+      91..100:begin
+        if lst_L.Count = 0 then begin
+          Finalresult.Y := RndGenerateRange(2,4);
+          Finalresult.X := RndGenerate0(Finalresult.Y-1);
+        end
+        else begin
+          aRnd :=  RndGenerate0(lst_L.Count -1);
+          FinalResult := DeleteFromResults ( aRnd, lst_L );
+        end;
       end;
     end;
-
-
   end
-  {  se è l'altra squadra a vincere , inverto le list W e L}
-  else begin
-    lst_W2 := lst_L; // inverto i puntatori
-    lst_L2 := lst_W;
-    absGap := Abs(absGap);
-    goto team2win;
+  else if  ( absGap < -10) then begin // vittoria fuori casa
+    aRnd :=  RndGenerate(100);
+      case aRnd of
+        1..80: begin
+          if lst_L.Count = 0 then begin
+            Finalresult.X := RndGenerateRange(2,4);
+            Finalresult.Y := RndGenerate0(Finalresult.X-1);
+          end
+          else begin
+            aRnd :=  RndGenerate0(lst_L.Count -1);
+            finalResult := DeleteFromResults ( aRnd, lst_L);
+          end;
+        end;
+        81..90: begin
+          if lst_N.Count = 0 then begin
+            Finalresult.X := RndGenerateRange(0,4);
+            Finalresult.Y := Finalresult.X;
+          end
+          else begin
+            aRnd :=  RndGenerate0(lst_N.Count -1); // 60% pareggo
+            FinalResult := DeleteFromResults ( aRnd, lst_N );
+          end;
+        end;
+        91..100: begin
+          if lst_W.Count = 0 then begin
+            Finalresult.Y := RndGenerateRange(2,4);
+            Finalresult.X := RndGenerate0(Finalresult.Y-1);
+          end
+          else begin
+            aRnd :=  RndGenerate0(lst_W.Count -1);
+            FinalResult := DeleteFromResults ( aRnd, lst_W );
+          end;
+        end;
+      end;
+
+
   end;
+
 
   // Assegno il risultato , la matchinfo non la creo . apro il file calendar in base a fm season, country, division
   aBrain.Score.gol[0] := Finalresult.X;

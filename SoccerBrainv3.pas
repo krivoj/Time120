@@ -303,6 +303,7 @@ TSoccerPlayer = class
     procedure SetHeading( v: ShortInt );
 
     function GetMarketValue: Integer;
+    function GetActiveAttrTalValue: Integer;
   protected
   public
     itag: Integer;
@@ -453,6 +454,7 @@ TSoccerPlayer = class
     property Cells : Tpoint read GetCells write SetCells;
     property DefaultCells : Tpoint read GetDefaultCells write SetDefaultCells;
     property MarketValue : Integer read GetMarketValue;
+    property ActiveAttrTalValue : Integer read GetActiveAttrTalValue;
     property field : byte read Getfield;
     property ZoneRole: char read GetZoneRole;
 
@@ -2407,6 +2409,21 @@ begin
 
 end;
 
+function TSoccerPlayer.GetActiveAttrTalValue: Integer;
+var
+  value: Integer;
+begin
+// il brain ha già caricato in memoria eventuali buff casalinghi o di morale.
+    Value :=  Speed + Defense + Passing + BallControl + Shot + Heading ;
+
+  if TalentID1 <> 0 then Value := Value + 6 ; //se c'è un talento, anche goalkeeper    6 e 12 valori fissi al momento
+
+  if TalentID2 <> 0 then Value :=  Value + 12; //se c'è un talento, anche goalkeeper
+  Result := value;
+
+
+
+end;
 procedure TSoccerPlayer.resetALL;
 begin
   BonusFinishing := 0;
