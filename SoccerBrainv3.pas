@@ -2100,7 +2100,7 @@ begin
   brain := aBrain;
   PathBall:= dse_pathplanner.TPath.Create ;
   Player := nil;
-  CellX := 6;
+  CellX := 5;
   Celly := 3;
 end;
 destructor TBall.Destroy;
@@ -10640,7 +10640,7 @@ begin
 
   seconds := (fmilliseconds div 1000);
   MMbraindata.Write( @seconds, sizeof(SmallInt) ); // può andare in negativo oltre 127 o -127 no ShortInt . è millimilliseconds div 1000
-  MMbraindata.Write( @teamturn, sizeof(SmallInt) );    // a chi sta giocare
+  MMbraindata.Write( @teamturn, sizeof(byte) );    // a chi sta giocare
   MMbraindata.Write( @FTeamMovesLeft, sizeof(ShortInt) );   // mosse rimastye
   MMbraindata.Write( @GameStarted, sizeof(byte) );          // il game è attivo
   MMbraindata.Write( @FlagEndGame, sizeof(byte) );          // oltre i 120 turni, in fase di 'recupero'

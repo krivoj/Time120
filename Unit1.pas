@@ -25,10 +25,11 @@
 
     i portieri devono gaudagnare meno xp, anche nel brain. 8 a partita sono troppi. oppure invece di 120 arrivo a 180 punti xp solo per GK
 
+
+
     Newseason devo blicnaire bene absGap ora -10 +10  .elimianre totgap etc...
     verificare mC001D5l n l .120.  in debug
 
-    +4 buff corsa ma solo pos
     Newseason fare i rewards in denaro
 
     face paint shop pro 9 blackpencil 80 30  ufficiale + molte faces
@@ -94,6 +95,8 @@
 
   }
   { TODO -csviluppo :
+    +4 buff corsa ma solo pos
+
     in alcune function uso MM e buf3 quando ibuf3 non tratta stringhe quindi posso evitare. Provare a lavorare solo con stream. mm.memory + cur
     campi bagnati -passaggio e controllo di palla, caldo + fatica, freddo + infortuni
      v.2 scommesse o investire su altre squadre
@@ -17138,6 +17141,7 @@ begin
       end
       else begin   // se Non è la mia partita
 others:
+Continue;
         if Rndgenerate (100) <= CREATEFORMATION_FORCEYOUNG then
           fY := True
           ELSE fY:= FALSE;
