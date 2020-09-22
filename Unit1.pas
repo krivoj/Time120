@@ -23,6 +23,11 @@
   }
   { TODO -ctodo prima del rilascio patreon :
 
+    quando scelgo la barriera deve sparire sotto lo sprite che gira. sprite da migliorare
+    VERIFICARE rivedere concetto di roll sul propri valore.
+    BUG quando devo schierare la barriera
+    BUG LOP dell'ìavversario strana animazione  - problemi vari di posizioonamento - il brain è diverso dall'animazione ma sol oquando gioca la ai che
+    forse va troppo in fretta
     i portieri devono gaudagnare meno xp, anche nel brain. 8 a partita sono troppi. oppure invece di 120 arrivo a 180 punti xp solo per GK
 
 
@@ -33,7 +38,7 @@
     Newseason fare i rewards in denaro
 
     face paint shop pro 9 blackpencil 80 30  ufficiale + molte faces
-
+    talento +1 passaggi adesso col nuovo sistema di roll ha senso.ma anche prima, forse c'è già
 
     help x buffdm,f corner frekick 2,3 penalty    Corner.Kick, crossing stay, free
     help compare se frekick compare altro ? questionmark
@@ -97,6 +102,7 @@
   { TODO -csviluppo :
     +4 buff corsa ma solo pos
 
+    talento intuito: dopo lop ballcontrol cella vuota --> +1 +2 a movimento verso palla
     in alcune function uso MM e buf3 quando ibuf3 non tratta stringhe quindi posso evitare. Provare a lavorare solo con stream. mm.memory + cur
     campi bagnati -passaggio e controllo di palla, caldo + fatica, freddo + infortuni
      v.2 scommesse o investire su altre squadre
@@ -424,6 +430,8 @@ type
     Button12: TButton;
     Button13: TButton;
     Button14: TButton;
+    CheckBox10: TCheckBox;
+    Button15: TButton;
 
 // General
     function ChangeResolution(XResolution, YResolution, Depth: DWORD): boolean;
@@ -572,6 +580,8 @@ type
     procedure Button12Click(Sender: TObject);
     procedure Button13Click(Sender: TObject);
     procedure Button14Click(Sender: TObject);
+    procedure CheckBox10Click(Sender: TObject);
+    procedure Button15Click(Sender: TObject);
 
   private
     { Private declarations }
@@ -771,7 +781,7 @@ end;
 
 var
   Form1: TForm1;
-
+  debug_OnlyMyGame: Boolean;
 
   xpNeedTal: array [1..NUM_TALENT] of integer;  // come i talenti sul db game.talents. xp necessaria per trylevelup del talento
   MutexAnimation : Cardinal;
@@ -1243,8 +1253,6 @@ begin
 end;
 
 procedure TForm1.Button13Click(Sender: TObject);
-var
-  aSprite: SE_Sprite;
 begin
   ShowNewSeason ( ActiveSeason + 1 ) ;
 end;
@@ -1274,6 +1282,11 @@ begin
   end;
   {$endif tools}
 
+end;
+
+procedure TForm1.Button15Click(Sender: TObject);
+begin
+//  SpriteReset;
 end;
 
 procedure TForm1.Button1Click(Sender: TObject);
@@ -1703,6 +1716,7 @@ var
   ini : TIniFile;
 begin
   BuildString := 'Build: ' + kfVersionInfo;
+  debug_OnlyMyGame := False;
 
   oldWidth := Screen.Width;
   oldHeight := Screen.Height;
@@ -2299,7 +2313,7 @@ procedure TForm1.LoadUniform;
 var
   i,BaseX,BaseY: Integer;
   bmp: SE_Bitmap;
-  aSprite, aBtnSprite,aBarSprite: SE_Sprite;
+  aSprite, aBtnSprite: SE_Sprite;
   Const FontSize = 14;
 begin
   aSprite:=SE_Uniform.CreateSprite(dir_interface + 'bguniform.bmp' ,'frameback',1,1,1000,300,0 ,false,1 );
@@ -3055,7 +3069,6 @@ procedure TForm1.LoadSpectator;
 var
   bmp: SE_Bitmap;
   aBtnSprite: SE_Sprite;
-  aSpriteLabel : SE_SpriteLabel;
 const FontSize = 14;
 begin
 // menu button
@@ -5432,7 +5445,7 @@ begin
       //else if GameMode = pve then
       //  pveSynchBrain;
 
-      SpriteReset;
+     // SpriteReset;
      // UpdateSubSprites;
       incMoveAllProcessed [CurrentIncMove] := True; // caricato e completamente eseguito
     //    inc ( CurrentIncMove );
@@ -5517,6 +5530,11 @@ begin
   //  CreateBaseAttribute (  aGK.CellX,aGK.CellY, aGK.Defense) ;
   end;
 
+end;
+
+procedure TForm1.CheckBox10Click(Sender: TObject);
+begin
+  debug_OnlyMyGame := not CheckBox1.Checked;
 end;
 
 procedure TForm1.CheckBox2Click(Sender: TObject);
@@ -5970,7 +5988,7 @@ var
   R: Trect;
 begin
 
-  SE_LifeSpan.RemoveAllSprites;
+  //SE_LifeSpan.RemoveAllSprites;
   HideFP_Friendly_ALL;
   R.Left := 0;
   R.Top := 0;
@@ -6711,10 +6729,6 @@ begin
       Cur := Cur + 2 ;
       nMatchesLeft := PWORD(@buf3[incMove][ cur ])^;
       Cur := Cur + 2 ;
-    end
-    else begin
-      nMatchesPlayed := 0;
-      nMatchesLeft := 0;
     end;
 
     aAge :=  Ord( buf3[incMove][ cur ]);
@@ -10020,8 +10034,9 @@ begin
   end
   else if ts[0] = 'cl_red' then begin
 
-  //  aPlayer:= MyBrain.GetSoccerPlayer3(ts[1]);
-    aFieldPointSpr := SE_FieldPoints.FindSprite( ts[2]+'.'+ts[3] );
+    aPlayer:= MyBrain.GetSoccerPlayer3(ts[1]);
+  //  aFieldPointSpr := SE_FieldPoints.FindSprite( ts[2]+'.'+ts[3] );
+    aFieldPointSpr := SE_FieldPoints.FindSprite(  IntTostr(aPlayer.CellX) +'.' +  IntTostr(aPlayer.CellY)  );
     seSprite:= SE_LifeSpan.CreateSprite(dir_interface + 'faulred.bmp' ,'fault',1,1,10,aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y,true,1  );
     seSprite.LifeSpan := ShowFaultLifeSpan;
     CreateMovingLifeSpan (aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y, 0,-80, 3, Translate('lbl_RedCard')+'!',600,12, [], clRed, clblack, true) ;
@@ -10030,22 +10045,26 @@ begin
   end
   else if ts[0] = 'cl_injured' then begin
 
-    aFieldPointSpr := SE_FieldPoints.FindSprite( ts[2]+'.'+ts[3] );
+    aPlayer:= MyBrain.GetSoccerPlayer3(ts[1]);
+//    aFieldPointSpr := SE_FieldPoints.FindSprite( ts[2]+'.'+ts[3] );
+    aFieldPointSpr := SE_FieldPoints.FindSprite(  IntTostr(aPlayer.CellX) +'.' +  IntTostr(aPlayer.CellY)  );
     CreateMovingLifeSpan (aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y, 0,-80, 3, Translate('lbl_Injured')+'!',600,12, [], clPurple, clblack, true) ;
-    i_injured(ts[1]);
+   // i_injured(ts[1]);
   end
   else if ts[0] = 'cl_yellow' then begin    // ids cellx celly
-  //  aPlayer:= MyBrain.GetSoccerPlayer3(ts[1]);
-    aFieldPointSpr := SE_FieldPoints.FindSprite( ts[2]+'.'+ts[3] );
+    aPlayer:= MyBrain.GetSoccerPlayer3(ts[1]);
+//    aFieldPointSpr := SE_FieldPoints.FindSprite( ts[2]+'.'+ts[3] );
+    aFieldPointSpr := SE_FieldPoints.FindSprite(  IntTostr(aPlayer.CellX) +'.' +  IntTostr(aPlayer.CellY)  );
     seSprite:= SE_LifeSpan.CreateSprite(dir_interface + 'faulyellow.bmp' ,'fault',1,1,10,aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y,true ,1 );
     seSprite.LifeSpan := ShowFaultLifeSpan;
     CreateMovingLifeSpan (aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y, 0,-80, 3, Translate('lbl_YellowCard')+'!',600,12, [], clYellow, clblack, true) ;
-    i_Yellow(ts[1]);
+  //  i_Yellow(ts[1]);
   end
   else if ts[0] = 'cl_yellowred' then begin
     // qui doppio cartellino sprite
-  //  aPlayer:= MyBrain.GetSoccerPlayer3(ts[1]);
-    aFieldPointSpr := SE_FieldPoints.FindSprite( ts[2]+'.'+ts[3] );
+    aPlayer:= MyBrain.GetSoccerPlayer3(ts[1]);
+//    aFieldPointSpr := SE_FieldPoints.FindSprite( ts[2]+'.'+ts[3] );
+    aFieldPointSpr := SE_FieldPoints.FindSprite(  IntTostr(aPlayer.CellX) +'.' +  IntTostr(aPlayer.CellY)  );
     seSprite:= SE_LifeSpan.CreateSprite(dir_interface + 'faulyellowred.bmp' ,'fault',1,1,10,aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y,true ,1 );
     seSprite.LifeSpan := ShowFaultLifeSpan;
     CreateMovingLifeSpan (aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y-20, 0,-80, 3, Translate('lbl_YellowCard')+'!',600,12, [], clYellow, clblack, true) ;
@@ -10218,6 +10237,9 @@ begin
 
     srcCellX :=  StrToInt(Ts[2]);
     srcCellY :=  StrToInt(Ts[3]);
+    dstCellX :=  StrToInt(Ts[4]);
+    dstCellY :=  StrToInt(Ts[5]);
+
     if srcCellY > dstCellY then halfY := +32
     else if srcCellY < dstCellY then halfY := -32
     else halfY :=0;
@@ -10371,10 +10393,6 @@ begin
     //1 milliseconds
     AnimationScript.waitMovingPlayers := true;
 
-  end
-  else if ts[0] = 'cl_destroy' then begin
-//    AnimationScript.Reset ;
-    SpriteReset ;
   end
   else if (ts[0]= 'cl_pos.gol') or (ts[0]= 'cl_prs.gol') or (ts[0]= 'cl_corner.gol') or (ts[0]= 'cl_cro2.gol') or (ts[0]= 'cl_cross.gol') or (ts[0]= 'cl_lop.gol') then begin
     //1 Speed
@@ -10786,7 +10804,6 @@ procedure Tform1.HHFP_Friendly ( aPlayer: TSoccerPlayer; cells: char );
 var
   i,Y,CellX: integer;
   aFieldPointSpr : SE_Sprite;
-  bmp: SE_Bitmap;
   aPlayer2: TSoccerPlayer;
 begin
 
@@ -10902,7 +10919,6 @@ begin
     end;
   end;
 
-  bmp.Free;
 end;
 procedure Tform1.HideFP_Special;
 var
@@ -10960,7 +10976,7 @@ var
   aList : TObjectList<TSoccerPlayer>;
   aSprite: SE_Sprite;
   aSpriteLabel : SE_SpriteLabel;
-  bmp, bmpQuestion :SE_Bitmap;
+  bmp :SE_Bitmap;
   label LoadGridSkill,PreloadGridSkill;
 procedure setupBMp (bmp:TBitmap; aColor: Tcolor);
 begin
@@ -11160,7 +11176,7 @@ LoadGridSkill:
 //  BaseY := 764;
   BaseX := 1440 div 2;//720
 
-  TotalWidth := 32 * SelectedPlayer.ActiveSkills.count;
+//  TotalWidth := 32 * SelectedPlayer.ActiveSkills.count;
 //  BaseX := BaseX  - (TotalWidth Div 2) + 16;
 
 
@@ -11550,11 +11566,10 @@ begin
 end;
 procedure TForm1.ScreenPreMatch_SE_PreMatch ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
 var
-  i,C,FinishedCount,BmpH,M: Integer;
+  i,C,BmpH,M: Integer;
   bmp:SE_Bitmap;
   aSpriteLabel : SE_SpriteLabel;
   aSprite: SE_Sprite;
-  astring: string;
   const RowH = 22;
   label retry;
 begin
@@ -11650,11 +11665,10 @@ retry:
 
       end;
 
-      FinishedCount := 0;
+//      FinishedCount := 0;
       for I := lstbrain.Count -1 downto 0 do begin
-        if lstBrain [i].Finished = true then
-          inc ( FinishedCount )
-          else goto retry;
+        if not lstBrain [i].Finished = true then
+          goto retry;
       end;
 //      if FinishedCount < lstbrain.Count then
 //        goto retry;
@@ -17062,7 +17076,7 @@ end;
 procedure TForm1.StartAllMatches ( Gender:char; Season, Country, Round: integer; simulation: boolean );
 var
   ini : TiniFile;
-  i,D,M: integer;
+  D,M: integer;
   ts2 : TStringlist;
   Filename,aCommaText: string; // per motivi di lunghezza codice
   aBrain: TSoccerBrain;
@@ -17141,7 +17155,8 @@ begin
       end
       else begin   // se Non è la mia partita
 others:
-Continue;
+if debug_OnlyMyGame then
+Continue; //DEBUG solo il mio match
         if Rndgenerate (100) <= CREATEFORMATION_FORCEYOUNG then
           fY := True
           ELSE fY:= FALSE;
@@ -17683,7 +17698,7 @@ end;
 procedure TForm1.pveFinalizeBrain ( aBrain : TSoccerBrain ) ;
 var
   lstPlayersDB: TObjectList<TSoccerPlayer>;
-  T,p,ptg,I,NewStamina,NewMorale,aRnd,indexTal,LastInsertId,SubTractLevel: Integer;
+  T,p,ptg,I,NewMorale,aRnd,indexTal,LastInsertId,SubTractLevel: Integer;
   aPlayerDB,aPlayerThisGame, aPlayer : TSoccerPlayer;
   aTeamRecord: TTeam;
   Gkcheck: boolean;
@@ -17925,7 +17940,7 @@ dev:
         aPlayer:= TSoccerPlayer.create(0,aBrain.Score.TeamGuid[T],0,IntToStr(LastInsertId+1),'','','',0,0);
 
 
-        pveCreateRandomPlayer (abrain.gender,  aBrain.Country, 32, mfaces[i],ffaces[i], SubTractLevel, true, tsSurnames, aPlayer );
+        pveCreateRandomPlayer (abrain.gender,  aBrain.Country, 32, mfaces[aBrain.Country],ffaces[aBrain.Country], SubTractLevel, true, tsSurnames, aPlayer );
         LastInsertId := LastInsertId + 1;
         aPlayer.Ids := IntToStr(LastInsertId);
         aPlayer.GuidTeam := aBrain.Score.TeamGuid[T];
@@ -17936,9 +17951,10 @@ dev:
 
       //Gestione YoungQueue
       if (aTeamRecord.YoungQueue > 0) and (lstPlayersDB.Count < 22) then begin // se mancava il GK l'ho inserito sopra e potrebbe essere a 22
+        LastInsertId := ini.ReadInteger( 'setup','LastInsertId', 0 ); // servirà alla nascita di nuovi player . è condiviso tra m e f
 
         for I := 0 to 1 do begin
-          pveCreateRandomPlayer (abrain.gender,  aBrain.Country, 0, mfaces[i],ffaces[i], SubTractLevel, true, tsSurnames, aPlayer );
+          pveCreateRandomPlayer (abrain.gender,  aBrain.Country, 0, mfaces[aBrain.Country],ffaces[aBrain.Country], SubTractLevel, true, tsSurnames, aPlayer );
           LastInsertId := LastInsertId + 1;
           aPlayer.Ids := IntToStr(LastInsertId);
           aPlayer.GuidTeam := aBrain.Score.TeamGuid[T];
@@ -18223,7 +18239,7 @@ end;
 procedure TForm1.CompleteAllDivisions ( Season, FromRound, Country : Integer );   // simile all'inizio a startallmatches ma cicla anche per e m e f
 var
   ini : TiniFile;
-  i,D,M,G,R: integer;
+  D,M,G,R: integer;
   ts2 : TStringlist;
   Filename,aCommaText: string; // per motivi di lunghezza codice
   fy : Boolean;

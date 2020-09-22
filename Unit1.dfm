@@ -23,7 +23,7 @@ object Form1: TForm1
   TextHeight = 13
   object Panel1: TPanel
     Left = 1407
-    Top = 15
+    Top = 0
     Width = 258
     Height = 900
     BevelOuter = bvNone
@@ -338,6 +338,24 @@ object Form1: TForm1
       Caption = 'lstSoccer'
       TabOrder = 32
       OnClick = Button14Click
+    end
+    object CheckBox10: TCheckBox
+      Left = 9
+      Top = 880
+      Width = 104
+      Height = 17
+      Caption = 'onlymygame'
+      TabOrder = 33
+      OnClick = CheckBox10Click
+    end
+    object Button15: TButton
+      Left = 79
+      Top = 788
+      Width = 75
+      Height = 25
+      Caption = 'spritereset'
+      TabOrder = 34
+      OnClick = Button15Click
     end
   end
   object PanelMain: SE_Panel
