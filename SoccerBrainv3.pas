@@ -9631,6 +9631,9 @@ Normalpressing:
        // se ha la palla, la palla si sposta con il player
 
        if aPlayer.HasBall then begin //aPlayer.HasBall then begin   se il player AVEVA la palla
+          TsScript[incMove].add ('sc_ball.move,'+ IntTostr(Ball.CellX)+','+IntTostr(Ball.CellY) +','+
+                                            IntTostr(aPlayer.MovePath [i].X)+','+IntTostr(aPlayer.MovePath [i].Y)+',0,0' );
+
           TsScript[incMove].add ('sc_player.move,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
           IntTostr(aPlayer.MovePath [i].X)+','+ IntTostr(aPlayer.MovePath [i].Y)  ) ;
 
@@ -9638,8 +9641,6 @@ Normalpressing:
           aPlayer.CellY :=  aPlayer.MovePath[i].Y;
           tsSpeaker.Add(aPlayer.surname + ' porta palla' );
 
-          TsScript[incMove].add ('sc_ball.move,'+ IntTostr(Ball.CellX)+','+IntTostr(Ball.CellY) +','+
-                                            IntTostr(aPlayer.MovePath [i].X)+','+IntTostr(aPlayer.MovePath [i].Y)+',0,0' );
 
           Ball.Cells := aPlayer.Cells;// aPath [i];
 

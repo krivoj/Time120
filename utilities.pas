@@ -5336,7 +5336,7 @@ skipsub:
   else if  ( absGap > 10) then begin // vittoria in casa
   aRnd :=  RndGenerate(100);
     case aRnd of
-      1..80: begin
+      1..78: begin
         if lst_W.Count = 0 then begin
           Finalresult.X := RndGenerateRange(2,4);
           Finalresult.Y := RndGenerate0(Finalresult.X-1);
@@ -5346,7 +5346,7 @@ skipsub:
           finalResult := DeleteFromResults ( aRnd, lst_W);
         end;
       end;
-      81..90: begin
+      79..90: begin
         if lst_N.Count = 0 then begin
           Finalresult.X := RndGenerateRange(0,4);
           Finalresult.Y := Finalresult.X;

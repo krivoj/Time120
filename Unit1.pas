@@ -23,22 +23,18 @@
   }
   { TODO -ctodo prima del rilascio patreon :
 
-    quando scelgo la barriera deve sparire sotto lo sprite che gira. sprite da migliorare
-    VERIFICARE rivedere concetto di roll sul propri valore.
+    sui freekick 3000 bug e anche di nuovo sul lastprocessed
+    il bug è qui, non fa l'ultma aniomazione  Rimane il problema dei subsprites e poi si pianta su freekick 2 e mi dice MOVE
+     quando scelgo la barriera deve sparire sotto lo sprite che gira. sprite da migliorare
     BUG quando devo schierare la barriera
-    BUG LOP dell'ìavversario strana animazione  - problemi vari di posizioonamento - il brain è diverso dall'animazione ma sol oquando gioca la ai che
-    forse va troppo in fretta
+
     i portieri devono gaudagnare meno xp, anche nel brain. 8 a partita sono troppi. oppure invece di 120 arrivo a 180 punti xp solo per GK
 
-
-
-    Newseason devo blicnaire bene absGap ora -10 +10  .elimianre totgap etc...
-    verificare mC001D5l n l .120.  in debug
 
     Newseason fare i rewards in denaro
 
     face paint shop pro 9 blackpencil 80 30  ufficiale + molte faces
-    talento +1 passaggi adesso col nuovo sistema di roll ha senso.ma anche prima, forse c'è già
+
 
     help x buffdm,f corner frekick 2,3 penalty    Corner.Kick, crossing stay, free
     help compare se frekick compare altro ? questionmark
@@ -101,7 +97,7 @@
   }
   { TODO -csviluppo :
     +4 buff corsa ma solo pos
-
+     talento +1 passaggi adesso col nuovo sistema di roll ha senso.ma anche prima, forse c'è già
     talento intuito: dopo lop ballcontrol cella vuota --> +1 +2 a movimento verso palla
     in alcune function uso MM e buf3 quando ibuf3 non tratta stringhe quindi posso evitare. Provare a lavorare solo con stream. mm.memory + cur
     campi bagnati -passaggio e controllo di palla, caldo + fatica, freddo + infortuni
@@ -643,6 +639,7 @@ type
     procedure PrepareAnim;
     procedure SpriteReset ;
     procedure UpdateSubSprites;
+    procedure RemoveSubMainskill;
     procedure MoveInReserves ( aPlayer: TSoccerPlayer );             // mette uno sprite player nelle riserve
     procedure MoveInField ( aPlayer: TSoccerPlayer );                // mette uno sprite player in campo
 
@@ -651,7 +648,7 @@ type
 
     procedure SelectedPlayerPopupSkill ( CellX, CellY: integer);
     procedure ShowSingleSkill;
-
+    procedure ShowMultipleSkills;
     procedure HideHH_Skill ;
     procedure HH_Skill ( SkillMouseMove: string );
 
@@ -872,6 +869,7 @@ var
   LastTcpincMove,CurrentIncMove: byte;
   incMoveAllProcessed : array [0..255] of boolean;
   incMoveReadTcp : array [0..255] of boolean;
+  LastIncProcessed: Boolean;
  // ScriptProcessed : array [0..255] of boolean;
 
   TSUniforms: array [0..1] of Tstringlist;
@@ -3366,7 +3364,8 @@ begin
 
     end;
 
-    ShowSingleSkill;
+    //ShowSingleSkill;
+    ShowMultipleSkills;
 
   end;
 
@@ -3990,6 +3989,7 @@ end;
 procedure TForm1.HideStadiumAndPlayers;
 begin
   SE_players.Visible := False;
+  SE_Circles.Visible := False;
   SE_MainInterface.Visible := False;
   SE_FieldPoints.HiddenSpritesMouseMove := false;
   SE_FieldPointsReserve.HiddenSpritesMouseMove := false;
@@ -5357,27 +5357,27 @@ begin
       end
       else begin
         Application.ProcessMessages ;
-        ReleaseMutex ( MutexAnimation );
+       // ReleaseMutex ( MutexAnimation );
         exit;
       end;
     end;
 
-    if ( SE_ball.IsAnySpriteMoving  ) then begin   // la palla si sta muovendo
-      se_ball.ProcessSprites( mainThread.Interval );
+    if ( SE_ball.IsAnySpriteMoving  ) or  (se_players.IsAnySpriteMoving) then begin   // se la palla si sta muovendo o i player  si stanno muovendo
+    //  se_ball.ProcessSprites( mainThread.Interval );
       se_Theater1.thrdAnimate.OnTimer (se_Theater1.thrdAnimate);
-      Application.ProcessMessages ;
-      ReleaseMutex ( MutexAnimation );
+     // Application.ProcessMessages ;
+      //ReleaseMutex ( MutexAnimation );
       exit;
     end;
 
 
-    if (AnimationScript.waitMovingPlayers) then begin // se devo apsettare i players
+    if (AnimationScript.waitMovingPlayers) then begin // se devo apsettare i players forzatamente
 
        if se_players.IsAnySpriteMoving  then  begin
-          se_ball.ProcessSprites( mainThread.Interval );
+       //   se_players.ProcessSprites( mainThread.Interval );
           se_Theater1.thrdAnimate.OnTimer (se_Theater1.thrdAnimate);
           Application.ProcessMessages ;
-          ReleaseMutex ( MutexAnimation );
+       //   ReleaseMutex ( MutexAnimation );
           exit;
        end;
     end;
@@ -5385,9 +5385,9 @@ begin
 
     if AnimationScript.Index <= AnimationScript.Ts.Count -1  then begin
 
-      if AnimationScript.Index = 0  then
+      if AnimationScript.Index = 0  then      // aspetto che la palla si fermi
       if se_ball.IsAnySpriteMoving then begin
-       ReleaseMutex ( MutexAnimation );
+      // ReleaseMutex ( MutexAnimation );
        exit;
       end;
 
@@ -5409,8 +5409,13 @@ begin
       anim (AnimationScript.Ts[ AnimationScript.Index ]); // muove gli sprite
       AnimationScript.Index := AnimationScript.Index + 1;
 
-      if AnimationScript.Index >=  AnimationScript.Ts.Count -1 then
+      if AnimationScript.Index >=  AnimationScript.Ts.Count -1 then begin // attendo la fine EFFETTIVA di ANIM
+        while ( SE_ball.IsAnySpriteMoving  ) or  (se_players.IsAnySpriteMoving) do begin
+          se_Theater1.thrdAnimate.OnTimer (se_Theater1.thrdAnimate);
+         // Application.ProcessMessages ;
+        end;
         incMoveAllProcessed [CurrentIncMove] := true;
+      end;
 
     end
     else begin
@@ -5419,7 +5424,7 @@ begin
     // qui ho terminato l'animazione ma alcuni sprite potrebbero ancora muoversi in questo momento
 
       while ( SE_ball.IsAnySpriteMoving  ) or (SE_players.IsAnySpriteMoving ) do begin
-        Application.ProcessMessages ;
+      //  Application.ProcessMessages ;
         se_Theater1.thrdAnimate.OnTimer (se_Theater1.thrdAnimate);
       end;
        ReleaseMutex ( MutexAnimation );
@@ -5445,14 +5450,15 @@ begin
       //else if GameMode = pve then
       //  pveSynchBrain;
 
-     // SpriteReset;
+    // SpriteReset; // non va bene, sincronizza con l'ultimo brain, non con quello che sta elaborando
+
      // UpdateSubSprites;
       incMoveAllProcessed [CurrentIncMove] := True; // caricato e completamente eseguito
     //    inc ( CurrentIncMove );
     end;
 
   end;
-  ReleaseMutex(MutexAnimation);
+  //ReleaseMutex(MutexAnimation);
 
 
 end;
@@ -5909,8 +5915,9 @@ begin
     Mybrain.Ball.SE_Sprite.AnimationInterval := ANIMATION_BALL_LOW ;
 
   refresh_teamnames;
+//  se_Theater1.thrdAnimate.OnTimer (se_Theater1.thrdAnimate);
 
-  // SE_players.ProcessSprites(2000);
+ // SE_players.ProcessSprites(2000);
   // SE_Ball.ProcessSprites(2000);
 
 end;
@@ -7631,7 +7638,7 @@ begin
   if MyBrain.Score.AI[MyBrain.TeamTurn] then begin
     WaitForSingleObject(MutexAnimation,INFINITE);
     AllBrainThink;
-    ReleaseMutex(MutexAnimation);
+    //ReleaseMutex(MutexAnimation);
 
   end;
 
@@ -9640,6 +9647,19 @@ Retry:
 
 end;
 
+procedure TForm1.RemoveSubMainskill;
+var
+  i: Integer;
+  aSubSprite: SE_SubSprite;
+begin
+
+   for I := se_Players.SpriteCount -1 downto 0 do begin
+    aSubSprite:= Se_Players.Sprites[i].FindSubSprite('mainskill');
+    if aSubSprite <> nil then
+      Se_Players.Sprites[i].SubSprites.Remove(aSubSprite);
+   end;
+
+end;
 
 
 procedure TForm1.UpdateSubSprites;
@@ -9708,6 +9728,41 @@ begin
     for P:= 0 to MyBrain.lstSoccerReserve.Count -1 do begin
 
         aPlayer:= MyBrain.lstSoccerReserve [P];
+        aPlayer.SE_Sprite.Labels.Clear ;
+//        aPlayer.SE_Sprite.RemoveAllSubSprites;
+        aPlayer.SE_Sprite.DeleteSubSprite('star' );
+        aPlayer.SE_Sprite.DeleteSubSprite('disqualified' );
+        aPlayer.SE_Sprite.DeleteSubSprite('injured' );
+        aPlayer.SE_Sprite.DeleteSubSprite('yellow' );
+        aPlayer.SE_Sprite.DeleteSubSprite('inout' );
+        aPlayer.SE_Sprite.DeleteSubSprite('buffd' );
+        aPlayer.SE_Sprite.DeleteSubSprite('buffm' );
+        aPlayer.SE_Sprite.DeleteSubSprite('bufff' );
+        aPlayer.SE_Sprite.DeleteSubSprite('stay' );    // lascio FACE
+        aPlayer.SE_Sprite.DeleteSubSprite('free' );    // lascio FACE
+//        aPlayer.SE_Sprite.DeleteSubSprite('face' );    // lascio FACE
+
+       if (aPlayer.RedCard > 0) or (aPlayer.Yellowcard = 2)
+       or (aPlayer.disqualified > 0)
+       then begin
+          SeSprite := se_SubSprite.create ( dir_interface + 'disqualified.bmp','disqualified', 0,0,true,true);
+          aPlayer.SE_Sprite.SubSprites.Add(SeSprite);
+       end
+       else if (aPlayer.Injured  > 0)  then begin
+          SeSprite := se_SubSprite.create ( dir_interface + 'injured.bmp','injured', 0,0,true,true);
+          aPlayer.SE_Sprite.SubSprites.Add(SeSprite);
+       end
+       else if (aPlayer.PlayerOut )  then begin
+          SeSprite := se_SubSprite.create ( dir_interface + 'inout.bmp','inout', 0,0,true,true);
+          aPlayer.SE_Sprite.SubSprites.Add(SeSprite);
+       end;
+
+
+    end;
+
+    for P:= 0 to MyBrain.lstSoccerGameOver.Count -1 do begin
+
+        aPlayer:= MyBrain.lstSoccerGameOver [P];
         aPlayer.SE_Sprite.Labels.Clear ;
 //        aPlayer.SE_Sprite.RemoveAllSubSprites;
         aPlayer.SE_Sprite.DeleteSubSprite('star' );
@@ -10971,7 +11026,7 @@ begin
 end;
 procedure Tform1.SelectedPlayerPopupSkill ( CellX, CellY: integer);
 var
-  BaseY,BaseX,TotalWidth: integer;
+  I,BaseY,BaseX,TotalWidth: integer;
   tmp: integer;
   aList : TObjectList<TSoccerPlayer>;
   aSprite: SE_Sprite;
@@ -11169,33 +11224,17 @@ LoadGridSkill:
   if SelectedPlayer.ActiveSkills.count = 0 then
      Exit;
 
-  // vecchia versione
-//  BaseY := 0;
-  SE_Skills.RemoveAllSprites;
-  SE_Skills.ProcessSprites(2000);
-//  BaseY := 764;
-  BaseX := 1440 div 2;//720
-
-//  TotalWidth := 32 * SelectedPlayer.ActiveSkills.count;
-//  BaseX := BaseX  - (TotalWidth Div 2) + 16;
-
-
-//  for I := 0 to SelectedPlayer.ActiveSkills.count -1 do begin
-
-//    aSprite := SE_Skills.CreateSprite ( dir_skill + SelectedPlayer.ActiveSkills.Names [i]+'.bmp',SelectedPlayer.ActiveSkills.Names [i],1,1,1000,
-//                BaseX,BaseY,true,1); // IDS contiene il nome della skill originale (English)
-
-//    BaseX := BaseX + 32;//26
-//  end;
-
   {$IFDEF  tools}
     SelectedPlayer.ActiveSkills.Add('setplayer=0');
 //    aSprite := SE_Skills.CreateSprite (  dir_skill + 'setplayer.bmp','setplayer',1,1,1000, BaseX,BaseY,true,1);
 //    aSprite.sTag := 'setplayer';
   {$endif}
 
-  // la skill
-  Index_WheelSkill := 0;
+  SE_Skills.RemoveAllSprites;
+  SE_Skills.ProcessSprites(2000);
+
+  // la skill sul player
+  {Index_WheelSkill := 0;
   aSprite := SE_Skills.CreateSprite ( dir_skill + SelectedPlayer.ActiveSkills.Names [Index_WheelSkill]+'.bmp','wheelskill',1,1,1000,
    SelectedPlayer.se_sprite.Position.X  , SelectedPlayer.se_sprite.Position.Y+ 16, true,10 ) ;
   aSprite.sTag :=  SelectedPlayer.ActiveSkills.Names [Index_WheelSkill];
@@ -11209,19 +11248,20 @@ LoadGridSkill:
   bmp.Free;
 
   aSpriteLabel := SE_SpriteLabel.create( -1,0,'Calibri',clWhite-1,clBlack,12, Capitalize(Translate( 'skill_' + SelectedPlayer.ActiveSkills.Names[Index_WheelSkill] )  ) ,True  ,1, dt_center);
-  aSprite.Labels.add (aSpriteLabel);
+  aSprite.Labels.add (aSpriteLabel); }
 
 
   // la skill name in basso nel campo + l'help di fianco
-  ShowSingleSkill;
+//  ShowSingleSkill;
 
-
+  //la lista di tutte le skill disponibili in basso + l'help di fianco
+  ShowMultipleSkills;
 
   SE_Skills.Visible := True;
 
 
 end;
-procedure Tform1.ShowSingleSkill ( );
+procedure Tform1.ShowSingleSkill;
 var
   h: integer;
   aSprite: SE_Sprite;
@@ -11272,12 +11312,87 @@ begin
   // qui la concatenazione del nome contine la stringa in inglese così per l'help diventa es. btnhelp_short.passing.txt
   bmpQuestion := SE_Bitmap.Create ( dir_interface + 'question.bmp');
   aSprite := SE_Skills.CreateSprite(bmpQuestion.Bitmap ,'btnhelp_' + SelectedPlayer.ActiveSkills.Names[Index_WheelSkill],1,1,1000,
-  aSprite.Position.X  + R.Right , + 764, True, 1201);
+  aSprite.Position.X  + R.Right , 764, True, 1201);
   //                         SE_Theater1.Width div 2 + (aSprite.BMP.Width div 2) - (bmpQuestion.Width div 2) ,764 ,true,1201 );
   bmpQuestion.free;
   aSprite.sTag := 'btnhelp_' + SelectedPlayer.ActiveSkills.Names[Index_WheelSkill]; // per il mousemove
 
 end;
+
+procedure Tform1.ShowMultipleSkills;
+var
+  i,w,h: integer;
+  aSprite: SE_Sprite;
+  aSpriteLabel : SE_SpriteLabel;
+  bmp, bmpQuestion :SE_Bitmap;
+  CurrentX: Integer;
+  MyText: string;
+  const BaseY = 770;
+begin
+
+{  aSprite := SE_Skills.FindSprite('wheelskill');
+  aSprite.ChangeBitmap( dir_skill + SelectedPlayer.ActiveSkills.Names [Index_WheelSkill] + '.bmp',1,1,1000 );
+  aSprite.sTag :=  SelectedPlayer.ActiveSkills.Names [Index_WheelSkill];
+ // Memo1.Lines.Add( 'guid ' + aSprite.guid );
+//  Memo1.Lines.Add( 'stag ' +  aSprite.sTag );
+
+  aSprite := SE_Skills.FindSprite('wheelskillname');
+  aSprite.Labels[0].lText:= Capitalize(Translate( 'skill_' + SelectedPlayer.ActiveSkills.Names[Index_WheelSkill] )  );
+  aSprite.sTag :=  SelectedPlayer.ActiveSkills.Names [Index_WheelSkill];
+
+
+
+  // tutte le skill name in basso nel campo + l'help di fianco
+  SE_Skills.RemoveAllSprites('wheelskillnamebottom');
+  SE_Skills.RemoveAllSprites('btnhelp_');
+  SE_Skills.ProcessSprites(2000); }
+
+  SE_Skills.RemoveAllSprites;
+  SE_Skills.ProcessSprites(2000);
+
+  bmpQuestion := SE_Bitmap.Create ( dir_interface + 'question.bmp');
+
+
+  w := SE_Theater1.VisibleBitmap.Width div SelectedPlayer.ActiveSkills.Count;
+  for I := 0 to SelectedPlayer.ActiveSkills.Count -1 do begin
+    bmp := SE_Bitmap.Create ( w,32 ); // -30 per l'help
+
+    if i <> Index_WheelSkill then                         // evidenzia la skill selezionata dalla wheel
+      bmp.Bitmap.Canvas.Brush.Color :=  $007B5139
+    else bmp.Bitmap.Canvas.Brush.Color :=  clBlue;
+
+    bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
+
+
+    aSprite := SE_Skills.CreateSprite ( bmp.Bitmap,'wheelskillnamebottom',1,1,1000, (w * i) + (w div 2) , BaseY , false,10 ) ;
+    aSprite.sTag :=  SelectedPlayer.ActiveSkills.Names [i];
+    bmp.Free;
+
+    MyText := Capitalize(Translate( 'skill_' + SelectedPlayer.ActiveSkills.Names[i] ) );
+
+    if i <> Index_WheelSkill then begin                        // evidenzia la skill selezionata dalla wheel
+         aSpriteLabel := SE_SpriteLabel.create( -1,0,'Calibri',clWhite-1,clBlack,12, MyText ,True  ,1, dt_Center);
+    end
+    else begin
+      aSpriteLabel := SE_SpriteLabel.create( -1,0,'Calibri',clYellow,clBlack,12, MyText ,True  ,1, dt_Center);
+      aSpriteLabel.lFontStyle := [fsBold];
+    end;
+    aSprite.Labels.add (aSpriteLabel);
+
+    // lo Sprite a sinistra è un SubSprite
+    aSprite.AddSubSprite ( dir_skill + SelectedPlayer.ActiveSkills.Names [i] + '.bmp','sprite', 0,0,true );
+
+    // qui la concatenazione del nome contine la stringa in inglese così per l'help diventa es. btnhelp_short.passing.txt
+    aSprite := SE_Skills.CreateSprite(bmpQuestion.Bitmap ,'btnhelp_' + SelectedPlayer.ActiveSkills.Names[i],1,1,1000,
+    aSprite.Position.X  + (aSprite.BMP.Width div 2) -18 , BaseY, True, 1201);   // -15 question.bmp è 30
+    //                         SE_Theater1.Width div 2 + (aSprite.BMP.Width div 2) - (bmpQuestion.Width div 2) ,764 ,true,1201 );
+    aSprite.sTag := 'btnhelp_' + SelectedPlayer.ActiveSkills.Names[i]; // per il mousemove
+  end;
+
+  bmpQuestion.free;
+
+end;
+
 procedure TForm1.SE_Theater1TheaterMouseDown(Sender: TObject; VisibleX, VisibleY, VirtualX, VirtualY: Integer; Button: TMouseButton;  Shift: TShiftState);
 begin
   if GameScreen = ScreenLive then begin
@@ -11847,7 +11962,7 @@ begin
     WaitForSingleObject ( MutexAnimation, INFINITE );
     AnimationScript.Reset;
     FirstLoadOK:= False;
-    ReleaseMutex(MutexAnimation );
+    //ReleaseMutex(MutexAnimation );
 
     if CheckFormationTeamMemory then begin
      If GameMode = pvp then begin
@@ -12357,7 +12472,7 @@ begin
           application.ProcessMessages ;
         end;
         SE_players.RemoveAllSprites;
-        ReleaseMutex(MutexAnimation);
+       // ReleaseMutex(MutexAnimation);
         aBallSprite := SE_ball.FindSprite('ball');
         SE_ball.RemoveSprite(aBallSprite);
         SE_interface.RemoveAllSprites;
@@ -12375,7 +12490,7 @@ begin
           se_Theater1.thrdAnimate.OnTimer (se_Theater1.thrdAnimate);
           application.ProcessMessages ;
         end;
-        ReleaseMutex(MutexAnimation);
+        //ReleaseMutex(MutexAnimation);
         GameScreen := ScreenWaitingFormation;
         SE_interface.RemoveAllSprites;
         SE_Numbers.RemoveAllSprites;
@@ -13136,7 +13251,7 @@ LstSkill[10]:= 'Corner.Kick'; }
 
  // SE_Skills.Visible := False;
 
-  HH_Skill( aSpriteClicked.Guid ); // passo wheelskill o wheelskillname
+//  HH_Skill( aSpriteClicked.Guid ); // passo wheelskill o wheelskillname
   LockSkill  := True;
 
   //SelectedPlayer.se_sprite.DeleteSubSprite('mainskill' );
@@ -13616,8 +13731,8 @@ begin
     else if Index_WheelSkill < 0 then
      Index_WheelSkill := SelectedPlayer.ActiveSkills.Count -1;
 
-    ShowSingleSkill;
-
+//    ShowSingleSkill;
+    ShowMultipleSkills;
   end;
 
 
@@ -13812,7 +13927,7 @@ begin
   aSubSprite.lX := (aPlayer.se_sprite.BMPCurrentFrame.Width div 2) - (aSubSprite.lBmp.Width div 2);  // center
   aSubSprite.ly := 0;  // center
   //aSubSprite.Free;
-  ReleaseMutex(MutexAnimation);
+ // ReleaseMutex(MutexAnimation);
   //aSprite.ChangeBitmap( IntTostr(aPlayer.face) +'.bmp',1,1,1000 );
 
 end;
@@ -13835,7 +13950,7 @@ begin
   aSubSprite.lX := (aPlayer.se_sprite.BMPCurrentFrame.Width div 2) - (aSubSprite.lBmp.Width div 2);  // center
   aSubSprite.ly := 0;  // center
 //  aPlayer.se_sprite.Scale := ScaleSpritesShow;
-  ReleaseMutex(MutexAnimation);
+ // ReleaseMutex(MutexAnimation);
 
   //aSprite.ChangeBitmap( IntTostr(aPlayer.face) +'.bmp',1,1,1000 );
 
@@ -14283,15 +14398,6 @@ begin
   aSprite := SE_Skills.FindSprite('wheelskillname');
   aSprite.Labels[0].lFontColor := clYellow;
 
-{  for I := 0 to SE_Skills.SpriteCount -1 do begin
-    for l := 0 to SE_Skills.Sprites[i].Labels.Count -1 do begin
-
-      SE_Skills.Sprites[i].Labels[l].lFontColor := clWhite;
-      if SE_Skills.Sprites[i].sTag = SkillMouseMove then
-        SE_Skills.Sprites[i].Labels[l].lFontColor := clYellow;
-    end;
-
-  end;    }
   SE_Skills.ProcessSprites(2000);
 end;
 
@@ -15078,7 +15184,7 @@ begin
       WaitForSingleObject ( MutexAnimation, INFINITE );
       AnimationScript.Reset;
       FirstLoadOK:= False;
-      ReleaseMutex(MutexAnimation );
+   //   ReleaseMutex(MutexAnimation );
       LastTcpincMove := 0;
       CurrentIncMove:=0;
       //MyGuidTeam := 0;
@@ -15129,7 +15235,7 @@ begin
   WaitForSingleObject ( MutexAnimation, INFINITE );
 
   if ( SE_ball.IsAnySpriteMoving  ) or (SE_players.IsAnySpriteMoving )  then begin
-    ReleaseMutex(MutexAnimation);
+    //ReleaseMutex(MutexAnimation);
     Exit;
   end;
 
@@ -15146,21 +15252,8 @@ begin
           ClientLoadScript ( CurrentIncMove ); // ( MM3, buf3 ); // punta direttamente dove comincia tsScript . riempe mybrain.tscript[CurrentIncMove].commatext
           AnimationScript.Reset ;
 
-//          if Mybrain.tsScript[CurrentIncMove].Count = 0 then begin           // se animationScript ha finito di processare tutte le commatext di Mybrain.tsscript
-//              ClientLoadBrainMM ( CurrentIncMove);      //era false oppure se non c'è stringa commatext
 
-//            incMoveReadTcp [CurrentIncMove] := True; // caricato e completamente eseguito
-//            incMoveAllProcessed [CurrentIncMove] := True; // caricato e completamente eseguito
-
-//          end
-//          else begin
-  //         // if AScript <> Mybrain.tsScript.CommaText then begin  // solo script diversi.
-  //           // AScript := Mybrain.tsScript.CommaText ;
-              LoadAnimationScript; // riempe animationScript.  alla fine il thread chiama  ClientLoadBrainMM
-           // end;
-        // per questro motivo MM3 e buf3 devono essere globali
- //         end;
-  //          Inc(CurrentIncMove); // se maggiore al giro dopo aspetta
+          LoadAnimationScript; // riempe animationScript.  alla fine il thread chiama  ClientLoadBrainMM
       end
 
       else begin  // // se è già stato letto in Tcp.  se maggiore al giro dopo aspetta
@@ -15187,17 +15280,35 @@ begin
         CurrentIncMove := imin( CurrentIncMove +1, LastMoveBrain ); // avanzo processando tutti gli script
 
         if OldCurrent < CurrentIncMove then begin  // solo se è cambiato , altrimenti ricarico a oltranz la stessa animazione
-
-          if  Mybrain.tsScript [CurrentIncMove].Count > 0 then
+          RemoveSubMainskill;
+          LastIncProcessed:= False;
+          if  Mybrain.tsScript [CurrentIncMove].Count > 0 then begin
+            AnimationScript.Reset ;
             LoadAnimationScript // riempe animationScript.  alla fine il thread chiama  ClientLoadBrainMM
+          end
           else begin
             incMoveAllProcessed [CurrentIncMove] := true; // se è vuota dico che è stata processata
-            //SpriteReset;
+          end;
+        end
+        else if CurrentIncMove =  LastMoveBrain then begin   // qui BUG
+          if not LastIncProcessed then begin
+            RemoveSubMainskill;
+            if Mybrain.tsScript [CurrentIncMove].Count > 0 then begin
+              AnimationScript.Reset ;
+              LoadAnimationScript // riempe animationScript.  alla fine il thread chiama  ClientLoadBrainMM
+            end
+            else begin
+              incMoveAllProcessed [CurrentIncMove] := true; // se è vuota dico che è stata processata
+            end;
+            LastIncProcessed := true;
           end;
         end;
+
+
+       // end;
       end
       else begin   // l oscript non è stato processato. se è vuoto dico qui che è stato processato o l0altro trhead non lo fa
-        if  Mybrain.tsScript [CurrentIncMove].Count = 0 then begin
+        if Mybrain.tsScript [CurrentIncMove].Count = 0 then begin
           incMoveAllProcessed [CurrentIncMove] := true;
           //SpriteReset;
         end;
@@ -15206,7 +15317,7 @@ begin
 
   end;
 
-  ReleaseMutex(MutexAnimation);
+//  ReleaseMutex(MutexAnimation);
 
 
 end;
@@ -15396,7 +15507,7 @@ begin
     AnimationScript.Reset;
     FirstLoadOK:= False;
     //Animating := false;
-    ReleaseMutex(MutexAnimation );
+  //  ReleaseMutex(MutexAnimation );
     LastTcpIncMove := 0;
     CurrentIncMove := 0;
 
@@ -15422,7 +15533,7 @@ begin
     AnimationScript.Reset;
     FirstLoadOK:= False;
     //Animating := false;
-    ReleaseMutex(MutexAnimation );
+  //  ReleaseMutex(MutexAnimation );
     LastTcpIncMove := 0;
     CurrentIncMove := 0;
 
@@ -15505,7 +15616,7 @@ begin
     AnimationScript.Reset;
     FirstLoadOK:= False;
     //Animating := false;
-    ReleaseMutex(MutexAnimation );
+  //  ReleaseMutex(MutexAnimation );
     LastTcpIncMove := 0;
     CurrentIncMove := 0;
 
@@ -17617,7 +17728,8 @@ var
 begin
 
   if Help = 'confirmformation' then
-    Help := 'play';
+    Help := 'play'
+    else if help='frameback' then exit;
 
  // lstText := TStringList.Create;
 
@@ -18205,7 +18317,7 @@ begin
 
   lstbrain.Clear;
 
-  ReleaseMutex( MutexAnimation );
+//  ReleaseMutex( MutexAnimation );
 end;
 procedure TForm1.CloseLiveRound;
 var
@@ -18233,7 +18345,7 @@ begin
   AdvanceMFRound;
   GameScreen := ScreenFormation;
   ClientLoadFormation;
-  ReleaseMutex( MutexAnimation );
+//  ReleaseMutex( MutexAnimation );
 
 end;
 procedure TForm1.CompleteAllDivisions ( Season, FromRound, Country : Integer );   // simile all'inizio a startallmatches ma cicla anche per e m e f
