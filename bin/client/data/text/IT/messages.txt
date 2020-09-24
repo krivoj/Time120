@@ -276,3 +276,26 @@ warning_nomatchsaved=La partita non verra' salvata. Sei sicuro?
 lbl_warning=Attenzione!
 lbl_selectcountry=Seleziona il campionato
 lbl_selectteam=Seleziona la squadra
+
+
+
+hintskill_confirm=Conferma la scelta.
+hintskill_shortpassing=Scegli dove passare la palla.
+hintskill_loftedpass=Scegli dove passare la palla. 
+hintskill_crossing=Scegli chi che provera' a colpire di testa.
+hintskill_move=Scegli dove muoverti.
+hintskill_dribbling=Scegli chi vuoi dribblare.
+
+hintskill_fkf1=Scegli chi battera' la punizione.
+hintskill_fkf2=Scegli chi battera' la punizione.
+hintskill_fka2=Scegli tre saltatori.
+hintskill_fkd2=Scegli tre saltatori.
+hintskill_fkf3=Scegli chi battera' la punizione.
+hintskill_fkd3=Scegli quattro giocatori da mettere in barriera.
+hintskill_fkf4=Scegli chi battera' il rigore.
+hintskill_cornercof=Scegli chi battera' il calcio d'angolo.
+hintskill_cornercoa=Scegli tre saltatori.
+hintskill_cornercod=Scegli tre saltatori.
+
+hintskill_cancel=Click destro per annullare.
+

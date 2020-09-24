@@ -1597,14 +1597,4 @@ object Form1: TForm1
     Left = 848
     Top = 504
   end
-  object SE_Circles: SE_Engine
-    ClickSprites = False
-    PixelCollision = False
-    HiddenSpritesMouseMove = False
-    IsoPriority = False
-    Priority = 1
-    Theater = SE_Theater1
-    Left = 768
-    Top = 888
-  end
 end

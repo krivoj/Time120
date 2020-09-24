@@ -23,9 +23,9 @@
   }
   { TODO -ctodo prima del rilascio patreon :
 
-    sui freekick 3000 bug e anche di nuovo sul lastprocessed
+    sui freekick 3000 bug
     il bug è qui, non fa l'ultma aniomazione  Rimane il problema dei subsprites e poi si pianta su freekick 2 e mi dice MOVE
-     quando scelgo la barriera deve sparire sotto lo sprite che gira. sprite da migliorare
+    quando scelgo la barriera deve sparire sotto lo sprite che gira. sprite da migliorare
     BUG quando devo schierare la barriera
 
     i portieri devono gaudagnare meno xp, anche nel brain. 8 a partita sono troppi. oppure invece di 120 arrivo a 180 punti xp solo per GK
@@ -37,8 +37,6 @@
 
 
     help x buffdm,f corner frekick 2,3 penalty    Corner.Kick, crossing stay, free
-    help compare se frekick compare altro ? questionmark
-    finire le skill sia effetto che help
 
     verificare AI forse autotackle anche su move di 1 sola casella
 
@@ -53,7 +51,7 @@
     panel iniziali, a parte login, rifare con SE_MENU
 
 
-    fare ? per help su ogni btnmenu_ e dove c'è bisogno. apre l'help se_help   btnhelp_attributes _talents
+
     help diviso per lingue . finire bene anche descrizione skill buff reparti e marking
 
     bug lastman. ricalcolare le condizioni . anche la nuova versione forse non va bene. c'è sicuro errore perchè compare al 44' di una partita
@@ -61,10 +59,8 @@
 
     testare gameover e fare nextMF usare minute per continuare
 
-    FARE AIthinkdev Animazioni per sviluppo attributo o talento.
+    FARE AIthinkdev e Animazioni per sviluppo attributo o talento.
 
-    talento convergi verso il centro
-    talento autorità GK 50% -1 sui cross avversari o 50% +1 defense a heading
     creare più formazioni , forse bug nella fatigue
 
 
@@ -96,6 +92,8 @@
 
   }
   { TODO -csviluppo :
+    talento convergi verso il centro
+    talento autorità GK 50% -1 sui cross avversari o 50% +1 defense a heading
     +4 buff corsa ma solo pos
      talento +1 passaggi adesso col nuovo sistema di roll ha senso.ma anche prima, forse c'è già
     talento intuito: dopo lop ballcontrol cella vuota --> +1 +2 a movimento verso palla
@@ -265,7 +263,7 @@ type TGameScreen =(ScreenMain, ScreenLogin,
 
   type TMouseWaitFor = (WaitForGreen, WaitForNone, WaitForAuth, // in attesa di autenticazione login
   WaitForXY_ShortPass, WaitForXY_LoftedPass, WaitForXY_Crossing,
-  WaitForXY_Move,WaitForXY_PowerShot , WaitForXY_PrecisionShot, WaitForXY_Dribbling,WaitFor_Corner, // in attesa di input di gioco
+  WaitForXY_Move, WaitForXY_Dribbling,WaitFor_Corner, // in attesa di input di gioco
   WaitForXY_FKF1,  // chi batte la short.passing o lofted.pass
   WaitForXY_FKF2,  // chi batte il cross
   WaitForXY_FKA2,  // i 3 saltatori
@@ -422,7 +420,6 @@ type
     SE_InfoError: SE_Engine;
     SE_matchInfo: SE_Engine;
     sfSaves: SE_SearchFiles;
-    SE_Circles: SE_Engine;
     Button12: TButton;
     Button13: TButton;
     Button14: TButton;
@@ -599,7 +596,7 @@ type
     // Score
     procedure i_Tml ( MovesLeft,team: string );  // animazione internal mosse rimaste
     procedure i_tuc ( team: string );          // animazione internal turn change
-    procedure CirclePlayers ( team: integer );
+
 
     procedure RefreshTML;
     procedure RefreshTML_direct (TeamMovesLeft, Team, ShpFree : integer ) ;
@@ -742,6 +739,9 @@ type
     procedure CreateBaseAttribute ( CellX, CellY, Value: Integer );deprecated;
 
     procedure SetGameScreen (const aGameScreen:TGameScreen);
+    procedure SetMouseWaitFor ( const aMouseWaitFor: TMouseWaitFor);
+      procedure HintSkill ( aHintSkill: string );
+
     procedure HideAllEnginesExcept ( SE_Engine1,SE_Engine2,SE_Engine3,SE_Engine4,SE_Engine5: SE_engine );
 
     procedure GetTooltipStrings ( bmp: TBitmap; aString: string; var ts: Tstringlist );// deprecated;
@@ -759,7 +759,7 @@ type
     { Public declarations }
     aInfoPlayer: TSoccerPlayer;
     fGameScreen: TGameScreen;
-    MouseWaitFor : TMouseWaitFor;
+    fMouseWaitFor: TMouseWaitFor;
     SendString: string;
     //    function InvertFormationCell (FormationCellX , FormationCellY : integer): Tpoint;
 
@@ -768,7 +768,9 @@ type
     function GetContrastColor( cl: TColor  ): TColor;
 
 
+    property MouseWaitFor : TMouseWaitFor read fMouseWaitFor write SetMouseWaitFor;
     property  GameScreen :TGameScreen read fGameScreen write SetGameScreen;
+
     procedure SetTcpFormation;
 
     property  SelectedPlayer: TSoccerPlayer read fSelectedPlayer write SetSelectedPlayer;
@@ -3989,7 +3991,6 @@ end;
 procedure TForm1.HideStadiumAndPlayers;
 begin
   SE_players.Visible := False;
-  SE_Circles.Visible := False;
   SE_MainInterface.Visible := False;
   SE_FieldPoints.HiddenSpritesMouseMove := false;
   SE_FieldPointsReserve.HiddenSpritesMouseMove := false;
@@ -4900,6 +4901,7 @@ begin
   AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (20,-1);  AFieldPoint.Pixel := Point  (1317,656); AFieldPoint.Team:=1; FieldPointsReserve.Add( AFieldPoint);
   AFieldPoint:= TFieldPoint.Create;  AFieldPoint.Cell := Point  (21,-1);  AFieldPoint.Pixel := Point  (1317,738); AFieldPoint.Team:=1; FieldPointsReserve.Add( AFieldPoint);
 
+ // Creo dinamicamente un effetto di coloore che sfuma
  // FieldPointsSprite  per celle del campo. per formazione
  // bmp:= se_bitmap.Create(dir_interface + 'sniper.bmp');
   bmp:= se_bitmap.Create(80*24,80);
@@ -5396,7 +5398,6 @@ begin
       toolSpin.Visible := false;
     {$endif tools}
       //Animating:= True;
-      SE_Circles.Visible := false;
       if GameScreen = ScreenLive then begin
         SE_TacticsSubs.visible := False;
         aSprite := SE_LIVE.FindSprite('btnmenu_tactics');
@@ -7551,11 +7552,13 @@ procedure Tform1.refresh_teamnames;
 var
   aSprite : SE_Sprite;
   pbSprite : SE_SpriteProgressBar;
+  aPlayer: TSoccerPlayer;
 begin
 
 
-  CirclePlayers ( MyBrain.TeamTurn );
-
+//  CirclePlayers ( MyBrain.TeamTurn );
+  aPlayer := MyBrain.GetSoccerPlayerRandom(  MyBrain.TeamTurn, false );
+  HHFP_Friendly ( aPlayer, 'a' );
   if GameMode = pvp then begin
     pbSprite :=  SE_SpriteProgressBar ( SE_Score.FindSprite('scorebartime'));
     pbSprite.BackColor := MyBrain.Score.DominantColor[MyBrain.TeamTurn];
@@ -7564,20 +7567,6 @@ begin
   end;
 
   SetTmlAlpha;
-end;
-procedure TForm1.CirclePlayers ( team: integer );
-var
-  i: Integer;
-begin
-  // solo i titolari
-  SE_Circles.RemoveAllSprites;
-  SE_Circles.ProcessSprites(2000);
-  for I := MyBrain.lstSoccerPlayer.Count -1 downto 0 do begin
-    if MyBrain.lstSoccerPlayer[i].team = team then
-      SE_Circles.CreateSprite(dir_interface + 'acircle.bmp','ac',4,4,50, MyBrain.lstSoccerPlayer[i].se_sprite.Position.X,
-                               MyBrain.lstSoccerPlayer[i].se_sprite.Position.Y, true, 1);
-  end;
-  SE_Circles.Visible := True;
 end;
 procedure Tform1.i_tuc ( team: string );
 var
@@ -10972,6 +10961,17 @@ begin
       aFieldPointSpr := SE_FieldPointsReserve.FindSprite(IntToStr ( CellX ) + '.-1');
       aFieldPointSpr.Visible := true;
     end;
+  end
+  else if cells = 'a' then begin // tutte le celle friendly di chi è in campo eccetto il GK
+    for i := 0 to MyBrain.lstSoccerPlayer.Count -1 do begin
+      aPlayer2 := MyBrain.lstSoccerPlayer[i];
+      if aPlayer2.Team = aPlayer.Team  then begin
+        if aPlayer2.TalentID1 <> TALENT_ID_GOALKEEPER then begin
+          aFieldPointSpr := SE_FieldPoints.FindSprite( IntToStr ( aPlayer2.CellX ) + '.' + IntToStr (aPlayer2.CellY ));
+          aFieldPointSpr.Visible := true;
+        end;
+      end;
+    end;
   end;
 
 end;
@@ -11230,15 +11230,13 @@ LoadGridSkill:
 //    aSprite.sTag := 'setplayer';
   {$endif}
 
-  SE_Skills.RemoveAllSprites;
-  SE_Skills.ProcessSprites(2000);
 
   // la skill sul player
-  {Index_WheelSkill := 0;
-  aSprite := SE_Skills.CreateSprite ( dir_skill + SelectedPlayer.ActiveSkills.Names [Index_WheelSkill]+'.bmp','wheelskill',1,1,1000,
-   SelectedPlayer.se_sprite.Position.X  , SelectedPlayer.se_sprite.Position.Y+ 16, true,10 ) ;
-  aSprite.sTag :=  SelectedPlayer.ActiveSkills.Names [Index_WheelSkill];
-
+  Index_WheelSkill := 0;
+ // aSprite := SE_Skills.CreateSprite ( dir_skill + SelectedPlayer.ActiveSkills.Names [Index_WheelSkill]+'.bmp','wheelskill',1,1,1000,
+ //  SelectedPlayer.se_sprite.Position.X  , SelectedPlayer.se_sprite.Position.Y+ 16, true,10 ) ;
+ // aSprite.sTag :=  SelectedPlayer.ActiveSkills.Names [Index_WheelSkill];
+  {
   // la skill name sotto il selectedplayer
   bmp := SE_Bitmap.Create ( 128,22 );
   bmp.Bitmap.Canvas.Brush.Color :=  clGray;
@@ -11327,16 +11325,10 @@ var
   bmp, bmpQuestion :SE_Bitmap;
   CurrentX: Integer;
   MyText: string;
-  const BaseY = 770;
+  const BaseY = 768;
 begin
 
-{  aSprite := SE_Skills.FindSprite('wheelskill');
-  aSprite.ChangeBitmap( dir_skill + SelectedPlayer.ActiveSkills.Names [Index_WheelSkill] + '.bmp',1,1,1000 );
-  aSprite.sTag :=  SelectedPlayer.ActiveSkills.Names [Index_WheelSkill];
- // Memo1.Lines.Add( 'guid ' + aSprite.guid );
-//  Memo1.Lines.Add( 'stag ' +  aSprite.sTag );
-
-  aSprite := SE_Skills.FindSprite('wheelskillname');
+{  aSprite := SE_Skills.FindSprite('wheelskillname');
   aSprite.Labels[0].lText:= Capitalize(Translate( 'skill_' + SelectedPlayer.ActiveSkills.Names[Index_WheelSkill] )  );
   aSprite.sTag :=  SelectedPlayer.ActiveSkills.Names [Index_WheelSkill];
 
@@ -11350,12 +11342,20 @@ begin
   SE_Skills.RemoveAllSprites;
   SE_Skills.ProcessSprites(2000);
 
-  bmpQuestion := SE_Bitmap.Create ( dir_interface + 'question.bmp');
+  aSprite := SE_Skills.CreateSprite ( dir_skill + SelectedPlayer.ActiveSkills.Names [Index_WheelSkill]+'.bmp','wheelskill',1,1,1000,
+  SelectedPlayer.se_sprite.Position.X  , SelectedPlayer.se_sprite.Position.Y+ 16, true,10 ) ;
+  aSprite.sTag :=  SelectedPlayer.ActiveSkills.Names [Index_WheelSkill];
 
+  OutputDebugString(pchar(SelectedPlayer.ActiveSkills.Names [Index_WheelSkill]));
+ // Memo1.Lines.Add( 'guid ' + aSprite.guid );
+//  Memo1.Lines.Add( 'stag ' +  aSprite.sTag );
+
+  bmpQuestion := SE_Bitmap.Create ( dir_interface + 'question.bmp');
+  bmpQuestion.Stretch(16,16);
 
   w := SE_Theater1.VisibleBitmap.Width div SelectedPlayer.ActiveSkills.Count;
   for I := 0 to SelectedPlayer.ActiveSkills.Count -1 do begin
-    bmp := SE_Bitmap.Create ( w,32 ); // -30 per l'help
+    bmp := SE_Bitmap.Create ( w,40 ); // -30 per l'help
 
     if i <> Index_WheelSkill then                         // evidenzia la skill selezionata dalla wheel
       bmp.Bitmap.Canvas.Brush.Color :=  $007B5139
@@ -11371,21 +11371,20 @@ begin
     MyText := Capitalize(Translate( 'skill_' + SelectedPlayer.ActiveSkills.Names[i] ) );
 
     if i <> Index_WheelSkill then begin                        // evidenzia la skill selezionata dalla wheel
-         aSpriteLabel := SE_SpriteLabel.create( -1,0,'Calibri',clWhite-1,clBlack,12, MyText ,True  ,1, dt_Center);
+         aSpriteLabel := SE_SpriteLabel.create( 0,8,'Calibri',clWhite-1,clBlack,12, MyText ,True  ,1, dt_Center  );
     end
     else begin
-      aSpriteLabel := SE_SpriteLabel.create( -1,0,'Calibri',clYellow,clBlack,12, MyText ,True  ,1, dt_Center);
+      aSpriteLabel := SE_SpriteLabel.create( 0,8,'Calibri',clYellow,clBlack,12, MyText ,True  ,1, dt_Center );
       aSpriteLabel.lFontStyle := [fsBold];
     end;
     aSprite.Labels.add (aSpriteLabel);
 
     // lo Sprite a sinistra è un SubSprite
-    aSprite.AddSubSprite ( dir_skill + SelectedPlayer.ActiveSkills.Names [i] + '.bmp','sprite', 0,0,true );
+    aSprite.AddSubSprite ( dir_skill + SelectedPlayer.ActiveSkills.Names [i] + '.bmp','sprite', 0,6,true );
 
     // qui la concatenazione del nome contine la stringa in inglese così per l'help diventa es. btnhelp_short.passing.txt
     aSprite := SE_Skills.CreateSprite(bmpQuestion.Bitmap ,'btnhelp_' + SelectedPlayer.ActiveSkills.Names[i],1,1,1000,
-    aSprite.Position.X  + (aSprite.BMP.Width div 2) -18 , BaseY, True, 1201);   // -15 question.bmp è 30
-    //                         SE_Theater1.Width div 2 + (aSprite.BMP.Width div 2) - (bmpQuestion.Width div 2) ,764 ,true,1201 );
+    aSprite.Position.X - (aSprite.BMP.Width div 2) + 32 + 8 , BaseY+8, True, 1201);   // -15 question.bmp è 30
     aSprite.sTag := 'btnhelp_' + SelectedPlayer.ActiveSkills.Names[i]; // per il mousemove
   end;
 
@@ -14163,14 +14162,6 @@ begin
 
   //          CalculateChance  (SelectedPlayer.BallControl + SelectedPlayer.tal_Dribbling -2, anOpponent.Defense , chanceA,chanceB,chanceColorA,chanceColorB);
         end
-        else if MouseWaitFor = WaitForXY_PowerShot then begin // mostro opponent, intercept, e portiere
-          ClearInterface;
-//          SE_interface.removeallSprites;
-        end
-        else if MouseWaitFor = WaitForXY_PrecisionShot then begin // mostro opponent, intercept, e portiere
-          ClearInterface;
-//          SE_interface.removeallSprites;
-        end
         else if MouseWaitFor = WaitFor_Corner then begin   // mostro opponent, e frecce contrarie
           ClearInterface;
 //          SE_interface.removeallSprites;
@@ -15437,11 +15428,6 @@ procedure TForm1.HideAllEnginesExcept ( SE_Engine1,SE_Engine2,SE_Engine3,SE_Engi
 label skipC;
 begin
 
-  if fGameScreen = ScreenLive then begin
-    if SE_Circles.Visible then goto skipC;
-  end;
-  SE_Circles.Visible := false;
-skipC:
   SE_matchInfo.Visible := False;
   SE_InfoError.Visible := False;
   SE_Simulation.Visible := false;
@@ -15481,7 +15467,57 @@ skipC:
     SE_Engine5.Visible := True;
 
 end;
+procedure TForm1.SetMouseWaitFor ( const aMouseWaitFor: TMouseWaitFor);
+begin
+  fMouseWaitFor := aMouseWaitFor;
 
+  case aMouseWaitFor of
+    WaitForGreen: HintSkill ( Capitalize(Translate( 'hintskill_confirm' ))  );
+    WaitForXY_ShortPass: HintSkill ( Capitalize(Translate( 'hintskill_shortpassing' ))  );
+    WaitForXY_LoftedPass:HintSkill ( Capitalize(Translate( 'hintskill_loftedpass' ))  );
+    WaitForXY_Crossing: HintSkill ( Capitalize(Translate( 'hintskill_crossing' ))  );
+    WaitForXY_Move: HintSkill ( Capitalize(Translate( 'hintskill_move' ))  );
+    WaitForXY_Dribbling: HintSkill ( Capitalize(Translate( 'hintskill_dribbling' ))  );
+  //  WaitFor_Corner: ;
+    WaitForXY_FKF1: HintSkill ( Capitalize(Translate( 'hintskill_fkf1' ))  );
+    WaitForXY_FKF2: HintSkill ( Capitalize(Translate( 'hintskill_fkf2' ))  );
+    WaitForXY_FKA2: HintSkill ( Capitalize(Translate( 'hintskill_fka2' ))  );
+    WaitForXY_FKD2: HintSkill ( Capitalize(Translate( 'hintskill_fkd2' ))  );
+    WaitForXY_FKF3: HintSkill ( Capitalize(Translate( 'hintskill_fkf3' ))  );
+    WaitForXY_FKD3: HintSkill ( Capitalize(Translate( 'hintskill_fkd3' ))  );
+    WaitForXY_FKF4: HintSkill ( Capitalize(Translate( 'hintskill_fkf4' ))  );
+    WaitForXY_CornerCOF: HintSkill ( Capitalize(Translate( 'hintskill_cornercof' ))  );
+    WaitForXY_CornerCOA: HintSkill ( Capitalize(Translate( 'hintskill_cornercoa' ))  );
+    WaitForXY_CornerCOD: HintSkill ( Capitalize(Translate( 'hintskill_cornercod' ))  );
+  //  WaitForXY_SetPlayer: ;
+  end;
+
+end;
+procedure TForm1.HintSkill ( aHintSkill: string );
+var
+  bmp : SE_Bitmap;
+  aSprite: SE_Sprite;
+  aSpriteLabel : SE_SpriteLabel;
+  const BaseY = 768;
+begin
+  SE_Skills.RemoveAllSprites;
+  SE_Skills.ProcessSprites(2000);
+
+
+  bmp := SE_Bitmap.Create ( SE_Theater1.VisibleBitmap.Width,40 );
+  bmp.Bitmap.Canvas.Brush.Color :=  $007B5139;
+  bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
+
+  aSprite := SE_Skills.CreateSprite ( bmp.Bitmap,'hintskill',1,1,1000, SE_Theater1.VisibleBitmap.Width div 2 , BaseY , false,10 ) ;
+  bmp.Free;
+
+  aSpriteLabel := SE_SpriteLabel.create( 0,8,'Calibri',clWhite-1,clBlack,12, aHintSkill ,True  ,1, dt_Center  );
+  aSprite.Labels.add (aSpriteLabel);
+
+  aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite-1,clBlack,9, Capitalize(translate('hintskill_cancel')) ,True  ,1, DT_BOTTOM or DT_SINGLELINE or DT_RIGHT );
+  aSprite.Labels.add (aSpriteLabel);
+
+end;
 procedure TForm1.SetGameScreen (const aGameScreen:TGameScreen);
 var
   i: Integer;
