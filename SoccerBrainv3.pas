@@ -9149,12 +9149,16 @@ reason:='';
 Normalpressing:
         Ball.Player.UnderPressureTurn := 2;
         Ball.Player.CanMove := False;  // NON PUO' MUOVERE , ma può dribblare con -2
+
         Ball.Player.BallControl  := Ball.Player.BallControl - PRE_VALUE;  //  MINIMO 1, mai in negativo
         if Ball.Player.BallControl <= 0 then  Ball.Player.BallControl := 1;
+
         Ball.Player.Passing  := Ball.Player.passing - PRE_VALUE;
         if Ball.Player.Passing <= 0 then  Ball.Player.Passing := 1;
+
         Ball.Player.Shot := Ball.Player.Shot - PRE_VALUE;
         if Ball.Player.Shot <= 0 then  Ball.Player.Shot := 1;
+
         Ball.Player.xpDevA := Ball.Player.xpDevA + 1;
         tsSpeaker.Add( aPlayer.Surname +' (Pressing) fa pressing su ' + Ball.Player.ids {cella}  ) ;
       end;

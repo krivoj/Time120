@@ -1280,7 +1280,7 @@ object Form1: TForm1
     Top = 1016
   end
   object ThreadCurrentIncMove: SE_ThreadTimer
-    Interval = 300
+    Interval = 500
     KeepAlive = True
     OnTimer = ThreadCurrentIncMoveTimer
     Left = 824
@@ -1596,5 +1596,16 @@ object Form1: TForm1
     OnValidateFile = sfSavesValidateFile
     Left = 848
     Top = 504
+  end
+  object SE_DEBUG: SE_Engine
+    ClickSprites = False
+    PixelCollision = False
+    HiddenSpritesMouseMove = False
+    IsoPriority = False
+    Priority = 100
+    Theater = SE_Theater1
+    RenderBitmap = VisibleRender
+    Left = 776
+    Top = 888
   end
 end

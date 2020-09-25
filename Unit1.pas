@@ -13,19 +13,19 @@
 
 
     aGK deve usare stamina. costo in gkpos gkprs -2 -1 COST  in exec_freekinck exec_corner,cro,pos,prs,lop
-    devireserve in settml durante la partita incrementa xpdevi dei panchinari ( escludere chi è stato sosituito, espulso o injured)
     check fine partita sul client
     pvp testare sell/buy sembra andare bene
     AI Hide120 anche  free e stay pass sono ok fare anche per tactics. le sub si possono fare
 
-    verificare in spritereset e ovunque la palla sempre in movimento, tanto corner e freekick settano la palla
     Server, gender bonus. controllare anche AI.
   }
   { TODO -ctodo prima del rilascio patreon :
 
     sui freekick 3000 bug
-    il bug è qui, non fa l'ultma aniomazione  Rimane il problema dei subsprites e poi si pianta su freekick 2 e mi dice MOVE
-    quando scelgo la barriera deve sparire sotto lo sprite che gira. sprite da migliorare
+
+    BUg exec_autotackle   preRoll := RndGenerate (aPlayer.Defense);
+
+
     BUG quando devo schierare la barriera
 
     i portieri devono gaudagnare meno xp, anche nel brain. 8 a partita sono troppi. oppure invece di 120 arrivo a 180 punti xp solo per GK
@@ -425,6 +425,7 @@ type
     Button14: TButton;
     CheckBox10: TCheckBox;
     Button15: TButton;
+    SE_DEBUG: SE_Engine;
 
 // General
     function ChangeResolution(XResolution, YResolution, Depth: DWORD): boolean;
@@ -1714,8 +1715,27 @@ procedure TForm1.FormCreate(Sender: TObject);
 var
   I: Integer;
   ini : TIniFile;
+  bmp : SE_Bitmap;
+  aSprite: SE_Sprite;
+  aSpriteLabel : SE_SpriteLabel;
 begin
   BuildString := 'Build: ' + kfVersionInfo;
+
+  {$IFDEF tools}
+  bmp := SE_Bitmap.Create ( 400,40 );
+  bmp.Bitmap.Canvas.Brush.Color :=  clGray;
+  bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
+  aSprite:=SE_DEBUG.CreateSprite(bmp.Bitmap ,'match'+IntToStr(i) ,1,1,1000,200,100,false,2 );
+  bmp.Free;
+//  aSprite.Alpha := 230;
+//  aSprite.BlendMode := SE_BlendAlpha;
+                                                                                                                       // 1= transparent, 2= opaque );
+  aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clwhite-1,clBlack,12,'',True , 2, dt_Left );
+  aSprite.Labels.Add(aSpriteLabel);
+  aSpriteLabel := SE_SpriteLabel.create( 0,20,'Calibri',clwhite-1,clBlack,12,'',True , 2, dt_Left );
+  aSprite.Labels.Add(aSpriteLabel);
+  {$endIF tools}
+
   debug_OnlyMyGame := False;
 
   oldWidth := Screen.Width;
@@ -5409,6 +5429,9 @@ begin
       end;
       anim (AnimationScript.Ts[ AnimationScript.Index ]); // muove gli sprite
       AnimationScript.Index := AnimationScript.Index + 1;
+    {$IFDEF tools}
+    SE_DEBUG.Sprites[0].Labels[0].lText := ' AnimationScript.Index  ' + IntTostr( AnimationScript.Index  ) +  ' AnimationScript.Ts.Count  ' + IntTostr( AnimationScript.Ts.Count );
+    {$endIF tools}
 
       if AnimationScript.Index >=  AnimationScript.Ts.Count -1 then begin // attendo la fine EFFETTIVA di ANIM
         while ( SE_ball.IsAnySpriteMoving  ) or  (se_players.IsAnySpriteMoving) do begin
@@ -9827,6 +9850,9 @@ begin
 
   ts := TstringList.Create ;
   ts.CommaText := Script;
+    {$IFDEF tools}
+    SE_DEBUG.Sprites[0].Labels[1].lText := '  ts  ' +  ts.CommaText;
+    {$endIF tools}
 
   if ts[0] = 'cl_showroll' then begin
     //1 aPlayer.ids
@@ -15262,7 +15288,7 @@ begin
    // nel pve il brain viene riempito di AI begibrain, ha già elaborato 4 risposte. qui non faccio in tempo a leggere Mybrain.tsScript.CommaText
   else if GameMode = pve then begin
 
-    if CurrentIncMove <= LastMoveBrain  then begin //  MyBrain.incMove è quello che dico io. LastMoveBrain è 4 mosse avanti quando c'è la AI
+    if CurrentIncMove < LastMoveBrain  then begin //  MyBrain.incMove è quello che dico io. LastMoveBrain è 4 mosse avanti quando c'è la AI
       // questa parte rinnova scriptanimation incrementando currentIncMove fino al massimo di  MyBrain.incMove
 
       if incMoveAllProcessed [CurrentIncMove] = true then begin   // se  è stato eseguito tutto lo script animation
@@ -15281,19 +15307,6 @@ begin
             incMoveAllProcessed [CurrentIncMove] := true; // se è vuota dico che è stata processata
           end;
         end
-        else if CurrentIncMove =  LastMoveBrain then begin   // qui BUG
-          if not LastIncProcessed then begin
-            RemoveSubMainskill;
-            if Mybrain.tsScript [CurrentIncMove].Count > 0 then begin
-              AnimationScript.Reset ;
-              LoadAnimationScript // riempe animationScript.  alla fine il thread chiama  ClientLoadBrainMM
-            end
-            else begin
-              incMoveAllProcessed [CurrentIncMove] := true; // se è vuota dico che è stata processata
-            end;
-            LastIncProcessed := true;
-          end;
-        end;
 
 
        // end;
@@ -15303,6 +15316,19 @@ begin
           incMoveAllProcessed [CurrentIncMove] := true;
           //SpriteReset;
         end;
+      end;
+    end
+    else if CurrentIncMove =  LastMoveBrain then begin   // qui BUG
+      if not LastIncProcessed then begin
+        RemoveSubMainskill;
+        if Mybrain.tsScript [CurrentIncMove].Count > 0 then begin
+          AnimationScript.Reset ;
+          LoadAnimationScript // riempe animationScript.  alla fine il thread chiama  ClientLoadBrainMM
+        end
+        else begin
+          incMoveAllProcessed [CurrentIncMove] := true; // se è vuota dico che è stata processata
+        end;
+        LastIncProcessed := true;
       end;
     end;
 
