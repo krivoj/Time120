@@ -311,6 +311,7 @@ TSoccerPlayer = class
     stay: Boolean; // non si muove durante ai_moveall
 
     // generali
+    MatchCost : integer;
     MatchesPlayed: SmallInt;
     Age: byte;
     MatchesLeft: SmallInt;

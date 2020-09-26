@@ -26,7 +26,9 @@ type TTeam = record
   money : integer;
   Division: Byte;
   YoungQueue: ShortInt;
+  TeamName : string[35];
 end;
+  PTeam = ^TTeam;
 type TBasePlayer = record
   Guid : Integer;// in pve
   GuidTeam: Integer; // in pve viene assegnato il team
@@ -34,7 +36,9 @@ type TBasePlayer = record
   Attributes : string[17]; // 01,02,03,04,05,06
   MatchesLeft : Integer;
   MatchesPlayed: Integer;
+  TeamName: string[35];
   Age : Byte;
+  MatchCost: Integer;
 
   devA: Integer;
   devT: Integer;
@@ -108,7 +112,7 @@ end;
       procedure CreateResultsPreset(filename: string);// lo cra per ogni country e division
 
   procedure CreateTeams ( idCountry, Season, nFacesM,nFacesF: Integer; dirData, dirSaves: string);
-    procedure GetMyGuidTeams ( Gender,dirsaves: string; idCountry, Season, D, TeamCount: Integer; var ArrayGuidTeams: SE_IntegerList ) ;
+    procedure GetMyGuidTeams ( Gender,dirsaves: string; idCountry, Season, D, TeamCount: Integer; var ArrayGuidTeams: SE_RecordList ) ;
     function pveCreatePlayers ( fm : Char; GuidTeam,Season,idCountry,Division, level, nFacesM,nFacesF,lastInsertId: Integer; tsSurnames: TStringList; dirSaves: string): integer;
       procedure CreateCodeNamePlayer;
         procedure CodeNamePlayerF ( var MyTeam: Array22) ;
@@ -149,7 +153,7 @@ end;
     function DeleteFromresults ( Index : Integer; var lstByte:TList<Byte> ): TPoint; // un risultato
 
   //  procedure OverWriteMyTeam (  MyGuidTeam , MyGuidCountry, ActiveSeason,MyDivision: Integer; MyTeamName,dirData, dirSaves: string);
-  procedure PveAddToMarket (fm:char; Guid, GuidTeam, dirSaves: string; Price:Integer );
+  procedure PveAddToMarket (fm:char; Guid, GuidTeam, TeamName, dirSaves: string; Price:Integer );
   function PveDeleteFromMarket (fm:char; Guid: string; dirSaves: string ): boolean;
   function pveOnMarket (fm: char; Guid: string; dirSaves: string): Boolean;
   function pveGetTotMarket (fm: char; GuidTeam, DirSaves: string): Integer;
@@ -554,6 +558,7 @@ begin
 
   if Age = 0 then
     aPlayer.Age := RndGenerateRange(18,21); // else Age è quello in entrata, oppure sono dei giovani
+  aPlayer.MatchCost := RndGenerate(3);
   aPlayer.TalentID1 := MyTeam [ pRnd ].TalentId1; // mantengo quelli sopra . può essere un GK
   aPlayer.TalentID2 := MyTeam [ pRnd ].TalentId2;
 
@@ -666,7 +671,9 @@ begin
       1..40: MyTeam[i].Age := MyTeam[i].Age - years;
       41..80: MyTeam[i].Age := MyTeam[i].Age + years;
     end;
-//      case 81..20 of
+
+    MyTeam[i].MatchCost := 1;
+    //      case 81..20 of
         // 26 anni
   end;
 
@@ -1085,6 +1092,8 @@ MyExit:
     MyTeam[i].xpdevA := 0;
     MyTeam[i].xpdevT := 0;
     MyTeam[i].xpdevI := 0;
+
+
   end;
 
 
@@ -1389,10 +1398,11 @@ procedure CreateTeams ( idCountry, Season, nFacesM,nFacesF : Integer; dirData, d
 var
   tsSurnames,ts2 : TStringList;
   i,D,G,TeamMemoryIndex : Integer;
-  ArrayGuidTeams : SE_IntegerList;
-  YQ,LastInsertId, GuidTeam, StartMoney: Integer;
+  ArrayGuidTeams : SE_RecordList;
+  YQ,LastInsertId, StartMoney: Integer;
   MMTeams, MM : TMemoryStream;
   ini : TIniFile;
+  aTeamRecord: TTeam;
   const GenderS = 'fm';
 begin
 
@@ -1412,35 +1422,22 @@ begin
   // Leggo i calendari mSCD.ini o fSCD.ini per ottenere le GUIDteam e creo i file mXXX.120 e fXXX.120 che contengono i players.
   // qui salvo in memoria MyTeam e poi lo storo in mXXX.120 . Inoltre creo fCDTeams.ini e mCDteams.ini
 
-  ArrayGuidTeams:= SE_IntegerList.Create;  // è dinamico , uso se_recordlist
+  ArrayGuidTeams:= SE_RecordList.CreateList(SizeOf(TTeam));  // è dinamico , uso se_recordlist
   LastInsertId := 0;
   YQ := 0;
   for G := 1 to 2 do begin
     MM := TMemoryStream.Create;
     Mm.Size := 0;
     for D := 1 to 5 do begin
-      if D <= 2 then begin
-        GetMyGuidTeams ( GenderS[G],dirSaves ,idCountry, Season, D, 20, ArrayGuidTeams );
-        for I := 0 to ArrayGuidTeams.Count -1 do begin //creo teams.120
-          GuidTeam :=ArrayGuidTeams.Items[i];
-          StartMoney := RndGenerateRange(MoneyBase[G,D,0],MoneyBase[G,D,1] );
-          MM.Write( @GuidTeam ,4 );
-          MM.Write( @StartMoney,4 );
-          MM.Write( @D,1 );
-          MM.Write( @YQ,1 );
-        end;
+      if D <= 2 then
+        GetMyGuidTeams ( GenderS[G],dirSaves ,idCountry, Season, D, 20, ArrayGuidTeams )
+       else GetMyGuidTeams ( GenderS[G],dirSaves ,idCountry, Season, D, 16, ArrayGuidTeams );
 
-      end
-      else begin
-        GetMyGuidTeams ( GenderS[G],dirSaves, idCountry, Season, D, 16, ArrayGuidTeams );
-        for I := 0 to ArrayGuidTeams.Count -1 do begin //creo teams.120
-          GuidTeam :=ArrayGuidTeams.Items[i];
-          StartMoney := RndGenerateRange(MoneyBase[G,D,0],MoneyBase[G,D,1] );
-          MM.Write( @GuidTeam,4 );
-          MM.Write( @StartMoney,4 );
-          MM.Write( @D,1 );
-          MM.Write( @YQ,1 );
-        end;
+      for I := 0 to ArrayGuidTeams.Count -1 do begin //creo teams.120
+        PTeam(ArrayGuidTeams[i])^.Money := RndGenerateRange(MoneyBase[G,D,0],MoneyBase[G,D,1] );
+        PTeam(ArrayGuidTeams[i])^.Division:=D;
+        PTeam(ArrayGuidTeams[i])^.YoungQueue:=0;
+//        PTeam(ArrayGuidTeams[i])^.TeamName e Guid già riempite
       end;
 
 
@@ -1448,23 +1445,23 @@ begin
       TeamMemoryIndex := 0;
       for I := 0 to 3 do begin
 
-        LastInsertId := pveCreatePlayers ( GenderS[G], ArrayGuidTeams[TeamMemoryIndex] , Season,idCountry,D, 1+D-1, nFacesM,nFacesF, lastInsertId,tsSurnames,DirSaves);
+        LastInsertId := pveCreatePlayers ( GenderS[G], pTeam (ArrayGuidTeams[TeamMemoryIndex])^.guid , Season,idCountry,D, 1+D-1, nFacesM,nFacesF, lastInsertId,tsSurnames,DirSaves);
         inc (TeamMemoryIndex ) ;
       end;
       for I := 0 to 5 do begin
 
-        LastInsertId:= pveCreatePlayers ( GenderS[G], ArrayGuidTeams[TeamMemoryIndex] , Season,idCountry,D, 2+D-1,nFacesM,nFacesF,lastInsertId,tsSurnames,DirSaves);
+        LastInsertId:= pveCreatePlayers ( GenderS[G], pTeam (ArrayGuidTeams[TeamMemoryIndex])^.guid , Season,idCountry,D, 2+D-1,nFacesM,nFacesF,lastInsertId,tsSurnames,DirSaves);
         inc (TeamMemoryIndex ) ;
       end;
       for I := 0 to 5 do begin
 
-        LastInsertId:= pveCreatePlayers ( GenderS[G], ArrayGuidTeams[TeamMemoryIndex] , Season,idCountry,D, 3+D-1, nFacesM,nFacesF,lastInsertId,tsSurnames,DirSaves);
+        LastInsertId:= pveCreatePlayers ( GenderS[G], pTeam (ArrayGuidTeams[TeamMemoryIndex])^.guid , Season,idCountry,D, 3+D-1, nFacesM,nFacesF,lastInsertId,tsSurnames,DirSaves);
         inc (TeamMemoryIndex ) ;
       end;
       //se Division 1 e 2 sono 20, faccio qui sotto
       if D <= 2 then begin
         for I := 0 to 3 do begin
-          LastInsertId:= pveCreatePlayers ( GenderS[G], ArrayGuidTeams[TeamMemoryIndex] , Season,idCountry,D, 4+D-1,nFacesM,nFacesF, lastInsertId,tsSurnames, DirSaves);
+          LastInsertId:= pveCreatePlayers ( GenderS[G], pTeam (ArrayGuidTeams[TeamMemoryIndex])^.guid , Season,idCountry,D, 4+D-1,nFacesM,nFacesF, lastInsertId,tsSurnames, DirSaves);
           inc (TeamMemoryIndex ) ;
         end;
       end;
@@ -1477,7 +1474,9 @@ begin
       MMTeams.LoadFromFile(dirSaves + GenderS[G] + 'teams.120' );
 
     MMTeams.Position := MMTeams.Size;
-    MMTeams.Write ( MM.Memory, MM.size );
+  //  MMTeams.Write ( MM.Memory, MM.size );
+  // OutputDebugString(PChar(IntToStr(SizeOf(TTeam))));
+    MMTeams.Write ( ArrayGuidTeams.data , ArrayGuidTeams.Count *  SizeOf(TTeam) );
     MMTeams.SaveToFile( dirSaves + GenderS[G] + 'teams.120' );
     MMTeams.Free;
     MM.Free;
@@ -1492,11 +1491,12 @@ begin
   tsSurnames.Free;
 
 end;
-procedure GetMyGuidTeams ( Gender, dirSaves: string; idCountry, Season, D, TeamCount: Integer; var ArrayGuidTeams: SE_IntegerList ) ;
+procedure GetMyGuidTeams ( Gender, dirSaves: string; idCountry, Season, D, TeamCount: Integer; var ArrayGuidTeams: SE_RecordList ) ;
 var
   i: Integer;
   ini : Tinifile;
   ts2 : TStringList;
+  aTeamRecord: TTeam;
 begin
 
   ArrayGuidTeams.Clear;
@@ -1509,8 +1509,19 @@ begin
 
     ts2.StrictDelimiter := True;
     ts2.CommaText := ini.ReadString( 'Round1','match'+ IntToStr(i),'' );
-    ArrayGuidTeams.Add(StrToInt(ts2[0]));
-    ArrayGuidTeams.Add(StrToInt(ts2[2]));
+
+    aTeamrecord.Guid := 0;
+    aTeamrecord.guid := StrToInt(ts2[0]);
+    aTeamrecord.TeamName := StringOfChar (' ', 35) ;  // perchè è una string[35] e non deve sovrascrivere
+    aTeamrecord.TeamName := ts2[1];
+    ArrayGuidTeams.Add(@aTeamrecord);
+
+    aTeamrecord.Guid := 0;
+    aTeamrecord.guid := StrToInt(ts2[2]);
+    aTeamrecord.TeamName := StringOfChar (' ', 35) ;  // perchè è una string[35] e non deve sovrascrivere
+    aTeamrecord.TeamName := ts2[3];
+    ArrayGuidTeams.Add(@aTeamrecord);
+    // Division, money, YQ sono aggiunte dopo
   end;
 
   ts2.Free;
@@ -1524,7 +1535,7 @@ var
   tmps: string[255];
   tmpi: Integer;
   tmpb: Byte;
-  Age,face,fitness,morale: integer;
+  Age,MatchCost,face,fitness,morale: integer;
   Country, dev,Xpdev: SmallInt;
 begin
 
@@ -1544,6 +1555,8 @@ begin
 
     Age:= MyTeam[i].Age;
     MM.Write( @Age, sizeof(byte) );
+    MatchCost:= MyTeam[i].MatchCost;
+    MM.Write( @MatchCost, sizeof(Integer) );
 
     tmpb := MyTeam[i].talentid1;
     MM.Write( @tmpb, sizeof(byte) );
@@ -1624,7 +1637,7 @@ var
   tmps: string[255];
   tmpi,indexTal: Integer;
   tmpb: Byte;
-  Age,face,fitness,morale: integer;
+  Age,MatchCost,face,fitness,morale: integer;
   Country, dev,Xpdev: SmallInt;
   aPlayer: TSoccerPlayer;
 begin
@@ -1647,6 +1660,8 @@ begin
 
     Age:= aPlayer.Age;
     MM.Write( @Age, sizeof(byte) );
+    MatchCost:= aPlayer.MatchCost;
+    MM.Write( @MatchCost, sizeof(Integer) );
 
     tmpb := aPlayer.talentid1;
     MM.Write( @tmpb, sizeof(byte) );
@@ -1784,6 +1799,8 @@ begin
 
     aPlayer.Age :=  Ord( buf3 [ cur ]);
     Cur := Cur + 1 ;
+    aPlayer.MatchCost :=  PDWORD(@buf3 [ cur ])^;
+    Cur := Cur + 4 ;
 
     aPlayer.TalentID1 := Ord( buf3 [ cur ]);           // identificativo talento
     Cur := Cur + 1;
@@ -3269,6 +3286,8 @@ begin
 
     aPlayer.Age :=  Ord( buf3 [ cur ]);               // età
     Cur := Cur + 1 ;
+    aPlayer.MatchCost :=  PDWORD(@buf3 [ cur ])^;
+    Cur := Cur + 4 ;
     aPlayer.TalentID1 := Ord( buf3 [ cur ]);           // identificativo talento
     Cur := Cur + 1;
     aPlayer.TalentID2 := Ord( buf3 [ cur ]);           // identificativo talento
@@ -3475,6 +3494,8 @@ begin
 
     MyBasePlayer.Age :=  Ord( buf3 [ cur ]);               // età
     Cur := Cur + 1 ;
+    MyBasePlayer.MatchCost :=   PDWORD(@buf3 [ cur ])^;
+    Cur := Cur + 4 ;
     MyBasePlayer.TalentID1 := Ord( buf3 [ cur ]);           // identificativo talento
     Cur := Cur + 1;
     MyBasePlayer.TalentID2 := Ord( buf3 [ cur ]);           // identificativo talento
@@ -3574,7 +3595,7 @@ begin
 end;
 function pveOnMarket (fm: char; Guid: string; dirSaves: string): Boolean;
 var
-  i,count,cur,lenSurname: integer;
+  i,count,cur,lenSurname,lenTeamName: integer;
   aBasePlayer: TBasePlayer;
   buf3 : TArray32768;
   MM : TMemoryStream;
@@ -3611,8 +3632,14 @@ begin
     aBasePlayer.Surname := MidStr( dataStr, cur + 2  , lenSurname );// ragiona in base 1  e l'elemento 0 è la len della stringa quindi + 2
     cur  := cur + lenSurname + 1;
 
+    lenTeamName :=  Ord( buf3[ cur ]);
+    aBasePlayer.TeamName := MidStr( dataStr, cur + 2  , lenTeamName );// ragiona in base 1  e l'elemento 0 è la len della stringa quindi + 2
+    cur  := cur + lenTeamName + 1;
+
     aBasePlayer.Age :=Ord( buf3[ cur ]); // solo age, non matchleseft
     Cur := Cur + 1;
+    aBasePlayer.MatchCost := PDWORD(@buf3[ cur ] )^;
+    Cur := Cur + 4;
 
     aBasePlayer.DefaultSpeed := Ord( buf3 [ cur ]);
     Cur := Cur + 1;
@@ -3653,7 +3680,7 @@ begin
 end;
 function pveGetTotMarket (fm: char; GuidTeam, DirSaves: string): Integer;
 var
-  i,count,cur,lenSurname: integer;
+  i,count,cur,lenSurname,lenteamName: integer;
   aBasePlayer: TBasePlayer;
   buf3 : TArray32768;
   MM : TMemoryStream;
@@ -3686,8 +3713,14 @@ begin
     aBasePlayer.Surname := MidStr( dataStr, cur + 2  , lenSurname );// ragiona in base 1  e l'elemento 0 è la len della stringa quindi + 2
     cur  := cur + lenSurname + 1;
 
+    lenteamName :=  Ord( buf3[ cur ]);
+    aBasePlayer.TeamName := MidStr( dataStr, cur + 2  , lenteamName );// ragiona in base 1  e l'elemento 0 è la len della stringa quindi + 2
+    cur  := cur + lenteamName + 1;
+
     aBasePlayer.Age :=Ord( buf3[ cur ]); // solo age, non matchleseft
     Cur := Cur + 1;
+    aBasePlayer.MatchCost := PDWORD(@buf3[ cur ] )^;
+    Cur := Cur + 4;
 
     aBasePlayer.DefaultSpeed := Ord( buf3 [ cur ]);
     Cur := Cur + 1;
@@ -3729,9 +3762,9 @@ begin
   MM.Free;
 
 end;
-procedure pveAddToMarket (fm:char; Guid, GuidTeam, dirSaves: string; Price:Integer );
+procedure pveAddToMarket (fm:char; Guid, GuidTeam, TeamName, dirSaves: string; Price:Integer );
 var
-  i,count,cur,lenSurname: integer;
+  i,count,cur,lenSurname,lenteamName: integer;
   lstMarketPlayer : TList<TBasePlayer>;
   aBasePlayer: TBasePlayer;
   buf3 : TArray32768;
@@ -3775,8 +3808,14 @@ begin
     aBasePlayer.Surname := MidStr( dataStr, cur + 2  , lenSurname );// ragiona in base 1  e l'elemento 0 è la len della stringa quindi + 2
     cur  := cur + lenSurname + 1;
 
+    lenteamName :=  Ord( buf3[ cur ]);
+    aBasePlayer.TeamName := MidStr( dataStr, cur + 2 , lenteamName );
+    cur  := cur + lenteamName + 1;
+
     aBasePlayer.Age :=Ord( buf3[ cur ]); // solo age, non matchleseft
     Cur := Cur + 1;
+    aBasePlayer.MatchCost := PDWORD(@buf3[ cur ] )^;
+    Cur := Cur + 4;
 
     aBasePlayer.DefaultSpeed := Ord( buf3 [ cur ]);
     Cur := Cur + 1;
@@ -3821,6 +3860,7 @@ begin
   // lo devo aggiungere a lstMarketPlayer
   pveGetDBPlayer (dirSaves + fm + GuidTeam + '.120' , guid, aBasePlayer );
   aBasePlayer.GuidTeam := StrToInt(GuidTeam); // lo devo assegnare, nel file non c'è, nel market serve
+  aBasePlayer.TeamName:= TeamName;  // lo devo assegnare, nel file non c'è, nel market serve
   aBasePlayer.Price := Price;
   lstMarketPlayer.add ( aBasePlayer );
 
@@ -3845,8 +3885,14 @@ begin
     tmps := lstMarketPlayer[i].Surname;
     MM.Write( @tmps[0] , length ( tmps ) +1 );      // +1 byte 0 indica lunghezza stringa
 
+    tmps := lstMarketPlayer[i].TeamName;
+    MM.Write( @tmps[0] , length ( tmps ) +1 );      // +1 byte 0 indica lunghezza stringa   CONVERTE da 35 fisso a variabile.
+
     tmpb := lstMarketPlayer[i].Age;
     MM.Write( @tmpb, sizeof(Byte) );
+
+    tmpi:=  lstMarketPlayer[i].MatchCost;
+    MM.Write( @tmpi , sizeof(integer) );
 
     tmpb := lstMarketPlayer[i].DefaultSpeed;
     MM.Write( @tmpb, sizeof(Byte) );
@@ -3890,7 +3936,7 @@ begin
 end;
 function PveDeleteFromMarket (fm:char; Guid: string; dirSaves: string ): Boolean;
 var
-  i,count,cur,lenSurname: integer;
+  i,count,cur,lenSurname,lenteamName: integer;
   lstMarketPlayer : TList<TBasePlayer>;
   aBasePlayer: TBasePlayer;
   buf3 : TArray32768;
@@ -3936,8 +3982,14 @@ begin
     aBasePlayer.Surname := MidStr( dataStr, cur + 2  , lenSurname );// ragiona in base 1  e l'elemento 0 è la len della stringa quindi + 2
     cur  := cur + lenSurname + 1;
 
+    lenteamName:=  Ord( buf3[ cur ]);
+    aBasePlayer.Teamname := MidStr( dataStr, cur + 2  , lenteamName );// ragiona in base 1  e l'elemento 0 è la len della stringa quindi + 2
+    cur  := cur + lenteamName + 1;
+
     aBasePlayer.Age :=Ord( buf3[ cur ]); // solo age, non matchleseft
     Cur := Cur + 1;
+    aBasePlayer.MatchCost := PDWORD(@buf3[ cur ] )^;
+    Cur := Cur + 4;
 
     aBasePlayer.DefaultSpeed := Ord( buf3 [ cur ]);
     Cur := Cur + 1;
@@ -3998,8 +4050,14 @@ begin
     tmps := lstMarketPlayer[i].Surname;
     MM.Write( @tmps[0] , length ( tmps ) +1 );      // +1 byte 0 indica lunghezza stringa
 
+    tmps := lstMarketPlayer[i].teamName;
+    MM.Write( @tmps[0] , length ( tmps ) +1 );      // +1 byte 0 indica lunghezza stringa
+
     tmpb := lstMarketPlayer[i].Age;
     MM.Write( @tmpb, sizeof(Byte) );
+
+    tmpi := lstMarketPlayer[i].MatchCost;
+    MM.Write( @tmpi, sizeof(Integer) );
 
     tmpb := lstMarketPlayer[i].DefaultSpeed;
     MM.Write( @tmpb, sizeof(Byte) );
@@ -4046,7 +4104,7 @@ Falseexit:
 end;
 procedure pveTransferMarket ( fm: char; guid, ToGuidTeam: integer; DirSaves: string  ); // il fromTeam lo trova nel record. Accede al fromteam per eliminare il giocatore
 var
-  i,count,cur,lenSurname: integer;
+  i,count,cur,lenSurname,lenTeamName: integer;
   aBasePlayer: TBasePlayer;
   buf3 : TArray32768;
   MM : TMemoryStream;
@@ -4082,8 +4140,14 @@ begin
     aBasePlayer.Surname := MidStr( dataStr, cur + 2  , lenSurname );// ragiona in base 1  e l'elemento 0 è la len della stringa quindi + 2
     cur  := cur + lenSurname + 1;
 
+    lenTeamName :=  Ord( buf3[ cur ]);
+    aBasePlayer.TeamName := MidStr( dataStr, cur + 2  , lenTeamName );// ragiona in base 1  e l'elemento 0 è la len della stringa quindi + 2
+    cur  := cur + lenTeamName + 1;
+
     aBasePlayer.Age :=Ord( buf3[ cur ]); // solo age, non matchleseft
     Cur := Cur + 1;
+    aBasePlayer.MatchCost := PDWORD(@buf3[ cur ] )^;
+    Cur := Cur + 4;
 
     aBasePlayer.DefaultSpeed := Ord( buf3 [ cur ]);
     Cur := Cur + 1;
@@ -4182,6 +4246,7 @@ begin
     Cur := Cur + 1;
     aTeamRecord.YoungQueue := ord ( buf3 [ cur ]);
     Cur := Cur + 1;
+    Cur := Cur + 38; // teamname  + 2 byte terminator
 
   end;
 end;
@@ -4219,6 +4284,7 @@ begin
     Cur := Cur + 1;
     aTeamRecord.YoungQueue := ord ( buf3 [ cur ]);
     Cur := Cur + 1;
+    Cur := Cur + 38; // teamname
 
 
   end;
@@ -4258,7 +4324,7 @@ begin
     Cur := Cur + 1;
     aTeamRecord.YoungQueue := ord ( buf3 [ cur ]);
     Cur := Cur + 1;
-
+    Cur := Cur + 38; // teamname
   end;
 end;
 function pveGetTeamInfo (fm: Char; GuidTeam: integer; dirSaves: string  ): TTeam;
@@ -4286,6 +4352,10 @@ begin
     Cur := Cur + 1;
     Result.YoungQueue := ord ( buf3 [ cur ]);
     Cur := Cur + 1;
+
+    CopyMemory( @Result.TeamName, Pchar (@buf3 [ cur ])   , 35  );
+    Cur := Cur + 38; // lunghezza stringa + 2 byte mai capiti
+
     if Result.guid = GuidTeam then begin
       MM.Free;
       Exit;
@@ -4312,6 +4382,7 @@ begin
   aPlayer.GuidTeam := ToGuidTeam; // comunque non lo salvo come dato
   aPlayer.Surname := MyBasePlayer.Surname;
   aPlayer.Age :=  MyBasePlayer.Age;
+  aPlayer.MatchCost :=  MyBasePlayer.MatchCost;
   aPlayer.TalentID1 := MyBasePlayer.TalentId1;
   aPlayer.TalentID2 := MyBasePlayer.TalentId2;
   aPlayer.Stamina := MyBasePlayer.Stamina;
@@ -4461,7 +4532,7 @@ begin
             Price := Price + Perc;
           end;
           if pveGetTotalPlayersOnMarket ( fm, StrToInt(GuidTeam) , dirSaves ) < 3 then begin
-            pveAddToMarket ( fm, AHotPlayer.ids , GuidTeam, dirSaves, Price );
+            pveAddToMarket ( fm, AHotPlayer.ids , GuidTeam, aRecordTeam.TeamName, dirSaves, Price );
           end;
         end;
 
@@ -4549,7 +4620,7 @@ FindGK:
             Price := Price + Perc;
           end;
           if pveGetTotalPlayersOnMarket ( fm, StrToInt(GuidTeam) , dirSaves ) < 3 then
-            pveAddToMarket ( fm, AHotPlayer.ids , GuidTeam, dirSaves, Price );
+            pveAddToMarket ( fm, AHotPlayer.ids , GuidTeam, aRecordTeam.TeamName, dirSaves, Price );
 
         end;
 
@@ -4585,7 +4656,7 @@ end;
 function BuyPlayerFromMarket ( fm :Char; Budget,GuidTeam: Integer;  dirSaves: string): Integer; // uguale a pveClientLoadMarket ma non lavora su globale
 var
   i,Cur : Integer;
-  count,lenSurname: integer;
+  count,lenSurname,lenteamName: integer;
   lstPLayerMarket: TList<TBasePlayer>;
   aBasePlayer: TBasePlayer;
   Buf3 : TArray32768;
@@ -4620,8 +4691,15 @@ begin
     aBasePlayer.Surname := MidStr( dataStr, cur + 2  , LenSurname );// ragiona in base 1
     cur  := cur + lenSurname + 1;
 
+    lenteamName :=  Ord( buf3[ cur ]);
+    aBasePlayer.TeamName := MidStr( dataStr, cur + 2  , lenteamName );// ragiona in base 1
+    cur  := cur + lenteamName + 1;
+
     aBasePlayer.Age :=   Ord( buf3[ cur ]); // solo age, non matchleseft
     Cur := Cur + 1;
+
+    aBasePlayer.MatchCost :=    PDWORD(@buf3[ cur ] )^;
+    Cur := Cur + 4;
 
     aBasePlayer.DefaultSpeed := Ord( buf3[ cur ]);  // speed
     Cur := Cur + 1;
@@ -4681,7 +4759,7 @@ end;
 function BuyPlayerFromMarket ( fm :Char; Budget,GuidTeam,TalentId: Integer;  dirSaves: string): Integer; // uguale a pveClientLoadMarket ma non lavora su globale
 var
   i,Cur : Integer;
-  count,lenSurname: integer;
+  count,lenSurname,lenteamName: integer;
   lstPLayerMarket: TList<TBasePlayer>;
   aBasePlayer: TBasePlayer;
   Buf3 : TArray32768;
@@ -4716,8 +4794,15 @@ begin
     aBasePlayer.Surname := MidStr( dataStr, cur + 2  , LenSurname );// ragiona in base 1
     cur  := cur + lenSurname + 1;
 
+    lenteamName :=  Ord( buf3[ cur ]);
+    aBasePlayer.TeamName := MidStr( dataStr, cur + 2  , lenteamName );// ragiona in base 1
+    cur  := cur + lenteamName + 1;
+
     aBasePlayer.Age :=   Ord( buf3[ cur ]); // solo age, non matchleseft
     Cur := Cur + 1;
+
+    aBasePlayer.Age :=   PDWORD(@buf3[ cur ] )^;
+    Cur := Cur + 4;
 
     aBasePlayer.DefaultSpeed := Ord( buf3[ cur ]);  // speed
     Cur := Cur + 1;
@@ -4778,7 +4863,7 @@ end;
 function pveGetTotalPlayersOnMarket ( fm :Char; GuidTeam: Integer; dirSaves: string ): Integer;
 var
   i,Cur : Integer;
-  count,lenSurname: integer;
+  count,lenSurname,lenTeamName: integer;
   lstPLayerMarket: TList<TBasePlayer>;
   aBasePlayer: TBasePlayer;
   Buf3 : TArray32768;
@@ -4813,8 +4898,14 @@ begin
     aBasePlayer.Surname := MidStr( dataStr, cur + 2  , LenSurname );// ragiona in base 1
     cur  := cur + lenSurname + 1;
 
+    lenTeamName :=  Ord( buf3[ cur ]);
+    aBasePlayer.TeamName := MidStr( dataStr, cur + 2  , lenTeamName );// ragiona in base 1
+    cur  := cur + lenTeamName + 1;
+
     aBasePlayer.Age :=   Ord( buf3[ cur ]); // solo age, non matchleseft
     Cur := Cur + 1;
+    aBasePlayer.MatchCost :=   PDWORD(@buf3[ cur ] )^;
+    Cur := Cur + 4;
 
     aBasePlayer.DefaultSpeed := Ord( buf3[ cur ]);  // speed
     Cur := Cur + 1;
@@ -5661,6 +5752,10 @@ begin
     Cur := Cur + 1;
     Result.YoungQueue := ord ( buf3 [ cur ]);
     Cur := Cur + 1;
+    CopyMemory( @Result.TeamName, Pchar (@buf3 [ cur ])   , 35  );
+//    SetString(Result.TeamName,   @buf3 [ cur ]^ , 35);
+//    Result.TeamName := MidStr ( string ord ( buf3 [ cur ]);
+    Cur := Cur + 38; // 36+2
 
     if Result.guid = StrToInt(GuidTeam) then
       Exit;
@@ -5691,6 +5786,10 @@ begin
     Cur := Cur + 1;
     aTeamRecord.YoungQueue := ord ( buf3 [ cur ]);
     Cur := Cur + 1;
+    CopyMemory( @aTeamRecord.TeamName, Pchar (@buf3 [ cur ])   , 35  );
+
+//    SetString(aTeamRecord.TeamName,   @buf3 [ cur ], 35);
+    Cur := Cur + 35;
 
      if aTeamRecord.guid = NewTeamrecord.guid then begin
       MM.Position := Cur - 1;

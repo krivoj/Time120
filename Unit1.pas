@@ -23,7 +23,9 @@
 
     sui freekick 3000 bug
 
-    BUg exec_autotackle   preRoll := RndGenerate (aPlayer.Defense);
+    market finir ebene con 2 label matchcost e squadra di appartenenza font più piccolo
+
+    DA CAPIRE BUg exec_autotackle   preRoll := RndGenerate (aPlayer.Defense);
 
 
     BUG quando devo schierare la barriera
@@ -31,7 +33,8 @@
     i portieri devono gaudagnare meno xp, anche nel brain. 8 a partita sono troppi. oppure invece di 120 arrivo a 180 punti xp solo per GK
 
 
-    Newseason fare i rewards in denaro
+    Newseason fare i rewards in denaro matchcost 14 money a partita se pareggi. 14*2 se vinci ( ti ripaghi quasi il costo completo di tutti a 3 cost )
+    rewards 38 o 30 partite * 2 +  puoi comprare X player
 
     face paint shop pro 9 blackpencil 80 30  ufficiale + molte faces
 
@@ -92,6 +95,8 @@
 
   }
   { TODO -csviluppo :
+    denaro: ogni giocatore chiede a partita X.
+    im market indicare matchcost e team di provenienza
     talento convergi verso il centro
     talento autorità GK 50% -1 sui cross avversari o 50% +1 defense a heading
     +4 buff corsa ma solo pos
@@ -4297,7 +4302,7 @@ var
   i,x,y: Integer;
   count: Byte;
   aPlayer: TSoccerPlayer;
-  guid,age,Matches_Played,Matches_Left,stamina,Injured, yellowcard, Disqualified,Cur,lenSurname,LenHistory,LenXP,onmarket,face: Integer;
+  guid,age,MatchCost,Matches_Played,Matches_Left,stamina,Injured, yellowcard, Disqualified,Cur,lenSurname,LenHistory,LenXP,onmarket,face: Integer;
   country: smallint;
   rank,fitness,morale: Byte;
   AIFormation_x,AIFormation_y: ShortInt;
@@ -4443,6 +4448,8 @@ begin
 
       Age :=  Ord( buf3[0] [ cur ]);               // età
       Cur := Cur + 1 ;
+      MatchCost :=  PDWORD(@buf3[0] [ cur ])^;
+      Cur := Cur + 4 ;
       TalentID1 := Ord( buf3[0] [ cur ]);           // identificativo talento
       Cur := Cur + 1;
       TalentID2 := Ord( buf3[0] [ cur ]);           // identificativo talento
@@ -10733,7 +10740,7 @@ begin
       end;
     end
     else begin
-      pveAddToMarket ( MyActiveGender, IntToStr(SE_BackGround.tag), IntToStr(MyGuidTeam), dir_saves, StrToInt (edtSell.Text)); // guid del player
+      pveAddToMarket ( MyActiveGender, IntToStr(SE_BackGround.tag), IntToStr(MyGuidTeam), MyTeamName, dir_saves, StrToInt (edtSell.Text)); // guid del player
       ShowPlayerDetails(aPlayer);
       Inc(TotMarket);
       pveClientLoadMarket; // ricarico il market globale
@@ -16662,7 +16669,7 @@ end;
 procedure TForm1.pveClientLoadMarket ;
 var
   i,Cur : Integer;
-  count,lenSurname: integer;
+  count,lenSurname,LenTeamName: integer;
 
   aBasePlayer: TBasePlayer;
 
@@ -16697,8 +16704,14 @@ begin
     aBasePlayer.Surname := MidStr( dataStrMarket, cur + 2  , LenSurname );// ragiona in base 1
     cur  := cur + lenSurname + 1;
 
+    LenTeamName :=  Ord( bufMarket[ cur ]);
+    aBasePlayer.TeamName := MidStr( dataStrMarket, cur + 2  , LenTeamName );// ragiona in base 1
+    cur  := cur + LenTeamName + 1;
+
     aBasePlayer.Age :=   Ord( bufMarket[ cur ]); // solo age, non matchleseft
     Cur := Cur + 1;
+    aBasePlayer.MatchCost :=   Ord( bufMarket[ cur ]);
+    Cur := Cur + 4;
 
     aBasePlayer.DefaultSpeed := Ord( bufMarket[ cur ]);  // speed
     Cur := Cur + 1;
@@ -16784,7 +16797,7 @@ begin
       aSprite.Bmp.Canvas.Font.Size := FontSizeMarket;
       aSprite.Bmp.Canvas.Font.Name := 'Calibri';
 
-      aSprite.Labels[0].lText  := lstPLayerMarket[IndexMarket + I].Surname;
+      aSprite.Labels[0].lText  := lstPLayerMarket[IndexMarket + I].Surname +  '('+ lstPLayerMarket[IndexMarket + I].teamname+ ')';
       aSprite.Labels[0].lX :=  64; //appena più a destra del face
 
       aSprite.Labels[8].lText  := IntTostr (lstPLayerMarket[IndexMarket + I].age); // solo age, non matchleseft
@@ -17395,7 +17408,7 @@ var
   lenMatchInfo: word;
   TotPlayer,TotReserve,TotGameOver: byte;
   aFieldPointSpr, aSprite: se_Sprite;
-  ii , aAge,aCellX,aCellY,aGuidTeam,BIndex,aStamina,Age,Stamina: integer;
+  ii , aAge,aCellX,aCellY,aGuidTeam,BIndex,aStamina,Age,Stamina,MatchCost: integer;
   AIFormation_x,AIFormation_Y : ShortInt;
   DefaultCellX,DefaultCellY: ShortInt;
   TalentID1,TalentID2: Byte;
@@ -17513,6 +17526,9 @@ begin
 
       Age :=  Ord( buf3 [ cur ]);               // età
       Cur := Cur + 1 ;
+      MatchCost :=  PDWORD(@buf3 [ cur ])^;
+      Cur := Cur + 4 ;
+
       TalentID1 := Ord( buf3 [ cur ]);           // identificativo talento
       Cur := Cur + 1;
       TalentID2 := Ord( buf3 [ cur ]);           // identificativo talento
@@ -17857,6 +17873,7 @@ begin
     Cur := Cur + 1;
     aTeamRecord.YoungQueue :=ord(buf3 [ cur ]);
     Cur := Cur + 1;
+    Cur := Cur + 38; //[0]  + 35= 36 +2 terminator
 
     if RndGenerate(100) <= Perc then begin
       if aTeamRecord.guid <> MyGuidTeam then begin // AllOther al mio team penso io
@@ -18118,6 +18135,7 @@ dev:
         LastInsertId := LastInsertId + 1;
         aPlayer.Ids := IntToStr(LastInsertId);
         aPlayer.GuidTeam := aBrain.Score.TeamGuid[T];
+        aPlayer.MatchCost := 0; // forzo a 0
         lstPlayersDB.add ( aPlayer );
         ini.WriteInteger( 'setup','LastInsertId', LastInsertId ); // servirà alla nascita di nuovi player . è condiviso tra m e f
 
@@ -18132,6 +18150,7 @@ dev:
           LastInsertId := LastInsertId + 1;
           aPlayer.Ids := IntToStr(LastInsertId);
           aPlayer.GuidTeam := aBrain.Score.TeamGuid[T];
+          aPlayer.MatchCost := 0; // forzo a 0
           lstPlayersDB.add ( aPlayer );
           ini.WriteInteger( 'setup','LastInsertId', LastInsertId ); // servirà alla nascita di nuovi player . è condiviso tra m e f
           aTeamRecord.YoungQueue := aTeamRecord.YoungQueue - 1;
