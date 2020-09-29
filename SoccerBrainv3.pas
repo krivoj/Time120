@@ -580,7 +580,7 @@ end;
       MMbraindata,MMbraindataZIP: TMemoryStream;
       MatchInfo: TStringList; // Il tabellino della partita: gol, minuti, e cognomi. Tipologia se pos3 punizioni o pos4 rigore. cartellini. sostituzioni.
       dir_log: string;
-      ReserveSlot : array [0..1, 0..21] of string;
+      ReserveSlot,GameOverSlot : array [0..1, 0..21] of string;
       Working: Boolean;           // se true, sta elaborando un input e non può accettare input del client
       brainIds: string[50];       // Identificativo globale del brain
       brainSerie: string;
@@ -783,6 +783,15 @@ end;
       procedure ClearReserveSlot;
       function isReserveSlot (CellX, CellY: integer): boolean;
       procedure CleanReserveSlot ( team: integer );
+
+
+      function NextGameOverSlot ( aPlayer: TSoccerPlayer): Integer; overload;
+      function NextGameOverSlot ( team: Integer): Integer; overload;
+      procedure PutInGameOverSlot ( aPlayer: TSoccerPlayer ); overload;
+      procedure PutInGameOverSlot ( aPlayer: TSoccerPlayer; GameOverCell: TPoint );overload;  // mette il player nella cella indicata
+      procedure ClearGameOverSlot;
+      function isGameOverSlot (CellX, CellY: integer): boolean;
+      procedure CleanGameOverSlot ( team: integer );
 
       procedure UpdateDevi; // sia team 0 che 1
 
@@ -2613,7 +2622,7 @@ procedure TSoccerBrain.AddSoccerGameOver (aSoccerPlayer: TSoccerPlayer );
 begin
   aSoccerPlayer.brain:=self;
   lstSoccerGameOver.add ( aSoccerPlayer );
-  PutInReserveSlot( aSoccerPlayer );
+  PutInGameOverSlot( aSoccerPlayer );
 
 end;
 procedure TSoccerBrain.RemoveSoccerGameOver (aSoccerPlayer: TSoccerPlayer );
@@ -11170,7 +11179,7 @@ begin
                   aPlayer.RedCard :=  1;
                   aPlayer.Gameover := true;
                   aPlayer.CanMove := False;
-                  PutInReserveSlot ( aPlayer );
+                  //PutInGameOverSlot ( aPlayer );
                 if GameMode = pvp then
                   MatchInfo.Add( IntToStr(fminute) + '.rc.' + aPlayer.ids)
                   else  MatchInfo.Add( IntToStr(fminute) + '.rc.' + aPlayer.ids+'.'+aPlayer.SurName);
@@ -11194,7 +11203,7 @@ begin
                     aPlayer.Gameover := true;
                     //layer.RedCard :=  1;  no redcard diretto
                     aPlayer.CanMove := False;
-                    PutInReserveSlot(aPlayer);
+                    //PutInReserveSlot(aPlayer);
                     AddSoccerGameOver(aPlayer);
                     RemoveSoccerPlayer(aPlayer);
                     if GameMode = pvp then
@@ -11963,6 +11972,37 @@ var
 begin
     for x := 0 to 10 do begin
           ReserveSlot [team, x] := '';
+    end;
+end;
+function TSoccerbrain.NextGameOverSlot ( aPlayer: TSoccerPlayer): Integer;
+var
+  x: Integer;
+begin
+  for x := 0 to 21  do begin
+    if GameOverSlot [aPlayer.team,x] = '' then begin
+      Result := x;
+      Exit;
+    end;
+  end;
+end;
+function TSoccerbrain.NextGameOverSlot ( team: integer ): Integer;
+var
+  x: Integer;
+begin
+    Result := 0;
+    for x := 0 to 10 do begin
+        if GameOverSlot [team,x] = '' then begin
+          Result := x;
+          Exit;
+      end;
+    end;
+end;
+procedure TSoccerbrain.CleanGameOverSlot ( team: integer );
+var
+  x: Integer;
+begin
+    for x := 0 to 10 do begin
+          GameOverSlot [team, x] := '';
     end;
 end;
 
@@ -17109,6 +17149,50 @@ begin
 
 
 end;
+procedure TSoccerbrain.PutInGameOverSlot ( aPlayer: TSoccerPlayer );  // mette il player nella prima cella di GameOver libera
+var
+  NextSlot: Integer;
+begin
+    NextSlot:= NextGameOverSlot (aPlayer);
+    GameOverSlot [aPlayer.Team, NextSlot]:= aPlayer.Ids;
+    aPlayer.CellX := NextSlot;
+    aPlayer.CellY := -2;
+    aPlayer.DefaultCells := aPlayer.Cells;
+    aPlayer.AIFormationCellX := aPlayer.CellX;
+    aPlayer.AIFormationCellY := aPlayer.CellY;
+    aPlayer.Role := 'N';
+end;
+procedure TSoccerbrain.PutInGameOverSlot ( aPlayer: TSoccerPlayer; GameOverCell: TPoint );  // mette il player nella cella indicata
+begin
+    GameOverSlot [aPlayer.Team, GameOverCell.X]:= aPlayer.Ids;
+    aPlayer.CellX := GameOverCell.X;
+    aPlayer.CellY := -2;
+    aPlayer.DefaultCells := aPlayer.Cells;
+    aPlayer.AIFormationCellX := aPlayer.CellX;
+    aPlayer.AIFormationCellY := aPlayer.CellY;
+    aPlayer.Role := 'N';
+end;
+procedure TSoccerbrain.ClearGameOverSlot;
+var
+  t,x: Integer;
+begin
+  for t := 0 to 1 do begin
+    for x := 0 to 21 do begin
+        GameOverSlot [t,x] := '';
+    end;
+  end;
+end;
+
+function TSoccerbrain.isGameOverSlot (CellX, CellY: integer): boolean;
+begin
+
+  if (CellY = -2) and (( CellX > -1) and (CellX < 23)) then
+    result := True
+    else Result:= false;
+
+
+end;
+
 procedure TSoccerbrain.UpdateDevi;
 var
   i:integer;

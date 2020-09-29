@@ -21,9 +21,14 @@
   }
   { TODO -ctodo prima del rilascio patreon :
 
+    replay 15 si resetta male ultima azione, fosr PASS. gol live non resetta ma va direttamente all'azione. bug crash
+    ho aggiunto           AnimationScript.TsAdd  ( 'cl_wait,3000');  a tutti i gol. devo comunque usare uno spritereset prima del loadanimationscript
+    devo mettere un flag globale che c'è stato un gol
+
+    se faccio esci da una live devo mmetere hide tutti gli fp fpHide_all
+
     sui freekick 3000 bug
 
-    market finir ebene con 2 label matchcost e squadra di appartenenza font più piccolo
 
     DA CAPIRE BUg exec_autotackle   preRoll := RndGenerate (aPlayer.Defense);
 
@@ -95,6 +100,7 @@
 
   }
   { TODO -csviluppo :
+    market finire bene con label matchcost
     denaro: ogni giocatore chiede a partita X.
     im market indicare matchcost e team di provenienza
     talento convergi verso il centro
@@ -643,8 +649,9 @@ type
     procedure SpriteReset ;
     procedure UpdateSubSprites;
     procedure RemoveSubMainskill;
-    procedure MoveInReserves ( aPlayer: TSoccerPlayer );             // mette uno sprite player nelle riserve
-    procedure MoveInField ( aPlayer: TSoccerPlayer );                // mette uno sprite player in campo
+    procedure SpriteMoveInReserves ( aPlayer: TSoccerPlayer );             // mette uno sprite player nelle riserve
+    procedure SpriteMoveInField ( aPlayer: TSoccerPlayer );                // mette uno sprite player in campo
+    procedure SpriteMoveInGameOver ( aPlayer: TSoccerPlayer );             // mette uno sprite player nello spriteunique
 
     procedure CancelDrag(aPlayer: TsoccerPlayer; ResetCellX, ResetCellY: integer ); // anulla il dragdrop dello sprite
     procedure FirstShowRoll;
@@ -877,7 +884,7 @@ var
   LastTcpincMove,CurrentIncMove: byte;
   incMoveAllProcessed : array [0..255] of boolean;
   incMoveReadTcp : array [0..255] of boolean;
-  LastIncProcessed: Boolean;
+  LastIncProcessed,LastScriptGol: Boolean;
  // ScriptProcessed : array [0..255] of boolean;
 
   TSUniforms: array [0..1] of Tstringlist;
@@ -2242,6 +2249,9 @@ begin
   aSpriteLabel := SE_SpriteLabel.create( 990,LY,'Calibri',clWhite-1,clBlack,FontSize,Capitalize(Translate('lbl_Age')),True, 1, dt_XCenter   );
   aSprite.Labels.Add(aSpriteLabel);
 
+//  aSpriteLabel := SE_SpriteLabel.create( 200,LY,'Calibri',clWhite-1,clBlack,FontSize,Capitalize(Translate('lbl_Age')),True, 1, dt_XCenter   );
+//  aSprite.Labels.Add(aSpriteLabel);
+
   bmp.Free;
 
   // Lx è dinamico, settato in ClientLoadMarket
@@ -2273,6 +2283,8 @@ begin
     aSpriteLabel := SE_SpriteLabel.create( 780,LY,'Calibri',clWhite-1,clBlack,FontSize,'',True , 1, dt_xCenter  );
     aSprite.Labels.Add(aSpriteLabel);
     aSpriteLabel := SE_SpriteLabel.create( 990,LY,'Calibri',clWhite-1,clBlack,FontSize,'',True, 1, dt_xCenter   );
+    aSprite.Labels.Add(aSpriteLabel);
+    aSpriteLabel := SE_SpriteLabel.create( 260,LY+5,'Calibri',clWhite-1,clBlack,10,'',True, 1, dt_xCenter   );
     aSprite.Labels.Add(aSpriteLabel);
 
     // li creo dinamicamente in clientloadmarket
@@ -4978,6 +4990,12 @@ begin
     AFieldSprite.Visible := false;
   end;
 
+  // Spriteunique per espulsi
+  AFieldSprite := SE_FieldPointsOut.CreateSprite( bmp.Bitmap,'spriteunique' , 24,1 ,50, 720,120, true ,0);
+  AFieldSprite.BlendMode := SE_BlendAverage;
+  AFieldSprite.Visible := false;
+
+
   bmp.Free;
 end;
 procedure TForm1.RefreshCheckFormationMemory;
@@ -5760,7 +5778,7 @@ Retry:
       if (lstCellPoint.Items[i2].X = aPoint.X) and ( lstCellPoint.Items[i2].Y = aPoint.Y) then begin
         if lstCellPoint.Items[i2].value then begin
           MyBrainFormation.PutInReserveSlot(MyBrainFormation.lstSoccerPlayer[i]);
-          MoveInReserves(MyBrainFormation.lstSoccerPlayer[i]);
+          SpriteMoveInReserves(MyBrainFormation.lstSoccerPlayer[i]);
           goto Retry;
         end
         else begin
@@ -6314,17 +6332,17 @@ begin
     end;
 
 
-    MyBrain.ReserveSlot [aPlayer.Team, aPlayer.AIFormationCellX]:= aPlayer.Ids;
+    MyBrain.GameOverSlot [aPlayer.Team, aPlayer.AIFormationCellX]:= aPlayer.Ids;
 
-    if aPlayer.Team = 0 then
-      aFieldPointSpr := SE_FieldPointsReserve.FindSprite(IntToStr (aPlayer.CellX ) + '.-1')
-      else aFieldPointSpr := SE_FieldPointsReserve.FindSprite(IntToStr (aPlayer.CellX +11 ) + '.-1'); // graficamente a destra
+//    if aPlayer.Team = 0 then
+      aFieldPointSpr := SE_FieldPointsOut.FindSprite('spriteunique');
+ //     else aFieldPointSpr := SE_FieldPointsReserve.FindSprite(IntToStr (aPlayer.CellX +11 ) + '.-1'); // graficamente a destra
     aPlayer.Se_Sprite.Position := aFieldPointSpr.Position;
     aPlayer.Se_Sprite.MoverData.Destination := aFieldPointSpr.Position;
-
-    if GameScreen = ScreenSubs then
-      aPlayer.SE_sprite.Visible := True
-      else aPlayer.SE_sprite.Visible := false;
+    aPlayer.SE_sprite.Visible := false;
+ //   if GameScreen = ScreenSubs then
+ //     aPlayer.SE_sprite.Visible := True
+ //     else aPlayer.SE_sprite.Visible := false;
 
 
   end;
@@ -7315,17 +7333,17 @@ begin
       end;
 
 
-      MyBrain.ReserveSlot [aPlayer.Team, aPlayer.AIFormationCellX]:= aPlayer.Ids;
+      MyBrain.GameOverSlot [aPlayer.Team, aPlayer.AIFormationCellX]:= aPlayer.Ids;
 
-      if aPlayer.Team = 0 then
-        aFieldPointSpr := SE_FieldPointsReserve.FindSprite(IntToStr (aPlayer.CellX ) + '.-1')
-        else aFieldPointSpr := SE_FieldPointsReserve.FindSprite(IntToStr (aPlayer.CellX +11 ) + '.-1'); // graficamente a destra
+    //  if aPlayer.Team = 0 then
+        aFieldPointSpr := SE_FieldPointsOut.FindSprite('spriteunique');
+     //   else aFieldPointSpr := SE_FieldPointsReserve.FindSprite(IntToStr (aPlayer.CellX +11 ) + '.-1'); // graficamente a destra
       aPlayer.Se_Sprite.Position := aFieldPointSpr.Position;
       aPlayer.Se_Sprite.MoverData.Destination := aFieldPointSpr.Position;
-
-      if GameScreen = ScreenSubs then
-        aPlayer.SE_sprite.Visible := True
-        else aPlayer.SE_sprite.Visible := false;
+      aPlayer.SE_sprite.Visible := false;
+     // if GameScreen = ScreenSubs then
+     //   aPlayer.SE_sprite.Visible := True
+     //   else aPlayer.SE_sprite.Visible := false;
 
 
   end;
@@ -7721,9 +7739,11 @@ begin
       application.ProcessMessages ;
     end;
     aPlayer:= MyBrain.GetSoccerPlayerALL(ids);
-    MyBrain.PutInReserveSlot(aPlayer); // anticipa quello che farà il server
-    MoveInReserves (aPlayer);
-
+   // MyBrain.PutInReserveSlot(aPlayer); // anticipa quello che farà il server
+    MyBrain.PutInGameOverSlot(aPlayer); // anticipa quello che farà il server
+    SpriteMoveInGameOver (aPlayer);
+    MyBrain.AddSoccerGameOver(aPlayer); // // anticipa quello che farà il server per evitare errori di animazione e sprite, ma poi il brai vien
+    MyBrain.RemoveSoccerPlayer( aPlayer ); // comunque ricaricato.
 end;
 procedure Tform1.i_yellow ( ids: string );
 begin
@@ -8718,6 +8738,7 @@ begin
           // 9 1 or 2 = left right random animation (data for real match)
 
           AnimationScript.Tsadd ('cl_' + rightStr(tsCmd[0],7) +',' + IntToStr(DEFAULT_SPEEDMAX_BALL) + ',' + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+',0,'+tsCmd[9]  );
+          AnimationScript.TsAdd  ( 'cl_wait,3000');
         end
 
 //***********************************************************************************************************
@@ -8986,6 +9007,8 @@ begin
           else if (tsCmd[0] = 'sc_cro2.gol') then
             AnimationScript.Tsadd ('cl_cro2.gol,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[8] + ','+tsCmd[9]+ ',' + tsCmd[10] + ','+tsCmd[11]+',0,gol,'+tsCmd[0]  );
 
+          AnimationScript.TsAdd  ( 'cl_wait,3000');
+
 
 
     //1 Speed
@@ -9031,6 +9054,7 @@ begin
           AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEEDMAX_BALL) + ',' + tsCmd[4] + ','+tsCmd[5]+ ',' + tsCmd[6] + ',' + tsCmd[7]+',0,gol,'+tsCmd[0]  );
 
           AnimationScript.Tsadd ('cl_cross.gol,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[6] + ','+tsCmd[7]+ ',' + tsCmd[10] + ','+ tsCmd[11]+',0,gol,'+tsCmd[0]  );
+          AnimationScript.TsAdd  ( 'cl_wait,3000');
     //1 Speed
     //2 aList[i].CellX     // cella di partenza
     //3 aList[i].CellY
@@ -10516,9 +10540,9 @@ begin
       end;
 
 
+      LastScriptGol:= True;
       CreateMovingLifeSpan (posX,posY, 0,-100, 3, 'GOAL!!!',800,12, [fsbold], clwhite -1, clblack, true) ;
       //CreateSplash (se_theater1.VirtualBitmap.Width div 2,se_theater1.VirtualBitmap.Height div 2,400,200, 'GOAL !!!', 2000,24, FontColor,BackColor, false) ;
-
   end
   else if ts[0]= 'cl_splash.gameover' then begin
     ShowMatchInfo ( SE_Theater1.Width div 2, SE_Theater1.Height div 2,0, MyBrain.MatchInfo.CommaText ) ;
@@ -10782,7 +10806,7 @@ begin
   end;
 
 end;
-procedure TForm1.MoveInField ( aPlayer: TSoccerPlayer );
+procedure TForm1.SpriteMoveInField ( aPlayer: TSoccerPlayer );
 var
   aFieldPoint: SE_Sprite;
 begin
@@ -10792,7 +10816,7 @@ begin
    aPlayer.se_sprite.MoverData.Destination := aFieldPoint.Position;
 
 end;
-procedure TForm1.MoveInReserves ( aPlayer: TSoccerPlayer );
+procedure TForm1.SpriteMoveInReserves ( aPlayer: TSoccerPlayer );
 var
   aFieldPoint: SE_Sprite;
 begin
@@ -10809,6 +10833,17 @@ begin
    end;
 
 end;
+procedure TForm1.SpriteMoveInGameOver ( aPlayer: TSoccerPlayer );
+var
+  aFieldPoint: SE_Sprite;
+begin
+
+  aFieldPoint := SE_FieldPointsOut.FindSprite('spriteunique');
+  aPlayer.se_sprite.MoverData.speed:=20;
+  aPlayer.se_sprite.MoverData.Destination := aFieldPoint.Position;
+
+end;
+
 procedure TForm1.CancelDrag ( aPlayer: TsoccerPlayer; ResetCellX, ResetCellY: integer );
 var
   aFieldPointSpr : SE_Sprite;
@@ -11533,25 +11568,25 @@ begin
               MyBrainFormation.SwapformationPlayers( aPlayer,aPlayer2 );
               MyBrainFormation.ReserveSlot [aPlayer.team,aPlayer.cellx]:=aPlayer.ids; // setto la reserveslot
               MyBrainFormation.ReserveSlot [aPlayer2.team,aPlayer.cellx]:=aPlayer2.ids; // setto la reserveslot
-              MoveInReserves(aPlayer);
-              MoveInReserves(aPlayer2);
+              SpriteMoveInReserves(aPlayer);
+              SpriteMoveInReserves(aPlayer2);
             end
             else begin // da riserva a player campo
               if (aPlayer2.Cells = Point(0,3)) and (aPlayer.TalentId1 <> TALENT_ID_GOALKEEPER) then begin
                 MyBrainFormation.PutInReserveSlot( aPlayer, Point(aPlayer.CellX, aPlayer.CellX) );
-                MoveInReserves(aPlayer);
+                SpriteMoveInReserves(aPlayer);
               end
               else begin
                 MyBrainFormation.ReserveSlot [aPlayer.team,aPlayer.cellx]:=''; // svuoto QUI la reserveslot e dopo updateformation setta la nuova posizione
                 MyBrainFormation.PutInReserveSlot( aPlayer2 ); // la reserveslot è già libera da sopra
-                MoveInReserves(aPlayer2);
+                SpriteMoveInReserves(aPlayer2);
               end;
             end;
           end
           else begin  // se_dragGuid (player) è un player del campo
             if MyBrainformation.isReserveSlot( aPlayer2.CellX, aPlayer2.CellY)  then begin// se la destinazione è una riserva
               if aPlayer2.disqualified > 0 then begin
-                  MoveInField(aPlayer);
+                  SpriteMoveInField(aPlayer);
                   SE_DragGuid.DeleteSubSprite('surname');
                   se_DragGuid := nil;
                   HideFP_Friendly_ALL;
@@ -11564,18 +11599,18 @@ begin
                   MyBrainFormation.SwapPlayers( aPlayer,aPlayer2 );
                   MyBrainFormation.SwapDefaultPlayers( aPlayer,aPlayer2 );
                   MyBrainFormation.SwapformationPlayers( aPlayer,aPlayer2 );
-                  MoveInReserves(aPlayer);
-                  MoveInField(aPlayer2);
+                  SpriteMoveInReserves(aPlayer);
+                  SpriteMoveInField(aPlayer2);
                 end
                 else if (aPlayer.Cells = Point(0,3)) and (aPlayer.TalentId1 = TALENT_ID_GOALKEEPER) then begin  // 2 gk swap
                   MyBrainFormation.SwapPlayers( aPlayer,aPlayer2 );
                   MyBrainFormation.SwapDefaultPlayers( aPlayer,aPlayer2 );
                   MyBrainFormation.SwapformationPlayers( aPlayer,aPlayer2 );
-                  MoveInReserves(aPlayer);
-                  MoveInField(aPlayer2);
+                  SpriteMoveInReserves(aPlayer);
+                  SpriteMoveInField(aPlayer2);
                 end
                 else begin
-                  MoveInField(aPlayer);
+                  SpriteMoveInField(aPlayer);
                   SE_DragGuid.DeleteSubSprite('surname');
                   se_DragGuid := nil;
                   HideFP_Friendly_ALL;
@@ -11585,7 +11620,7 @@ begin
               end
               else begin  // la cella è 0,3  ma aPlayer non è un gk
                 MyBrainFormation.PutInReserveSlot( aPlayer, Point(aPlayer.CellX, aPlayer.CellX) );
-                MoveInReserves(aPlayer);
+                SpriteMoveInReserves(aPlayer);
 
               end;
             end
@@ -11593,8 +11628,8 @@ begin
                 MyBrainFormation.SwapPlayers( aPlayer,aPlayer2 );
                 MyBrainFormation.SwapDefaultPlayers( aPlayer,aPlayer2 );
                 MyBrainFormation.SwapformationPlayers( aPlayer,aPlayer2 );
-                MoveInField(aPlayer);
-                MoveInField(aPlayer2);
+                SpriteMoveInField(aPlayer);
+                SpriteMoveInField(aPlayer2);
             end;
 
           end;
@@ -14859,7 +14894,7 @@ exitScreenSubs:
           se_dragGuid.DeleteSubSprite('surname');
           SE_DragGuid := nil;
           HideFP_Friendly_ALL;
-          MoveInReserves(aPlayer);
+          SpriteMoveInReserves(aPlayer);
           Exit;
         end;
       end;
@@ -15272,7 +15307,6 @@ begin
 
       if incMoveReadTcp [CurrentIncMove] = false then begin   // se non è stato ancora caricato letto in Tcp
 
-
           ClientLoadScript ( CurrentIncMove ); // ( MM3, buf3 ); // punta direttamente dove comincia tsScript . riempe mybrain.tscript[CurrentIncMove].commatext
           AnimationScript.Reset ;
 
@@ -15299,6 +15333,12 @@ begin
       // questa parte rinnova scriptanimation incrementando currentIncMove fino al massimo di  MyBrain.incMove
 
       if incMoveAllProcessed [CurrentIncMove] = true then begin   // se  è stato eseguito tutto lo script animation
+
+        if LastScriptGol then begin
+          SpriteReset;
+          LastScriptGol := false;
+          exit; // ripasso subito dopo
+        end;
 
         oldCurrent :=  CurrentIncMove;
         CurrentIncMove := imin( CurrentIncMove +1, LastMoveBrain ); // avanzo processando tutti gli script
@@ -16797,7 +16837,7 @@ begin
       aSprite.Bmp.Canvas.Font.Size := FontSizeMarket;
       aSprite.Bmp.Canvas.Font.Name := 'Calibri';
 
-      aSprite.Labels[0].lText  := lstPLayerMarket[IndexMarket + I].Surname +  '('+ lstPLayerMarket[IndexMarket + I].teamname+ ')';
+      aSprite.Labels[0].lText  := lstPLayerMarket[IndexMarket + I].Surname;
       aSprite.Labels[0].lX :=  64; //appena più a destra del face
 
       aSprite.Labels[8].lText  := IntTostr (lstPLayerMarket[IndexMarket + I].age); // solo age, non matchleseft
@@ -16820,6 +16860,9 @@ begin
 
       aSprite.Labels[7].lText   :=  IntTostr (lstPLayerMarket[IndexMarket + I].DefaultHeading);
       aSprite.Labels[7].lX :=   780;
+
+      aSprite.Labels[9].lText   :=  '('+ lstPLayerMarket[IndexMarket + I].teamname+ ')';
+//      aSprite.Labels[7].lX :=   780;
 
       //aSprite.DeleteSubSprite('t1'); sopra c'è removeallsubsprites
       //aSprite.DeleteSubSprite('t2');
