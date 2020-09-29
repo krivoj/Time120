@@ -18,14 +18,18 @@
     AI Hide120 anche  free e stay pass sono ok fare anche per tactics. le sub si possono fare
 
     Server, gender bonus. controllare anche AI.
+
+    sto testando exec_autotackle su pmmove path = 1
   }
   { TODO -ctodo prima del rilascio patreon :
 
-    replay 15 si resetta male ultima azione, fosr PASS. gol live non resetta ma va direttamente all'azione. bug crash
+    replay 15 si resetta male ultima azione = 015.is contine server_shp e ANCHE server_plm. il brain ha salvato uno sciprt doppio
+
+    gol live non resetta ma va direttamente all'azione.
     ho aggiunto           AnimationScript.TsAdd  ( 'cl_wait,3000');  a tutti i gol. devo comunque usare uno spritereset prima del loadanimationscript
     devo mettere un flag globale che c'è stato un gol
 
-    se faccio esci da una live devo mmetere hide tutti gli fp fpHide_all
+    se faccio esci da una live devo mmettere hide tutti gli fp fpHide_all
 
     sui freekick 3000 bug
 
@@ -205,7 +209,7 @@ const xBtnMenuHelp = 70;
 const yBtnMenuHelp = 40;
 const GCD_DEFAULT = 200;        // global cooldown, minimo 200 ms tra un input verso il server e l'altro ( anti-cheating )
 const DEFAULT_SPEED_BALL = 10;
-const SPEED_BALL_SHP = 4;
+const SPEED_BALL_SHP = 7;
 const DEFAULT_SPEED_BALL_LOW = 4;
 const ANIMATION_BALL_LOW = 1000;
 const ANIMATION_BALL = 30;

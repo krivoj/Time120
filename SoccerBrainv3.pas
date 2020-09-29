@@ -4737,7 +4737,7 @@ begin
 end;
 procedure TSoccerBrain.CompileAutoTackleList (PlmTeam, MaxDistance: integer; aPath : dse_pathplanner.TPath; var lstAutoTackle: TList<TInteractivePlayer> );
 var
-  i,p: integer;
+  i,p,FromPath: integer;
   anAutoTackle: TSoccerPlayer;
   aInteractivePlayer: TInteractivePlayer;
 begin
@@ -4745,7 +4745,14 @@ begin
   for P := lstSoccerPlayer.Count -1 downto 0 do begin
     lstSoccerPlayer[p].grouped := false;
   end;
-  for i := aPath.Count - 2 downto 0 do begin // non cella finale
+
+  if aPath.Count = 1 then
+    FromPath := aPath.Count - 1
+  else if aPath.Count > 1 then
+      FromPath := aPath.Count - 2;
+
+ // for i := aPath.Count - 1 downto 0 do begin //  cella finale nel caso si sposti di 1
+  for i := FromPath downto 0 do begin // non cella finale nel caso si sposti di 2 o più
     for P := lstSoccerPlayer.Count -1 downto 0 do begin
       anAutoTackle := lstSoccerPlayer[p];
       if  ( anAutoTackle.Team <> PlmTeam ) and (anAutoTackle.Role <> 'G' )
