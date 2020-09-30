@@ -3435,16 +3435,18 @@ begin
 
       if Index_WheelSkill > SelectedPlayer.ActiveSkills.Count -1 then
         Index_WheelSkill :=0;
+    //ShowSingleSkill;
+    ShowMultipleSkills;
     end
     else if (Key = VK_UP) or  (Key = VK_LEFT) then begin
       dec(Index_WheelSkill);
       if Index_WheelSkill < 0 then
       Index_WheelSkill := SelectedPlayer.ActiveSkills.Count -1;
+    //ShowSingleSkill;
+    ShowMultipleSkills;
 
     end;
 
-    //ShowSingleSkill;
-    ShowMultipleSkills;
 
   end;
 
@@ -10221,8 +10223,8 @@ begin
   else if ts[0] = 'cl_red' then begin
 
     aPlayer:= MyBrain.GetSoccerPlayer3(ts[1]);
-  //  aFieldPointSpr := SE_FieldPoints.FindSprite( ts[2]+'.'+ts[3] );
-    aFieldPointSpr := SE_FieldPoints.FindSprite(  IntTostr(aPlayer.CellX) +'.' +  IntTostr(aPlayer.CellY)  );
+    aFieldPointSpr := SE_FieldPoints.FindSprite( ts[2]+'.'+ts[3] );
+  //  aFieldPointSpr := SE_FieldPoints.FindSprite(  IntTostr(aPlayer.CellX) +'.' +  IntTostr(aPlayer.CellY)  );
     seSprite:= SE_LifeSpan.CreateSprite(dir_interface + 'faulred.bmp' ,'fault',1,1,10,aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y,true,1  );
     seSprite.LifeSpan := ShowFaultLifeSpan;
     CreateMovingLifeSpan (aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y, 0,-80, 3, Translate('lbl_RedCard')+'!',600,12, [], clRed, clblack, true) ;
@@ -10239,8 +10241,8 @@ begin
   end
   else if ts[0] = 'cl_yellow' then begin    // ids cellx celly
     aPlayer:= MyBrain.GetSoccerPlayer3(ts[1]);
-//    aFieldPointSpr := SE_FieldPoints.FindSprite( ts[2]+'.'+ts[3] );
-    aFieldPointSpr := SE_FieldPoints.FindSprite(  IntTostr(aPlayer.CellX) +'.' +  IntTostr(aPlayer.CellY)  );
+    aFieldPointSpr := SE_FieldPoints.FindSprite( ts[2]+'.'+ts[3] );
+//    aFieldPointSpr := SE_FieldPoints.FindSprite(  IntTostr(aPlayer.CellX) +'.' +  IntTostr(aPlayer.CellY)  );
     seSprite:= SE_LifeSpan.CreateSprite(dir_interface + 'faulyellow.bmp' ,'fault',1,1,10,aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y,true ,1 );
     seSprite.LifeSpan := ShowFaultLifeSpan;
     CreateMovingLifeSpan (aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y, 0,-80, 3, Translate('lbl_YellowCard')+'!',600,12, [], clYellow, clblack, true) ;
@@ -10249,8 +10251,8 @@ begin
   else if ts[0] = 'cl_yellowred' then begin
     // qui doppio cartellino sprite
     aPlayer:= MyBrain.GetSoccerPlayer3(ts[1]);
-//    aFieldPointSpr := SE_FieldPoints.FindSprite( ts[2]+'.'+ts[3] );
-    aFieldPointSpr := SE_FieldPoints.FindSprite(  IntTostr(aPlayer.CellX) +'.' +  IntTostr(aPlayer.CellY)  );
+    aFieldPointSpr := SE_FieldPoints.FindSprite( ts[2]+'.'+ts[3] );
+//    aFieldPointSpr := SE_FieldPoints.FindSprite(  IntTostr(aPlayer.CellX) +'.' +  IntTostr(aPlayer.CellY)  );
     seSprite:= SE_LifeSpan.CreateSprite(dir_interface + 'faulyellowred.bmp' ,'fault',1,1,10,aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y,true ,1 );
     seSprite.LifeSpan := ShowFaultLifeSpan;
     CreateMovingLifeSpan (aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y-20, 0,-80, 3, Translate('lbl_YellowCard')+'!',600,12, [], clYellow, clblack, true) ;
@@ -12717,7 +12719,9 @@ begin
       if aSpriteClicked.GrayScaled then Exit; // GK o già selezionati in caso di corner o freekick
       TsCoa.add (aSpriteClicked.guid) ; // ids
       fGameScreen := ScreenLive;
-      tcp.SendStr( 'FREEKICK1_ATTACK.SETUP,' + tsCoa.commatext + EndofLine);
+      if GameMode = pvp then
+        tcp.SendStr( 'FREEKICK1_ATTACK.SETUP,' + tsCoa.commatext + EndofLine)
+      else MyBrain.BrainInput(IntTostr(MyGuidTeam) + ',' + 'FREEKICK1_ATTACK.SETUP,' + tsCoa.commatext);
       MouseWaitFor := WaitForNone;
     end;
 
@@ -12758,7 +12762,9 @@ begin
       TsCoa.add (aSpriteClicked.Guid);
       if tsCoa.Count = 4 then begin   // cof + 3 coa
         fGameScreen := ScreenLive;
-        tcp.SendStr(  'FREEKICK2_ATTACK.SETUP,' + tsCoa.commatext + EndofLine);
+        if Gamemode = pvp then
+          tcp.SendStr(  'FREEKICK2_ATTACK.SETUP,' + tsCoa.commatext + EndofLine)
+        else MyBrain.BrainInput(IntTostr(MyGuidTeam) + ',' +'FREEKICK2_ATTACK.SETUP,' + tsCoa.commatext);
         MouseWaitFor := WaitForNone;
       end
       else begin
@@ -12782,7 +12788,9 @@ begin
       TsCod.add (aSpriteClicked.guid);// in barriera swappo solo il primo
       if tsCod.Count = 3 then begin  // 3 cod
         fGameScreen := ScreenLive;
-        tcp.SendStr( 'FREEKICK2_DEFENSE.SETUP,' + tsCod.commatext + EndofLine);
+        if Gamemode = pvp then
+          tcp.SendStr( 'FREEKICK2_DEFENSE.SETUP,' + tsCod.commatext + EndofLine)
+        else MyBrain.BrainInput(IntTostr(MyGuidTeam) + ',' +'FREEKICK2_DEFENSE.SETUP,' + tsCod.commatext);
         MouseWaitFor := WaitForNone;
       end
       else begin
@@ -12806,7 +12814,9 @@ begin
 
       TsCoa.add (aSpriteClicked.Guid);
       fGameScreen := ScreenLive;
-      tcp.SendStr( 'FREEKICK3_ATTACK.SETUP,' + tsCoa.commatext + EndofLine);
+      if Gamemode = pvp then
+        tcp.SendStr( 'FREEKICK3_ATTACK.SETUP,' + tsCoa.commatext + EndofLine)
+      else MyBrain.BrainInput(IntTostr(MyGuidTeam) + ',' +'FREEKICK3_ATTACK.SETUP,' + tsCoa.commatext);
       MouseWaitFor := WaitForNone;
     end;
     WaitForXY_FKD3: begin
@@ -12834,7 +12844,9 @@ begin
       TsCod.add (aSpriteClicked.guid);// in barriera swappo solo il primo
       if tsCod.Count = 4 then begin// 4 in barriera
         fGameScreen := ScreenLive;
-        tcp.SendStr( 'FREEKICK3_DEFENSE.SETUP,' + tsCod.commatext + EndofLine);
+        if Gamemode = pvp then
+          tcp.SendStr( 'FREEKICK3_DEFENSE.SETUP,' + tsCod.commatext + EndofLine)
+        else MyBrain.BrainInput(IntTostr(MyGuidTeam) + ',' +'FREEKICK3_DEFENSE.SETUP,' + tsCod.commatext);
         SwapPlayerBarrierDone:= False;
         MouseWaitFor := WaitForNone;
       end
@@ -12848,7 +12860,9 @@ begin
 
       TsCoa.add (aSpriteClicked.Guid) ; // ids
       fGameScreen := ScreenLive;
-      tcp.SendStr( 'FREEKICK4_ATTACK.SETUP,' + tsCoa.commatext + EndofLine);
+      if Gamemode = pvp then
+        tcp.SendStr( 'FREEKICK4_ATTACK.SETUP,' + tsCoa.commatext + EndofLine)
+      else MyBrain.BrainInput(IntTostr(MyGuidTeam) + ',' +'FREEKICK4_ATTACK.SETUP,' + tsCoa.commatext);
       MouseWaitFor := WaitForNone;
       HideFP_Special;
     end;
@@ -12883,7 +12897,10 @@ begin
       TsCoa.add (aSpriteClicked.Guid);
       if tsCoa.Count = 4 then begin   // cof + 3 coa
         fGameScreen := ScreenLive;
-        tcp.SendStr(  'CORNER_ATTACK.SETUP,' + tsCoa.commatext + EndofLine);
+        if Gamemode = pvp then
+          tcp.SendStr(  'CORNER_ATTACK.SETUP,' + tsCoa.commatext + EndofLine)
+        else MyBrain.BrainInput(IntTostr(MyGuidTeam) + ',' +'CORNER_ATTACK.SETUP,' + tsCoa.commatext);
+
         MouseWaitFor := WaitForNone;
       end
       else HHFP( CornerMap.HeadingCellA [TsCoa.count-1].X,CornerMap.HeadingCellA [TsCoa.count-1].Y,0 );
@@ -12908,7 +12925,10 @@ begin
       TsCod.add (aSpriteClicked.guid) ; // ids
       if tsCod.Count = 3 then begin  // 3 cod
         fGameScreen := ScreenLive;
-        tcp.SendStr( 'CORNER_DEFENSE.SETUP,' + tsCod.commatext + EndofLine);
+        if Gamemode = pvp then
+          tcp.SendStr( 'CORNER_DEFENSE.SETUP,' + tsCod.commatext + EndofLine)
+        else MyBrain.BrainInput(IntTostr(MyGuidTeam) + ',' +'CORNER_DEFENSE.SETUP,' + tsCod.commatext);
+
         MouseWaitFor := WaitForNone;
       end
       else begin
@@ -13051,7 +13071,7 @@ begin
     DontDoPlayers := true;
     SendString := 'setplayer,' +  SelectedPlayer.ids + ',' +  IntToStr(CellX) + ',' +  IntToStr(CellY);
     SE_FieldPoints.HideAllSprites;
-    if GamemOde = pve then begin
+    if GameMode = pve then begin
       SelectedPlayer.CellX := (CellX);
       SelectedPlayer.CellY := (CellY);
       SpriteReset;
@@ -15679,7 +15699,7 @@ begin
 
   aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite-1,clBlack,9, Capitalize(translate('hintskill_cancel')) ,True  ,1, DT_BOTTOM or DT_SINGLELINE or DT_RIGHT );
   aSprite.Labels.add (aSpriteLabel);
-
+  SE_Skills.Visible := true;
 end;
 procedure TForm1.SetGameScreen (const aGameScreen:TGameScreen);
 var
@@ -16029,8 +16049,6 @@ begin
   end
   else if fGameScreen = ScreenFreeKick  then begin
 
-    SE_skills.RemoveAllSprites;
-    SE_skills.ProcessSprites(2000);
     HideAllEnginesExcept ( SE_BackGround,SE_Score,SE_skills,nil,nil );
     ShowStadiumAndPlayers(1);
 
