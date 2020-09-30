@@ -313,7 +313,7 @@ object Form1: TForm1
       OnClick = Button11Click
     end
     object Button12: TButton
-      Left = 144
+      Left = 160
       Top = 769
       Width = 75
       Height = 25
@@ -326,13 +326,13 @@ object Form1: TForm1
       Top = 808
       Width = 75
       Height = 25
-      Caption = 'Button13'
+      Caption = 'newseason'
       TabOrder = 31
       OnClick = Button13Click
     end
     object Button14: TButton
-      Left = 144
-      Top = 853
+      Left = 160
+      Top = 839
       Width = 75
       Height = 25
       Caption = 'lstSoccer'
@@ -349,13 +349,22 @@ object Form1: TForm1
       OnClick = CheckBox10Click
     end
     object Button15: TButton
-      Left = 79
-      Top = 788
+      Left = 87
+      Top = 769
       Width = 75
       Height = 25
       Caption = 'spritereset'
       TabOrder = 34
       OnClick = Button15Click
+    end
+    object Button16: TButton
+      Left = 0
+      Top = 546
+      Width = 75
+      Height = 25
+      Caption = 'viewplayer'
+      TabOrder = 35
+      OnClick = Button16Click
     end
   end
   object PanelMain: SE_Panel

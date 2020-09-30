@@ -485,12 +485,6 @@ end;
   private
 
     aStar: TAStarPathPlanner;
-    debug_TACKLE_FAILED : Boolean; // sempre tackle fallito
-    debug_SETFAULT : Boolean;  // sempre fallo
-    debug_SETRED : boolean; // sempre espulsione dopo fallo
-    debug_SetAlwaysGol : Boolean;
-    debug_Setposcrosscorner : Boolean;
-    debug_Buff100 : Boolean;
 
     procedure SetTeamMovesLeft ( const Value: ShortInt );
     procedure SetMinute ( const Value: SmallInt );
@@ -498,6 +492,14 @@ end;
     public
       GameMode : TGameMode;
       pvePostMessage: boolean;
+
+      debug_TACKLE_FAILED : Boolean; // sempre tackle fallito
+      debug_SETFAULT : Boolean;  // sempre fallo
+      debug_SETRED : boolean; // sempre espulsione dopo fallo
+      debug_SetAlwaysGol : Boolean;
+      debug_Setposcrosscorner : Boolean;
+      debug_Buff100 : Boolean;
+
 
       Season: integer;
       Country : integer;
@@ -688,7 +690,7 @@ end;
       function FindSwapCOAD (   SwapPlayer: TSoccerPlayer; CornerMap: TCornerMap ): Tpoint;
 
       function exec_tackle ( ids: string):integer;
-      function exec_autotackle ( ids: string):boolean; // non c'è fallo
+      function exec_autotackle ( ids: string; LastPath: boolean ):boolean; // non c'è fallo
       Function GetFault ( Team, CellX, CellY : integer): Integer;
 
       procedure exec_corner ;
@@ -2621,8 +2623,8 @@ end;
 procedure TSoccerBrain.AddSoccerGameOver (aSoccerPlayer: TSoccerPlayer );
 begin
   aSoccerPlayer.brain:=self;
-  lstSoccerGameOver.add ( aSoccerPlayer );
   PutInGameOverSlot( aSoccerPlayer );
+  lstSoccerGameOver.add ( aSoccerPlayer );
 
 end;
 procedure TSoccerBrain.RemoveSoccerGameOver (aSoccerPlayer: TSoccerPlayer );
@@ -6407,6 +6409,7 @@ var
   dstCell: TPoint;
   InputGuidTeam: Integer;
   reason: string;
+  FileError : TextFile;
   kind: string;
   label cor_crossbar, cro_crossbar, pos_crossbar, prs_crossbar, MyExit;
   label HVSH,afterPowerShot,afterPrecisionShot, crossing,plmautotackledone;
@@ -6706,6 +6709,8 @@ begin
            aFriend := GetSoccerPlayer(ball.CellX, ball.celly);
            aPlayer.xpDevT := aPlayer.xpDevT + 1; // solo se shp riesce
            if aFriend <> nil then begin
+              // se riceve la palla, anche in canskill=false perchè in precedenza aveva per es. provato un tackle fallito, ora si resetta.
+              aFriend.resetALL;
               aFriend.XpTal [TALENT_ID_RAPIDPASSING] := aFriend.XpTal [TALENT_ID_RAPIDPASSING] + 1;
               aFriend.xpdevA := aFriend.xpdevA + 1;
 //              aFriend.xpdevT := aFriend.xpdevT + 1; qui no
@@ -6768,7 +6773,7 @@ begin
             AI_moveAll;
             if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
             TsScript[incMove].add ('E');
-         end;
+        end;
 
     end; // for  aPath ball
   end // 'SHP'
@@ -9680,7 +9685,9 @@ Normalpressing:
 
        for P := 0 to LstAutoTackle.Count -1 do begin
          if (LstAutoTackle[P].Cell.X = aPlayer.MovePath[i].X) and (LstAutoTackle[P].Cell.Y = aPlayer.MovePath[i].Y) then begin // se la cella lo riguarda. questo fa la giusta animazione
-            if exec_autotackle ( LstAutoTackle[P].Player.ids ) then goto plmautotackledone;
+
+            if exec_autotackle ( LstAutoTackle[P].Player.ids,(i = aPlayer.MovePath.Count-1) ) then goto plmautotackledone;// ultimo path se i = aPlayer.MovePath.Count-1
+
          end;
        end;
     end;
@@ -10532,8 +10539,20 @@ Myexit:
      // TsScript[incMove].add ('E' ) ;
       // informo il brainManager del Server del cheating
       if GameMode = pvp then
-        TBrainManager(brainManager).Input ( Self, 'cheat: ' + reason + ':' + tsCmd.CommaText  ) ;
+        TBrainManager(brainManager).Input ( Self, 'cheat: ' + reason + ':' + tsCmd.CommaText  )
+      Else if GameMode = pve then begin
+        //if (LogUser [0] > 0) or (LogUser[1] > 0) then begin
+        if not DirectoryExists( dir_log + brainIds )  then
+          MkDir( dir_log + brainIds );
+        AssignFile(FileError, dir_log +  brainIds + '.ERR') ;
+        CloseFile (FileError);
+        append(FileError);
+        WriteLn(FileError, reason + ':' + tsCmd.CommaText);
+        CloseFile (FileError);
 
+         // MMbraindata.SaveToFile( dir_log +  brainIds  + '\' + Format('%.*d',[3, incMove]) + '.ERR'  );
+       // end;
+      end;
       Working:= false;
       tsCmd.free;
       if aPath <> nil then aPath.Free; // shp
@@ -11298,7 +11317,7 @@ begin
     end;
   end;
 end;
-function TSoccerBrain.exec_autotackle ( ids: string ): boolean;
+function TSoccerBrain.exec_autotackle ( ids: string; LastPath: boolean ): boolean;
 var
   aRnd,aRnd2,preRoll, preRoll2: integer;
   Roll,Roll2:TRoll;
@@ -11408,6 +11427,8 @@ begin
       end
       else begin   // il player non prende la palla. comunque ci ha provato
         Ball.Player.xpDevT := Ball.Player.xpDevT + 1;
+
+
         oldPlayerBall := Ball.Player;
        // non resetto PROPRE
 
@@ -11415,10 +11436,13 @@ begin
         IntTostr ( aPlayer.Defense )+',Tackle,'+ aPlayer.ids+','+IntTostr(Roll.value)+','+Roll.fatigue+'.0' + '.0'+','+IntToStr(aPlayer.tmp));
         TsScript[incMove].add ( 'sc_DICE,' + IntTostr(oldPlayerBall.CellX) + ',' + Inttostr(oldPlayerBall.CellY) +','+  IntTostr(aRnd2) +','+
         IntTostr(oldPlayerBall.ballControl ) +',Ball.Control,'+  oldPlayerBall.ids+','+IntTostr(Roll2.value)+','+Roll2.fatigue+ '.' + ACT+','+IntToStr(oldPlayerBall.tmp));
-        aPlayer.Cells := ball.Cells;
-     //   TsScript[incMove].add ( 'sc_noswap,' + aPlayer.ids{sfidante} +',' + Ball.Player.ids {cella} + ',' + IntTostr(Ball.Player.CellX)+',' + IntTostr(Ball.Player.CellY)
-     //    + ',' + IntTostr(OldCell.x)+',' + IntTostr(OldCell.Y) {provenienza PlayerB}   ) ;
-        TsScript[incMove].add ('sc_player.move,'+ aPlayer.Ids +','+IntTostr(OldCell.X)+','+ IntTostr(OldCell.Y)+','+  IntTostr(aPlayer.cellX)+','+ IntTostr(aPlayer.cellY)  ) ;
+        if not LastPath then begin
+          TsScript[incMove].add ('sc_player.move,'+ aPlayer.Ids +','+IntTostr(OldCell.X)+','+ IntTostr(OldCell.Y)+','+  IntTostr(aPlayer.cellX)+','+ IntTostr(aPlayer.cellY)  );
+          aPlayer.Cells := ball.Cells;
+        end
+        else
+        TsScript[incMove].add ( 'sc_noswap,' + aPlayer.ids{sfidante} +',' + Ball.Player.ids {cella} + ',' + IntTostr(Ball.Player.CellX)+',' + IntTostr(Ball.Player.CellY)
+         + ',' + IntTostr(OldCell.x)+',' + IntTostr(OldCell.Y) {provenienza PlayerB}   ) ;
       end;
     end;
 end;

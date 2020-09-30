@@ -23,7 +23,8 @@
   }
   { TODO -ctodo prima del rilascio patreon :
 
-    replay 15 si resetta male ultima azione = 015.is contine server_shp e ANCHE server_plm. il brain ha salvato uno sciprt doppio
+
+    errore su fallo. hint = scegli chi batte . le skill non devono esserew attive .
 
     gol live non resetta ma va direttamente all'azione.
     ho aggiunto           AnimationScript.TsAdd  ( 'cl_wait,3000');  a tutti i gol. devo comunque usare uno spritereset prima del loadanimationscript
@@ -441,6 +442,7 @@ type
     CheckBox10: TCheckBox;
     Button15: TButton;
     SE_DEBUG: SE_Engine;
+    Button16: TButton;
 
 // General
     function ChangeResolution(XResolution, YResolution, Depth: DWORD): boolean;
@@ -591,6 +593,7 @@ type
     procedure Button14Click(Sender: TObject);
     procedure CheckBox10Click(Sender: TObject);
     procedure Button15Click(Sender: TObject);
+    procedure Button16Click(Sender: TObject);
 
   private
     { Private declarations }
@@ -1304,6 +1307,39 @@ end;
 procedure TForm1.Button15Click(Sender: TObject);
 begin
 //  SpriteReset;
+end;
+
+procedure TForm1.Button16Click(Sender: TObject);
+var
+  i: integer;
+begin
+  {$ifdef tools}
+  memoC.Lines.Clear ;
+  MemoC.Lines.Add( 'id: ' + Edit3.Text );
+  for I := MyBrain.lstSoccerPlayer.Count -1 downto 0 do begin
+    if MyBrain.lstSoccerPlayer[i].Ids = Edit3.text  then begin
+      MemoC.Lines.Add( 'Titolare ' );
+      MemoC.Lines.Add( 'canskill='+ BoolToStr(MyBrain.lstSoccerPlayer[i].CanSkill)  );
+    end;
+  end;
+
+  for I := MyBrain.lstSoccerReserve.Count -1 downto 0 do begin
+    if MyBrain.lstSoccerReserve[i].Ids = Edit3.text  then begin
+      MemoC.Lines.Add( 'riserve' );
+      MemoC.Lines.Add( 'canskill='+ BoolToStr(MyBrain.lstSoccerReserve[i].CanSkill)  );
+    end;
+
+  end;
+
+  for I := MyBrain.lstSoccerGameOver.Count -1 downto 0 do begin
+    if MyBrain.lstSoccerGameOver[i].Ids = Edit3.text  then begin
+      MemoC.Lines.Add( 'gameover' );
+      MemoC.Lines.Add( 'canskill='+ BoolToStr(MyBrain.lstSoccerGameOver[i].CanSkill)  );
+    end;
+
+  end;
+  {$endif tools}
+
 end;
 
 procedure TForm1.Button1Click(Sender: TObject);
@@ -5615,9 +5651,15 @@ end;
 procedure TForm1.CheckBox5Click(Sender: TObject);
 begin
 {$ifdef tools}
-  if GCD <= 0 then begin
-    tcp.SendStr( 'debug_setfault,' + BoolTostr (CheckBox5.Checked ) + EndOfLine ) ;
-    GCD := GCD_DEFAULT;
+  if GameMode = pvp then begin
+
+    if GCD <= 0 then begin
+      tcp.SendStr( 'debug_setfault,' + BoolTostr (CheckBox5.Checked ) + EndOfLine ) ;
+      GCD := GCD_DEFAULT;
+    end;
+  end
+  else if GameMode = pve then begin
+    myBrain.debug_SETFAULT := CheckBox5.Checked ;
   end;
  {$endif tools}
 
@@ -5626,9 +5668,15 @@ end;
 procedure TForm1.CheckBox6Click(Sender: TObject);
 begin
 {$ifdef tools}
-  if GCD <= 0 then begin
-    tcp.SendStr( 'debug_setred,' + BoolTostr (CheckBox6.Checked ) + EndOfLine ) ;
-    GCD := GCD_DEFAULT;
+  if GameMode = pvp then begin
+    if GCD <= 0 then begin
+      tcp.SendStr( 'debug_setred,' + BoolTostr (CheckBox6.Checked ) + EndOfLine ) ;
+      GCD := GCD_DEFAULT;
+    end;
+  end
+  else if GameMode = pve then begin
+    myBrain.debug_SETRED := CheckBox6.Checked ;
+
   end;
  {$endif tools}
 
@@ -5637,9 +5685,15 @@ end;
 procedure TForm1.CheckBox7Click(Sender: TObject);
 begin
 {$ifdef tools}
-  if GCD <= 0 then begin
-    tcp.SendStr( 'debug_setslwaysgol,' + BoolTostr (CheckBox7.Checked ) + EndOfLine ) ;
-    GCD := GCD_DEFAULT;
+  if GameMode = pvp then begin
+    if GCD <= 0 then begin
+      tcp.SendStr( 'debug_setslwaysgol,' + BoolTostr (CheckBox7.Checked ) + EndOfLine ) ;
+      GCD := GCD_DEFAULT;
+    end;
+  end
+  else if GameMode = pve then begin
+    myBrain.debug_SetAlwaysGol := CheckBox7.Checked ;
+
   end;
  {$endif tools}
 
@@ -5648,9 +5702,15 @@ end;
 procedure TForm1.CheckBox8Click(Sender: TObject);
 begin
 {$ifdef tools}
-  if GCD <= 0 then begin
-    tcp.SendStr( 'debug_setposcrosscorner,' + BoolTostr (CheckBox8.Checked ) + EndOfLine ) ;
-    GCD := GCD_DEFAULT;
+  if GameMode = pvp then begin
+    if GCD <= 0 then begin
+      tcp.SendStr( 'debug_setposcrosscorner,' + BoolTostr (CheckBox8.Checked ) + EndOfLine ) ;
+      GCD := GCD_DEFAULT;
+    end;
+  end
+  else if GameMode = pve then begin
+    myBrain.debug_Setposcrosscorner := CheckBox8.Checked ;
+
   end;
  {$endif tools}
 
@@ -5659,9 +5719,14 @@ end;
 procedure TForm1.CheckBox9Click(Sender: TObject);
 begin
 {$ifdef tools}
-  if GCD <= 0 then begin
-    tcp.SendStr( 'debug_buff100,' + BoolTostr (CheckBox9.Checked ) + EndOfLine ) ;
-    GCD := GCD_DEFAULT;
+  if GameMode = pvp then begin
+    if GCD <= 0 then begin
+      tcp.SendStr( 'debug_buff100,' + BoolTostr (CheckBox9.Checked ) + EndOfLine ) ;
+      GCD := GCD_DEFAULT;
+    end;
+  end
+  else if GameMode = pve then begin
+    myBrain.debug_Buff100 := CheckBox9.Checked ;
   end;
  {$endif tools}
 
@@ -5671,9 +5736,15 @@ end;
 procedure TForm1.CheckBox4Click(Sender: TObject);
 begin
 {$ifdef tools}
-  if GCD <= 0 then begin
-    tcp.SendStr( 'debug_tackle_failed,' + BoolTostr (CheckBox4.Checked ) + EndOfLine ) ;
-    GCD := GCD_DEFAULT;
+  if GameMode = pvp then begin
+    if GCD <= 0 then begin
+      tcp.SendStr( 'debug_tackle_failed,' + BoolTostr (CheckBox4.Checked ) + EndOfLine ) ;
+      GCD := GCD_DEFAULT;
+    end;
+  end
+  else if GameMode = pve then begin
+    myBrain.debug_TACKLE_FAILED := CheckBox4.Checked ;
+
   end;
  {$endif tools}
 
@@ -5682,9 +5753,14 @@ end;
 procedure TForm1.CheckBoxAI0Click(Sender: TObject);
 begin
   {$ifdef tools}
-  if GCD <= 0 then begin
-    tcp.SendStr(  'aiteam,0,' +  BoolToStr(CheckBoxAI0.Checked)  + EndOfLine );
-    GCD := GCD_DEFAULT;
+  if GameMode = pvp then begin
+    if GCD <= 0 then begin
+      tcp.SendStr(  'aiteam,0,' +  BoolToStr(CheckBoxAI0.Checked)  + EndOfLine );
+      GCD := GCD_DEFAULT;
+    end;
+  end
+  else if GameMode = pve then begin
+
   end;
   {$endif tools}
 
@@ -5693,9 +5769,14 @@ end;
 procedure TForm1.CheckBoxAI1Click(Sender: TObject);
 begin
   {$ifdef tools}
-  if GCD <= 0 then begin
-    tcp.SendStr(  'aiteam,1,' +  BoolToStr(CheckBoxAI1.Checked)  + EndOfLine );
-    GCD := GCD_DEFAULT;
+  if GameMode = pvp then begin
+    if GCD <= 0 then begin
+      tcp.SendStr(  'aiteam,1,' +  BoolToStr(CheckBoxAI1.Checked)  + EndOfLine );
+      GCD := GCD_DEFAULT;
+    end;
+  end
+  else if GameMode = pve then begin
+
   end;
   {$endif tools}
 
@@ -12548,6 +12629,7 @@ begin
         SE_ball.RemoveSprite(aBallSprite);
         SE_interface.RemoveAllSprites;
         SE_Numbers.RemoveAllSprites;
+        HideFP_Friendly_ALL;
         GameScreen := ScreenMain;
       end
       else if viewMatch then begin
@@ -15381,6 +15463,8 @@ begin
         end;
         LastIncProcessed := true;
       end;
+      //else ClientLoadBrainMM ( CurrentIncMove );
+
     end;
 
   end;
@@ -15588,8 +15672,10 @@ begin
   aSprite := SE_Skills.CreateSprite ( bmp.Bitmap,'hintskill',1,1,1000, SE_Theater1.VisibleBitmap.Width div 2 , BaseY , false,10 ) ;
   bmp.Free;
 
-  aSpriteLabel := SE_SpriteLabel.create( 0,8,'Calibri',clWhite-1,clBlack,12, aHintSkill ,True  ,1, dt_Center  );
+  aSpriteLabel := SE_SpriteLabel.create( 0,8,'Calibri',clWhite-1,clBlack,14, aHintSkill ,True  ,1, dt_Center  );
+  aSpriteLabel.lFontStyle := [fsBold];
   aSprite.Labels.add (aSpriteLabel);
+
 
   aSpriteLabel := SE_SpriteLabel.create( 0,0,'Calibri',clWhite-1,clBlack,9, Capitalize(translate('hintskill_cancel')) ,True  ,1, DT_BOTTOM or DT_SINGLELINE or DT_RIGHT );
   aSprite.Labels.add (aSpriteLabel);
@@ -15939,6 +16025,26 @@ begin
     viewMatch := True;
     MouseWaitFor := WaitForNone;
     SE_FieldPointsReserve.HiddenSpritesMouseMove := false;
+
+  end
+  else if fGameScreen = ScreenFreeKick  then begin
+
+    SE_skills.RemoveAllSprites;
+    SE_skills.ProcessSprites(2000);
+    HideAllEnginesExcept ( SE_BackGround,SE_Score,SE_skills,nil,nil );
+    ShowStadiumAndPlayers(1);
+
+    SE_TacticsSubs.Visible := false;
+    aSprite := SE_LIVE.FindSprite('btnmenu_tactics');
+    aSprite.Visible := false;
+    aSprite := SE_LIVE.FindSprite('btnmenu_subs');
+    aSprite.Visible := false;
+
+    SE_Live.ShowAllSprites; // hideallsprites eccetto exit fatta da forcegameover
+    SE_Live.Visible := true;
+
+    LiveMatch := True;
+    viewMatch := False;
 
   end
   else if fGameScreen = ScreenWaitingSpectator then begin // si accede cliccando l'icona TV
@@ -18438,6 +18544,7 @@ begin
   SE_ball.RemoveSprite(aSprite);
   SE_interface.RemoveAllSprites;
   SE_Numbers.RemoveAllSprites;
+  HideFP_Friendly_ALL;
 
   MyBrain := oldbrain;
   GameScreen := ScreenFormation;
@@ -18463,7 +18570,7 @@ begin
   SE_ball.RemoveSprite(aSprite);
   SE_interface.RemoveAllSprites;
   SE_Numbers.RemoveAllSprites;
-
+  HideFP_Friendly_ALL;
   MyBrain := oldbrain;
 
   Application.ProcessMessages ;
