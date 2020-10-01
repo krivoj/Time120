@@ -22,17 +22,14 @@
     sto testando exec_autotackle su pmmove path = 1
   }
   { TODO -ctodo prima del rilascio patreon :
-
-
-    errore su fallo. hint = scegli chi batte . le skill non devono esserew attive .
+    DEBUG REPLAY ORA: suono crossbar
+    FARE  ORA: Per evitare lastsciptgol userò un brain resettato senza tscscript. cosi' risolvo per sempre. il brain farà perforza il reset.
+    dopo il mio gol la palla la aveo io a centrocampo.
+    controllare BonusGK dalla distanza. adesso si applica solo a lui. piu' parate ora.
 
     gol live non resetta ma va direttamente all'azione.
     ho aggiunto           AnimationScript.TsAdd  ( 'cl_wait,3000');  a tutti i gol. devo comunque usare uno spritereset prima del loadanimationscript
     devo mettere un flag globale che c'è stato un gol
-
-    se faccio esci da una live devo mmettere hide tutti gli fp fpHide_all
-
-    sui freekick 3000 bug
 
 
     DA CAPIRE BUg exec_autotackle   preRoll := RndGenerate (aPlayer.Defense);
@@ -138,7 +135,7 @@
    const CrossingRangeMin     = 2; PROVARE 3 , a 2 funziona lo stesso ma si applica shot invece di heading, a parte freekick e corner
 
    pvp ordinare per performance  i cmd dal client ?
-   gestire incrossbarposition, ingolposition con nextsound? per liberarlo dai pixel precisi.
+
 
    pvp ssl con passwordrandom
    pvp cannonieri
@@ -630,7 +627,7 @@ type
     procedure CreateMovingLifeSpan (posX,posY, relativeDestX,relativeDestY: Integer;speed:Single; aString: string; msLifespan,FontSize: integer; FontStyle: TFontStyles; FontColor,BackColor: TColor; Transparent: boolean) ;    procedure RemoveChancesAndInfo  ; deprecated;
     procedure CornerSetBall;
     procedure PenaltySetBall;
-    procedure CornerSetPlayer ( aPlayer: TsoccerPlayer);
+    procedure CornerSetPlayer ( aPlayer: TsoccerPlayer; CellCornerX,CellCornerY: string );
     procedure PenaltySetPlayer ( aPlayer: TsoccerPlayer);
     procedure Logmemo ( ScriptLine : string );
 
@@ -673,7 +670,7 @@ type
 
     // check ball position
     function inGolPosition ( PixelPosition: Tpoint ): Boolean;
-    function inCrossBarPosition ( PixelPosition: Tpoint ): Boolean;
+    function inCrossBarPosition ( PixelPosition: Tpoint ): Boolean; deprecated;
     function inGKCenterPosition ( PixelPosition: Tpoint ): Boolean;
 
     function isTvCellFormation ( Team, CellX, CellY: integer ): boolean; deprecated;
@@ -3510,6 +3507,12 @@ begin
  else if aSprite.sTag = 'soundreceive' then begin
    playsound ( pchar (dir_sound +  'receive.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
    aSprite.sTag := '';
+ end
+ else if aSprite.sTag = 'soundcrossbar' then begin
+   playsound ( pchar (dir_sound +  'crossbar.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
+   aSprite.sTag := '';
+   Sleep(300);
+   playsound ( pchar (dir_sound +  'nogol.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
  end;
 
 
@@ -3521,15 +3524,15 @@ begin
    Sleep(300);
    playsound ( pchar (dir_sound +  'gol.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
  end
- else if inCrossBarPosition (ASprite.Position ) then begin
-   playsound ( pchar (dir_sound +  'crossbar.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
+// else if inCrossBarPosition (ASprite.Position ) then begin
+//   playsound ( pchar (dir_sound +  'crossbar.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
 
-   ASprite.PositionY:= ASprite.Position.Y +1; // fix sound crossbar 2 volte
-   ASprite.MoverData.Destination := Point( ASprite.Position.X, ASprite.Position.Y +1); // fix sound net 2 volte
-   Sleep(300);
+//   ASprite.PositionY:= ASprite.Position.Y +1; // fix sound crossbar 2 volte
+//   ASprite.MoverData.Destination := Point( ASprite.Position.X, ASprite.Position.Y +1); // fix sound net 2 volte
+//   Sleep(300);
 
-   playsound ( pchar (dir_sound +  'nogol.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
- end
+//   playsound ( pchar (dir_sound +  'nogol.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
+// end
  else if inGKCenterPosition (ASprite.Position ) then begin
    playsound ( pchar (dir_sound +  'nogol.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
  end;
@@ -5995,7 +5998,7 @@ begin
     end;
 
     if Mybrain.w_CornerSetup and aPlayer.isCOF then begin//   (brain.w_Coa) or (brain.w_Cod)  then begin
-      CornerSetPlayer ( aPlayer );
+      CornerSetPlayer ( aPlayer, IntToStr(aPlayer.CellX),IntToStr(aPlayer.CellY) );
     end
     else if Mybrain.w_FreeKick4 and aPlayer.isFK4 then begin//   (brain.w_Coa) or (brain.w_Cod)  then begin
       PenaltySetPlayer ( aPlayer );
@@ -6068,11 +6071,11 @@ begin
   Mybrain.Ball.SE_Sprite.MoverData.Destination :=  point ( aFieldPointSpr.Position.X  , aFieldPointSpr.Position.Y );
 
 end;
-procedure TForm1.CornerSetPlayer ( aPlayer: TsoccerPlayer);
+procedure TForm1.CornerSetPlayer ( aPlayer: TsoccerPlayer; CellCornerX,CellCornerY: string );
 var
   aFieldPointSpr: SE_Sprite;
 begin
-  aFieldPointSpr := SE_FieldPointsSpecial.FindSprite(IntToStr (Mybrain.Ball.CellX ) + '.' + IntToStr (Mybrain.Ball.CellY ));
+  aFieldPointSpr := SE_FieldPointsSpecial.FindSprite(CellCornerX+ '.' + CellCornerY);
 
   aPlayer.SE_Sprite.Position :=  Point( aFieldPointSpr.Position.X  , aFieldPointSpr.Position.Y );
   aPlayer.SE_Sprite.MoverData.Destination  :=  Point( aFieldPointSpr.Position.X , aFieldPointSpr.Position.Y );
@@ -6334,7 +6337,7 @@ begin
 
     else if MyBrain.w_CornerSetup then begin
       if aPlayer.isCOF then begin
-        CornerSetPlayer( aPlayer );
+        CornerSetPlayer( aPlayer, IntToStr(aPlayer.CellX),IntToStr(aPlayer.CellY) );
       end;
     end;
 
@@ -7082,7 +7085,7 @@ begin
 
     else if MyBrain.w_CornerSetup then begin
       if aPlayer.isCOF then begin
-        CornerSetPlayer( aPlayer );
+        CornerSetPlayer( aPlayer, IntToStr(aPlayer.CellX),IntToStr(aPlayer.CellY) );
       end;
     end;
 
@@ -8635,7 +8638,7 @@ begin
           // 9 index ccrossbar
 
           AnimationScript.Tsadd ('cl_sound,soundishot');
-          AnimationScript.Tsadd ('cl_nextsound,soundbounce');
+          AnimationScript.Tsadd ('cl_nextsound,soundcrossbar');
           AnimationScript.Tsadd ('cl_ball.move.bounce.crossbar,' + IntTostr(DEFAULT_SPEEDMAX_BALL)  + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[9]  );
           AnimationScript.Tsadd ('cl_ball.bounce.crossbar,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[7] + ','+tsCmd[8]+',0,0'  );
         end
@@ -8810,6 +8813,7 @@ begin
           // 9 index crossbar
 
           AnimationScript.Tsadd ('cl_sound,soundishot');
+          AnimationScript.Tsadd ('cl_nextsound,soundcrossbar');
           AnimationScript.Tsadd ('cl_ball.move.bounce.crossbar,' + IntTostr(DEFAULT_SPEEDMAX_BALL) + ',' + tsCmd[3] + ','+tsCmd[4]+ ',' + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[9] );
           AnimationScript.Tsadd ('cl_ball.bounce.crossbar,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[5] + ','+tsCmd[6]+ ',' + tsCmd[7] + ','+tsCmd[8]+',0,'+tsCmd[0]  );
         end
@@ -8906,6 +8910,7 @@ begin
         end
         else if tsCmd[0]='sc_bounce.crossbar' then begin
 //          aGK := Mybrain.GetSoccerPlayer  ( StrToInt(tsCmd[1]),StrToInt(tsCmd[2]));
+          AnimationScript.Tsadd ('cl_nextsound,soundcrossbar');
           AnimationScript.Tsadd (  'cl_ball.bounce.crossbar,' + IntTostr(DEFAULT_SPEED_BALL) + ','  +  tsCmd[1] + ','+tsCmd[2]+ ','+tsCmd[3] + ','+tsCmd[4]+','+tsCmd[5]);
         end
         else if tsCmd[0]= 'sc_player.move' then begin
@@ -9057,8 +9062,9 @@ begin
           AnimationScript.Tsadd ('cl_nextsound,soundbounce');
           AnimationScript.Tsadd ('cl_sound,soundishot');
           AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEEDMAX_BALL) + ',' + tsCmd[4] + ','+tsCmd[5]+ ',' + tsCmd[8] + ','+tsCmd[9]+',0,0,'+tsCmd[0]  );
+          AnimationScript.Tsadd ('cl_nextsound,soundcrossbar');
           AnimationScript.Tsadd ('cl_ball.move.bounce.crossbar,' + IntTostr(DEFAULT_SPEED_BALL) + ',' + tsCmd[8]+ ','+tsCmd[9]+ ',' + tsCmd[10] + ','+tsCmd[11]+',' + tsCmd[14] );
-          AnimationScript.Tsadd ('cl_nextsound,soundreceive');
+//          AnimationScript.Tsadd ('cl_nextsound,soundreceive');
           AnimationScript.Tsadd ('cl_ball.bounce.crossbar,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[10] + ','+tsCmd[11]+ ',' + tsCmd[12] + ','+tsCmd[13]+',0,0'  );
 
         end
@@ -9174,7 +9180,8 @@ begin
           AnimationScript.Tsadd ('cl_sound,soundishot');
           AnimationScript.Tsadd ('cl_ball.move,' + IntTostr(DEFAULT_SPEEDMAX_BALL) + ',' + tsCmd[4] + ','+tsCmd[5]+ ',' + tsCmd[6] + ','+tsCmd[7]+',0,0,'+tsCmd[0]  );
           AnimationScript.Tsadd ('cl_ball.move.bounce.crossbar,' + IntTostr(DEFAULT_SPEED_BALL) + ',' + tsCmd[6]+ ','+tsCmd[7]+ ',' + tsCmd[8] + ','+tsCmd[9]+ ','+tsCmd[12]  );
-          AnimationScript.Tsadd ('cl_nextsound,soundreceive');
+          AnimationScript.Tsadd ('cl_nextsound,soundcrossbar');
+//          AnimationScript.Tsadd ('cl_nextsound,soundreceive');
           AnimationScript.Tsadd ('cl_ball.bounce.crossbar,' + IntTostr(DEFAULT_SPEED_BALL) + ','  + tsCmd[8] + ','+tsCmd[9]+ ',' + tsCmd[10] + ','+tsCmd[11]+',0,0'  );
 
         end
@@ -10569,7 +10576,7 @@ begin
   else if ts[0] = 'cl_prepare.corner' then begin
 
     aPlayer := MyBrain.GetSoccerPlayer(ts[1]);
-    CornerSetPlayer (aPlayer);
+    CornerSetPlayer (aPlayer, ts[2], ts[3] );  // quel player nel brain si è già spostato nel corner
 
   end
   else if ts[0] = 'cl_wait' then begin
@@ -12871,7 +12878,7 @@ begin
       if aSpriteClicked.GrayScaled then Exit; // GK o già selezionati in caso di corner o freekick
       MouseWaitFor := WaitForXY_CornerCOA;
       CornerMap := MyBrain.GetCorner ( MyBrain.TeamCorner , Mybrain.Ball.CellY,OpponentCorner) ;
-      CornerSetPlayer(MyBrain.GetSoccerPlayer(aSpriteClicked.Guid  )); // non devo swappare nulla, i pixel sono già distanti
+      CornerSetPlayer(MyBrain.GetSoccerPlayer(aSpriteClicked.Guid) , IntToStr(CornerMap.CornerCell.X),IntToStr(CornerMap.CornerCell.Y) ); // non devo swappare nulla, i pixel sono già distanti
 
       HideFP_Special;
       HHFP( CornerMap.HeadingCellA [0].X,CornerMap.HeadingCellA [0].Y,0 );
@@ -15440,11 +15447,6 @@ begin
 
       if incMoveAllProcessed [CurrentIncMove] = true then begin   // se  è stato eseguito tutto lo script animation
 
-        if LastScriptGol then begin
-          SpriteReset;
-          LastScriptGol := false;
-          exit; // ripasso subito dopo
-        end;
 
         oldCurrent :=  CurrentIncMove;
         CurrentIncMove := imin( CurrentIncMove +1, LastMoveBrain ); // avanzo processando tutti gli script
@@ -15452,6 +15454,13 @@ begin
         if OldCurrent < CurrentIncMove then begin  // solo se è cambiato , altrimenti ricarico a oltranz la stessa animazione
           RemoveSubMainskill;
           LastIncProcessed:= False;
+          if LastScriptGol then begin
+            SpriteReset;
+            LastScriptGol := false;
+            exit; // ripasso subito dopo
+          end;
+
+
           if  Mybrain.tsScript [CurrentIncMove].Count > 0 then begin
             AnimationScript.Reset ;
             LoadAnimationScript // riempe animationScript.  alla fine il thread chiama  ClientLoadBrainMM
@@ -15474,6 +15483,11 @@ begin
     else if CurrentIncMove =  LastMoveBrain then begin   // qui BUG
       if not LastIncProcessed then begin
         RemoveSubMainskill;
+        if LastScriptGol then begin
+          SpriteReset;
+          LastScriptGol := false;
+          exit; // ripasso subito dopo
+        end;
         if Mybrain.tsScript [CurrentIncMove].Count > 0 then begin
           AnimationScript.Reset ;
           LoadAnimationScript // riempe animationScript.  alla fine il thread chiama  ClientLoadBrainMM

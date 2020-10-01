@@ -80,7 +80,7 @@ const TALENT_ID_BUFF_DEFENSE = 139; //prereq almeno 3/5 Defense, 1 talento quals
 const  TALENT_ID_BUFF_MIDDLE = 140; //prereq almeno 3/5 passing, 1 talento qualsiasi --> skill 2x buff reparto (20% chance) cen  25 turni + tutti attr 1 (speed e heading max 4)
 const  TALENT_ID_BUFF_FORWARD = 141; //prereq almeno 3/5 Shot , 1 talento qualsiasi --> skill 2x buff reparto (20% chance) att 25 turni + tutti attr 1 (speed e heading max 4)
 
-const TALENT_ID_GKMIRACLE = 250; //solo GK  Ha una chance del 10% di ottenere +1 Difesa sui tiri precisi a distanza 1. Non valido sui rigori.
+const TALENT_ID_GKMIRACLE = 250; //solo GK  Ha una chance del 10% di ottenere +2 Difesa sui tiri precisi a distanza 1. Non valido sui rigori.
 const TALENT_ID_GKPENALTY = 251; //specialista para rigori. ottiene +1 10% chance .
 
 
@@ -597,10 +597,10 @@ end;
       Score: TScore;
       incMove : SmallInt;
 
-      MalusPowerShot: array [1..10] of integer;           // pos modificatori al tiro in porta
-      MalusPrecisionShot: array [1..10] of integer;       // prs modificatori al tiro in porta
+      BonusPowerShotGK: array [1..10] of integer;           // pos modificatori al tiro in porta
+      BonusPrecisionShotGK: array [1..10] of integer;       // prs modificatori al tiro in porta
 
-      ToEmptyCellMalus: integer;                          // definizioni
+      ToEmptyCellBonusDefending: integer;                          // definizioni
 
       Ball: Tball;
 
@@ -5645,7 +5645,7 @@ begin
   TeamTurn:=0;
   GameStarted:= false;
 //  BonusDefenseShots := -1;
-  ToEmptyCellMalus := 1;
+  ToEmptyCellBonusDefending := 1;
 
 
     tsSpeaker:= TstringList.Create ;
@@ -6159,27 +6159,27 @@ begin
     MAX_DEFAULT_SHOT := 6;
     MAX_DEFAULT_HEADING := 6;
 
-    MalusPowerShot[1]:= -1;
-    MalusPowerShot[2]:= -2;
-    MalusPowerShot[3]:= -3;
-    MalusPowerShot[4]:= -4;
-    MalusPowerShot[5]:= -4;
-    MalusPowerShot[6]:= -4;
-    MalusPowerShot[7]:= -4;
-    MalusPowerShot[8]:= -3;
-    MalusPowerShot[9]:= -2;
-    MalusPowerShot[10]:= -1;
+    BonusPowerShotGK[1]:= 1;
+    BonusPowerShotGK[2]:= 2;
+    BonusPowerShotGK[3]:= 3;
+    BonusPowerShotGK[4]:= 4;
+    BonusPowerShotGK[5]:= 4;
+    BonusPowerShotGK[6]:= 4;
+    BonusPowerShotGK[7]:= 4;
+    BonusPowerShotGK[8]:= 3;
+    BonusPowerShotGK[9]:= 2;
+    BonusPowerShotGK[10]:= 1;
 
-    MalusPrecisionShot[1]:= 0;
-    MalusPrecisionShot[2]:= -1;
-    MalusPrecisionShot[3]:= -2;
-    MalusPrecisionShot[4]:= -3;
-    MalusPrecisionShot[5]:= -3;
-    MalusPrecisionShot[6]:= -3;
-    MalusPrecisionShot[7]:= -3;
-    MalusPrecisionShot[8]:= -2;
-    MalusPrecisionShot[9]:= -1;
-    MalusPrecisionShot[10]:= 0;
+    BonusPrecisionShotGK[1]:= 0;
+    BonusPrecisionShotGK[2]:= 1;
+    BonusPrecisionShotGK[3]:= 2;
+    BonusPrecisionShotGK[4]:= 3;
+    BonusPrecisionShotGK[5]:= 3;
+    BonusPrecisionShotGK[6]:= 3;
+    BonusPrecisionShotGK[7]:= 3;
+    BonusPrecisionShotGK[8]:= 2;
+    BonusPrecisionShotGK[9]:= 1;
+    BonusPrecisionShotGK[10]:= 0;
 
     PRE_VALUE := 2;
     PRO_VALUE := 2;
@@ -6206,7 +6206,7 @@ begin
     DRIBBLING_MALUS := 2;
     DRIBBLING_DIFF := 2;
 
-    modifier_defenseShot := -1;
+    modifier_defenseShot := 1;
     modifier_penaltyPOS := 2;
     modifier_penaltyPRS := 3;
 
@@ -6246,27 +6246,27 @@ begin
     MAX_DEFAULT_HEADING := 10;
 
 
-    MalusPowerShot[1]:= -1;
-    MalusPowerShot[2]:= -2;
-    MalusPowerShot[3]:= -3;
-    MalusPowerShot[4]:= -4;
-    MalusPowerShot[5]:= -4;
-    MalusPowerShot[6]:= -4;
-    MalusPowerShot[7]:= -4;
-    MalusPowerShot[8]:= -3;
-    MalusPowerShot[9]:= -2;
-    MalusPowerShot[10]:= -1;
+    BonusPowerShotGK[1]:= 1;
+    BonusPowerShotGK[2]:= 2;
+    BonusPowerShotGK[3]:= 3;
+    BonusPowerShotGK[4]:= 4;
+    BonusPowerShotGK[5]:= 4;
+    BonusPowerShotGK[6]:= 4;
+    BonusPowerShotGK[7]:= 4;
+    BonusPowerShotGK[8]:= 3;
+    BonusPowerShotGK[9]:= 2;
+    BonusPowerShotGK[10]:= 1;
 
-    MalusPrecisionShot[1]:= 0;
-    MalusPrecisionShot[2]:= -1;
-    MalusPrecisionShot[3]:= -2;
-    MalusPrecisionShot[4]:= -3;
-    MalusPrecisionShot[5]:= -3;
-    MalusPrecisionShot[6]:= -3;
-    MalusPrecisionShot[7]:= -3;
-    MalusPrecisionShot[8]:= -2;
-    MalusPrecisionShot[9]:= -1;
-    MalusPrecisionShot[10]:= 0;
+    BonusPrecisionShotGK[1]:= 0;
+    BonusPrecisionShotGK[2]:= 1;
+    BonusPrecisionShotGK[3]:= 2;
+    BonusPrecisionShotGK[4]:= 3;
+    BonusPrecisionShotGK[5]:= 3;
+    BonusPrecisionShotGK[6]:= 3;
+    BonusPrecisionShotGK[7]:= 3;
+    BonusPrecisionShotGK[8]:= 2;
+    BonusPrecisionShotGK[9]:= 1;
+    BonusPrecisionShotGK[10]:= 0;
 
     PRE_VALUE := 3;
     PRO_VALUE := 3;
@@ -6292,7 +6292,7 @@ begin
     DRIBBLING_MALUS := 3;
     DRIBBLING_DIFF := 3;
 
-    modifier_defenseShot := -2;
+    modifier_defenseShot := 2;
     modifier_penaltyPOS := 3;
     modifier_penaltyPRS := 4;
 
@@ -6374,7 +6374,7 @@ end;
 procedure TSoccerbrain.BrainInput ( aCmd: string );
 var
   tsCmd: Tstringlist;
-  BaseShot,BaseHeading,BaseHeadingFriend,BaseGK,aRnd,aRnd2,aRnd3,arnd4,preRoll, preRoll2,preRoll3,preRoll4,CellX,CellY,BonusDefenseHeading: integer;
+  BaseShot,BaseHeading,BaseHeadingFriend,BaseGK,aRnd,aRnd2,aRnd3,arnd4,preRoll, preRoll2,preRoll3,preRoll4,CellX,CellY,BonusDefenseHeading,BaseIntercept: integer;
   Roll,Roll2,Roll3,Roll4: TRoll;
   aPath: dse_pathplanner.Tpath;
   i,y,ii,c,MoveValue,P,tmpX,tmpY,ToEmptyCell,Diff: integer;
@@ -6506,7 +6506,7 @@ begin
 
     aFriend := GetSoccerPlayer ( CellX, CellY);
     ToEmptyCell:= 0;
-    if aFriend = nil then ToEmptyCell := ToEmptyCellMalus
+    if aFriend = nil then ToEmptyCell := ToEmptyCellBonusDefending   // ToEmptyCellBonusDefending=1 in brain.create  // sarebbe un intercept bonus
     else begin
       if aFriend.Team <> aPlayer.team then begin
         reason := 'SHP,Destination Player unfriendly:' + 'SERVER_SHP,' + aPlayer.ids + ',' + IntToStr(aPlayer.CellX) + ',' + IntToStr(aPlayer.CellY)  + ',' +tsCmd[1] + ',' + tsCmd[2]  ;//  skillused  tentativo ) ;;
@@ -6548,9 +6548,9 @@ begin
       anOpponent:= GetSoccerPlayer ( aPath[i].X,aPath[i].Y , True, aPlayer.team );
       if anOpponent <> nil then begin
             ExceptPlayers.Add(anOpponent);
-            preRoll2 :=  RndGenerate (anOpponent.Defense) ;
+            preRoll2 :=  RndGenerate (anOpponent.Defense + ToEmptyCell) ; // sarebbe un intercept bonus
             Roll2 := AdjustFatigue (anOpponent.Stamina , preRoll2);
-            aRnd2:= Roll2.value +  ToEmptyCell;
+            aRnd2:= Roll2.value ;
             TsScript[incMove].add ( 'sc_DICE,' + IntTostr(CellX) + ',' + Inttostr(CellY) +','+  IntTostr(aRnd2) + ','+
             IntTostr(anOpponent.Defense )+ ',Intercept,'+ anOpponent.ids+','+IntTostr(Roll2.value) + ',' + Roll2.fatigue +'.0,' + IntToStr(ToEmptyCell));
             anOpponent.xp_Defense:= anOpponent.xp_Defense + 1;
@@ -6593,9 +6593,11 @@ begin
             if (anIntercept.TalentId2 = TALENT_ID_ADVANCED_BULLDOG)  then
               anIntercept.tmp := anIntercept.tmp +1;
 
-            preRoll2 := RndGenerate (anIntercept.Defense + anIntercept.tmp );
+            BaseIntercept := anIntercept.Defense + anIntercept.tmp + ToEmptyCell -1;
+            if BaseIntercept <= 0 then BaseIntercept := 1;
+            preRoll2 := RndGenerate (BaseIntercept);
             Roll2 := AdjustFatigue (anIntercept.Stamina , preRoll2);
-            aRnd2:=  Roll2.value + ToEmptyCell -1 ;
+            aRnd2:=  Roll2.value  ;
 
             TsScript[incMove].add ( 'sc_DICE,' + IntTostr(CellX) + ',' + Inttostr(CellY) +','+ IntTostr(aRnd2) +',' + IntToStr(anIntercept.Defense )+
             ',Intercept,'+ anIntercept.ids+','+IntTostr(Roll2.value) + ',' + Roll2.fatigue +'.0' + ',' + IntToStr((anIntercept.tmp) + ToEmptyCell -1));
@@ -6836,7 +6838,7 @@ begin
 
     aFriend := GetSoccerPlayer ( CellX, CellY, aPlayer.Team );
     ToEmptyCell:= 0;
-    if aFriend = nil then ToEmptyCell := ToEmptyCellMalus
+    if aFriend = nil then ToEmptyCell := ToEmptyCellBonusDefending
     else begin
       if aFriend.Team <> aPlayer.team then begin
       reason := 'LOP,Destination Player unfriendly';
@@ -7185,12 +7187,9 @@ begin
                      // non ci sono heading difensivi in exceptPlayers, quindi difendono come pos
                      // può finire in: sc_pos.bounce, sc_pos.bounce.gk, sc_pos.bounce.crossbar
                     tsSpeaker.Add(aFriend.Surname + ' tira al volo');
-                    preRoll2 := RndGenerate (aFriend.Shot);
+                    preRoll2 := RndGenerate (aFriend.Shot + 1); // +1 bonus volley
                     Roll2 := AdjustFatigue (aFriend.Stamina , preRoll2);
-                    BaseShot :=  Roll2.value + MalusPowerShot[aPlayer.CellX];
-                    BaseShot:= BaseShot + 1;           // bonus volley
-                    if BaseShot <=0 then BaseShot := 1;
-                    aRnd2:= Roll2.value + BaseShot  ;
+                    aRnd2:= Roll2.value;
 
                     if debug_SetAlwaysGol then arnd2 := 20;
                     aFriend.Stamina := aFriend.Stamina - cost_pos;
@@ -7217,9 +7216,9 @@ begin
                           ExceptPlayers.Add(anOpponent);
 
                             if aPlayer.CellX = anOpponent.cellX then Modifier := modifier_defenseShot  else Modifier :=0;
-                            preRoll3 := RndGenerate (anOpponent.Defense);
+                            preRoll3 := RndGenerate (anOpponent.Defense+Modifier);
                             Roll3 := AdjustFatigue (anOpponent.Stamina , preRoll3);
-                            aRnd3:= roll3.value + Modifier;
+                            aRnd3:= roll3.value;
                             anOpponent.Stamina := anOpponent.Stamina - cost_defshot;
                             TsScript[incMove].add ( 'sc_DICE,' + IntTostr(anOpponent.CellX) + ',' + Inttostr(anOpponent.CellY) +','+  IntTostr(aRnd3) +','+
                             IntTostr ( anOpponent.Defense ) +',Defense,'+ anOpponent.ids+','+IntTostr(Roll3.value) + ',' + Roll3.fatigue+'.0' + ',' + IntToStr(Modifier));
@@ -7281,7 +7280,7 @@ begin
                         // anOpponent può essere o il portiere
                         // GK
                           aGK := GetOpponentGK ( aPlayer.team);
-                          preRoll4 := RndGenerate (aGK.defense);
+                          preRoll4 := RndGenerate (aGK.defense); // nessun bonus su volley
                           Roll4 := AdjustFatigue (aGK.Stamina , preRoll4);
                           aRnd4:= roll4.value ;
                           TsScript[incMove].add ( 'sc_DICE,' + IntTostr(aGK.CellX) + ',' + Inttostr(aGK.CellY) +','+  IntTostr(aRnd4) +','+
@@ -7475,7 +7474,7 @@ begin
                 tsSpeaker.Add(aFriend.Surname +' prova a controllare la palla' );
                 preRoll3 := RndGenerate (aFriend.BallControl);
                 Roll3 := AdjustFatigue (aFriend.Stamina , preRoll3);
-                aRnd3 := Roll3.value   - 2 ;
+                aRnd3 := Roll3.value  - 2 ;
                 if aRnd3 < 0  then aRnd3 := 1;
                 TsScript[incMove].add ( 'sc_DICE,' + IntTostr(aFriend.CellX) + ',' + Inttostr(aFriend.CellY) +','+  IntTostr(aRnd3) + ','+
                 IntToStr(aFriend.BallControl )+ ',Ball.Control,'+ aFriend.ids+','+IntTostr(Roll3.value) + ',' + Roll3.fatigue + '.0' + ',-2' );
@@ -7573,9 +7572,9 @@ begin
                   anOpponent := aGhost;
                   ExceptPlayers.Add(anopponent);
                   tsSpeaker.Add(anOpponent.Surname +' prova a controllare la palla');
-                  preRoll3 := RndGenerate (anOpponent.BallControl);
+                  preRoll3 := RndGenerate (anOpponent.BallControl + 4);
                   Roll3 := AdjustFatigue (anOpponent.Stamina , preRoll3);
-                  aRnd3 :=  Roll3.value + 4 ;
+                  aRnd3 :=  Roll3.value;
                   if aRnd3 < 0  then aRnd3 := 1;
                   TsScript[incMove].add ( 'sc_DICE,' + IntTostr(anOpponent.CellX) + ',' + Inttostr(anOpponent.CellY) +','+  IntTostr(aRnd3) + ','+
                   IntToStr(anOpponent.BallControl)+',Ball.Control,'+ anOpponent.ids+','+IntTostr(Roll3.value)+','+Roll3.fatigue + '.0' + ',4' );
@@ -7755,8 +7754,6 @@ TALENT_ID_PRECISE_CROSSING ( +1 crossing solo dal fondo campo, l'ultima cella )
 
     OldBall:= Point ( Ball.CellX , Ball.Celly );
 
-    preRoll := RndGenerate (aPlayer.Passing);
-    Roll := AdjustFatigue (aPlayer.Stamina , preRoll);
     aPlayer.tmp := 0;
     ACT := '0';
     if (aPlayer.TalentId1 = TALENT_ID_CROSSING) or (aPlayer.TalentId2 = TALENT_ID_CROSSING) then
@@ -7774,7 +7771,10 @@ TALENT_ID_PRECISE_CROSSING ( +1 crossing solo dal fondo campo, l'ultima cella )
       end;
     end;
 
-    aRnd:= Roll.value + aPlayer.tmp ; // se undepressure 0   il talento gli conferisce 1
+    preRoll := RndGenerate (aPlayer.Passing+aPlayer.tmp);  // se undepressure minimo è 1  il talento gli conferisce 1
+    Roll := AdjustFatigue (aPlayer.Stamina , preRoll);
+    aRnd:= Roll.value ;
+
     aPlayer.resetALL;
     aPlayer.xpTal[TALENT_ID_CROSSING] :=  aPlayer.xpTal[TALENT_ID_CROSSING] + 1;
 
@@ -7834,12 +7834,12 @@ GK:
 //HVSH:
           ExceptPlayers.Add(aGhost);
           aHeadingFriend := aGhost;
-          BaseHeadingFriend:= aHeadingFriend.Heading -1;
+          Modifier := -1;
+          BaseHeadingFriend:= aHeadingFriend.Heading + Modifier;
           if BaseheadingFriend <=0 then BaseHeadingFriend := 1;
           preRoll3 := RndGenerate (BaseHeadingFriend );
           Roll3 := AdjustFatigue (aGhost.Stamina , preRoll3);
           aRnd3 := Roll3.value ;//+ BaseHeadingFriend;
-          Modifier := -1;
           //HVSH
           goto HVSH;
 
@@ -7915,7 +7915,7 @@ GK:
 
           //2              TsScript[incMove].add ('sc_ball.move,'+ IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+  IntTostr(CellX )+','+ IntTostr(CellY) +',1' ) ;
           aHeadingFriend := GetSoccerPlayer(CellX, CellY);
-          BaseHeadingFriend:= aHeadingFriend.Heading ;
+         // BaseHeadingFriend:= aHeadingFriend.Heading ;
           ACT := '0';
           aHeadingFriend.tmp := 0;
 
@@ -7925,11 +7925,10 @@ GK:
               ACT := IntTostr(TALENT_ID_HEADING);
             end;
           end;
-          if BaseheadingFriend <=0 then BaseHeadingFriend := 1;
-          preRoll3 := RndGenerate (BaseheadingFriend );
+          preRoll3 := RndGenerate (aHeadingFriend.Heading +  aHeadingFriend.tmp); //Modifier := 0;
           Roll3 := AdjustFatigue (aHeadingFriend.Stamina , preRoll3);
           aRnd3 := Roll3.value + aHeadingFriend.tmp ;
-          Modifier := 0;
+
           goto HVSH;
     end
 
@@ -7965,12 +7964,11 @@ GK:
               ACT := IntTostr(TALENT_ID_HEADING);
             end;
           end;
-          if BaseheadingFriend <=0 then BaseHeadingFriend := 1;
 
-          preRoll3 := RndGenerate (BaseheadingFriend );
+          Modifier := 1;
+          preRoll3 := RndGenerate (BaseheadingFriend + aHeadingFriend.tmp + Modifier );
           Roll3 := AdjustFatigue (aHeadingFriend.Stamina , preRoll3);
           aRnd3 := Roll3.value + aHeadingFriend.tmp ;
-          Modifier := 1;
           goto HVSH;
     end;
 
@@ -8002,7 +8000,6 @@ HVSH:
                 aHeadingOpponent := LstHeading[i].Player;
                 ExceptPlayers.Add(aHeadingOpponent);
 
-                BaseHeading :=  aHeadingOpponent.Heading + BonusDefenseHeading;
                 aHeadingOpponent.tmp := 0;
                 ACT :='0';
                 if ( aHeadingOpponent.TalentId1 = TALENT_ID_HEADING ) or ( aHeadingOpponent.TalentId2 = TALENT_ID_HEADING ) then begin
@@ -8011,11 +8008,12 @@ HVSH:
                     ACT := IntTostr(TALENT_ID_HEADING);
                   end;
                 end;
+                BaseHeading :=  aHeadingOpponent.Heading + BonusDefenseHeading;
                 if Baseheading <= 0 then Baseheading :=1;
 
-                preRoll2 := RndGenerate (BaseHeading);
+                preRoll2 := RndGenerate (BaseHeading );
                 Roll2 := AdjustFatigue (aHeadingOpponent.Stamina , preRoll2);
-                aRnd2:=  Roll2.value + aHeadingOpponent.tmp;
+                aRnd2:=  Roll2.value ;
                 aHeadingOpponent.xp_Heading := aHeadingOpponent.xp_Heading + 1;
                 aHeadingOpponent.xpTal[TALENT_ID_HEADING] :=  aHeadingOpponent.xpTal[TALENT_ID_HEADING] + 1;
                 aHeadingOpponent.Stamina := aHeadingOpponent.Stamina - cost_hea;
@@ -8089,7 +8087,7 @@ HVSH:
 
               preRoll4 :=  RndGenerate (BaseGK);
               Roll4 := AdjustFatigue (aGK.Stamina , preRoll4);
-              aRnd4 := Roll4.value + BonusDefenseHeading ;
+              aRnd4 := Roll4.value  ;
               aGK.xpTal[TALENT_ID_GoalKeeper] := aGK.xpTal[TALENT_ID_GoalKeeper] + 1;
               //              TsScript[incMove].add ('gkdive,'+ anOpponent.Ids ) ;
               aGK.Stamina := aGK.Stamina - cost_GKheading;
@@ -8288,9 +8286,9 @@ cro_crossbar:
         end;
       end;
 
-       preRoll := RndGenerate (aPlayer.BallControl);
+       preRoll := RndGenerate (aPlayer.BallControl + aPlayer.tmp);
        Roll := AdjustFatigue (aPlayer.Stamina , preRoll);
-       aRnd:=  Roll.value +  -DRIBBLING_MALUS + aPlayer.tmp;
+       aRnd:=  Roll.value +  -DRIBBLING_MALUS ;
        if aRnd < 0 then aRnd := 0;
        
        aPlayer.resetALL;
@@ -8397,36 +8395,46 @@ cro_crossbar:
     end;
 
     tsSpeaker.Add(  aPlayer.Surname +' tira in porta'   );
-    preRoll := RndGenerate (aPlayer.Shot);
-    Roll := AdjustFatigue (aPlayer.Stamina , preRoll);
     if w_FreeKick3 then begin
       aPlayer.tmp := 0;
       if (aPlayer.TalentId1 = TALENT_ID_FREEKICKS) or (aPlayer.TalentId2 = TALENT_ID_FREEKICKS) then
         aPlayer.tmp:= 1;
 
-      BaseShot :=  Roll.value + (MalusPowerShot[aPlayer.CellX]+1) + aPlayer.tmp ; // punizione bonus +1
+      BaseShot := aPlayer.Shot + (BonusPowerShotGK[aPlayer.CellX]+1) + aPlayer.tmp ; // punizione bonus +1 fisso
+      if BaseShot <= 0 then BaseShot := 1;
+      preRoll := RndGenerate (BaseShot);
+      Roll := AdjustFatigue (aPlayer.Stamina , preRoll);
+
       TsScript[incMove].add ('SERVER_POS3,' + aPlayer.ids + ',' + IntToStr(aPlayer.CellX) + ',' + IntToStr(aPlayer.CellY) + ',' + IntToStr( aDoor.X) +',' + IntToStr( aDoor.Y));
       Kind := '.golpos3.';
-      Modifier :=  MalusPowerShot[aPlayer.CellX]+1 + aPlayer.tmp;
+      Modifier :=  1 + aPlayer.tmp;
     end
     else if w_FreeKick4 then begin
       aPlayer.tmp := 0;
       if (aPlayer.TalentId1 = TALENT_ID_FREEKICKS) or (aPlayer.TalentId2 = TALENT_ID_FREEKICKS) then
         aPlayer.tmp:= 1;
 
-      BaseShot :=  Roll.value + modifier_penaltyPOS ; // rigore  ( in prs + 3 )
+      BaseShot :=  aPlayer.Shot + modifier_penaltyPOS ; // rigore  ( in prs + 3 )
+      if BaseShot <= 0 then BaseShot := 1;
+      preRoll := RndGenerate (BaseShot);
+      Roll := AdjustFatigue (aPlayer.Stamina , preRoll);
+
       aPlayer.isFK4  := false;
       TsScript[incMove].add ('SERVER_POS4,' + aPlayer.ids + ',' + IntToStr(aPlayer.CellX) + ',' + IntToStr(aPlayer.CellY) + ',' + IntToStr( aDoor.X) +',' + IntToStr( aDoor.Y));
       Kind := '.golpos4.';
       Modifier :=  modifier_penaltyPOS ;
     end
     else  begin
-      BaseShot :=  Roll.value + MalusPowerShot[aPlayer.CellX]; // tiro normale
+
+      BaseShot :=  aPlayer.Shot + BonusPowerShotGK[aPlayer.CellX]; // tiro normale
+      if BaseShot <= 0 then BaseShot := 1;
+      preRoll := RndGenerate (BaseShot);
+      Roll := AdjustFatigue (aPlayer.Stamina , preRoll);
+
       TsScript[incMove].add ('SERVER_POS,' + aPlayer.ids + ',' + IntToStr(aPlayer.CellX) + ',' + IntToStr(aPlayer.CellY)+ ',' + IntToStr( aDoor.X) +',' + IntToStr( aDoor.Y));
       Kind := '.golpos.';
-      Modifier :=  MalusPowerShot[aPlayer.CellX];
+      Modifier :=  0;
     end;
-    if BaseShot <= 0 then BaseShot := 1;
     Ball.Player.xpTal[TALENT_ID_BOMB] :=  Ball.Player.xpTal[TALENT_ID_BOMB] + 1;
     Ball.Player.xp_Shot  := Ball.Player.xp_Shot + 1;
     aRnd:= Roll.value;// + BaseShot  ;
@@ -8613,9 +8621,9 @@ cro_crossbar:
           // GK
 POSvsGK:
             aGK := GetOpponentGK ( aPlayer.team);
-            preRoll2 := RndGenerate (aGK.defense );
+            preRoll2 := RndGenerate (aGK.defense + (BonusPowerShotGK[aPlayer.CellX]) );
             Roll2 := AdjustFatigue (aGK.Stamina , preRoll2);
-            aRnd2:= roll2.value + aGK.tmp;
+            aRnd2:= roll2.value; // eventuale talento sui pos + aGK.tmp;
             if debug_Setposcrosscorner then aRnd2:=20;
 
             aGK.Stamina := aGK.Stamina - cost_GKpos;
@@ -8784,28 +8792,38 @@ setCorner:
 
     tsSpeaker.Add(  aPlayer.Surname +' tira in porta'   );
 
-    preRoll := RndGenerate (aPlayer.Shot);
-    Roll := AdjustFatigue (aPlayer.Stamina , preRoll);
     if w_FreeKick3 then begin
       aPlayer.tmp := 0;
       if (aPlayer.TalentId1 = TALENT_ID_FREEKICKS) or (aPlayer.TalentId2 = TALENT_ID_FREEKICKS) then
         aPlayer.tmp:= 1;
-      BaseShot :=  Roll.Value + (MalusPrecisionShot[aPlayer.CellX]+1)  + aPlayer.tmp ; // punizione bonus -1 di base
+
+      BaseShot := aPlayer.Shot +1 + aPlayer.tmp ; // punizione bonus +1 fisso
+      if BaseShot <= 0 then BaseShot := 1;
+      preRoll := RndGenerate (BaseShot);
+      Roll := AdjustFatigue (aPlayer.Stamina , preRoll);
+
       Kind := '.golprs3.';
-      Modifier :=  MalusPrecisionShot[aPlayer.CellX]+1 + aPlayer.tmp;
+      Modifier :=  1 + aPlayer.tmp;
     end
     else if w_FreeKick4 then begin
       BaseShot :=  aPlayer.Shot + modifier_penaltyPRS; // rigore prs
+      if BaseShot <= 0 then BaseShot := 1;
+      preRoll := RndGenerate (BaseShot);
+      Roll := AdjustFatigue (aPlayer.Stamina , preRoll);
+
       Kind := '.golprs4.';
       Modifier :=  modifier_penaltyPRS;
     end
     else begin
-      BaseShot :=  Roll.Value + MalusPrecisionShot[aPlayer.CellX]  ;
+      BaseShot := aPlayer.Shot; // tiro normale prs
+      if BaseShot <= 0 then BaseShot := 1;
+      preRoll := RndGenerate (BaseShot);
+      Roll := AdjustFatigue (aPlayer.Stamina , preRoll);
       Kind := '.golprs.';
-      Modifier :=  MalusPrecisionShot[aPlayer.CellX];
+
+      Modifier := 0;
     End;
 
-    if BaseShot <= 0 then BaseShot := 1;
     Ball.Player.xp_Shot  := Ball.Player.xp_Shot + 1;
 
     aRnd:= Roll.value ;//+ BaseShot  ;
@@ -8973,16 +8991,16 @@ PRSvsGK:
              // ACT := '0';
               if (aGK.TalentId2 = TALENT_ID_GKMIRACLE) then begin
                 if RndGenerate(100) <= 10 then begin
-                  aGK.tmp := 1;
+                  aGK.tmp := 2;
                   ACT :=  IntTostr  ( TALENT_ID_GKMIRACLE );
                 end;
               end;
 
             end;
 
-            preRoll2 := RndGenerate (aGK.defense);
+            preRoll2 := RndGenerate (aGK.defense + BonusPrecisionShotGK[aPlayer.CellX]);
             Roll2 := AdjustFatigue (aGK.Stamina , preRoll2);
-            aRnd2:= roll2.value + aGK.tmp;
+            aRnd2:= roll2.value + aGK.tmp; // talento
             aGK.xpTal[TALENT_ID_GoalKeeper] := aGK.xpTal[TALENT_ID_GoalKeeper] + 1;
             aGK.Stamina := aGK.Stamina - cost_GKprs;
             aGK.xp_Defense:= aGK.xp_Defense+1;
@@ -11023,9 +11041,9 @@ begin
         end;
        end;
 
-       preRoll := RndGenerate (aPlayer.Defense);
+       preRoll := RndGenerate (aPlayer.Defense + aPlayer.tmp);  // durezza
        Roll := AdjustFatigue (aPlayer.Stamina , preRoll);
-       aRnd:=  Roll.value +  aPlayer.tmp;  // durezza
+       aRnd:=  Roll.value;
        aPlayer.xp_defense := aPlayer.xp_Defense + 1;
        aPlayer.xpTal[TALENT_ID_TOUGHNESS] := aPlayer.xpTal[TALENT_ID_TOUGHNESS] + 1;
        aPlayer.xpTal[TALENT_ID_FAUL] := aPlayer.xpTal[TALENT_ID_FAUL] + 1;
@@ -11034,10 +11052,8 @@ begin
         TsScript[incMove].add ( 'sc_DICE,' + IntTostr(aPlayer.CellX) + ',' + Inttostr(aPlayer.CellY) +','+  IntTostr(aRnd) +','+
         IntTostr (aPlayer.Defense) + ',Tackle,'+ aPlayer.ids+','+IntTostr(Roll.value) + ','+ Roll.fatigue+ '.0' +','+IntToStr(aPlayer.tmp));
 
-       ACT := '0';
-       preRoll2 := RndGenerate (Ball.Player.ballControl);
-       Roll2 := AdjustFatigue (Ball.Player.Stamina , preRoll2);
        Ball.Player.tmp:=0;
+       ACT := '0';
        if  (Ball.Player.TalentId1 = TALENT_ID_POWER) or (Ball.Player.TalentId2 = TALENT_ID_POWER) then
         Ball.Player.tmp:=1;
        if (Ball.Player.TalentId2 = TALENT_ID_ADVANCED_POWER) then begin
@@ -11046,8 +11062,11 @@ begin
           ACT := IntTostr (TALENT_ID_ADVANCED_POWER);
         end;
        end;
+        // (Ball.Player.ballControl è minimo a 1 anche se underpressure, e il talento gli conferisce minimo 1 aggiuntivo
+       preRoll2 := RndGenerate (Ball.Player.ballControl+ Ball.Player.tmp);
+       Roll2 := AdjustFatigue (Ball.Player.Stamina , preRoll2);
 
-       aRnd2:= Roll2.value + Ball.Player.tmp ;  // se a 0 perchè underpressure, il talento gli conferisce minimo 1
+       aRnd2:= Roll2.value  ;
        Ball.Player.xp_ballControl:= Ball.Player.xp_ballControl + 1;
        Ball.Player.xpDevA := Ball.Player.xpDevA + 1;
        Ball.Player.xpTal[TALENT_ID_POWER] := Ball.Player.xpTal[TALENT_ID_POWER] + 1;
