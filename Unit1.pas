@@ -5419,7 +5419,7 @@ begin
     else Bmp.Bitmap.Canvas.TextOut( 5,8, IntToStr(Value));
 
 
-  SE_Skills.CreateSprite( Bmp.bitmap, inttostr(value) , 1, 1, 100, aFieldPointSpr.Position.X  , aFieldPointSpr.Position.Y , true,1 );
+  SE_Skills.CreateSprite( Bmp.bitmap, 'number' , 1, 1, 100, aFieldPointSpr.Position.X  , aFieldPointSpr.Position.Y , true,1 );
   Bmp.Free;
 
 end;
@@ -14495,6 +14495,8 @@ begin
   if SkillMouseMove = '' then begin
     SE_interface.removeallSprites; // rimuovo le frecce
     SE_interface.ProcessSprites(2000);
+    SE_Skills.RemoveAllSprites ('number');  // rimuovo le Tchance
+    SE_Skills.ProcessSprites(2000);
   //  HideHH_Skill ;
     SetGlobalCursor (crDefault);
   end
