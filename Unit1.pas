@@ -22,23 +22,26 @@
     sto testando exec_autotackle su pmmove path = 1
   }
   { TODO -ctodo prima del rilascio patreon :
-    DEBUG REPLAY ORA: suono crossbar
-    FARE  ORA: Per evitare lastsciptgol userò un brain resettato senza tscscript. cosi' risolvo per sempre. il brain farà perforza il reset.
+
+    FARE ORA:è già cosi reloadteamdefaultposition Per evitare lastsciptgol userò un brain resettato senza tscscript. cosi' risolvo per sempre. il brain farà perforza il reset.
     dopo il mio gol la palla la aveo io a centrocampo.
     controllare BonusGK dalla distanza. adesso si applica solo a lui. piu' parate ora.
 
     gol live non resetta ma va direttamente all'azione.
-    ho aggiunto           AnimationScript.TsAdd  ( 'cl_wait,3000');  a tutti i gol. devo comunque usare uno spritereset prima del loadanimationscript
-    devo mettere un flag globale che c'è stato un gol
+      while ( SE_ball.IsAnySpriteMoving  ) or (SE_players.IsAnySpriteMoving ) do begin
+        se_Theater1.thrdAnimate.OnTimer (se_Theater1.thrdAnimate);   con speedX = 14 invece di 0.
+      end;
+      InterruptLiveGame;
 
 
-    DA CAPIRE BUg exec_autotackle   preRoll := RndGenerate (aPlayer.Defense);
 
+    DA CAPIRE BUg exec_autotackle   preRoll := RndGenerate (aPlayer.Defense); ho modificato tutto ora.forse già risolto
+    exit da partita solo se tools altrimenti finisce in auto.
 
     BUG quando devo schierare la barriera
 
     i portieri devono gaudagnare meno xp, anche nel brain. 8 a partita sono troppi. oppure invece di 120 arrivo a 180 punti xp solo per GK
-
+    oppure 50-70% di guaganare xp random sui pos, prs ecc...
 
     Newseason fare i rewards in denaro matchcost 14 money a partita se pareggi. 14*2 se vinci ( ti ripaghi quasi il costo completo di tutti a 3 cost )
     rewards 38 o 30 partite * 2 +  puoi comprare X player
@@ -47,11 +50,6 @@
 
 
     help x buffdm,f corner frekick 2,3 penalty    Corner.Kick, crossing stay, free
-
-    verificare AI forse autotackle anche su move di 1 sola casella
-
-    errore flags su qualcosa, forse lop
-
 
     dopo interrupt non funziona piu' AI auto. forse va in 2.0
 
@@ -1497,8 +1495,8 @@ begin
   else begin
     MyBrain.Ball.CellX :=  StrToInt(EditN1.Text);
     MyBrain.Ball.CellY :=  StrToInt(EditN2.Text);
-    ClientLoadBrainMM(CurrentIncMove);
-//    pveSynchBrain;
+  //  ClientLoadBrainMM(CurrentIncMove);
+    pveSynchBrain;
   end;
  {$endif tools}
 end;
@@ -3523,6 +3521,9 @@ begin
    ASprite.MoverData.Destination := Point( ASprite.Position.X, ASprite.Position.Y +1); // fix sound net 2 volte
    Sleep(300);
    playsound ( pchar (dir_sound +  'gol.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
+   MyBrain.LoadDefaultTeamPos( MyBrain.TeamTurn );
+   SpriteReset;
+   sleep(3000);
  end
 // else if inCrossBarPosition (ASprite.Position ) then begin
 //   playsound ( pchar (dir_sound +  'crossbar.wav' ) , 0, SND_FILENAME OR SND_ASYNC);
@@ -5318,10 +5319,12 @@ end;
 procedure TForm1.PrsMouseEnter;
 var
   ii,c : Integer;
+  BaseShotChance,BaseChanceGK: TChance;
   anOpponent,aGK: TSoccerPlayer;
   aPoint : TPoint;
 //  Modifier,BaseShot: Integer;
   aDoor, BarrierCell: TPoint;
+  dummy: TSoccerPlayer;
 begin
   hidechances;
 
@@ -5331,13 +5334,10 @@ begin
   aDoor := Mybrain.GetOpponentDoor ( SelectedPlayer );
   if absDistance (SelectedPlayer.CellX , SelectedPlayer.CellY, adoor.X, adoor.Y  ) > PowerShotRange then exit;
 
-
+  BaseShotChance:= MyBrain.CalculateBasePrecisionShot ( SelectedPlayer );
   if MyBrain.w_FreeKick3 then begin
     aGK := Mybrain.GetOpponentGK ( SelectedPlayer.Team );
-    // :=  SelectedPlayer.DefaultShot + Mybrain.MalusPrecisionShot[SelectedPlayer.CellX] +1 +
-           //       Abs(Integer(  (SelectedPlayer.TalentId1 = TALENT_ID_FREEKICKS) or (SelectedPlayer.TalentId2 = TALENT_ID_FREEKICKS) ));  // . il +1 è importante al shot. è una freekick3
-   // if BaseShot <= 0 then BaseShot := 1;
-    //CreateBaseAttribute (  selectedPlayer.CellX, SelectedPlayer.CellY, BaseShot) ;
+    CreateBaseAttribute (  selectedPlayer.CellX, SelectedPlayer.CellY, BaseShotChance.Value) ;
   // mostro le 4 chance in barriera
     BarrierCell := MyBrain.GetBarrierCell( MyBrain.TeamFreeKick , MyBrain.Ball.CellX, MyBrain.Ball.CellY  ) ;
     CreateCircle( aGK.Team, BarrierCell.X, BarrierCell.Y );
@@ -5353,25 +5353,22 @@ begin
 
   // mostro la chance el portiere e la mia
     CreateCircle( aGK );
-//    CreateBaseAttribute (  aGK.CellX,aGK.CellY, aGK.Defense) ;
+    BaseChanceGK:= MyBrain.CalculateBasePrecisionShotGK ( aGK );
+    CreateBaseAttribute (  aGK.CellX,aGK.CellY, BaseChanceGK.value  ) ;
 
 
   end
   else if MyBrain.w_FreeKick4 then begin
-//    BaseShot :=  SelectedPlayer.DefaultShot + modifier_penaltyPOS +1 +Abs(Integer(  (SelectedPlayer.TalentId1 = TALENT_ID_FREEKICKS) or (SelectedPlayer.TalentId2 = TALENT_ID_FREEKICKS) ));  // . il +1 è importante al shot. è una freekick4
-//    CreateBaseAttribute (  selectedPlayer.CellX, SelectedPlayer.CellY, BaseShot) ;
-
+    CreateBaseAttribute (  selectedPlayer.CellX, SelectedPlayer.CellY, BaseShotChance.value) ;
     // il pos non ha quel +1 ma ha la respinta
-   // if BaseShot <= 0 then BaseShot := 1;
   // mostro la chance el portiere e la mia
     aGK := Mybrain.GetOpponentGK ( SelectedPlayer.Team );
     CreateCircle( aGK );
-//    CreateBaseAttribute (  aGK.CellX,aGK.CellY, aGK.Defense) ;
+    BaseChanceGK:= MyBrain.CalculateBasePrecisionShotGK ( aGK );
+    CreateBaseAttribute (  aGK.CellX,aGK.CellY, BaseChanceGK.value) ;
   end
   else begin
-    //BaseShot :=  SelectedPlayer.Shot + Mybrain.MalusPrecisionShot[SelectedPlayer.CellX];
-   // if BaseShot <= 0 then BaseShot := 1;
-  //  CreateBaseAttribute (  selectedPlayer.CellX, SelectedPlayer.CellY, BaseShot) ;
+    CreateBaseAttribute (  selectedPlayer.CellX, SelectedPlayer.CellY, BaseShotChance.value) ;
 
     for Ii := 0 to ShotCells.Count -1 do begin
 
@@ -5394,35 +5391,36 @@ begin
     // mostro la chance el portiere
     aGK := Mybrain.GetOpponentGK ( SelectedPlayer.Team );
     CreateCircle( aGK );
-   // CreateBaseAttribute (  aGK.CellX,aGK.CellY, aGK.Defense) ;
+    BaseChanceGK:= MyBrain.CalculateBasePrecisionShotGK ( aGK );
+    CreateBaseAttribute (  aGK.CellX,aGK.CellY, BaseChanceGK.value  ) ;
   end;
 
 end;
-procedure TForm1.CreateBaseAttribute ( CellX, CellY, value: integer );
+procedure TForm1.CreateBaseAttribute ( CellX, CellY, value: integer );// uso SE_Skills
 var
   aFieldPointSpr: SE_Sprite;
-  sebmp: SE_Bitmap;
+  bmp: SE_Bitmap;
 
 begin
 
   // la skill usata e i punteggi
   aFieldPointSpr := SE_FieldPoints.FindSprite( IntToStr(CellX) + '.' + IntToStr(CellY) );
 
-  sebmp:= Se_bitmap.Create (64,64);
-  sebmp.Bitmap.Canvas.Brush.color := clGray;
+  Bmp:= Se_bitmap.Create (32,32);
+  Bmp.Bitmap.Canvas.Brush.color := clGray;
 
-  sebmp.Bitmap.Canvas.Ellipse(0,0,64,64);
-  sebmp.Bitmap.Canvas.Font.Name := 'Calibri';
-  sebmp.Bitmap.Canvas.Font.Size := 18;
-  sebmp.Bitmap.Canvas.Font.Style := [fsbold];
-  sebmp.Bitmap.Canvas.Font.Color := clYellow;
+  Bmp.Bitmap.Canvas.Ellipse(0,0,32,32);
+  Bmp.Bitmap.Canvas.Font.Name := 'Calibri';
+  Bmp.Bitmap.Canvas.Font.Size := 10;
+  Bmp.Bitmap.Canvas.Font.Style := [fsbold];
+  Bmp.Bitmap.Canvas.Font.Color := clYellow;
   if length(  IntToStr(Value)) = 1 then
-    sebmp.Bitmap.Canvas.TextOut( 26,18, IntToStr(Value))
-    else sebmp.Bitmap.Canvas.TextOut( 22,18, IntToStr(Value));
+    Bmp.Bitmap.Canvas.TextOut( 8,8, IntToStr(Value))
+    else Bmp.Bitmap.Canvas.TextOut( 5,8, IntToStr(Value));
 
 
-  se_interface.CreateSprite( sebmp.bitmap, 'numbers', 1, 1, 100, aFieldPointSpr.Position.X  , aFieldPointSpr.Position.Y , true,1 );
-  sebmp.Free;
+  SE_Skills.CreateSprite( Bmp.bitmap, inttostr(value) , 1, 1, 100, aFieldPointSpr.Position.X  , aFieldPointSpr.Position.Y , true,1 );
+  Bmp.Free;
 
 end;
 procedure TForm1.mainThreadTimer(Sender: TObject);
@@ -5948,14 +5946,16 @@ begin
  // Mybrain.Ball.SE_Sprite.FrameXmax := 0 ; // palla ferma
 
   if Mybrain.Ball.Player <> nil then begin
-    Mybrain.Ball.SE_Sprite.MoverData.Speed := DEFAULT_SPEED_BALL_LOW;
+    Mybrain.Ball.SE_Sprite.MoverData.Speed := DEFAULT_SPEED_BALL;
 //    Mybrain.Ball.SE_Sprite.MoverData.Destination := Mybrain.Ball.SE_Sprite.Position;
     case Mybrain.Ball.Player.team of
       0: begin
         Mybrain.Ball.SE_Sprite.MoverData.Destination :=  Point(aFieldPointSpr.Position.X + abs(Ball0X),aFieldPointSpr.Position.Y);
+        Mybrain.Ball.SE_Sprite.Position :=  Point(aFieldPointSpr.Position.X + abs(Ball0X),aFieldPointSpr.Position.Y);
       end;
       1: begin
         Mybrain.Ball.SE_Sprite.MoverData.Destination := Point(aFieldPointSpr.Position.X - abs(Ball0X),aFieldPointSpr.Position.Y);
+        Mybrain.Ball.SE_Sprite.Position := Point(aFieldPointSpr.Position.X - abs(Ball0X),aFieldPointSpr.Position.Y);
       end;
     end;
 
@@ -7458,6 +7458,7 @@ begin
 
   if MyBrain.w_Fka1 then begin
     if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
+        HideFP_Friendly;
         HHFP ( MyBrain.ball.cellx,MyBrain.ball.cellY  ,0 );
         MouseWaitFor :=  WaitForXY_FKF1; //'Scegli chi batterà il fk1';
         GameScreen := ScreenFreeKick;
@@ -7466,12 +7467,14 @@ begin
     end;
   end
   else if MyBrain.w_FreeKick1  then begin
+    HideFP_Friendly;
     if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
       SelectedPlayerPopupSkill( MyBrain.Ball.CellX, MyBrain.Ball.cellY );
     end;
   end
   else if MyBrain.w_Fka2 then begin
     if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
+        HideFP_Friendly;
         HHFP ( MyBrain.ball.cellx,MyBrain.ball.cellY  ,0 );
         MouseWaitFor := WaitForXY_FKF2; //'Scegli chi batterà il fk2';
         GameScreen := ScreenFreeKick;
@@ -7482,6 +7485,7 @@ begin
 
     if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
       CornerMap := MyBrain.GetCorner (MyBrain.TeamTurn , Mybrain.Ball.CellY, FriendlyCorner );
+      HideFP_Friendly;
       HHFP( CornerMap.HeadingCellD [0].X,CornerMap.HeadingCellD [0].Y,0);
       MouseWaitFor := WaitForXY_FKD2;
       GameScreen := ScreenFreeKick;
@@ -7502,6 +7506,7 @@ begin
   end
   else if MyBrain.w_Fka3 then begin
     if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
+      HideFP_Friendly;
       HHFP ( MyBrain.ball.cellx,MyBrain.ball.cellY  ,0 );
       MouseWaitFor := WaitForXY_FKF3; //'Scegli chi batterà il fk3';
       GameScreen := ScreenFreeKick;
@@ -7511,6 +7516,7 @@ begin
   else if MyBrain.w_Fkd3 then begin
     if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
       ACellBarrier :=  MyBrain.GetBarrierCell ( MyBrain.TeamFreeKick,MyBrain.Ball.CellX, MyBrain.Ball.cellY)  ; // la cella barriera !!!!
+      HideFP_Friendly;
       HHFP( aCellBarrier.X,  aCellBarrier.Y,0 );
       MouseWaitFor := WaitForXY_FKD3;
       GBIndex := 0;
@@ -7528,6 +7534,7 @@ begin
     if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
       PenaltyCell := MyBrain.GetPenaltyCell ( MyBrain.TeamTurn );
       PenaltySetBall  ;// la ball è già settata su 10,3 o 1,3
+      HideFP_Friendly;
       HHFP_Special( PenaltyCell.x,PenaltyCell.Y  ,0 );
       MouseWaitFor := WaitForXY_FKF4; //'Scegli chi batterà il fk4';
       GameScreen := ScreenFreeKick;
@@ -7544,6 +7551,7 @@ begin
     if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
       aFieldPointSpr := SE_FieldPointsSpecial.FindSprite(IntToStr (MyBrain.Ball.CellX ) + '.' + IntToStr (MyBrain.Ball.CellY ));
       aFieldPointSpr.Visible := True;
+      HideFP_Friendly;
       HHFP_Special ( MyBrain.ball.cellx,MyBrain.ball.cellY  ,0 );
       MouseWaitFor := WaitForXY_CornerCOF;
       GameScreen := ScreenFreeKick;
@@ -7554,6 +7562,7 @@ begin
     CornerSetBall;
     if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
       CornerMap := MyBrain.GetCorner (MyBrain.TeamTurn , Mybrain.Ball.CellY, FriendlyCorner );
+      HideFP_Friendly;
       HHFP( CornerMap.HeadingCellD [0].X,CornerMap.HeadingCellD [0].Y,0);
       MouseWaitFor := WaitForXY_CornerCOD;
       GameScreen := ScreenFreeKick;
@@ -7695,8 +7704,8 @@ begin
 
 
 //  CirclePlayers ( MyBrain.TeamTurn );
-  aPlayer := MyBrain.GetSoccerPlayerRandom(  MyBrain.TeamTurn, false );
-  HHFP_Friendly ( aPlayer, 'a' );
+  aPlayer := MyBrain.GetSoccerPlayerRandom(MyBrain.TeamTurn, true  );
+  HHFP_Friendly ( aPlayer, 'a');
   if GameMode = pvp then begin
     pbSprite :=  SE_SpriteProgressBar ( SE_Score.FindSprite('scorebartime'));
     pbSprite.BackColor := MyBrain.Score.DominantColor[MyBrain.TeamTurn];
@@ -7745,11 +7754,11 @@ begin
 //    Sleep(1000);
  // end
  // else begin // avversario
-    if not SE_LifeSpan.IsAnySpriteVisible then begin   // SE C'è GIà AD ESEMPIO gol !!!! non mostro finito.
-      BackColor := GetDominantColor (StrToInt(team));
-      FontColor := GetContrastColor(BackColor);             //UpperCase(Translate('lbl_yourturn'))
-      CreateSplash (se_theater1.VirtualBitmap.Width div 2,se_theater1.VirtualBitmap.Height div 2,340,32,MyBrain.Score.Team[StrToInt(team)] , 1300,22, FontColor,BackColor, false) ;
-    end;
+//    if not SE_LifeSpan.IsAnySpriteVisible then begin   // SE C'è GIà AD ESEMPIO gol !!!! non mostro finito.
+ //     BackColor := GetDominantColor (StrToInt(team));
+ //     FontColor := GetContrastColor(BackColor);             //UpperCase(Translate('lbl_yourturn'))
+ //     CreateSplash (se_theater1.VirtualBitmap.Width div 2,se_theater1.VirtualBitmap.Height div 2,340,32,MyBrain.Score.Team[StrToInt(team)] , 1300,22, FontColor,BackColor, false) ;
+ //   end;
 //  end;
                                                           //UpperCase(Translate('lbl_endturn'))
   if MyBrain.w_CornerSetup or MyBrain.w_FreeKickSetup1 or MyBrain.w_FreeKickSetup2 or MyBrain.w_FreeKickSetup3 or MyBrain.w_FreeKickSetup4 then begin
@@ -11504,13 +11513,14 @@ begin
   SE_Skills.RemoveAllSprites;
   SE_Skills.ProcessSprites(2000);
 
-  aSprite := SE_Skills.CreateSprite ( dir_skill + SelectedPlayer.ActiveSkills.Names [Index_WheelSkill]+'.bmp','wheelskill',1,1,1000,
-  SelectedPlayer.se_sprite.Position.X  , SelectedPlayer.se_sprite.Position.Y+ 16, true,10 ) ;
-  aSprite.sTag :=  SelectedPlayer.ActiveSkills.Names [Index_WheelSkill];
+ // aSprite := SE_Skills.CreateSprite ( dir_skill + SelectedPlayer.ActiveSkills.Names [Index_WheelSkill]+'.bmp','wheelskill',1,1,1000,
+ // SelectedPlayer.se_sprite.Position.X  , SelectedPlayer.se_sprite.Position.Y+ 16, true,10 ) ;
+ // aSprite.sTag :=  SelectedPlayer.ActiveSkills.Names [Index_WheelSkill];
 
-  OutputDebugString(pchar(SelectedPlayer.ActiveSkills.Names [Index_WheelSkill]));
+ // OutputDebugString(pchar(SelectedPlayer.ActiveSkills.Names [Index_WheelSkill]));
  // Memo1.Lines.Add( 'guid ' + aSprite.guid );
 //  Memo1.Lines.Add( 'stag ' +  aSprite.sTag );
+
 
   bmpQuestion := SE_Bitmap.Create ( dir_interface + 'question.bmp');
   bmpQuestion.Stretch(16,16);
@@ -15454,11 +15464,13 @@ begin
         if OldCurrent < CurrentIncMove then begin  // solo se è cambiato , altrimenti ricarico a oltranz la stessa animazione
           RemoveSubMainskill;
           LastIncProcessed:= False;
-          if LastScriptGol then begin
-            SpriteReset;
-            LastScriptGol := false;
-            exit; // ripasso subito dopo
-          end;
+         // if LastScriptGol then begin
+         //   MyBrain.LoadDefaultTeamPos ( MyBrain.TeamTurn );
+         //   SpriteReset;
+         //   sleep(3000);
+         //   LastScriptGol := false;
+         //   exit; // ripasso subito dopo
+         // end;
 
 
           if  Mybrain.tsScript [CurrentIncMove].Count > 0 then begin
@@ -15483,11 +15495,14 @@ begin
     else if CurrentIncMove =  LastMoveBrain then begin   // qui BUG
       if not LastIncProcessed then begin
         RemoveSubMainskill;
-        if LastScriptGol then begin
-          SpriteReset;
-          LastScriptGol := false;
-          exit; // ripasso subito dopo
-        end;
+       // if LastScriptGol then begin
+       //   MyBrain.LoadDefaultTeamPos( MyBrain.TeamTurn );
+       //   SpriteReset;
+       //   sleep(3000);
+       //   LastScriptGol := false;
+       //   exit; // ripasso subito dopo
+       // end;
+
         if Mybrain.tsScript [CurrentIncMove].Count > 0 then begin
           AnimationScript.Reset ;
           LoadAnimationScript // riempe animationScript.  alla fine il thread chiama  ClientLoadBrainMM
