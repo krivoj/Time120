@@ -14170,7 +14170,7 @@ var
   ts : TStringList;
   BtnMenu,BtnLevelUp,Player,BtnTv,SkillMouseMove,UniformMouseMove,MatchInfo: string;
   ScoreMouseMove,ScoreNick,UniformMouseMoveTF: boolean;
-  BaseChancePlmBallControl,BaseShortPassingChance : TChance;
+  BaseChancePlmBallControl,BaseShortPassingChance,BaseLoftedPassChance : TChance;
 begin
   // una volta processati gli sprite settare  Handled:= TRUE o la SE:Theater non manderà più la lista degli sprite.
 
@@ -14326,11 +14326,15 @@ begin
             ToEmptyCell := false;
           end;
 
-          //CreateBaseAttribute (  CellX, CellY, SelectedPlayer.Passing );
-          ArrowShowLopHeading( CellX, CellY, ToEmptyCell) ;
+          BaseLoftedPassChance := MyBrain.CalculateBaseLoftedPassChance( aPlayer );
+          CreateBaseAttribute (  CellX, CellY, BaseLoftedPassChance );
+          ArrowShowLopHeading( CellX, CellY, ToEmptyCell) ; // FARE all'interno CreateBaseAttribute
           HHFP( CellX, CellY, 0);
           if aFriend <> nil then begin
-          //  CreateBaseAttribute (  CellX, CellY, aFriend.BallControl );
+
+          //  BaseLoftedPassBallControlChance :=  MyBrain.CalculateBaseSLoftedPassBBallControl( aFriend );
+           // CreateBaseAttribute (  CellX, CellY, BaseLoftedPassBallControlChance );
+
            // if aFriend.InCrossingArea then
            //   CreateBaseAttribute (  CellX, CellY, aFriend.Shot );
           end;

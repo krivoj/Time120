@@ -948,6 +948,9 @@ end;
     function CalculateBaseShortPassingStopped (  aPlayer: TSoccerPlayer ): Tchance;
     function CalculateBaseShortPassingIntercept (  CellX, CellY: Integer; aPlayer: TSoccerPlayer ): Tchance;
 
+    // LoftedPass
+    function CalculateBaseLoftedPassChance ( aPlayer: TSoccerPlayer ): Tchance;
+
       property milliseconds: Integer read fmilliseconds write setmilliseconds;
       property Gender : char read fGender write SetGender;
 
@@ -17336,6 +17339,11 @@ begin
 
   Result.Modifier := 0;
   Result.Value := aPlayer.Defense + Result.Modifier ;
+
+end;
+function TSoccerBrain.CalculateBaseLoftedPassChance ( aPlayer: TSoccerPlayer ): Tchance;
+begin
+  Result.Value := aPlayer.Passing ;
 
 end;
 
