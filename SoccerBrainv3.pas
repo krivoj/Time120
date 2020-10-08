@@ -138,6 +138,7 @@ end;
 type TChance = record
   Value : integer;
   Modifier: Integer;
+  Modifier2: Integer; // es. 5% +1 autotackle. è una chance da mostare con un trattino
   aString : string;
   aString2 : string;
 end;
@@ -937,6 +938,15 @@ end;
     function CalculateBasePowerShot (   aPlayer: TSoccerPlayer ): Tchance;
     function CalculateBasePrecisionShotGK (  aPlayer: TSoccerPlayer ): Tchance;
     function CalculateBasePowerShotGK (  aPlayer: TSoccerPlayer ): Tchance;
+
+    // plm nove con autotackle
+    function CalculateBasePlmBallControl (  aPlayer: TSoccerPlayer ): Tchance;
+    function CalculateBasePlmBaseAutoTackle (  aPlayer: TSoccerPlayer ): Tchance;
+
+    // ShortPassing con Intercept e Stopped
+    function CalculateBaseShortPassing  (  aPlayer: TSoccerPlayer ): Tchance;
+    function CalculateBaseShortPassingStopped (  aPlayer: TSoccerPlayer ): Tchance;
+    function CalculateBaseShortPassingIntercept (  CellX, CellY: Integer; aPlayer: TSoccerPlayer ): Tchance;
 
       property milliseconds: Integer read fmilliseconds write setmilliseconds;
       property Gender : char read fGender write SetGender;
@@ -17285,6 +17295,50 @@ begin
   Result.value := aPlayer.Defense +  Result.Modifier;
 
 end;
+function TSoccerBrain.CalculateBasePlmBallControl (  aPlayer: TSoccerPlayer ): Tchance;
+begin
+  // elaboro i talenti Challenge ma non advanced Challenge ( autotackle )
+  Result.Modifier:=0;
+  if (aPlayer.TalentId1 = TALENT_ID_CHALLENGE)  or (aPlayer.TalentId2 = TALENT_ID_CHALLENGE) then
+  Result.Modifier := 1;
+  //if aPlayer.TalentId2 = TALENT_ID_ADVANCED_CHALLENGE then
+  //if RndGenerate(100) < 5 then aPlayer.tmp := aPlayer.tmp + 1;
+
+  Result.Value := aPlayer.BallControl + Result.Modifier;
+  if aPlayer.TalentId2 = TALENT_ID_ADVANCED_CHALLENGE then
+    Result.modifier2 := 1;
+end;
+function TSoccerBrain.CalculateBasePlmBaseAutoTackle (  aPlayer: TSoccerPlayer ): Tchance;
+begin
+  if  (aPlayer.TalentId1 = TALENT_ID_POWER)  or  (aPlayer.TalentId2 = TALENT_ID_POWER) then
+   Result.Modifier := 1;
+  if aPlayer.TalentId2 = TALENT_ID_ADVANCED_POWER then
+    Result.modifier2 := 1;
+  Result.Value := aPlayer.Defense + Result.Modifier;
+end;
+function TSoccerBrain.CalculateBaseShortPassing  (  aPlayer: TSoccerPlayer ): Tchance;
+begin
+  Result.Value := aPlayer.Passing;
+end;
+function TSoccerBrain.CalculateBaseShortPassingStopped (  aPlayer: TSoccerPlayer ): Tchance;
+begin
+  Result.Value := aPlayer.Defense;
+end;
+function TSoccerBrain.CalculateBaseShortPassingIntercept (  CellX, CellY: Integer; aPlayer: TSoccerPlayer ): Tchance;
+var
+  aFriend: TSoccerPlayer;
+begin
+  aFriend := GetSoccerPlayer ( CellX , CellY);
+  if aFriend = nil then
+{ toemptycells lo devo riportare adesso }
+    Result.Modifier := ToEmptyCellBonusDefending
+  else
+
+  Result.Modifier := 0;
+  Result.Value := aPlayer.Defense + Result.Modifier ;
+
+end;
+
 {procedure TSoccerBrain.CreateFormationCells;
 var
   i,x,y: Integer;

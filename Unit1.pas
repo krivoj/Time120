@@ -23,6 +23,10 @@
   }
   { TODO -ctodo prima del rilascio patreon :
 
+    Finire tutti i WaitForXY
+
+    fatigue poca stamina per 1 giocatore del bologna.... ?
+
     FARE ORA:è già cosi reloadteamdefaultposition Per evitare lastsciptgol userò un brain resettato senza tscscript. cosi' risolvo per sempre. il brain farà perforza il reset.
     dopo il mio gol la palla la aveo io a centrocampo.
     controllare BonusGK dalla distanza. adesso si applica solo a lui. piu' parate ora.
@@ -273,8 +277,8 @@ type TGameScreen =(ScreenMain, ScreenLogin,
                    );
 
   type TMouseWaitFor = (WaitForGreen, WaitForNone, WaitForAuth, // in attesa di autenticazione login
-  WaitForXY_ShortPass, WaitForXY_LoftedPass, WaitForXY_Crossing,
-  WaitForXY_Move, WaitForXY_Dribbling,WaitFor_Corner, // in attesa di input di gioco
+  WAITFORXY_SHORTPASSING, WAITFORXY_LOFTEDPASS, WaitForXY_Crossing,
+  WAITFORXY_MOVE, WaitForXY_Dribbling,WaitFor_Corner, // in attesa di input di gioco
   WaitForXY_FKF1,  // chi batte la short.passing o lofted.pass
   WaitForXY_FKF2,  // chi batte il cross
   WaitForXY_FKA2,  // i 3 saltatori
@@ -751,7 +755,7 @@ type
     procedure CreateArrowDirection ( Player1 : TSoccerPlayer;  CellX, CellY: integer ); overload;
     procedure CreateCircle(  Player : TSoccerPlayer  ); overload;
     procedure CreateCircle(  Team,  CellX, CellY: integer  );overload;
-    procedure CreateBaseAttribute ( CellX, CellY, Value: Integer );deprecated;
+    procedure CreateBaseAttribute ( CellX, CellY: Integer; Chance: TChance );
 
     procedure SetGameScreen (const aGameScreen:TGameScreen);
     procedure SetMouseWaitFor ( const aMouseWaitFor: TMouseWaitFor);
@@ -5337,7 +5341,7 @@ begin
   BaseShotChance:= MyBrain.CalculateBasePrecisionShot ( SelectedPlayer );
   if MyBrain.w_FreeKick3 then begin
     aGK := Mybrain.GetOpponentGK ( SelectedPlayer.Team );
-    CreateBaseAttribute (  selectedPlayer.CellX, SelectedPlayer.CellY, BaseShotChance.Value) ;
+    CreateBaseAttribute (  selectedPlayer.CellX, SelectedPlayer.CellY, BaseShotChance) ;
   // mostro le 4 chance in barriera
     BarrierCell := MyBrain.GetBarrierCell( MyBrain.TeamFreeKick , MyBrain.Ball.CellX, MyBrain.Ball.CellY  ) ;
     CreateCircle( aGK.Team, BarrierCell.X, BarrierCell.Y );
@@ -5354,21 +5358,21 @@ begin
   // mostro la chance el portiere e la mia
     CreateCircle( aGK );
     BaseChanceGK:= MyBrain.CalculateBasePrecisionShotGK ( aGK );
-    CreateBaseAttribute (  aGK.CellX,aGK.CellY, BaseChanceGK.value  ) ;
+    CreateBaseAttribute (  aGK.CellX,aGK.CellY, BaseChanceGK  ) ;
 
 
   end
   else if MyBrain.w_FreeKick4 then begin
-    CreateBaseAttribute (  selectedPlayer.CellX, SelectedPlayer.CellY, BaseShotChance.value) ;
+    CreateBaseAttribute (  selectedPlayer.CellX, SelectedPlayer.CellY, BaseShotChance) ;
     // il pos non ha quel +1 ma ha la respinta
   // mostro la chance el portiere e la mia
     aGK := Mybrain.GetOpponentGK ( SelectedPlayer.Team );
     CreateCircle( aGK );
     BaseChanceGK:= MyBrain.CalculateBasePrecisionShotGK ( aGK );
-    CreateBaseAttribute (  aGK.CellX,aGK.CellY, BaseChanceGK.value) ;
+    CreateBaseAttribute (  aGK.CellX,aGK.CellY, BaseChanceGK) ;
   end
   else begin
-    CreateBaseAttribute (  selectedPlayer.CellX, SelectedPlayer.CellY, BaseShotChance.value) ;
+    CreateBaseAttribute (  selectedPlayer.CellX, SelectedPlayer.CellY, BaseShotChance) ;
 
     for Ii := 0 to ShotCells.Count -1 do begin
 
@@ -5392,15 +5396,15 @@ begin
     aGK := Mybrain.GetOpponentGK ( SelectedPlayer.Team );
     CreateCircle( aGK );
     BaseChanceGK:= MyBrain.CalculateBasePrecisionShotGK ( aGK );
-    CreateBaseAttribute (  aGK.CellX,aGK.CellY, BaseChanceGK.value  ) ;
+    CreateBaseAttribute (  aGK.CellX,aGK.CellY, BaseChanceGK  ) ;
   end;
 
 end;
-procedure TForm1.CreateBaseAttribute ( CellX, CellY, value: integer );// uso SE_Skills
+procedure TForm1.CreateBaseAttribute ( CellX, CellY: Integer; Chance: TChance );// uso SE_Interface (Arrow e Chance )
 var
   aFieldPointSpr: SE_Sprite;
   bmp: SE_Bitmap;
-
+  str : string;
 begin
 
   // la skill usata e i punteggi
@@ -5414,12 +5418,20 @@ begin
   Bmp.Bitmap.Canvas.Font.Size := 10;
   Bmp.Bitmap.Canvas.Font.Style := [fsbold];
   Bmp.Bitmap.Canvas.Font.Color := clYellow;
-  if length(  IntToStr(Value)) = 1 then
-    Bmp.Bitmap.Canvas.TextOut( 8,8, IntToStr(Value))
-    else Bmp.Bitmap.Canvas.TextOut( 5,8, IntToStr(Value));
+  str := IntTostr( Chance.Value );
+  if Chance.Modifier2 <> 0 then
+    str := Str + '-' + IntTostr(Chance.Modifier2);
+
+  case Length(str) of
+    1: Bmp.Bitmap.Canvas.TextOut( 8,8, IntToStr(Chance.Value)); // es. 4
+    2: Bmp.Bitmap.Canvas.TextOut( 5,8, IntToStr(Chance.Value)); // es. 12
+    3: Bmp.Bitmap.Canvas.TextOut( 4,8, IntToStr(Chance.Value)); // es. 3-4
+    4: Bmp.Bitmap.Canvas.TextOut( 2,8, IntToStr(Chance.Value)); // es. 9-11
+    5: Bmp.Bitmap.Canvas.TextOut( 0,8, IntToStr(Chance.Value)); // es. 10-11
+  end;
 
 
-  SE_Skills.CreateSprite( Bmp.bitmap, 'number' , 1, 1, 100, aFieldPointSpr.Position.X  , aFieldPointSpr.Position.Y , true,1 );
+  SE_Interface.CreateSprite( Bmp.bitmap, 'number' , 1, 1, 100, aFieldPointSpr.Position.X  , aFieldPointSpr.Position.Y , true,1 );
   Bmp.Free;
 
 end;
@@ -11215,10 +11227,10 @@ end;
 begin
 
   case MousewaitFor of
-{    WaitForXY_ShortPass:  ;
-    WaitForXY_LoftedPass: ;
+{    WAITFORXY_SHORTPASSING:  ;
+    WAITFORXY_LOFTEDPASS: ;
     WaitForXY_Crossing: ;
-    WaitForXY_Move: ;
+    WAITFORXY_MOVE: ;
     WaitForXY_Dribbling: ;
     WaitFor_Corner: ;
     WaitForNone: ;
@@ -13007,7 +13019,7 @@ begin
   CellX := aPoint.X;
   CellY := aPoint.Y;
 
-  if MouseWaitFor = WaitForXY_Move  then begin
+  if MouseWaitFor = WAITFORXY_MOVE  then begin
     if  SelectedPlayer = nil then Exit;
     if  not SelectedPlayer.CanSkill  then Exit;
     if  not SelectedPlayer.CanMove then Exit;
@@ -13050,7 +13062,7 @@ begin
       end;
     end;
   end
-  else if (SelectedPlayer = Mybrain.Ball.Player) and (MouseWaitFor = WaitForXY_Shortpass) then begin
+  else if (SelectedPlayer = Mybrain.Ball.Player) and (MouseWaitFor = WAITFORXY_SHORTPASSING) then begin
     if GCD > 0 then Exit;
 
     if absDistance (SelectedPlayer.CellX , SelectedPlayer.CellY, Cellx, Celly  ) > (ShortPassRange +
@@ -13096,7 +13108,7 @@ begin
 {$endif tools}
   end
 
-  else if (SelectedPlayer = Mybrain.Ball.Player) and (MouseWaitFor = WaitForXY_Loftedpass)  then begin
+  else if (SelectedPlayer = Mybrain.Ball.Player) and (MouseWaitFor = WAITFORXY_LOFTEDPASS)  then begin
     if GCD > 0 then Exit;
     // controllo lato client. il server lo ripete
     if ( SelectedPlayer.Role <> 'G' ) and
@@ -13403,10 +13415,10 @@ begin
 
   case MouseWaitFor of
 
-    WaitForXY_ShortPass: exit ;
-    WaitForXY_LoftedPass: exit;
+    WAITFORXY_SHORTPASSING: exit ;
+    WAITFORXY_LOFTEDPASS: exit;
     WaitForXY_Crossing: exit;
-    WaitForXY_Move: exit;
+    WAITFORXY_MOVE: exit;
     WaitForXY_Dribbling: exit;
     WaitFor_Corner: exit;
     WaitForXY_FKF1: exit;
@@ -13451,10 +13463,10 @@ LstSkill[10]:= 'Corner.Kick'; }
  // SE_Skills.ProcessSprites(2000);
 
   if aSpriteClicked.sTag = 'Move' then begin
-    MouseWaitFor  :=  WaitForXY_Move;
+    MouseWaitFor  :=  WAITFORXY_MOVE;
   end
   else if aSpriteClicked.sTag = 'Short.Passing' then begin
-    MouseWaitFor  :=  WaitForXY_ShortPass;
+    MouseWaitFor  :=  WAITFORXY_SHORTPASSING;
   end
   else if  aSpriteClicked.sTag = 'setplayer' then begin
     MouseWaitFor  :=  WaitForXY_SetPlayer;
@@ -13462,7 +13474,7 @@ LstSkill[10]:= 'Corner.Kick'; }
 
   end
   else if aSpriteClicked.sTag = 'Lofted.Pass' then begin
-    MouseWaitFor  :=  WaitForXY_LoftedPass;
+    MouseWaitFor  :=  WAITFORXY_LOFTEDPASS;
   end
   else if aSpriteClicked.sTag = 'Crossing' then begin
   if GCD <= 0 then begin
@@ -13712,10 +13724,10 @@ var
 begin
   case MouseWaitFor of
 
-    WaitForXY_ShortPass: exit ;
-    WaitForXY_LoftedPass: exit;
+    WAITFORXY_SHORTPASSING: exit ;
+    WAITFORXY_LOFTEDPASS: exit;
     WaitForXY_Crossing: exit;
-    WaitForXY_Move: exit;
+    WAITFORXY_MOVE: exit;
     WaitForXY_Dribbling: exit;
     WaitFor_Corner: exit;
     WaitForXY_FKF1: exit;
@@ -14158,6 +14170,7 @@ var
   ts : TStringList;
   BtnMenu,BtnLevelUp,Player,BtnTv,SkillMouseMove,UniformMouseMove,MatchInfo: string;
   ScoreMouseMove,ScoreNick,UniformMouseMoveTF: boolean;
+  BaseChancePlmBallControl,BaseShortPassingChance : TChance;
 begin
   // una volta processati gli sprite settare  Handled:= TRUE o la SE:Theater non manderà più la lista degli sprite.
 
@@ -14240,7 +14253,7 @@ begin
 
       if GameScreen = ScreenLive then begin
 
-        if MouseWaitFor = WaitForXY_Shortpass then begin       // shp su friend o cella vuota
+        if MouseWaitFor = WAITFORXY_SHORTPASSING then begin       // shp su friend o cella vuota
           ClearInterface;
           ToEmptyCell := true;
           if (absDistance (MyBrain.Ball.Player.CellX , MyBrain.Ball.Player.CellY, Cellx, Celly  ) > (ShortPassRange +
@@ -14252,12 +14265,13 @@ begin
             if (aFriend.Ids = MyBrain.Ball.Player.ids) or (aFriend.Team <> MyBrain.Ball.Player.Team ) then continue;
             ToEmptyCell := false;
           end;
-         // CreateBaseAttribute (  CellX, CellY, SelectedPlayer.Passing );
+          BaseShortPassingChance := MyBrain.CalculateBaseShortPassing( SelectedPlayer );
+          CreateBaseAttribute (  CellX, CellY, BaseShortPassingChance );
           ArrowShowShpIntercept ( CellX, CellY, ToEmptyCell) ;
           HHFP( CellX, CellY, 0);
         end
-        else if MouseWaitFor = WaitForXY_Move then begin       // di 2 o più mostro intercept autocontrasto
 
+        else if MouseWaitFor = WAITFORXY_MOVE then begin       // di 2 o più mostro intercept autocontrasto
           ClearInterface;
           if  SelectedPlayer.HasBall then begin
             MoveValue := SelectedPlayer.Speed -1;
@@ -14281,14 +14295,16 @@ begin
             // ultimo del path, non cellx celly
             HHFP (SelectedPlayer.MovePath[SelectedPlayer.MovePath.count-1].X , SelectedPlayer.MovePath[SelectedPlayer.MovePath.count-1].Y, 0 );
             if  SelectedPlayer.HasBall then begin
-              //CreateBaseAttribute (  CellX, CellY, SelectedPlayer.BallControl );
+              BaseChancePlmBallControl:= MyBrain.CalculateBasePlmBallControl ( SelectedPlayer );
+              CreateBaseAttribute (  CellX, CellY, BaseChancePlmBallControl );
               ArrowShowMoveAutoTackle  ( SelectedPlayer.MovePath[SelectedPlayer.MovePath.count-1].X , SelectedPlayer.MovePath[SelectedPlayer.MovePath.count-1].Y) ;
               HHFP (SelectedPlayer.MovePath[SelectedPlayer.MovePath.count-1].X , SelectedPlayer.MovePath[SelectedPlayer.MovePath.count-1].Y, 0 );
             end;
           end;
         end
-        else if MouseWaitFor = WaitForXY_LoftedPass then begin  // mostro i colpi di testa difensivi o chi arriva sulla palla
-          ClearInterface;
+
+        else if MouseWaitFor = WAITFORXY_LOFTEDPASS then begin  // mostro i colpi di testa difensivi o chi arriva sulla palla
+          ClearInterface; // anche number
           ToEmptyCell := true;
           if ( MyBrain.Ball.Player.Role <> 'G' ) and
           ( (absDistance (MyBrain.Ball.Player.CellX , MyBrain.Ball.Player.CellY, Cellx, Celly  ) >( LoftedPassRangeMax +
@@ -14330,6 +14346,7 @@ begin
           if aFriend <> nil then begin
             if (aFriend.Ids = MyBrain.Ball.Player.ids) or (aFriend.Team <> MyBrain.Ball.Player.Team ) then continue;
             if aFriend.InCrossingArea then begin
+               //QUI FARE CalculateCrossingChance
               //CreateBaseAttribute (  CellX, CellY, SelectedPlayer.Passing );
               ArrowShowCrossingHeading( CellX, CellY) ;
               //CreateBaseAttribute (  CellX, CellY, aFriend.heading );
@@ -14492,18 +14509,16 @@ begin
     exit;
   end;
 
-  if SkillMouseMove = '' then begin
+{  if SkillMouseMove = '' then begin
     SE_interface.removeallSprites; // rimuovo le frecce
     SE_interface.ProcessSprites(2000);
-    SE_Skills.RemoveAllSprites ('number');  // rimuovo le Tchance
-    SE_Skills.ProcessSprites(2000);
-  //  HideHH_Skill ;
+    SE_Interface.RemoveAllSprites ('number');  // rimuovo le Tchance
+    SE_Interface.ProcessSprites(2000);
     SetGlobalCursor (crDefault);
   end
   else begin
     SE_interface.removeallSprites; // rimuovo le frecce
     SE_interface.ProcessSprites(2000);
-  //  HH_Skill ( SkillMouseMove );
     SetGlobalCursor (crHandPoint);
     if SkillMouseMove = 'Precision.Shot' then
      PrsMouseEnter
@@ -14511,7 +14526,7 @@ begin
      PosMouseEnter;
 
     Exit;
-  end;
+  end; }
 
   if not ScoreMouseMove  then begin
     SE_Score.RemoveAllSprites('scoreframemf');
@@ -14589,12 +14604,15 @@ procedure TForm1.ClearInterface;
 begin
   SE_interface.removeallSprites; // rimuovo le frecce
   SE_interface.ProcessSprites(2000);
+//  SE_Interface.RemoveAllSprites('number');
+//  SE_Interface.ProcessSprites(2000);
   HideFP_Friendly_ALL;
 end;
 procedure TForm1.ArrowShowMoveAutoTackle ( CellX, CellY : Integer);
 var
   i,au,MoveValue: Integer;
   aCellList: TList<TPoint>;
+  BaseAutoTackleChance: TChance;
   label Myexit;
 begin
   hidechances;
@@ -14618,7 +14636,9 @@ begin
       for au := 0 to lstInteractivePlayers.Count -1 do begin
         lstInteractivePlayers[au].Attribute := atDefense;
         CreateArrowDirection( lstInteractivePlayers[au].Player  , lstInteractivePlayers[au].Cell.X ,lstInteractivePlayers[au].Cell.Y );
-       // CreateBaseAttribute (  lstInteractivePlayers[au].Player.CellX, lstInteractivePlayers[au].Player.CellY, lstInteractivePlayers[au].Player.Defense );
+        BaseAutoTackleChance := MyBrain.CalculateBasePlmBaseAutoTackle( lstInteractivePlayers[au].Player );
+        CreateBaseAttribute (  lstInteractivePlayers[au].Player.CellX, lstInteractivePlayers[au].Player.CellY, BaseAutoTackleChance );
+
       end;
 
       break; //goto MyExit;
@@ -14637,7 +14657,7 @@ var
   anIntercept, anOpponent: TSoccerPlayer;
   aInteractivePlayer: TInteractivePlayer;
   LstMoving: TList<TInteractivePlayer>;
-
+  BaseShortPassingStopped,BaseShortPassingIntercept: TChance;
 begin
   // calcola il percorso della palla in linea retta e ottiene un path di celle interessate
   aPath:= dse_pathPlanner.Tpath.Create;
@@ -14659,7 +14679,8 @@ begin
             aInteractivePlayer.Attribute := atDefense;
             lstInteractivePlayers.add (aInteractivePlayer);
             CreateArrowDirection( anOpponent, aPath[i].X,aPath[i].Y );
-           // CreateBaseAttribute (  aPath[i].X,aPath[i].Y, anOpponent.Defense );
+            BaseShortPassingStopped := MyBrain.CalculateBaseShortPassingStopped (anOpponent  );
+            CreateBaseAttribute (  aPath[i].X,aPath[i].Y,BaseShortPassingStopped );
           end;
       end
 
@@ -14670,11 +14691,9 @@ begin
           if ( lstInteractivePlayers[Y].Cell.X = aPath[i].X) and (lstInteractivePlayers[Y].Cell.Y = aPath[i].Y) then begin  // se questa cella
             lstInteractivePlayers[Y].Attribute := atDefense;  { TODO -csviluppo : intercept potrebbe usare atBallControl? }
             CreateArrowDirection( anIntercept, aPath[i].X,aPath[i].Y );
-           // aFriend := MyBrain.GetSoccerPlayer ( CellX , CellY);
-          //  if aFriend = nil then
-   { toemptycells lo devo riportare adesso }
-           // CreateBaseAttribute (  anIntercept.CellX, anIntercept.Celly, anIntercept.Defense )
-           // else  CreateBaseAttribute (  anIntercept.CellX, anIntercept.Celly, anIntercept.Defense );
+            BaseShortPassingIntercept := MyBrain.CalculateBaseShortPassingIntercept ( anIntercept.CellX, anIntercept.Celly,lstInteractivePlayers[Y].Player  );
+            CreateBaseAttribute (  anIntercept.CellX, anIntercept.Celly, BaseShortPassingIntercept )
+
 
           end
         end;
@@ -14834,6 +14853,9 @@ begin
      //     CalculateChance  ( aFriend.heading, aHeading.Heading + BonusDefenseHeading  , chanceA,chanceB,chanceColorA,chanceColorB);
      //     BaseHeading :=  LstHeading[Y].Player.Heading + BonusDefenseHeading;
      //     if Baseheading <= 0 then Baseheading :=1;
+
+               //QUI FARE CalculateCrossingDefenseChance
+
       CreateArrowDirection( lstInteractivePlayers[Y].Player, CellX,CellY );
      // CreateBaseAttribute (  lstInteractivePlayers[Y].Player.CellX,lstInteractivePlayers[Y].Player.CellY, lstInteractivePlayers[Y].Player.heading );
 
@@ -15685,10 +15707,10 @@ begin
 
   case aMouseWaitFor of
     WaitForGreen: HintSkill ( Capitalize(Translate( 'hintskill_confirm' ))  );
-    WaitForXY_ShortPass: HintSkill ( Capitalize(Translate( 'hintskill_shortpassing' ))  );
-    WaitForXY_LoftedPass:HintSkill ( Capitalize(Translate( 'hintskill_loftedpass' ))  );
+    WAITFORXY_SHORTPASSING: HintSkill ( Capitalize(Translate( 'hintskill_shortpassing' ))  );
+    WAITFORXY_LOFTEDPASS:HintSkill ( Capitalize(Translate( 'hintskill_loftedpass' ))  );
     WaitForXY_Crossing: HintSkill ( Capitalize(Translate( 'hintskill_crossing' ))  );
-    WaitForXY_Move: HintSkill ( Capitalize(Translate( 'hintskill_move' ))  );
+    WAITFORXY_MOVE: HintSkill ( Capitalize(Translate( 'hintskill_move' ))  );
     WaitForXY_Dribbling: HintSkill ( Capitalize(Translate( 'hintskill_dribbling' ))  );
   //  WaitFor_Corner: ;
     WaitForXY_FKF1: HintSkill ( Capitalize(Translate( 'hintskill_fkf1' ))  );
