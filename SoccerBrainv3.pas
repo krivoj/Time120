@@ -949,7 +949,15 @@ end;
     function CalculateBaseShortPassingIntercept (  CellX, CellY: Integer; aPlayer: TSoccerPlayer ): Tchance;
 
     // LoftedPass
-    function CalculateBaseLoftedPassChance ( aPlayer: TSoccerPlayer ): Tchance;
+    function CalculateBaseLoftedPass ( aPlayer: TSoccerPlayer ): Tchance;
+    function CalculateBaseLoftedPassBallControl ( aPlayer: TSoccerPlayer ): Tchance;
+    function CalculateBaseLoftedPassHeadingDefense (  CellX, CellY: Integer; aPlayer: TSoccerPlayer ): Tchance; // cellx e celly opzionali
+    function CalculateBaseLoftedPassEmptyPlmSpeed (  CellX, CellY: Integer; aPlayer: TSoccerPlayer ): Tchance; // cellx e celly opzionali
+
+
+    // Crossing
+    function CalculateBaseCrossing ( CellX, CellY: integer; aPlayer: TSoccerPlayer ): Tchance;
+    function CalculateBaseCrossingHeadingDefense ( CellX, CellY: integer; aPlayer: TSoccerPlayer ): Tchance;
 
       property milliseconds: Integer read fmilliseconds write setmilliseconds;
       property Gender : char read fGender write SetGender;
@@ -17341,9 +17349,48 @@ begin
   Result.Value := aPlayer.Defense + Result.Modifier ;
 
 end;
-function TSoccerBrain.CalculateBaseLoftedPassChance ( aPlayer: TSoccerPlayer ): Tchance;
+function TSoccerBrain.CalculateBaseLoftedPass ( aPlayer: TSoccerPlayer ): Tchance;
 begin
   Result.Value := aPlayer.Passing ;
+
+end;
+function TSoccerBrain.CalculateBaseLoftedPassBallControl ( aPlayer: TSoccerPlayer ): Tchance;
+begin
+  Result.Value := aPlayer.BallControl;
+
+end;
+function TSoccerBrain.CalculateBaseLoftedPassHeadingDefense ( CellX, CellY: integer; aPlayer: TSoccerPlayer ): Tchance;
+begin
+  Result.Value := aPlayer.Heading;
+
+end;
+function TSoccerBrain.CalculateBaseLoftedPassEmptyPlmSpeed ( CellX, CellY: integer; aPlayer: TSoccerPlayer ): Tchance;
+begin
+  Result.Value := aPlayer.Speed;
+
+end;
+function TSoccerBrain.CalculateBaseCrossing ( CellX, CellY: integer; aPlayer: TSoccerPlayer ): Tchance;
+begin
+  Result.Modifier := 0;
+  if (aPlayer.TalentId1 = TALENT_ID_CROSSING) or (aPlayer.TalentId2 = TALENT_ID_CROSSING) then
+    Result.Modifier:= 1;
+
+  if aPlayer.TalentId2 = TALENT_ID_PRECISE_CROSSING then begin
+    if (aPlayer.CellX = 1)  or (aPlayer.CellY = 10) then begin //cross dal fondo
+      Result.Modifier := Result.Modifier + 1;
+    end;
+  end;
+
+  if (aPlayer.TalentId2 = TALENT_ID_ADVANCED_CROSSING)  then
+    Result.Modifier2 := 2;
+
+  Result.Value := aPlayer.Passing + Result.Modifier;
+
+end;
+function TSoccerBrain.CalculateBaseCrossingHeadingDefense ( CellX, CellY: integer; aPlayer: TSoccerPlayer ): Tchance;
+begin
+
+  Result.Value := aPlayer.Heading + GetCrossDefenseBonus (aPlayer, CellX, CellY );;
 
 end;
 

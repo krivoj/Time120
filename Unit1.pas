@@ -5420,14 +5420,13 @@ begin
   Bmp.Bitmap.Canvas.Font.Color := clYellow;
   str := IntTostr( Chance.Value );
   if Chance.Modifier2 <> 0 then
-    str := Str + '-' + IntTostr(Chance.Modifier2);
+    //str := Str + '-' + IntTostr(Chance.Modifier2);
+    str := Str + '*';
 
   case Length(str) of
     1: Bmp.Bitmap.Canvas.TextOut( 8,8, IntToStr(Chance.Value)); // es. 4
-    2: Bmp.Bitmap.Canvas.TextOut( 5,8, IntToStr(Chance.Value)); // es. 12
-    3: Bmp.Bitmap.Canvas.TextOut( 4,8, IntToStr(Chance.Value)); // es. 3-4
-    4: Bmp.Bitmap.Canvas.TextOut( 2,8, IntToStr(Chance.Value)); // es. 9-11
-    5: Bmp.Bitmap.Canvas.TextOut( 0,8, IntToStr(Chance.Value)); // es. 10-11
+    2: Bmp.Bitmap.Canvas.TextOut( 5,8, IntToStr(Chance.Value)); // es. 12  2*
+    3: Bmp.Bitmap.Canvas.TextOut( 4,8, IntToStr(Chance.Value)); // es. 10*
   end;
 
 
@@ -14170,7 +14169,8 @@ var
   ts : TStringList;
   BtnMenu,BtnLevelUp,Player,BtnTv,SkillMouseMove,UniformMouseMove,MatchInfo: string;
   ScoreMouseMove,ScoreNick,UniformMouseMoveTF: boolean;
-  BaseChancePlmBallControl,BaseShortPassingChance,BaseLoftedPassChance : TChance;
+  BaseChancePlmBallControl,BaseShortPassingChance,BaseLoftedPassChance,BaseLoftedPassBallControlChance,
+  BaseCrossingChance : TChance;
 begin
   // una volta processati gli sprite settare  Handled:= TRUE o la SE:Theater non manderà più la lista degli sprite.
 
@@ -14267,7 +14267,7 @@ begin
           end;
           BaseShortPassingChance := MyBrain.CalculateBaseShortPassing( SelectedPlayer );
           CreateBaseAttribute (  CellX, CellY, BaseShortPassingChance );
-          ArrowShowShpIntercept ( CellX, CellY, ToEmptyCell) ;
+          ArrowShowShpIntercept ( CellX, CellY, ToEmptyCell) ;// all'interno CreateBaseAttribute
           HHFP( CellX, CellY, 0);
         end
 
@@ -14326,14 +14326,14 @@ begin
             ToEmptyCell := false;
           end;
 
-          BaseLoftedPassChance := MyBrain.CalculateBaseLoftedPassChance( aPlayer );
+          BaseLoftedPassChance := MyBrain.CalculateBaseLoftedPass( aPlayer );
           CreateBaseAttribute (  CellX, CellY, BaseLoftedPassChance );
-          ArrowShowLopHeading( CellX, CellY, ToEmptyCell) ; // FARE all'interno CreateBaseAttribute
+          ArrowShowLopHeading( CellX, CellY, ToEmptyCell) ; // all'interno CreateBaseAttribute
           HHFP( CellX, CellY, 0);
           if aFriend <> nil then begin
 
-          //  BaseLoftedPassBallControlChance :=  MyBrain.CalculateBaseSLoftedPassBBallControl( aFriend );
-           // CreateBaseAttribute (  CellX, CellY, BaseLoftedPassBallControlChance );
+            BaseLoftedPassBallControlChance :=  MyBrain.CalculateBaseLoftedPassBallControl( aFriend );
+            CreateBaseAttribute (  CellX, CellY, BaseLoftedPassBallControlChance );
 
            // if aFriend.InCrossingArea then
            //   CreateBaseAttribute (  CellX, CellY, aFriend.Shot );
@@ -14350,9 +14350,10 @@ begin
           if aFriend <> nil then begin
             if (aFriend.Ids = MyBrain.Ball.Player.ids) or (aFriend.Team <> MyBrain.Ball.Player.Team ) then continue;
             if aFriend.InCrossingArea then begin
-               //QUI FARE CalculateCrossingChance
-              //CreateBaseAttribute (  CellX, CellY, SelectedPlayer.Passing );
-              ArrowShowCrossingHeading( CellX, CellY) ;
+              BaseCrossingChance := MyBrain.CalculateBaseCrossing( aPlayer );
+              CreateBaseAttribute (  CellX, CellY, BaseCrossingChance );
+              ArrowShowCrossingHeading( CellX, CellY) ;  // createattribute all'interno
+              //FARE FRIEND
               //CreateBaseAttribute (  CellX, CellY, aFriend.heading );
               HHFP( CellX, CellY, 0);
             end;
@@ -14797,6 +14798,7 @@ var
   aheading: TSoccerPlayer;
   ToEmptyCellMalus: integer;
   LstMoving: TList<TInteractivePlayer>;
+  BaseLoftedPassHeadingDefense,BaseLoftedPassEmptyPlmSpeed: TChance;
 begin
 
   if not ToEmptyCell then begin
@@ -14811,8 +14813,9 @@ begin
         // CalculateChance  ( SelectedPlayer.Passing , aHeading.Heading  , chanceA,chanceB,chanceColorA,chanceColorB);
         lstInteractivePlayers[Y].Attribute := atHeading;
         CreateArrowDirection( aHeading, CellX,CellY );
-       // CreateBaseAttribute (  aHeading.CellX, aHeading.CellY, aHeading.Heading );
 
+        BaseLoftedPassHeadingDefense := MyBrain.CalculateBaseLoftedPassHeadingDefense ( CellX, Celly,lstInteractivePlayers[Y].Player  );
+        CreateBaseAttribute (  lstInteractivePlayers[Y].Player.CellX, lstInteractivePlayers[Y].Player.Celly, BaseLoftedPassHeadingDefense )
       end;
 
     end;
@@ -14828,6 +14831,8 @@ begin
       LstMoving[Y].Attribute := atSpeed;
       CreateArrowDirection( LstMoving[Y].Player, CellX,CellY );
       // CreateBaseAttribute (  LstMoving[Y].Player.CellX, LstMoving[Y].Player.CellY, LstMoving[Y].Player.Speed );
+      BaseLoftedPassEmptyPlmSpeed := MyBrain.CalculateBaseLoftedPassEmptyPlmSpeed ( CellX, Celly,lstInteractivePlayers[Y].Player  );
+      CreateBaseAttribute (  lstInteractivePlayers[Y].Player.CellX, lstInteractivePlayers[Y].Player.Celly, BaseLoftedPassEmptyPlmSpeed )
     end;
 
     LstMoving.Free;
@@ -14842,7 +14847,7 @@ var
 //  aInteractivePlayer: TInteractivePlayer;
   ToEmptyCellMalus: integer;
 //  LstMoving: TList<TInteractivePlayer>;
-
+  BaseCrossingHeadingDefense : TChance;
 begin
 
   HHFP (CellX ,CellY,0);
@@ -14855,13 +14860,14 @@ begin
        // cella per cella o trovo un opponent o trovo un intercept
     if ( lstInteractivePlayers[Y].Cell.X = CellX) and (lstInteractivePlayers[Y].Cell.Y = CellY) then begin  // se questa cella
      //     CalculateChance  ( aFriend.heading, aHeading.Heading + BonusDefenseHeading  , chanceA,chanceB,chanceColorA,chanceColorB);
-     //     BaseHeading :=  LstHeading[Y].Player.Heading + BonusDefenseHeading;
+     // LstHeading[Y].Player.Heading + BonusDefenseHeading;
      //     if Baseheading <= 0 then Baseheading :=1;
 
-               //QUI FARE CalculateCrossingDefenseChance
+               //QUI FARE CalculateCrossingDefenseChance    GetCrossDefenseBonus (aPlayer, CellX, CellY );
 
       CreateArrowDirection( lstInteractivePlayers[Y].Player, CellX,CellY );
-     // CreateBaseAttribute (  lstInteractivePlayers[Y].Player.CellX,lstInteractivePlayers[Y].Player.CellY, lstInteractivePlayers[Y].Player.heading );
+      BaseCrossingHeadingDefense :=  MyBrain.CalculateBaseCrossingHeadingDefense( CellX,CellY,lstInteractivePlayers[Y].Player);
+      CreateBaseAttribute (  lstInteractivePlayers[Y].Player.CellX,lstInteractivePlayers[Y].Player.CellY, BaseCrossingHeadingDefense );
 
     end;
 
