@@ -960,6 +960,11 @@ end;
     function CalculateBaseCrossingHeadingDefense ( CellX, CellY: integer; aPlayer: TSoccerPlayer ): Tchance;
     function CalculateBaseCrossingHeadingFriend ( CellX, CellY: integer; aPlayer: TSoccerPlayer ): Tchance;
 
+    //Dribbling
+    function CalculateBaseDribblingChance ( CellX, CellY: integer; aPlayer: TSoccerPlayer ): Tchance;
+    function CalculatBaseDribblingDefense ( CellX, CellY: integer; anOpponent: TSoccerPlayer ): Tchance;
+
+
       property milliseconds: Integer read fmilliseconds write setmilliseconds;
       property Gender : char read fGender write SetGender;
 
@@ -8322,7 +8327,7 @@ cro_crossbar:
 
        preRoll := RndGenerate (aPlayer.BallControl + aPlayer.tmp);
        Roll := AdjustFatigue (aPlayer.Stamina , preRoll);
-       aRnd:=  Roll.value +  -DRIBBLING_MALUS ;
+       aRnd:=  Roll.value  -DRIBBLING_MALUS ;
        if aRnd < 0 then aRnd := 0;
        
        aPlayer.resetALL;
@@ -17399,6 +17404,30 @@ begin
 
   Result.Value := aPlayer.Heading;
 
+end;
+function TSoccerBrain.CalculateBaseDribblingChance ( CellX, CellY: integer; aPlayer: TSoccerPlayer ): Tchance;
+begin
+  Result.Modifier := 0;
+
+  Result.Value := aPlayer.BallControl -DRIBBLING_MALUS ;
+  if (aPlayer.TalentId1 = TALENT_ID_DRIBBLING) or (aPlayer.TalentId2 = TALENT_ID_DRIBBLING) then
+    Result.Modifier := 1;
+  if (aPlayer.TalentId2 = TALENT_ID_ADVANCED_DRIBBLING)  then
+    Result.Modifier := Result.Modifier + 1;
+
+//      if (aPlayer.TalentId2 = TALENT_ID_SUPER_DRIBBLING)  then begin
+//        if RndGenerate(100) <= 15 then begin
+//          aPlayer.tmp := aPlayer.tmp + 3;
+//          ACT := IntTostr (TALENT_ID_SUPER_DRIBBLING);
+//        end;
+//      end;
+  Result.Value := aPlayer.BallControl + Result.Modifier -DRIBBLING_MALUS ;
+  if Result.Value <= 0 then Result.Value := 1;
+
+end;
+function TSoccerBrain.CalculatBaseDribblingDefense ( CellX, CellY: integer; anOpponent: TSoccerPlayer ): Tchance;
+begin
+  Result.Value := anOpponent.Defense;
 end;
 
 {procedure TSoccerBrain.CreateFormationCells;

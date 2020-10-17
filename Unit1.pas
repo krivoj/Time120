@@ -23,9 +23,9 @@
   }
   { TODO -ctodo prima del rilascio patreon :
 
-    Finire tutti i WaitForXY
+    Finire tutti i WaitForXY , forse finito
 
-    fatigue poca stamina per 1 giocatore del bologna.... ?
+    bug strano: fatigue poca stamina per 1 giocatore del bologna.... ?
 
     FARE ORA:è già cosi reloadteamdefaultposition Per evitare lastsciptgol userò un brain resettato senza tscscript. cosi' risolvo per sempre. il brain farà perforza il reset.
     dopo il mio gol la palla la aveo io a centrocampo.
@@ -39,10 +39,10 @@
 
 
 
-    DA CAPIRE BUg exec_autotackle   preRoll := RndGenerate (aPlayer.Defense); ho modificato tutto ora.forse già risolto
+
     exit da partita solo se tools altrimenti finisce in auto.
 
-    BUG quando devo schierare la barriera
+    BUG quando devo schierare la barriera, forse già risolto
 
     i portieri devono gaudagnare meno xp, anche nel brain. 8 a partita sono troppi. oppure invece di 120 arrivo a 180 punti xp solo per GK
     oppure 50-70% di guaganare xp random sui pos, prs ecc...
@@ -278,7 +278,7 @@ type TGameScreen =(ScreenMain, ScreenLogin,
 
   type TMouseWaitFor = (WaitForGreen, WaitForNone, WaitForAuth, // in attesa di autenticazione login
   WAITFORXY_SHORTPASSING, WAITFORXY_LOFTEDPASS, WAITFORXY_CROSSING,
-  WAITFORXY_MOVE, WaitForXY_Dribbling,WaitFor_Corner, // in attesa di input di gioco
+  WAITFORXY_MOVE, WAITFORXY_DRIBBLING,WaitFor_Corner, // in attesa di input di gioco
   WaitForXY_FKF1,  // chi batte la short.passing o lofted.pass
   WaitForXY_FKF2,  // chi batte il cross
   WaitForXY_FKA2,  // i 3 saltatori
@@ -2065,6 +2065,7 @@ begin
   lstInteractivePlayers.Free;
   RandGen.free;
 
+  SE_Uniform.removeAllsprites;
   se_players.RemoveAllSprites ;
   se_ball.RemoveAllSprites ;
   se_interface.RemoveAllSprites ;
@@ -11230,7 +11231,7 @@ begin
     WAITFORXY_LOFTEDPASS: ;
     WAITFORXY_CROSSING: ;
     WAITFORXY_MOVE: ;
-    WaitForXY_Dribbling: ;
+    WAITFORXY_DRIBBLING: ;
     WaitFor_Corner: ;
     WaitForNone: ;
     WaitForAuth: ;
@@ -13170,7 +13171,7 @@ begin
 
 
   end
-  else if (SelectedPlayer = Mybrain.Ball.Player) and (MouseWaitFor =WaitForXY_Dribbling)  then begin
+  else if (SelectedPlayer = Mybrain.Ball.Player) and (MouseWaitFor =WAITFORXY_DRIBBLING)  then begin
     if GCD > 0 then Exit;
     // controllo lato client. il server lo ripete
 
@@ -13418,7 +13419,7 @@ begin
     WAITFORXY_LOFTEDPASS: exit;
     WAITFORXY_CROSSING: exit;
     WAITFORXY_MOVE: exit;
-    WaitForXY_Dribbling: exit;
+    WAITFORXY_DRIBBLING: exit;
     WaitFor_Corner: exit;
     WaitForXY_FKF1: exit;
     WaitForXY_FKF2: exit;
@@ -13508,7 +13509,7 @@ LstSkill[10]:= 'Corner.Kick'; }
     end;
   end
   else if aSpriteClicked.sTag = 'Dribbling' then begin
-    MouseWaitFor := WaitForXY_Dribbling;
+    MouseWaitFor := WAITFORXY_DRIBBLING;
   end
   else if aSpriteClicked.sTag = 'Protection' then begin
     if GCD <= 0 then begin
@@ -13727,7 +13728,7 @@ begin
     WAITFORXY_LOFTEDPASS: exit;
     WAITFORXY_CROSSING: exit;
     WAITFORXY_MOVE: exit;
-    WaitForXY_Dribbling: exit;
+    WAITFORXY_DRIBBLING: exit;
     WaitFor_Corner: exit;
     WaitForXY_FKF1: exit;
     WaitForXY_FKF2: exit;
@@ -14170,7 +14171,7 @@ var
   BtnMenu,BtnLevelUp,Player,BtnTv,SkillMouseMove,UniformMouseMove,MatchInfo: string;
   ScoreMouseMove,ScoreNick,UniformMouseMoveTF: boolean;
   BaseChancePlmBallControl,BaseShortPassingChance,BaseLoftedPassChance,BaseLoftedPassBallControlChance,
-  BaseCrossingChance,BaseCrossingHeadingFriendChance : TChance;
+  BaseCrossingChance,BaseCrossingHeadingFriendChance, BaseDribblingChance : TChance;
 begin
   // una volta processati gli sprite settare  Handled:= TRUE o la SE:Theater non manderà più la lista degli sprite.
 
@@ -14353,7 +14354,7 @@ begin
               BaseCrossingChance := MyBrain.CalculateBaseCrossing(  CellX, CellY,aPlayer );
               CreateBaseAttribute (  CellX, CellY, BaseCrossingChance );
               ArrowShowCrossingHeading( CellX, CellY) ;  // createattribute all'interno
-              //FARE FRIEND
+              // FRIEND
               BaseCrossingHeadingFriendChance := MyBrain.CalculateBaseCrossingHeadingFriend( CellX, CellY, aPlayer );
               CreateBaseAttribute (  CellX, CellY, BaseCrossingHeadingFriendChance );
               HHFP( CellX, CellY, 0);
@@ -14362,8 +14363,11 @@ begin
           else continue;
 
         end
-        else if MouseWaitFor = WaitForXY_Dribbling then begin  // mostro freccia su opponent da dribblare
+        else if MouseWaitFor = WAITFORXY_DRIBBLING then begin  // mostro freccia su opponent da dribblare
           ClearInterface;
+          BaseDribblingChance := MyBrain.CalculateBaseDribblingChance(CellX, CellY, aPlayer );
+          CreateBaseAttribute (  CellX, CellY, BaseDribblingChance );
+
           anOpponent := MyBrain.GetSoccerPlayer(CellX,CellY);
           if anOpponent = nil then continue;
           if (anOpponent.Team = SelectedPlayer.Team)  or (anOpponent.Ids = SelectedPlayer.ids) or
@@ -14877,15 +14881,13 @@ begin
 end;
 procedure TForm1.ArrowShowDribbling ( anOpponent: TSoccerPlayer; CellX, CellY : Integer);
 var
-  anInteractivePlayer : TInteractivePlayer;
+  BaseDribblingDefense: TChance;
 begin
 
-  anInteractivePlayer := TInteractivePlayer.Create ;
-  anInteractivePlayer.Player := anOpponent;
-  anInteractivePlayer.Cell.X := cellX;
-  anInteractivePlayer.Cell.Y := cellY;
-  anInteractivePlayer.Attribute := atDefense;
   CreateArrowDirection(  MyBrain.ball.Player, CellX,CellY );
+  BaseDribblingDefense :=  MyBrain.CalculatBaseDribblingDefense( CellX,CellY,anOpponent);
+  CreateBaseAttribute (  CellX, CellY, BaseDribblingDefense );
+
   //CreateBaseAttribute (  SelectedPlayer.CellX,SelectedPlayer.CellY, SelectedPlayer.BallControl +
   //    Abs(Integer(   (SelectedPlayer.TalentId1 = TALENT_ID_DRIBBLING) or (SelectedPlayer.TalentId2 = TALENT_ID_DRIBBLING)   ))  );
   //CreateBaseAttribute (  CellX,CellY, anOpponent.Defense  );
@@ -15722,7 +15724,7 @@ begin
     WAITFORXY_LOFTEDPASS:HintSkill ( Capitalize(Translate( 'hintskill_loftedpass' ))  );
     WAITFORXY_CROSSING: HintSkill ( Capitalize(Translate( 'hintskill_crossing' ))  );
     WAITFORXY_MOVE: HintSkill ( Capitalize(Translate( 'hintskill_move' ))  );
-    WaitForXY_Dribbling: HintSkill ( Capitalize(Translate( 'hintskill_dribbling' ))  );
+    WAITFORXY_DRIBBLING: HintSkill ( Capitalize(Translate( 'hintskill_dribbling' ))  );
   //  WaitFor_Corner: ;
     WaitForXY_FKF1: HintSkill ( Capitalize(Translate( 'hintskill_fkf1' ))  );
     WaitForXY_FKF2: HintSkill ( Capitalize(Translate( 'hintskill_fkf2' ))  );
