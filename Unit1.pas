@@ -277,7 +277,7 @@ type TGameScreen =(ScreenMain, ScreenLogin,
                    );
 
   type TMouseWaitFor = (WaitForGreen, WaitForNone, WaitForAuth, // in attesa di autenticazione login
-  WAITFORXY_SHORTPASSING, WAITFORXY_LOFTEDPASS, WaitForXY_Crossing,
+  WAITFORXY_SHORTPASSING, WAITFORXY_LOFTEDPASS, WAITFORXY_CROSSING,
   WAITFORXY_MOVE, WaitForXY_Dribbling,WaitFor_Corner, // in attesa di input di gioco
   WaitForXY_FKF1,  // chi batte la short.passing o lofted.pass
   WaitForXY_FKF2,  // chi batte il cross
@@ -11228,7 +11228,7 @@ begin
   case MousewaitFor of
 {    WAITFORXY_SHORTPASSING:  ;
     WAITFORXY_LOFTEDPASS: ;
-    WaitForXY_Crossing: ;
+    WAITFORXY_CROSSING: ;
     WAITFORXY_MOVE: ;
     WaitForXY_Dribbling: ;
     WaitFor_Corner: ;
@@ -13145,7 +13145,7 @@ begin
 
 
   end
-  else if (SelectedPlayer = Mybrain.Ball.Player) and (MouseWaitFor = WaitForXY_Crossing)  then begin
+  else if (SelectedPlayer = Mybrain.Ball.Player) and (MouseWaitFor = WAITFORXY_CROSSING)  then begin
     if GCD > 0 then Exit;
     // controllo lato client. il server lo ripete
     if (absDistance (SelectedPlayer.CellX , SelectedPlayer.CellY, Cellx, Celly  ) > (CrossingRangeMax +
@@ -13416,7 +13416,7 @@ begin
 
     WAITFORXY_SHORTPASSING: exit ;
     WAITFORXY_LOFTEDPASS: exit;
-    WaitForXY_Crossing: exit;
+    WAITFORXY_CROSSING: exit;
     WAITFORXY_MOVE: exit;
     WaitForXY_Dribbling: exit;
     WaitFor_Corner: exit;
@@ -13477,7 +13477,7 @@ LstSkill[10]:= 'Corner.Kick'; }
   end
   else if aSpriteClicked.sTag = 'Crossing' then begin
   if GCD <= 0 then begin
-    MouseWaitFor  :=  WaitForXY_Crossing;
+    MouseWaitFor  :=  WAITFORXY_CROSSING;
 
     if MyBrain.w_FreeKick2 then begin   // in caso di freeKick2 il cross è automatico
       MouseWaitFor := WaitForNone;
@@ -13725,7 +13725,7 @@ begin
 
     WAITFORXY_SHORTPASSING: exit ;
     WAITFORXY_LOFTEDPASS: exit;
-    WaitForXY_Crossing: exit;
+    WAITFORXY_CROSSING: exit;
     WAITFORXY_MOVE: exit;
     WaitForXY_Dribbling: exit;
     WaitFor_Corner: exit;
@@ -14170,7 +14170,7 @@ var
   BtnMenu,BtnLevelUp,Player,BtnTv,SkillMouseMove,UniformMouseMove,MatchInfo: string;
   ScoreMouseMove,ScoreNick,UniformMouseMoveTF: boolean;
   BaseChancePlmBallControl,BaseShortPassingChance,BaseLoftedPassChance,BaseLoftedPassBallControlChance,
-  BaseCrossingChance : TChance;
+  BaseCrossingChance,BaseCrossingHeadingFriendChance : TChance;
 begin
   // una volta processati gli sprite settare  Handled:= TRUE o la SE:Theater non manderà più la lista degli sprite.
 
@@ -14339,7 +14339,7 @@ begin
            //   CreateBaseAttribute (  CellX, CellY, aFriend.Shot );
           end;
         end
-        else if MouseWaitFor = WaitForXY_Crossing then begin   // mostro i colpi di testa difensivi o chi arriva sulla palla
+        else if MouseWaitFor = WAITFORXY_CROSSING then begin   // mostro i colpi di testa difensivi o chi arriva sulla palla
           ClearInterface;
           if (absDistance ( MyBrain.ball.Player.CellX ,  MyBrain.ball.Player.CellY, CellX, CellY  ) > (CrossingRangeMax +
               Abs(Integer( (MyBrain.Ball.Player.TalentId1 = TALENT_ID_LONGPASS) or (MyBrain.Ball.Player.TalentId2 = TALENT_ID_LONGPASS) ))))
@@ -14350,11 +14350,12 @@ begin
           if aFriend <> nil then begin
             if (aFriend.Ids = MyBrain.Ball.Player.ids) or (aFriend.Team <> MyBrain.Ball.Player.Team ) then continue;
             if aFriend.InCrossingArea then begin
-              BaseCrossingChance := MyBrain.CalculateBaseCrossing( aPlayer );
+              BaseCrossingChance := MyBrain.CalculateBaseCrossing(  CellX, CellY,aPlayer );
               CreateBaseAttribute (  CellX, CellY, BaseCrossingChance );
               ArrowShowCrossingHeading( CellX, CellY) ;  // createattribute all'interno
               //FARE FRIEND
-              //CreateBaseAttribute (  CellX, CellY, aFriend.heading );
+              BaseCrossingHeadingFriendChance := MyBrain.CalculateBaseCrossingHeadingFriend( CellX, CellY, aPlayer );
+              CreateBaseAttribute (  CellX, CellY, BaseCrossingHeadingFriendChance );
               HHFP( CellX, CellY, 0);
             end;
           end
@@ -15719,7 +15720,7 @@ begin
     WaitForGreen: HintSkill ( Capitalize(Translate( 'hintskill_confirm' ))  );
     WAITFORXY_SHORTPASSING: HintSkill ( Capitalize(Translate( 'hintskill_shortpassing' ))  );
     WAITFORXY_LOFTEDPASS:HintSkill ( Capitalize(Translate( 'hintskill_loftedpass' ))  );
-    WaitForXY_Crossing: HintSkill ( Capitalize(Translate( 'hintskill_crossing' ))  );
+    WAITFORXY_CROSSING: HintSkill ( Capitalize(Translate( 'hintskill_crossing' ))  );
     WAITFORXY_MOVE: HintSkill ( Capitalize(Translate( 'hintskill_move' ))  );
     WaitForXY_Dribbling: HintSkill ( Capitalize(Translate( 'hintskill_dribbling' ))  );
   //  WaitFor_Corner: ;

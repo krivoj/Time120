@@ -958,6 +958,7 @@ end;
     // Crossing
     function CalculateBaseCrossing ( CellX, CellY: integer; aPlayer: TSoccerPlayer ): Tchance;
     function CalculateBaseCrossingHeadingDefense ( CellX, CellY: integer; aPlayer: TSoccerPlayer ): Tchance;
+    function CalculateBaseCrossingHeadingFriend ( CellX, CellY: integer; aPlayer: TSoccerPlayer ): Tchance;
 
       property milliseconds: Integer read fmilliseconds write setmilliseconds;
       property Gender : char read fGender write SetGender;
@@ -17390,7 +17391,13 @@ end;
 function TSoccerBrain.CalculateBaseCrossingHeadingDefense ( CellX, CellY: integer; aPlayer: TSoccerPlayer ): Tchance;
 begin
 
-  Result.Value := aPlayer.Heading + GetCrossDefenseBonus (aPlayer, CellX, CellY );;
+  Result.Value := aPlayer.Heading + GetCrossDefenseBonus (aPlayer, CellX, CellY );
+
+end;
+function TSoccerBrain.CalculateBaseCrossingHeadingFriend ( CellX, CellY: integer; aPlayer: TSoccerPlayer ): Tchance;
+begin
+
+  Result.Value := aPlayer.Heading;
 
 end;
 
