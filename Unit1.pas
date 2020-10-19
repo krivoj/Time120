@@ -23,8 +23,6 @@
   }
   { TODO -ctodo prima del rilascio patreon :
 
-    Finire tutti i WaitForXY , forse finito
-
     bug strano: fatigue poca stamina per 1 giocatore del bologna.... ?
 
     FARE ORA:è già cosi reloadteamdefaultposition Per evitare lastsciptgol userò un brain resettato senza tscscript. cosi' risolvo per sempre. il brain farà perforza il reset.
@@ -14327,7 +14325,7 @@ begin
             ToEmptyCell := false;
           end;
 
-          BaseLoftedPassChance := MyBrain.CalculateBaseLoftedPass( aPlayer );
+          BaseLoftedPassChance := MyBrain.CalculateBaseLoftedPass( MyBrain.Ball.Player );
           CreateBaseAttribute (  CellX, CellY, BaseLoftedPassChance );
           ArrowShowLopHeading( CellX, CellY, ToEmptyCell) ; // all'interno CreateBaseAttribute
           HHFP( CellX, CellY, 0);
@@ -14351,8 +14349,8 @@ begin
           if aFriend <> nil then begin
             if (aFriend.Ids = MyBrain.Ball.Player.ids) or (aFriend.Team <> MyBrain.Ball.Player.Team ) then continue;
             if aFriend.InCrossingArea then begin
-              BaseCrossingChance := MyBrain.CalculateBaseCrossing(  CellX, CellY,aPlayer );
-              CreateBaseAttribute (  CellX, CellY, BaseCrossingChance );
+              BaseCrossingChance := MyBrain.CalculateBaseCrossing(  CellX, CellY,MyBrain.Ball.Player );
+              CreateBaseAttribute (  MyBrain.Ball.Player.CellX, MyBrain.Ball.Player.CellY, BaseCrossingChance );
               ArrowShowCrossingHeading( CellX, CellY) ;  // createattribute all'interno
               // FRIEND
               BaseCrossingHeadingFriendChance := MyBrain.CalculateBaseCrossingHeadingFriend( CellX, CellY, aPlayer );
@@ -14365,8 +14363,8 @@ begin
         end
         else if MouseWaitFor = WAITFORXY_DRIBBLING then begin  // mostro freccia su opponent da dribblare
           ClearInterface;
-          BaseDribblingChance := MyBrain.CalculateBaseDribblingChance(CellX, CellY, aPlayer );
-          CreateBaseAttribute (  CellX, CellY, BaseDribblingChance );
+          BaseDribblingChance := MyBrain.CalculateBaseDribblingChance(CellX, CellY, MyBrain.Ball.Player );
+          CreateBaseAttribute (  MyBrain.Ball.Player.CellX, MyBrain.Ball.Player.CellY, BaseDribblingChance );
 
           anOpponent := MyBrain.GetSoccerPlayer(CellX,CellY);
           if anOpponent = nil then continue;
@@ -14836,8 +14834,8 @@ begin
       LstMoving[Y].Attribute := atSpeed;
       CreateArrowDirection( LstMoving[Y].Player, CellX,CellY );
       // CreateBaseAttribute (  LstMoving[Y].Player.CellX, LstMoving[Y].Player.CellY, LstMoving[Y].Player.Speed );
-      BaseLoftedPassEmptyPlmSpeed := MyBrain.CalculateBaseLoftedPassEmptyPlmSpeed ( CellX, Celly,lstInteractivePlayers[Y].Player  );
-      CreateBaseAttribute (  lstInteractivePlayers[Y].Player.CellX, lstInteractivePlayers[Y].Player.Celly, BaseLoftedPassEmptyPlmSpeed )
+      BaseLoftedPassEmptyPlmSpeed := MyBrain.CalculateBaseLoftedPassEmptyPlmSpeed ( CellX, Celly,LstMoving[Y].Player  );
+      CreateBaseAttribute (  LstMoving[Y].Player.CellX, LstMoving[Y].Player.Celly, BaseLoftedPassEmptyPlmSpeed )
     end;
 
     LstMoving.Free;
