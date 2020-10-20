@@ -11543,7 +11543,16 @@ begin
       bmp.Bitmap.Canvas.Brush.Color :=  $007B5139
     else bmp.Bitmap.Canvas.Brush.Color :=  clBlue;
 
+
     bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
+
+    bmp.Bitmap.Canvas.Brush.Color :=  clGray;
+    bmp.Bitmap.Canvas.MoveTo(0,0);
+    bmp.Bitmap.Canvas.LineTo(bmp.Width-1,0);
+    bmp.Bitmap.Canvas.LineTo(bmp.Width-1,bmp.Height-1);
+    bmp.Bitmap.Canvas.LineTo(0,bmp.Height-1);
+    bmp.Bitmap.Canvas.LineTo(0,0);
+
 
 
     aSprite := SE_Skills.CreateSprite ( bmp.Bitmap,'wheelskillnamebottom',1,1,1000, (w * i) + (w div 2) , BaseY , false,10 ) ;
