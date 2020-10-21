@@ -492,9 +492,12 @@ end;
   private
 
     aStar: TAStarPathPlanner;
+    fdir_log: string;
 
     procedure SetTeamMovesLeft ( const Value: ShortInt );
     procedure SetMinute ( const Value: SmallInt );
+    procedure SetDirLog ( value: string );
+
   protected
     public
       GameMode : TGameMode;
@@ -588,7 +591,7 @@ end;
       LogUser: array [0..1] of integer;
       MMbraindata,MMbraindataZIP: TMemoryStream;
       MatchInfo: TStringList; // Il tabellino della partita: gol, minuti, e cognomi. Tipologia se pos3 punizioni o pos4 rigore. cartellini. sostituzioni.
-      dir_log: string;
+
       ReserveSlot,GameOverSlot : array [0..1, 0..21] of string;
       Working: Boolean;           // se true, sta elaborando un input e non può accettare input del client
       brainIds: string[50];       // Identificativo globale del brain
@@ -649,7 +652,7 @@ end;
 
       tsSpeaker: TstringList;
       tsScript: array [0..255] of TstringList;   // la lista di ciò che accade sul server viene spedita al client
-
+      TsErrorLog: TStringList;
 
       ExceptPlayers: TObjectList<TSoccerPlayer>; // lista di player che non si muoveranno durante la Ai_moveAll
       ShpBuff: Boolean;
@@ -965,8 +968,11 @@ end;
     function CalculatBaseDribblingDefense ( CellX, CellY: integer; anOpponent: TSoccerPlayer ): Tchance;
 
 
-      property milliseconds: Integer read fmilliseconds write setmilliseconds;
-      property Gender : char read fGender write SetGender;
+    property milliseconds: Integer read fmilliseconds write setmilliseconds;
+    property Gender : char read fGender write SetGender;
+
+    property Dir_log : string read fdir_log write SetDirLog;
+
 
     end;
 
@@ -5638,7 +5644,7 @@ begin
 end;
 
 
-constructor TSoccerbrain.Create ( ids: string; AGender: Char; aSeason, aCountry, aDivision, aRound: integer);
+constructor TSoccerbrain.Create ( ids : string; AGender: Char; aSeason, aCountry, aDivision, aRound: integer);
 var
   i: Integer;
 begin
@@ -5685,6 +5691,8 @@ begin
 //  BonusDefenseShots := -1;
   ToEmptyCellBonusDefending := 1;
 
+  TsErrorLog:= TstringList.Create ;
+
 
     tsSpeaker:= TstringList.Create ;
     for I := 0 to 255 do begin
@@ -5702,7 +5710,7 @@ begin
     ball.free;
     randGen.free;
     //ShotCells := nil;
-
+    TsErrorLog.free;
 
     //AICrossingAreaCells.Free;
     //TVCrossingAreaCells.Free;
@@ -5721,6 +5729,12 @@ begin
     lstSoccerPlayerALL.Free;
 
   inherited ;
+end;
+procedure TSoccerbrain.SetDirLog ( value: string );
+begin
+  fDir_Log := value;
+  //FileCreate( dir_log +  brainIds + '.ERR' );
+
 end;
 procedure TSoccerbrain.Start;
 var
@@ -6411,6 +6425,7 @@ end;
 
 procedure TSoccerbrain.BrainInput ( aCmd: string );
 var
+  MyFile: THandle;
   tsCmd: Tstringlist;
   BaseHeading,BaseHeadingFriend,BaseGK,aRnd,aRnd2,aRnd3,arnd4,preRoll, preRoll2,preRoll3,preRoll4,CellX,CellY,BonusDefenseHeading,BaseIntercept: integer;
   BaseShotChance : TChance;
@@ -10541,13 +10556,9 @@ Myexit:
         TBrainManager(brainManager).Input ( Self, 'cheat: ' + reason + ':' + tsCmd.CommaText  )
       Else if GameMode = pve then begin
         //if (LogUser [0] > 0) or (LogUser[1] > 0) then begin
-        if not DirectoryExists( dir_log + brainIds )  then
-          MkDir( dir_log + brainIds );
-        AssignFile(FileError, dir_log +  brainIds + '.ERR') ;
-        CloseFile (FileError);
-        append(FileError);
-        WriteLn(FileError, reason + ':' + tsCmd.CommaText);
-        CloseFile (FileError);
+
+        TsErrorLog.Add(reason);
+        TsErrorLog.SaveTofile ( dir_log + brainIds + '.ERR');
 
          // MMbraindata.SaveToFile( dir_log +  brainIds  + '\' + Format('%.*d',[3, incMove]) + '.ERR'  );
        // end;

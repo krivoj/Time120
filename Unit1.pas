@@ -23,6 +23,8 @@
   }
   { TODO -ctodo prima del rilascio patreon :
 
+
+    BUG: GIOCANDO LA PARTITA e gameover non passa di giornata.
     bug strano: fatigue poca stamina per 1 giocatore del bologna.... ?
 
     FARE ORA:è già cosi reloadteamdefaultposition Per evitare lastsciptgol userò un brain resettato senza tscscript. cosi' risolvo per sempre. il brain farà perforza il reset.
@@ -38,7 +40,7 @@
 
 
 
-    exit da partita solo se tools altrimenti finisce in auto.
+    exit da partita solo se tools altrimenti non è proprio possibile.
 
     BUG quando devo schierare la barriera, forse già risolto
 
@@ -1674,6 +1676,8 @@ begin
         ShowNewSeason ( ActiveSeason + 1 ) ;
       end;
     end;
+
+    Inc(ActiveRound);
   End;
 
   // salvo ActiveRound anche a 31 o 39 così mostrerò il button 'new season' al caricamento
@@ -17542,8 +17546,8 @@ begin
         aBrain:= TSoccerBrain.Create( 'my',Gender, Season , Country, D, Round ) ; // questo è il mio ids. Gli altri ids sono vuoti
         aBrain.GameMode := pve;
         aBrain.pvePostMessage := True; // manda OnappMessage
-        {$IFDEF  tools}
         aBrain.dir_log := dir_tmp;
+        {$IFDEF  tools}
         aBrain.LogUser[0]:=1;
         {$endIF  tools}
 
@@ -17596,9 +17600,13 @@ Continue; //DEBUG solo il mio match
           WriteTeamFormation (  Gender , ts2[0] , dir_Saves , aCommaText );
         aCommaText := pveCreateFormationTeam   (  dir_Saves + Gender + ts2[2] + '.120', Gender, StrToInt(ts2[2]),fY ) ; // la AI generata al volo
           WriteTeamFormation (  Gender , ts2[2] , dir_Saves , aCommaText );
-        aBrain:= TSoccerBrain.Create ('other',Gender, Season , Country, D, Round) ; // no ids
+        aBrain:= TSoccerBrain.Create ( Gender + ts2[0] + '_' + ts2[2]  ,Gender, Season , Country, D, Round) ; // no ids
         aBrain.GameMode := pve;
         aBrain.pvePostMessage := false;  // non manda OnappMessage
+       // {$IFDEF  tools}
+        aBrain.dir_log := dir_tmp;
+      //  {$endIF  tools}
+
         pveCreateMatch ( Season, Country, Round,   ts2[0],ts2[1],ts2[2], ts2[3], aBrain );
         lstbrain.Add(aBrain);
         aBrain.Score.AI[0]:= True;
@@ -18709,7 +18717,7 @@ begin
             WriteTeamFormation (  GenderS[G] , ts2[0] , dir_Saves , aCommaText );
           aCommaText := pveCreateFormationTeam   (  dir_Saves + GenderS[G] + ts2[2] + '.120', GenderS[G], StrToInt(ts2[2]),fY ) ; // la AI generata al volo
             WriteTeamFormation (  GenderS[G] , ts2[2] , dir_Saves , aCommaText );
-          aBrain:= TSoccerBrain.Create ('other',GenderS[G], Season , Country, D, R) ; // no ids
+          aBrain:= TSoccerBrain.Create (GenderS[G] + ts2[0] + '_' + ts2[2],GenderS[G], Season , Country, D, R) ; // no ids
           aBrain.GameMode := pve;
           aBrain.pvePostMessage := false;  // non manda OnappMessage
           pveCreateMatch ( Season, Country, R,   ts2[0],ts2[1],ts2[2], ts2[3], aBrain );
