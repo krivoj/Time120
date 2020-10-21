@@ -23,8 +23,22 @@
   }
   { TODO -ctodo prima del rilascio patreon :
 
+    RIASSUNTO: DOPO il 120 se c'è un fallo o un gol è un problema.
+    se c'è un fallo deve mettere flagendgame di nuovo a 0. flagendgame = STO PER FISCHIARE. fallo= non fischio piu'. si
+    settano le barriere, si cambia di turno, ma essendo in w:qualcosa non mettee fflagendgame a 1. si batte il fallo, si mette flagendgame a 1.
 
-    BUG: GIOCANDO LA PARTITA e gameover non passa di giornata.
+
+
+    BUG se punizione e quindi i_tuc dopo 120 si batte fino a fkd2 is ma prima è arrivato un sc_GameOver.
+
+    PLM.waiting freekick bug AI_ForceRandomMove strano perchè dovrebbe battere la punizione o settare i player. forse accade dopo il 120
+
+
+
+
+
+
+
     bug strano: fatigue poca stamina per 1 giocatore del bologna.... ?
 
     FARE ORA:è già cosi reloadteamdefaultposition Per evitare lastsciptgol userò un brain resettato senza tscscript. cosi' risolvo per sempre. il brain farà perforza il reset.
@@ -400,12 +414,6 @@ type
     CheckBox9: TCheckBox;
     SE_RANK: SE_Engine;
     Button9: TButton;
-    PanelGameOver: SE_Panel;
-    lbl_Gameover1: TLabel;
-    btnGameOverOK: TCnSpeedButton;
-    lbl_GameOver2: TLabel;
-    lbl_GameOver3: TLabel;
-    Image1: TImage;
     SE_GameOver: SE_Engine;
     btnSinglePlayer: TCnSpeedButton;
     btnMultiPlayer: TCnSpeedButton;
@@ -2028,7 +2036,6 @@ begin
   RoundCornerOf ( PanelMain );
   RoundCornerOf ( PanelLogin );
   RoundCornerOf ( PanelSinglePlayer );
-  RoundCornerOf ( PanelGameOver );
 
   Panel1.Left := 0;
   lstbrain := TObjectList<TSoccerBrain>.Create(true);
@@ -18402,7 +18409,7 @@ dev:
           LastInsertId := LastInsertId + 1;
           aPlayer.Ids := IntToStr(LastInsertId);
           aPlayer.GuidTeam := aBrain.Score.TeamGuid[T];
-          aPlayer.MatchCost := 0; // forzo a 0
+          aPlayer.MatchCost := 0; // forzo a 0 , i giovani del vivaio costano sempre 0, è un modo di giocare per risparmiare denaro
           lstPlayersDB.add ( aPlayer );
           ini.WriteInteger( 'setup','LastInsertId', LastInsertId ); // servirà alla nascita di nuovi player . è condiviso tra m e f
           aTeamRecord.YoungQueue := aTeamRecord.YoungQueue - 1;

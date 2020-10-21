@@ -494,6 +494,7 @@ end;
     aStar: TAStarPathPlanner;
     fdir_log: string;
 
+    function W_Something: Boolean;
     procedure SetTeamMovesLeft ( const Value: ShortInt );
     procedure SetMinute ( const Value: SmallInt );
     procedure SetDirLog ( value: string );
@@ -972,7 +973,7 @@ end;
     property Gender : char read fGender write SetGender;
 
     property Dir_log : string read fdir_log write SetDirLog;
-
+    property W_SomeThing : Boolean read W_Something;
 
     end;
 
@@ -5953,6 +5954,14 @@ begin
   w_FreeKickSetup4:= true;
   w_Fka4 :=true;
 end;
+function TSoccerbrain.W_SomeThing: boolean;
+begin
+
+  Result := w_CornerSetup or w_Coa or w_cod or w_CornerKick or w_Fka1 or w_Fka2 or w_FreeKickSetup2 or w_Fka2 or w_Fkd2 or w_FreeKick2
+  or w_FreeKickSetup3 or w_Fka3 or w_Fkd3 or w_FreeKick3 or w_Fka4 or w_FreeKickSetup4 or w_FreeKick4;
+
+end;
+
 procedure TSoccerbrain.SetTeamMovesLeft ( const Value: ShortInt );
 var
   P,T: integer;
@@ -5966,7 +5975,13 @@ begin
    if GameStarted then begin
       TsScript[incMove].add ('sc_TML,' + IntTostr(FTeamMovesLeft) + ',' + IntTostr(TeamTurn) + ',' + IntToStr(ShpFree) ) ;
       Minute := Minute + 1;
-      if Minute >= 120 then FlagEndGame := True; // le sostituzioni non incrementano i minuti
+
+
+      if Minute >= 120 then begin
+        if Not W_Something then
+          FlagEndGame := True // le sostituzioni non incrementano i minuti
+          else FlagEndGame := false; // in caso di freekick non finisce la partita
+      end;
    end;
 
    // solo se non ha la palla
@@ -6541,8 +6556,7 @@ begin
       goto MyExit;
     end;
 
-    if w_CornerSetup or w_Coa or w_cod or w_CornerKick or w_Fka1 or w_Fka2 or w_FreeKickSetup2 or w_Fka2 or w_Fkd2 or w_FreeKick2
-    or w_FreeKickSetup3 or w_Fka3 or w_Fkd3 or w_FreeKick3 or w_Fka4 or w_FreeKickSetup4 or w_FreeKick4  then begin
+    if w_SomeThing  then begin
      reason := 'SHP, waiting freekick ';
      goto myexit; // hack
     end;   // freekick1 concesso
@@ -7764,8 +7778,7 @@ TALENT_ID_PRECISE_CROSSING ( +1 crossing solo dal fondo campo, l'ultima cella )
     CellX := StrToIntDef (tsCmd[1],-1);
     CellY := StrToIntDef (tsCmd[2],-1);
 //
-    if w_CornerSetup or w_Coa or w_cod or w_CornerKick or w_FreeKickSetup1 or w_Fka1 or w_Fka2 or w_FreeKick1 or w_FreeKickSetup2 or w_Fka2 or w_Fkd2 or w_FreeKick2
-    or w_FreeKickSetup3 or w_Fka3 or w_Fkd3 or w_FreeKick3 or w_Fka4 or w_FreeKickSetup4 or w_FreeKick4  then begin
+    if w_SomeThing  then begin
      reason := 'CRO, waiting freekick ';
      goto myexit; // hack
     end;  // concesso nulla
@@ -8267,8 +8280,7 @@ cro_crossbar:
 }
 
 
-    if w_CornerSetup or w_Coa or w_cod or w_CornerKick or w_FreeKickSetup1 or w_Fka1 or w_Fka2 or w_FreeKick1 or w_FreeKickSetup2 or w_Fka2 or w_Fkd2 or w_FreeKick2
-    or w_FreeKickSetup3 or w_Fka3 or w_Fkd3 or w_FreeKick3 or w_Fka4 or w_FreeKickSetup4 or w_FreeKick4  then begin
+    if w_SomeThing  then begin
      reason := 'DRI, waiting freekick ';
      goto myexit; // hack
     end;  // concesso nulla
@@ -9114,8 +9126,7 @@ reason:='';
 }
 
 
-    if w_CornerSetup or w_Coa or w_cod or w_CornerKick or w_FreeKickSetup1 or w_FreeKick1 or w_Fka1 or w_Fka2 or w_FreeKickSetup2 or w_Fka2 or w_Fkd2 or w_FreeKick2
-    or w_FreeKickSetup3 or w_Fka3 or w_Fkd3 or w_FreeKick3 or w_Fka4 or w_FreeKickSetup4 or w_FreeKick4  then begin
+    if w_SomeThing  then begin
      reason := 'PRE, waiting freekick ';
      goto myexit; // hack
     end;  // concesso nulla
@@ -9211,8 +9222,7 @@ Normalpressing:
     end;
   end
   else if tsCmd[0] = 'PRO' then  begin
-    if w_CornerSetup or w_Coa or w_cod or w_CornerKick or w_FreeKickSetup1 or w_Fka1 or w_Fka2 or w_FreeKick1 or w_FreeKickSetup2 or w_Fka2 or w_Fkd2 or w_FreeKick2
-    or w_FreeKickSetup3 or w_Fka3 or w_Fkd3 or w_FreeKick3 or w_Fka4 or w_FreeKickSetup4 or w_FreeKick4  then begin
+    if w_SomeThing  then begin
      reason := 'PRO, waiting freekick ';
      goto myexit; // hack
     end;  // concesso nulla
@@ -9249,8 +9259,7 @@ Normalpressing:
   end
 
   else if tsCmd[0] = 'STAY' then  begin
-    if w_CornerSetup or w_Coa or w_cod or w_CornerKick or w_FreeKickSetup1 or w_Fka1 or w_Fka2 or w_FreeKick1 or w_FreeKickSetup2 or w_Fka2 or w_Fkd2 or w_FreeKick2
-    or w_FreeKickSetup3 or w_Fka3 or w_Fkd3 or w_FreeKick3 or w_Fka4 or w_FreeKickSetup4 or w_FreeKick4  then begin
+    if w_SomeThing  then begin
      reason := 'STAY, waiting freekick ';
      goto myexit; // hack
     end;  // concesso nulla
@@ -9282,8 +9291,7 @@ Normalpressing:
     goto MyExit;
   end
   else if tsCmd[0] = 'FREE' then  begin
-    if w_CornerSetup or w_Coa or w_cod or w_CornerKick or w_FreeKickSetup1 or w_Fka1 or w_Fka2 or w_FreeKick1 or w_FreeKickSetup2 or w_Fka2 or w_Fkd2 or w_FreeKick2
-    or w_FreeKickSetup3 or w_Fka3 or w_Fkd3 or w_FreeKick3 or w_Fka4 or w_FreeKickSetup4 or w_FreeKick4  then begin
+    if w_SomeThing  then begin
      reason := 'FREE, waiting freekick ';
      goto myexit; // hack
     end;  // concesso nulla
@@ -9316,8 +9324,7 @@ Normalpressing:
   end
 
   else if tsCmd[0] = 'TAC' then  begin
-    if w_CornerSetup or w_Coa or w_cod or w_CornerKick or w_FreeKickSetup1 or w_Fka1 or w_Fka2 or w_FreeKick1 or w_FreeKickSetup2 or w_Fka2 or w_Fkd2 or w_FreeKick2
-    or w_FreeKickSetup3 or w_Fka3 or w_Fkd3 or w_FreeKick3 or w_Fka4 or w_FreeKickSetup4 or w_FreeKick4  then begin
+    if w_SomeThing  then begin
      reason := 'TAC, waiting freekick ';
      goto myexit; // hack
     end;  // concesso nulla
@@ -9385,8 +9392,7 @@ Normalpressing:
 
   end
   else if tsCmd[0] = 'TACTIC' then  begin
-    if w_CornerSetup or w_Coa or w_cod or w_CornerKick or w_FreeKickSetup1 or w_Fka1 or w_Fka2 or w_FreeKick1 or w_FreeKickSetup2 or w_Fka2 or w_Fkd2 or w_FreeKick2
-    or w_FreeKickSetup3 or w_Fka3 or w_Fkd3 or w_FreeKick3 or w_Fka4 or w_FreeKickSetup4 or w_FreeKick4  then begin
+    if w_SomeThing  then begin
      reason := 'TACTIC, waiting freekick ';
      goto myexit; // hack
     end;  // concesso nulla
@@ -9466,8 +9472,7 @@ Normalpressing:
   end
   else if tsCmd[0] = 'SUB' then  begin
   // si fanno sempre anche oltre 120+
-    if w_CornerSetup or w_Coa or w_cod or w_CornerKick or w_FreeKickSetup1 or w_Fka1 or w_Fka2 or w_FreeKick1 or w_FreeKickSetup2 or w_Fka2 or w_Fkd2 or w_FreeKick2
-    or w_FreeKickSetup3 or w_Fka3 or w_Fkd3 or w_FreeKick3 or w_Fka4 or w_FreeKickSetup4 or w_FreeKick4  then begin
+    if w_SomeThing  then begin
      reason := 'SUB, waiting freekick ';
      goto myexit; // hack
     end;  // concesso nulla
@@ -9580,8 +9585,7 @@ Normalpressing:
 
 
   else if tsCmd[0] = 'PLM' then  begin
-    if w_CornerSetup or w_Coa or w_cod or w_CornerKick or w_FreeKickSetup1 or w_Fka1 or w_Fka2 or w_FreeKick1 or w_FreeKickSetup2 or w_Fka2 or w_Fkd2 or w_FreeKick2
-    or w_FreeKickSetup3 or w_Fka3 or w_Fkd3 or w_FreeKick3 or w_Fka4 or w_FreeKickSetup4 or w_FreeKick4  then begin
+    if w_SomeThing  then begin
      reason := 'PLM, waiting freekick ';
      goto myexit; // hack
     end;  // concesso nulla
@@ -9749,8 +9753,7 @@ Normalpressing:
   end
   // pass può trovarsi in mezzo a corner o punizioni
   else if tsCmd[0] = 'PASS' then  begin
-    if w_CornerSetup or w_Coa or w_cod or w_CornerKick or w_FreeKickSetup1 or w_Fka1 or w_Fka2 or w_FreeKick1 or w_FreeKickSetup2 or w_Fka2 or w_Fkd2 or w_FreeKick2
-    or w_FreeKickSetup3 or w_Fka3 or w_Fkd3 or w_FreeKick3 or w_Fka4 or w_FreeKickSetup4 or w_FreeKick4  then begin
+    if w_SomeThing  then begin
      reason := 'PASS, waiting freekick ';
      goto myexit; // hack
     end;  // concesso nulla
@@ -10274,8 +10277,7 @@ Normalpressing:
   end
 
   else if tsCmd[0] = 'BUFFD' then  begin
-    if w_CornerSetup or w_Coa or w_cod or w_CornerKick or w_FreeKickSetup1 or w_Fka1 or w_Fka2 or w_FreeKick1 or w_FreeKickSetup2 or w_Fka2 or w_Fkd2 or w_FreeKick2
-    or w_FreeKickSetup3 or w_Fka3 or w_Fkd3 or w_FreeKick3 or w_Fka4 or w_FreeKickSetup4 or w_FreeKick4  then begin
+    if w_SomeThing  then begin
      reason := 'BUFFD, waiting freekick ';
      goto myexit; // hack
     end;  // concesso nulla
@@ -10338,8 +10340,7 @@ buffd:
     goto MyExit;
   end
   else if tsCmd[0] = 'BUFFM' then  begin
-    if w_CornerSetup or w_Coa or w_cod or w_CornerKick or w_FreeKickSetup1 or w_Fka1 or w_Fka2 or w_FreeKick1 or w_FreeKickSetup2 or w_Fka2 or w_Fkd2 or w_FreeKick2
-    or w_FreeKickSetup3 or w_Fka3 or w_Fkd3 or w_FreeKick3 or w_Fka4 or w_FreeKickSetup4 or w_FreeKick4  then begin
+    if w_SomeThing  then begin
      reason := 'BUFFM, waiting freekick ';
      goto myexit; // hack
     end;  // concesso nulla
@@ -10398,8 +10399,7 @@ buffm:
     goto MyExit;
   end
   else if tsCmd[0] = 'BUFFF' then  begin
-    if w_CornerSetup or w_Coa or w_cod or w_CornerKick or w_FreeKickSetup1 or w_Fka1 or w_Fka2 or w_FreeKick1 or w_FreeKickSetup2 or w_Fka2 or w_Fkd2 or w_FreeKick2
-    or w_FreeKickSetup3 or w_Fka3 or w_Fkd3 or w_FreeKick3 or w_Fka4 or w_FreeKickSetup4 or w_FreeKick4  then begin
+    if w_SomeThing  then begin
      reason := 'BUFFF, waiting freekick ';
      goto myexit; // hack
     end;  // concesso nulla
@@ -10557,7 +10557,7 @@ Myexit:
       Else if GameMode = pve then begin
         //if (LogUser [0] > 0) or (LogUser[1] > 0) then begin
 
-        TsErrorLog.Add(reason);
+        TsErrorLog.Add(  IntToStr( Minute ) + ' ' + reason);
         TsErrorLog.SaveTofile ( dir_log + brainIds + '.ERR');
 
          // MMbraindata.SaveToFile( dir_log +  brainIds  + '\' + Format('%.*d',[3, incMove]) + '.ERR'  );
