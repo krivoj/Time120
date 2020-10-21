@@ -494,7 +494,7 @@ end;
     aStar: TAStarPathPlanner;
     fdir_log: string;
 
-    function W_Something: Boolean;
+    function GetW_Something: Boolean;
     procedure SetTeamMovesLeft ( const Value: ShortInt );
     procedure SetMinute ( const Value: SmallInt );
     procedure SetDirLog ( value: string );
@@ -883,6 +883,7 @@ end;
 
     procedure ResetPassiveSkills;
 
+    function GetBestGKReserve ( Team,MinStamina: integer ): string;
     function GetBestDefenseReserve ( Team,MinStamina: integer  ): string;
     function GetBestPassingReserve  ( Team,MinStamina: integer ): string;
     function GetBestShotReserve  ( Team,MinStamina: integer ): string;
@@ -973,7 +974,7 @@ end;
     property Gender : char read fGender write SetGender;
 
     property Dir_log : string read fdir_log write SetDirLog;
-    property W_SomeThing : Boolean read W_Something;
+    property W_SomeThing : Boolean read GetW_Something;
 
     end;
 
@@ -3982,6 +3983,46 @@ begin
     lstBestDefense.Free;
 
 end;
+function TSoccerBrain.GetBestGKReserve ( Team,MinStamina: integer ): string;
+var
+  i,p,MaxDefense: Integer;
+  lstBestDefense: TObjectList<TSoccerPlayer>;
+begin
+// talentId <> 1 non .rol <> 'G' in quanto il role è N in panchina
+    lstBestDefense:= TObjectList<TSoccerPlayer>.Create(False);
+
+    for I := lstSoccerReserve.Count -1 downto 0 do begin
+      if (lstSoccerReserve[i].Team = Team) and (lstSoccerReserve[i].talentid1 = TALENT_ID_GOALKEEPER) then begin
+        if (lstSoccerReserve[i].Stamina >= MinStamina)  then begin
+          lstBestDefense.Add(lstSoccerReserve[i]);   // es. potrebbe avere 4 portieri
+        end;
+      end;
+    end;
+
+
+    if lstBestDefense.Count = 0 then begin                                   // es. non ha Gk di rriserva
+      Result :=  '0';
+      lstBestDefense.Free;
+      exit;
+    end;
+
+    lstBestDefense.sort(TComparer<TSoccerPlayer>.Construct(
+    function (const L, R: TSoccerPlayer): integer
+    begin
+      Result := (R.Defense )- (L.Defense  );
+    end
+   ));
+    MaxDefense := lstBestDefense[0].Defense   ;
+
+    for P := lstBestDefense.Count -1 downto 0 do begin
+      if lstBestDefense[p].Defense  < MaxDefense then
+        lstBestDefense.Delete(p);
+    end;
+
+    Result :=  lstBestDefense[ RndGenerate0(lstBestDefense.Count-1)].Ids ;
+    lstBestDefense.Free;
+
+end;
 function TSoccerBrain.GetBestPassingReserve ( Team,MinStamina: integer  ): string;
 var
   i,p,MaxPassing: Integer;
@@ -5954,7 +5995,7 @@ begin
   w_FreeKickSetup4:= true;
   w_Fka4 :=true;
 end;
-function TSoccerbrain.W_SomeThing: boolean;
+function TSoccerbrain.GetW_SomeThing: boolean;
 begin
 
   Result := w_CornerSetup or w_Coa or w_cod or w_CornerKick or w_Fka1 or w_Fka2 or w_FreeKickSetup2 or w_Fka2 or w_Fkd2 or w_FreeKick2
@@ -12690,7 +12731,16 @@ begin
 
     //same role. in base a D M F  bestdefense, bestshot, bestpassing not gk , ma non al di sotto di 60 (giò checkato in candosub )
     if SubType = PossiblysameRole then begin // arriva da injured o da stamina < 60
-      if anOutPlayer.Role = 'D' then begin
+      if anOutPlayer.Role = 'G' then begin
+        ids := GetBestGKReserve( team,61);
+        if ids <> '0' then
+          BrainInput( IntTostr(score.TeamGuid [team]) + ',SUB,' + ids + ',' + anOutPlayer.ids  )// potrebe non esserci quindi candosub
+        else begin
+          Result := SubCant;
+          Exit;
+        end;
+      end
+      else if anOutPlayer.Role = 'D' then begin
         ids := GetBestDefenseReserve( team,61);
         BrainInput( IntTostr(score.TeamGuid [team]) + ',SUB,' + ids + ',' + anOutPlayer.ids  );// 1 c'è per forza altrimenti no candosub
       end

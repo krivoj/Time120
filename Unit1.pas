@@ -23,6 +23,10 @@
   }
   { TODO -ctodo prima del rilascio patreon :
 
+    mouseskillmove cursor
+    le sub sono piene di bug.
+
+    ora sembra risolto tutto, ma è da verificare.
     RIASSUNTO: DOPO il 120 se c'è un fallo o un gol è un problema.
     se c'è un fallo deve mettere flagendgame di nuovo a 0. flagendgame = STO PER FISCHIARE. fallo= non fischio piu'. si
     settano le barriere, si cambia di turno, ma essendo in w:qualcosa non mettee fflagendgame a 1. si batte il fallo, si mette flagendgame a 1.
@@ -10190,11 +10194,11 @@ begin
   else if ts[0] = 'cl_sub' then begin
 
    // sono veramente già swappati sul brain , ma qui ancora no perchè il clientloadbrain ciene caricato dopo questo scritp
-    aPlayer:= MyBrain.GetSoccerPlayer2(ts[1]);
-    aPlayer2:= MyBrain.GetSoccerPlayer2(ts[2]);
+    aPlayer:= MyBrain.GetSoccerPlayer3(ts[1]);
+    aPlayer2:= MyBrain.GetSoccerPlayer3(ts[2]);
    // sono veramente già swappati quindi la sefield è di aplayer2 , quello che verrà sostituito
 
-    aFieldPointSpr := SE_FieldPoints.FindSprite( IntToStr(aPlayer2.CellX )+ '.' + IntToStr(aPlayer2.CellY ) );
+    aFieldPointSpr := SE_FieldPoints.FindSprite( IntToStr(aPlayer.CellX )+ '.' + IntToStr(aPlayer.CellY ) );
     seSprite:= SE_interface.CreateSprite(InOutBitmap.BITMAP ,'inout',1,1,10,aFieldPointSpr.Position.X, aFieldPointSpr.Position.Y,true ,1 );
     seSprite.LifeSpan := ShowFaultLifeSpan;
 
@@ -13870,7 +13874,7 @@ begin
     aSprite.Visible := false;
 
     if GameMode = pve then begin
-      aSprite:=SE_LIVE.FindSprite('btnmenu_exit' );
+      aSprite:=SE_LIVE.FindSprite('btnmenu_back' );
       aSprite.Visible := false;
     end;
 
@@ -13892,7 +13896,7 @@ begin
     aSprite.Visible := false;
 
     if GameMode = pve then begin
-      aSprite:=SE_LIVE.FindSprite('btnmenu_exit' );
+      aSprite:=SE_LIVE.FindSprite('btnmenu_back' );
       aSprite.Visible := false;
     end;
 
@@ -14537,7 +14541,9 @@ begin
     exit;
   end;
 
-{  if SkillMouseMove = '' then begin
+ // if SkillMouseMove <> '' then
+ //   SetGlobalCursor (crHandPoint);
+  {  if SkillMouseMove = '' then begin
     SE_interface.removeallSprites; // rimuovo le frecce
     SE_interface.ProcessSprites(2000);
     SE_Interface.RemoveAllSprites ('number');  // rimuovo le Tchance
