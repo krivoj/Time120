@@ -23,6 +23,8 @@
 
 
     Thread minimo 5 secondi. massimo la somma di ai_moveall + clwait vari
+    Invece di gettickcount uso un dec (EstimatedTime). In OnAppMessage cambio con application.processmessages oppure chiamo
+    il thread ogni N millisecondi.
 
     le sub sono piene di bug.
 
@@ -113,7 +115,7 @@
     pvp standings, icone mappamondo, country, fra il team. you e il team. il team è la somma di tutti i team come il tuo. refresh ogni 24 ore.
       anzi alcune query ogni settimana. tutto su dbforge in mantanaince
       il team non ha classifica tra il team stesso. 3 icona a sinistra , 2 a destra
-
+    pvp GCD deve essere speciale per mosse in partita. deve rispettare un EstimatedTime
 
   }
   { TODO -csviluppo :
@@ -1588,6 +1590,7 @@ procedure TForm1.onAppMessage(var Msg: TMsg; var Handled: Boolean);
 var
   //msgStr: String;
   i: integer;
+  label retry;
 begin
 // coem in TcpDataavailable BEGINBRAIN . Qui il brain viene copiato in MM3[MyBrain.incMove] e @Buf3[MyBrain.incMove]. viene messo in fila come in tcp
   if Msg.hwnd = Application.Handle then  begin
@@ -1606,8 +1609,7 @@ begin
      // ClientLoadScript ( MyBrain.incMove ); // già caricato nel clientloadbrain
 
       if not FirstLoadOK  then begin   // avvio partita. se è la prima volta
-        EstimatedTime:= 5000;
-        OldGetTickCount := GetTickCount;
+       EstimatedTime:= 5000;
 
        SE_players.RemoveAllSprites;
         if viewMatch then
@@ -1619,35 +1621,28 @@ begin
         for I := 0 to 255 do begin
          incMoveAllProcessed [i] := false;
         end;
-        //for I := 0 to CurrentIncMove do begin
-         // caricato e completamente eseguito
-        // incMoveAllProcessed [i] := true;
-        //end;
 
 
         //SpriteReset;
+        EstimatedTime:= 5000;
         ThreadCurrentIncMove.Enabled := true;
       end;
 
-      //WaitForSingleObject(MutexAnimation, INFINITE);
-      //tutto bene poi arriva il fallo
       while incMoveAllProcessed [LastMoveBrain] = false do begin // fino a quando c'è l'animazione non fa ai_think
-       // Application.ProcessMessages;
-       { TODO : il bug è qui. non posso forzare un thread che ho messo in estimatedtime }
-        ThreadCurrentIncMove.OnTimer (ThreadCurrentIncMove);
         mainThread.OnTimer (mainThread);
         SE_Theater1.thrdAnimate.OnTimer(SE_Theater1.thrdAnimate);
+
+        ThreadCurrentIncMove.OnTimer (ThreadCurrentIncMove);
       end;
+
        // ritardo necessario o l'ultima parte della animazione viene troncata e non spariscono le mainskillused
       while ( SE_ball.IsAnySpriteMoving  ) or (SE_players.IsAnySpriteMoving ) do begin
-//        Application.ProcessMessages ;
+        mainThread.OnTimer (mainThread);
         se_Theater1.thrdAnimate.OnTimer (se_Theater1.thrdAnimate);
       end;
-//      SpriteReset;
 
-      AllBrainThink; // viene chiamata qui dopo ogni mia mossa e in i_tuc cioè quando la AI deve cominciare a giocare
-      //ReleaseMutex(MutexAnimation);
-      // tutti gli input rispondono qui ( anche subs e tactics o pass) quindi qui agisce l'ai
+      AllBrainThink; // viene chiamata qui dopo ogni mia mossa o della AI e in i_tuc cioè quando la AI deve cominciare a giocare
+
     end
     else if Msg.message = $2EEE then begin // endgame, finalize  , ma riguarda solo MYbrain
       // se la mia partita è finita, completo tutte le altre, poi finalizzo quando tutti i match sono finiti
@@ -5515,75 +5510,35 @@ begin
     {$endif tools}
       //Animating:= True;
       SE_Live.Visible := False;
-//      if GameScreen = ScreenLive then begin
-//        SE_TacticsSubs.visible := False;
-//        aSprite := SE_LIVE.FindSprite('btnmenu_tactics');
-///        aSprite.Visible := False;
-//        aSprite := SE_LIVE.FindSprite('btnmenu_subs');
-//        aSprite.Visible := False;
-//        aSprite:=SE_LIVE.FindSprite('btnmenu_skillpass' );
-//        aSprite.Visible := False;
-//      end;
       anim (AnimationScript.Ts[ AnimationScript.Index ]); // muove gli sprite
-      AnimationScript.Index := AnimationScript.Index + 1;
-    {$IFDEF tools}
-    SE_DEBUG.Sprites[0].Labels[0].lText := ' AnimationScript.Index  ' + IntTostr( AnimationScript.Index  ) +  ' AnimationScript.Ts.Count  ' + IntTostr( AnimationScript.Ts.Count );
-    {$endIF tools}
+      AnimationScript.Index := AnimationScript.Index + 1; // INCREMENTA PER FORZA OLTRE IL LIMITE COUNT
 
-      if AnimationScript.Index >=  AnimationScript.Ts.Count -1 then begin // attendo la fine EFFETTIVA di ANIM
+      {$IFDEF tools}
+      SE_DEBUG.Sprites[0].Labels[0].lText := ' AnimationScript.Index  ' + IntTostr( AnimationScript.Index  ) +  ' AnimationScript.Ts.Count  ' + IntTostr( AnimationScript.Ts.Count );
+      {$endIF tools}
+
+      if AnimationScript.Index > AnimationScript.Ts.Count -1 then begin     // attendo la fine di ANIM
         while ( SE_ball.IsAnySpriteMoving  ) or  (se_players.IsAnySpriteMoving) do begin
           se_Theater1.thrdAnimate.OnTimer (se_Theater1.thrdAnimate);
-         // Application.ProcessMessages ;
         end;
-        incMoveAllProcessed [CurrentIncMove] := true;
+        AnimationScript.Index := -1;
+        AnimationScript.Reset;
+        incMoveAllProcessed [CurrentIncMove] := true;  // caricato e completamente eseguito tutto ANIM
         if CurrentIncMove =  LastMoveBrain then LastIncProcessed := True;
-
+        SE_Live.Visible := true;
+        ClientLoadBrainMM ( CurrentIncMove );  // <-- false, gli sprite e le liste non saranno mai svuotate
+        //else if GameMode = pve then
+        //  pveSynchBrain;
+      {$ifdef tools}
+        if viewReplay then
+          toolSpin.Visible := true;
+      {$endif tools}
       end;
 
-    end
-    else begin
-      AnimationScript.Index := -1;
-      //AnimationScript.Reset;
-    // qui ho terminato l'animazione ma alcuni sprite potrebbero ancora muoversi in questo momento
-
-      while ( SE_ball.IsAnySpriteMoving  ) or (SE_players.IsAnySpriteMoving ) do begin
-      //  Application.ProcessMessages ;
-        se_Theater1.thrdAnimate.OnTimer (se_Theater1.thrdAnimate);
-      end;
-       ReleaseMutex ( MutexAnimation );
-    {$ifdef tools}
-      if viewReplay then
-        toolSpin.Visible := true;
-    {$endif tools}
-
-
-      //Animating:= false;
-      SE_Live.Visible := true;
-//      if GameScreen = ScreenLive then begin
-//        SE_TacticsSubs.visible := False;
-//        aSprite := SE_LIVE.FindSprite('btnmenu_tactics');
-//        aSprite.Visible := True;
-//        aSprite := SE_LIVE.FindSprite('btnmenu_subs');
-//        aSprite.Visible := True;
-//        aSprite:=SE_LIVE.FindSprite('btnmenu_skillpass' );
-//        aSprite.Visible := true;
-//        Hide120;
-//      end;
-
-      ClientLoadBrainMM ( CurrentIncMove );  // <-- false, gli sprite e le liste non saranno mai svuotate
-      //else if GameMode = pve then
-      //  pveSynchBrain;
-
-    // SpriteReset; // non va bene, sincronizza con l'ultimo brain, non con quello che sta elaborando
-
-     // UpdateSubSprites;
-      incMoveAllProcessed [CurrentIncMove] := True; // caricato e completamente eseguito
-      if CurrentIncMove =  LastMoveBrain then LastIncProcessed := True;
-     // inc ( CurrentIncMove );
     end;
 
+
   end;
-  //ReleaseMutex(MutexAnimation);
 
 
 end;
@@ -15485,7 +15440,7 @@ var
 begin
       // brain in memoria e sprite a video
       // se c'è lo script lo eseguo
-  // disino in 2 parti per pvp e pve
+  // diviso in 2 parti per pvp e pve
   WaitForSingleObject ( MutexAnimation, INFINITE );
 
   if ( SE_ball.IsAnySpriteMoving  ) or (SE_players.IsAnySpriteMoving )  then begin
@@ -15493,11 +15448,13 @@ begin
     Exit;
   end;
 
-  tmp1:= GetTickCount;
-  tmp2:=OldGetTickCount + EstimatedTime;
-  if tmp2 > tmp1 then
-  //  if (OldGetTickCount + EstimatedTime) < tmp1 then
-    exit;
+ // tmp1:= GetTickCount;
+ // tmp2:= OldGetTickCount + EstimatedTime;
+ // if tmp2 > tmp1 then
+//  //  if (OldGetTickCount + EstimatedTime) < tmp1 then
+ //   exit;
+
+
 
   if GameMode = pvp then begin
 
@@ -15540,6 +15497,7 @@ begin
         oldCurrent :=  CurrentIncMove;
         CurrentIncMove := imin( CurrentIncMove +1, LastMoveBrain ); // avanzo processando tutti gli script
 
+
         if OldCurrent < CurrentIncMove then begin  // solo se è cambiato , altrimenti ricarico a oltranz la stessa animazione
           RemoveSubMainskill;
           LastIncProcessed:= False;
@@ -15551,7 +15509,7 @@ begin
             LoadAnimationScript; // riempe animationScript.  alla fine il thread chiama  ClientLoadBrainMM
             EstimatedTime := imax (5000, GetAnimationEstimatedTime( Mybrain.tsScript [CurrentIncMove])  );
             ThreadCurrentIncMove.Interval := EstimatedTime;  // forse non necessario
-            OldGetTickCount := GetTickCount;
+          //  OldGetTickCount := GetTickCount;
           end
           else begin
             incMoveAllProcessed [CurrentIncMove] := true; // se è vuota dico che è stata processata
@@ -15577,7 +15535,7 @@ begin
           LoadAnimationScript; // riempe animationScript.  alla fine il thread chiama  ClientLoadBrainMM
           EstimatedTime := imax (5000, GetAnimationEstimatedTime( Mybrain.tsScript [CurrentIncMove])  );
           ThreadCurrentIncMove.Interval := EstimatedTime;
-          OldGetTickCount := GetTickCount;
+      //    OldGetTickCount := GetTickCount;
 
         end
         else begin
@@ -17685,7 +17643,9 @@ Continue; //DEBUG solo il mio match
 
   //SpriteReset;
   //PostMessage ( Application.Handle, $2CCC,0,0);
-  ThreadCurrentIncMove.Enabled := true;
+
+
+  //*ThreadCurrentIncMove.Enabled := true;
 
   aSprite := SE_Live.FindSprite('btnmenu_overridecolor');
   aSprite.SubSprites[0].lBmp.LoadFromFileBMP( dir_tmp + 'color1.bmp');
