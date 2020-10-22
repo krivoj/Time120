@@ -2674,6 +2674,16 @@ begin
     end
     ));
 
+    if lstGK[0].Stamina <= 60 then begin    // la stamin adel GK la gestisco subito
+      lstGK.sort(TComparer<TSoccerPlayer>.Construct(
+      function (const L, R: TSoccerPlayer): integer
+      begin
+        Result := R.Stamina - L.Stamina;  // se c'è 1 GK in team è sempre lui, altrimenti è un altro
+      end
+      ));
+    end;
+
+
     FinalFormation [1].Guid := lstGK[0].Ids;
     FinalFormation [1].cells := Point ( 3, 11 );
     FinalFormation [1].Stamina := lstGK[0].Stamina ;
@@ -3004,6 +3014,15 @@ begin
       Result := R.defense - L.defense;
     end
     ));
+
+    if lstGK[0].Stamina <= 60 then begin    // la stamin adel GK la gestisco subito
+      lstGK.sort(TComparer<TSoccerPlayer>.Construct(
+      function (const L, R: TSoccerPlayer): integer
+      begin
+        Result := R.Stamina - L.Stamina;  // se c'è 1 GK in team è sempre lui, altrimenti è un altro
+      end
+      ));
+    end;
 
     FinalFormation [1].Guid := lstGK[0].Ids;
     FinalFormation [1].cells := Point ( 3, 11 );

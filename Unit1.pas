@@ -11,19 +11,16 @@
     pvp = test sul server di AUTO --> AUTO mi deve essere passato dal server. in base al dato setto lo sprite, non lo faccio io direttamente come nel pve
     devA e devT partono uguali per tutti in pvp. dipendono dalla quantità di azioni giocate. es. +1% ogni 20 palle giocate
 
-
-    aGK deve usare stamina. costo in gkpos gkprs -2 -1 COST  in exec_freekinck exec_corner,cro,pos,prs,lop
     check fine partita sul client
     pvp testare sell/buy sembra andare bene
     AI Hide120 anche  free e stay pass sono ok fare anche per tactics. le sub si possono fare
 
     Server, gender bonus. controllare anche AI.
 
-    sto testando exec_autotackle su pmmove path = 1
+
   }
   { TODO -ctodo prima del rilascio patreon :
 
-    mouseskillmove cursor
     le sub sono piene di bug.
 
     ora sembra risolto tutto, ma è da verificare.
@@ -36,11 +33,6 @@
     BUG se punizione e quindi i_tuc dopo 120 si batte fino a fkd2 is ma prima è arrivato un sc_GameOver.
 
     PLM.waiting freekick bug AI_ForceRandomMove strano perchè dovrebbe battere la punizione o settare i player. forse accade dopo il 120
-
-
-
-
-
 
 
     bug strano: fatigue poca stamina per 1 giocatore del bologna.... ?
@@ -5511,15 +5503,16 @@ begin
       toolSpin.Visible := false;
     {$endif tools}
       //Animating:= True;
-      if GameScreen = ScreenLive then begin
-        SE_TacticsSubs.visible := False;
-        aSprite := SE_LIVE.FindSprite('btnmenu_tactics');
-        aSprite.Visible := False;
-        aSprite := SE_LIVE.FindSprite('btnmenu_subs');
-        aSprite.Visible := False;
-        aSprite:=SE_LIVE.FindSprite('btnmenu_skillpass' );
-        aSprite.Visible := False;
-      end;
+      SE_Live.Visible := False;
+//      if GameScreen = ScreenLive then begin
+//        SE_TacticsSubs.visible := False;
+//        aSprite := SE_LIVE.FindSprite('btnmenu_tactics');
+///        aSprite.Visible := False;
+//        aSprite := SE_LIVE.FindSprite('btnmenu_subs');
+//        aSprite.Visible := False;
+//        aSprite:=SE_LIVE.FindSprite('btnmenu_skillpass' );
+//        aSprite.Visible := False;
+//      end;
       anim (AnimationScript.Ts[ AnimationScript.Index ]); // muove gli sprite
       AnimationScript.Index := AnimationScript.Index + 1;
     {$IFDEF tools}
@@ -5532,12 +5525,14 @@ begin
          // Application.ProcessMessages ;
         end;
         incMoveAllProcessed [CurrentIncMove] := true;
+        if CurrentIncMove =  LastMoveBrain then LastIncProcessed := True;
+
       end;
 
     end
     else begin
       AnimationScript.Index := -1;
-    //  AnimationScript.Reset;
+      //AnimationScript.Reset;
     // qui ho terminato l'animazione ma alcuni sprite potrebbero ancora muoversi in questo momento
 
       while ( SE_ball.IsAnySpriteMoving  ) or (SE_players.IsAnySpriteMoving ) do begin
@@ -5552,16 +5547,17 @@ begin
 
 
       //Animating:= false;
-      if GameScreen = ScreenLive then begin
-        SE_TacticsSubs.visible := False;
-        aSprite := SE_LIVE.FindSprite('btnmenu_tactics');
-        aSprite.Visible := True;
-        aSprite := SE_LIVE.FindSprite('btnmenu_subs');
-        aSprite.Visible := True;
-        aSprite:=SE_LIVE.FindSprite('btnmenu_skillpass' );
-        aSprite.Visible := true;
-        Hide120;
-      end;
+      SE_Live.Visible := true;
+//      if GameScreen = ScreenLive then begin
+//        SE_TacticsSubs.visible := False;
+//        aSprite := SE_LIVE.FindSprite('btnmenu_tactics');
+//        aSprite.Visible := True;
+//        aSprite := SE_LIVE.FindSprite('btnmenu_subs');
+//        aSprite.Visible := True;
+//        aSprite:=SE_LIVE.FindSprite('btnmenu_skillpass' );
+//        aSprite.Visible := true;
+//        Hide120;
+//      end;
 
       ClientLoadBrainMM ( CurrentIncMove );  // <-- false, gli sprite e le liste non saranno mai svuotate
       //else if GameMode = pve then
@@ -5571,7 +5567,8 @@ begin
 
      // UpdateSubSprites;
       incMoveAllProcessed [CurrentIncMove] := True; // caricato e completamente eseguito
-    //    inc ( CurrentIncMove );
+      if CurrentIncMove =  LastMoveBrain then LastIncProcessed := True;
+     // inc ( CurrentIncMove );
     end;
 
   end;
@@ -13713,7 +13710,7 @@ begin
     aSprite:=SE_LIVE.FindSprite('btnmenu_skillpass' );
     aSprite.Visible := True;
     if GameMode = pve then  begin
-      aSprite:=SE_LIVE.FindSprite('btnmenu_exit' );
+      aSprite:=SE_LIVE.FindSprite('btnmenu_back' );
       aSprite.Visible := True;
     end;
     Hide120;
@@ -14541,8 +14538,10 @@ begin
     exit;
   end;
 
- // if SkillMouseMove <> '' then
- //   SetGlobalCursor (crHandPoint);
+  if SkillMouseMove <> '' then begin
+    SetGlobalCursor (crHandPoint);
+    Exit;
+  end;
   {  if SkillMouseMove = '' then begin
     SE_interface.removeallSprites; // rimuovo le frecce
     SE_interface.ProcessSprites(2000);
@@ -14953,19 +14952,19 @@ begin
 
   aPlayer := MyBrain.GetSoccerPlayer2 (SE_DragGuid.Guid); // mouseup su qualsiasi cella
   //cellX e CellY devono essere in campo, mai fuori , sia in tactics che sub
-  if CellX < 0 then begin      // test outside
-    CancelDrag ( aPlayer, aPlayer.DefaultCellX , aPlayer.DefaultCellY );
-    HideFP_Friendly_ALL;
-    Exit;
-  end;
+  //if CellX < 0 then begin      // test outside
+ //   CancelDrag ( aPlayer, aPlayer.DefaultCellX , aPlayer.DefaultCellY );
+  //  HideFP_Friendly_ALL;
+  //  Exit;
+ // end;
 
-  if GCD > 0 then begin
-    CancelDrag ( aPlayer, aPlayer.DefaultCellX , aPlayer.DefaultCellY );
-    se_dragGuid.DeleteSubSprite('surname');
-    Se_DragGuid := nil;
-    HideFP_Friendly_ALL;
-    Exit;
-  end;
+ // if GCD > 0 then begin
+ //   CancelDrag ( aPlayer, aPlayer.DefaultCellX , aPlayer.DefaultCellY );
+ //   se_dragGuid.DeleteSubSprite('surname');
+ //   Se_DragGuid := nil;
+  //  HideFP_Friendly_ALL;
+  //  Exit;
+ // end;
 
 
   if GameScreen = ScreenTactics then begin
@@ -15478,7 +15477,7 @@ begin
   WaitForSingleObject ( MutexAnimation, INFINITE );
 
   if ( SE_ball.IsAnySpriteMoving  ) or (SE_players.IsAnySpriteMoving )  then begin
-    //ReleaseMutex(MutexAnimation);
+    ReleaseMutex(MutexAnimation);
     Exit;
   end;
 
@@ -15535,6 +15534,7 @@ begin
 
 
           if  Mybrain.tsScript [CurrentIncMove].Count > 0 then begin
+
             AnimationScript.Reset ;
             LoadAnimationScript // riempe animationScript.  alla fine il thread chiama  ClientLoadBrainMM
           end
@@ -15574,6 +15574,7 @@ begin
         LastIncProcessed := true;
       end;
       //else ClientLoadBrainMM ( CurrentIncMove );
+
 
     end;
 
