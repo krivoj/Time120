@@ -1029,7 +1029,7 @@ object Form1: TForm1
     Top = 1016
   end
   object ThreadCurrentIncMove: SE_ThreadTimer
-    Interval = 500
+    Interval = 5000
     KeepAlive = True
     OnTimer = ThreadCurrentIncMoveTimer
     Left = 824

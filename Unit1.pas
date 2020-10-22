@@ -21,6 +21,9 @@
   }
   { TODO -ctodo prima del rilascio patreon :
 
+
+    Thread minimo 5 secondi. massimo la somma di ai_moveall + clwait vari
+
     le sub sono piene di bug.
 
     ora sembra risolto tutto, ma è da verificare.
@@ -474,7 +477,7 @@ type
     procedure Timer1Timer(Sender: TObject);
     procedure ThreadCurrentIncMoveTimer(Sender: TObject);
     procedure LoadAnimationScript; // tsScript arriva dal server e contiene l'animazione da realizzare qui sul client
-
+    function GetAnimationEstimatedTime ( aScript: TstringList ): Integer;
 // Help
     procedure ClientLoadHelp ( help : string );
 
@@ -1623,6 +1626,7 @@ begin
       //tutto bene poi arriva il fallo
       while incMoveAllProcessed [LastMoveBrain] = false do begin // fino a quando c'è l'animazione non fa ai_think
        // Application.ProcessMessages;
+       { TODO : il bug è qui. non posso forzare un thread che ho messo in estimatedtime }
         ThreadCurrentIncMove.OnTimer (ThreadCurrentIncMove);
         mainThread.OnTimer (mainThread);
         SE_Theater1.thrdAnimate.OnTimer(SE_Theater1.thrdAnimate);
@@ -15470,6 +15474,7 @@ end;
 procedure TForm1.ThreadCurrentIncMoveTimer(Sender: TObject);
 var
   oldCurrent: byte;
+  EstimatedTime: Integer;
 begin
       // brain in memoria e sprite a video
       // se c'è lo script lo eseguo
@@ -15512,6 +15517,7 @@ begin
    // nel pve il brain viene riempito di AI begibrain, ha già elaborato 4 risposte. qui non faccio in tempo a leggere Mybrain.tsScript.CommaText
   else if GameMode = pve then begin
 
+
     if CurrentIncMove < LastMoveBrain  then begin //  MyBrain.incMove è quello che dico io. LastMoveBrain è 4 mosse avanti quando c'è la AI
       // questa parte rinnova scriptanimation incrementando currentIncMove fino al massimo di  MyBrain.incMove
 
@@ -15536,7 +15542,9 @@ begin
           if  Mybrain.tsScript [CurrentIncMove].Count > 0 then begin
 
             AnimationScript.Reset ;
-            LoadAnimationScript // riempe animationScript.  alla fine il thread chiama  ClientLoadBrainMM
+            LoadAnimationScript; // riempe animationScript.  alla fine il thread chiama  ClientLoadBrainMM
+            EstimatedTime := imax (5000, GetAnimationEstimatedTime( Mybrain.tsScript [CurrentIncMove])  );
+            ThreadCurrentIncMove.Interval := EstimatedTime;
           end
           else begin
             incMoveAllProcessed [CurrentIncMove] := true; // se è vuota dico che è stata processata
@@ -15566,7 +15574,10 @@ begin
 
         if Mybrain.tsScript [CurrentIncMove].Count > 0 then begin
           AnimationScript.Reset ;
-          LoadAnimationScript // riempe animationScript.  alla fine il thread chiama  ClientLoadBrainMM
+          LoadAnimationScript; // riempe animationScript.  alla fine il thread chiama  ClientLoadBrainMM
+          EstimatedTime := imax (5000, GetAnimationEstimatedTime( Mybrain.tsScript [CurrentIncMove])  );
+          ThreadCurrentIncMove.Interval := EstimatedTime;
+
         end
         else begin
           incMoveAllProcessed [CurrentIncMove] := true; // se è vuota dico che è stata processata
@@ -15584,7 +15595,32 @@ begin
 
 
 end;
+function TForm1.GetAnimationEstimatedTime ( aScript: TstringList ): Integer;
+var
+  i: Integer;
+begin
+  { TODO : ai.moveall estimated }
+  Result := 0;
+  for I := 0 to aScript.Count -1 do begin
+    if LeftStr ( AScript[i], 8) = 'cl_wait,' then begin
+      Result := Result + StrToInt( RightStr (aScript[i], Length (aScript[i])-8 ) );
+    end
+    else if LeftStr ( AScript[i],6) = 'sc_pa,' then begin
+      Result := Result + 1000;
+    end
+    else if LeftStr ( AScript[i],11) = 'sc_mtbDICE,' then begin
+      Result := Result + ShowRollLifeSpan;
+    end
+    else if LeftStr ( AScript[i],8) = 'sc_DICE,' then begin
+      Result := Result + ShowRollLifeSpan;
+    end
+    else if LeftStr ( AScript[i],15) = 'sc_player.move,' then begin
+      Result := Result + 1000;
+    end;
 
+  end;
+
+end;
 procedure TForm1.Timer1Timer(Sender: TObject);
 var
   ini : TInifile;
