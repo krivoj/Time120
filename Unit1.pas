@@ -808,6 +808,7 @@ var
   Form1: TForm1;
   debug_OnlyMyGame: Boolean;
 
+
   xpNeedTal: array [1..NUM_TALENT] of integer;  // come i talenti sul db game.talents. xp necessaria per trylevelup del talento
   MutexAnimation : Cardinal;
   MutexClientLoadbrain,MutexPveSyncBrain: Cardinal;
@@ -956,6 +957,9 @@ var
 
   oldWidth, oldHeight: Integer; // old resolution video
   BuildString : string;
+
+  EstimatedTime: Integer;
+  OldGetTickCount: Integer;
 
   procedure RoundCornerOf(Control: TWinControl) ;
 implementation
@@ -1602,6 +1606,9 @@ begin
      // ClientLoadScript ( MyBrain.incMove ); // già caricato nel clientloadbrain
 
       if not FirstLoadOK  then begin   // avvio partita. se è la prima volta
+        EstimatedTime:= 5000;
+        OldGetTickCount := GetTickCount;
+
        SE_players.RemoveAllSprites;
         if viewMatch then
           GameScreen:= ScreenSpectator
@@ -15474,7 +15481,7 @@ end;
 procedure TForm1.ThreadCurrentIncMoveTimer(Sender: TObject);
 var
   oldCurrent: byte;
-  EstimatedTime: Integer;
+  tmp1,tmp2: Integer;
 begin
       // brain in memoria e sprite a video
       // se c'è lo script lo eseguo
@@ -15485,6 +15492,12 @@ begin
     ReleaseMutex(MutexAnimation);
     Exit;
   end;
+
+  tmp1:= GetTickCount;
+  tmp2:=OldGetTickCount + EstimatedTime;
+  if tmp2 > tmp1 then
+  //  if (OldGetTickCount + EstimatedTime) < tmp1 then
+    exit;
 
   if GameMode = pvp then begin
 
@@ -15530,13 +15543,6 @@ begin
         if OldCurrent < CurrentIncMove then begin  // solo se è cambiato , altrimenti ricarico a oltranz la stessa animazione
           RemoveSubMainskill;
           LastIncProcessed:= False;
-         // if LastScriptGol then begin
-         //   MyBrain.LoadDefaultTeamPos ( MyBrain.TeamTurn );
-         //   SpriteReset;
-         //   sleep(3000);
-         //   LastScriptGol := false;
-         //   exit; // ripasso subito dopo
-         // end;
 
 
           if  Mybrain.tsScript [CurrentIncMove].Count > 0 then begin
@@ -15544,7 +15550,8 @@ begin
             AnimationScript.Reset ;
             LoadAnimationScript; // riempe animationScript.  alla fine il thread chiama  ClientLoadBrainMM
             EstimatedTime := imax (5000, GetAnimationEstimatedTime( Mybrain.tsScript [CurrentIncMove])  );
-            ThreadCurrentIncMove.Interval := EstimatedTime;
+            ThreadCurrentIncMove.Interval := EstimatedTime;  // forse non necessario
+            OldGetTickCount := GetTickCount;
           end
           else begin
             incMoveAllProcessed [CurrentIncMove] := true; // se è vuota dico che è stata processata
@@ -15564,19 +15571,13 @@ begin
     else if CurrentIncMove =  LastMoveBrain then begin   // qui BUG
       if not LastIncProcessed then begin
         RemoveSubMainskill;
-       // if LastScriptGol then begin
-       //   MyBrain.LoadDefaultTeamPos( MyBrain.TeamTurn );
-       //   SpriteReset;
-       //   sleep(3000);
-       //   LastScriptGol := false;
-       //   exit; // ripasso subito dopo
-       // end;
 
         if Mybrain.tsScript [CurrentIncMove].Count > 0 then begin
           AnimationScript.Reset ;
           LoadAnimationScript; // riempe animationScript.  alla fine il thread chiama  ClientLoadBrainMM
           EstimatedTime := imax (5000, GetAnimationEstimatedTime( Mybrain.tsScript [CurrentIncMove])  );
           ThreadCurrentIncMove.Interval := EstimatedTime;
+          OldGetTickCount := GetTickCount;
 
         end
         else begin
