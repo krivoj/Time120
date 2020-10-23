@@ -6707,7 +6707,7 @@ begin
 
 
     aPlayer := Ball.Player;//   GetSoccerPlayer ( tsCmd[1]);
-    reason := ChackInputShp (aPlayer, CellX, CellY);
+    reason := ChackInputShp (aPlayer, CellX, CellY, tsCmd);
     if reason <> '' then goto myexit; // hack
 
 
@@ -7050,9 +7050,6 @@ begin
       LstHeading:= TList<TInteractivePlayer>.create;
       if (aRnd >= LOP_MIN1) and (aRnd <= LOP_MIN2)   then begin // lop la palla cade in una cella adiacente casuale
         aCell:= GetRandomCell ( CellX, CellY, 1 , false ,true);
-        if (AbsDistance(aPlayer.CellX,aPlayer.CellY, ball.cellX, Ball.CellY ) <=1) then // = 1) or (aPlayer.CellY = aCell.Y) or (aPlayer.CellX = aCell.X) then
-//              if (AbsDistance(aPlayer.CellX,aPlayer.CellY, aCell.X, aCell.Y ) = 1) or (aPlayer.CellY = aCell.Y)  then
-          ExceptPlayers.Add(aPlayer);
 
         Ball.Cells := aCell;
 
@@ -7278,10 +7275,9 @@ begin
              end;
 
 
-              if (AbsDistance(aPlayer.CellX,aPlayer.CellY, ball.cellX, Ball.CellY ) <=1) then // = 1) or (aPlayer.CellY = aCell.Y) or (aPlayer.CellX = aCell.X) then
-//                    if (AbsDistance(aPlayer.CellX,aPlayer.CellY, aCell.X, aCell.Y ) = 1) or (aPlayer.CellY = aCell.Y) Or (aPlayer.CellX = aCell.X) then
-                      ExceptPlayers.Add(aPlayer);
-                      tsSpeaker.Add( aPlayer.Surname +' effettua un passaggio alto perfetto' );
+              if (AbsDistance(aPlayer.CellX,aPlayer.CellY, ball.cellX, Ball.CellY ) <=1) then
+                ExceptPlayers.Add(aPlayer);
+              tsSpeaker.Add( aPlayer.Surname +' effettua un passaggio alto perfetto' );
 
              // Volley  ABSDISTANCE LONTANA minimo 3 e proviene da linea palla o +1
                if (aFriend.InShotCell) and (AbsDistance(aPlayer.CellX ,aPlayer.CellY,  CellX, CellY ) >= VolleyRangeMin ) then Begin
@@ -7520,10 +7516,8 @@ begin
           aCell:= GetRandomCell ( CellX, CellY, 1 , false ,true);
 
           Ball.Cells := aCell;
-          if (AbsDistance(aPlayer.CellX,aPlayer.CellY, ball.cellX, Ball.CellY ) <=1) then // = 1) or (aPlayer.CellY = aCell.Y) or (aPlayer.CellX = aCell.X) then
-//              if (AbsDistance(aPlayer.CellX,aPlayer.CellY, aCell.X, aCell.Y ) = 1) or (aPlayer.CellY = aCell.Y) or (aPlayer.CellX = aCell.X) then
-            ExceptPlayers.Add(aPlayer);
-
+          if (AbsDistance(aPlayer.CellX,aPlayer.CellY, ball.cellX, Ball.CellY ) <=1) then
+          ExceptPlayers.Add(aPlayer);
           tsSpeaker.Add( aPlayer.Surname +' effettua un passaggio alto a seguire' );
 
           aGhost := GetSoccerPlayer (CellX, CellY) ;
@@ -7708,6 +7702,8 @@ begin
           // se non c'è nessuno solo controllo del target
           TsScript[incMove].add ('sc_ball.move,'+ IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+  IntTostr(CellX)+','+ IntTostr(CellY) +',0,0' ) ;
           tsSpeaker.Add( aPlayer.Surname +' effettua un passaggio alto a seguire' );
+          if (AbsDistance(aPlayer.CellX,aPlayer.CellY, ball.cellX, Ball.CellY ) <=1) then
+           ExceptPlayers.Add(aPlayer);
           Ball.Cells := Point (CellX, CellY );
          aPossibleOffside := GetSoccerPlayer(Ball.CellX , ball.cellY );
 
@@ -7715,9 +7711,6 @@ begin
              reason := '';
              goto MyExit;
            end;
-          if (AbsDistance(aPlayer.CellX,aPlayer.CellY, ball.cellX, Ball.CellY ) <=1) then // = 1) or (aPlayer.CellY = aCell.Y) or (aPlayer.CellX = aCell.X) then
-//              if (AbsDistance(aPlayer.CellX,aPlayer.CellY, aCell.X, aCell.Y ) = 1) or (aPlayer.CellY = aCell.Y) or (aPlayer.CellX = aCell.X) then
-            ExceptPlayers.Add(aPlayer);
       end;
 
     end;
