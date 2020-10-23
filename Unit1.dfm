@@ -167,31 +167,13 @@ object Form1: TForm1
       TabOrder = 13
       OnClick = CheckBox2Click
     end
-    object Button3: TButton
-      Left = 213
-      Top = 606
-      Width = 38
-      Height = 25
-      Caption = 'load'
-      TabOrder = 14
-      OnClick = Button3Click
-    end
-    object CheckBox3: TCheckBox
-      Left = 81
-      Top = 630
-      Width = 94
-      Height = 17
-      Caption = 'ThreadCurMove'
-      TabOrder = 15
-      OnClick = CheckBox3Click
-    end
     object Button4: TButton
       Left = 213
       Top = 575
       Width = 38
       Height = 25
       Caption = 'think'
-      TabOrder = 16
+      TabOrder = 14
       OnClick = Button4Click
     end
     object CnSpinEdit1: TCnSpinEdit
@@ -201,7 +183,7 @@ object Form1: TForm1
       Height = 22
       MaxValue = 255
       MinValue = 0
-      TabOrder = 17
+      TabOrder = 15
       Value = 0
     end
     object editN1: TEdit
@@ -210,7 +192,7 @@ object Form1: TForm1
       Width = 25
       Height = 21
       NumbersOnly = True
-      TabOrder = 18
+      TabOrder = 16
       Text = '0'
     end
     object EditN2: TEdit
@@ -219,7 +201,7 @@ object Form1: TForm1
       Width = 25
       Height = 21
       NumbersOnly = True
-      TabOrder = 19
+      TabOrder = 17
       Text = '0'
     end
     object Button5: TButton
@@ -228,7 +210,7 @@ object Form1: TForm1
       Width = 75
       Height = 25
       Caption = 'unlimited time'
-      TabOrder = 20
+      TabOrder = 18
       OnClick = Button5Click
     end
     object CheckBox4: TCheckBox
@@ -237,7 +219,7 @@ object Form1: TForm1
       Width = 94
       Height = 17
       Caption = 'tackle_failed'
-      TabOrder = 21
+      TabOrder = 19
       OnClick = CheckBox4Click
     end
     object CheckBox5: TCheckBox
@@ -246,7 +228,7 @@ object Form1: TForm1
       Width = 94
       Height = 17
       Caption = 'setfault'
-      TabOrder = 22
+      TabOrder = 20
       OnClick = CheckBox5Click
     end
     object CheckBox6: TCheckBox
@@ -255,7 +237,7 @@ object Form1: TForm1
       Width = 94
       Height = 17
       Caption = 'setRed'
-      TabOrder = 23
+      TabOrder = 21
       OnClick = CheckBox6Click
     end
     object CheckBox7: TCheckBox
@@ -264,7 +246,7 @@ object Form1: TForm1
       Width = 94
       Height = 17
       Caption = 'setAlwaysGol'
-      TabOrder = 24
+      TabOrder = 22
       OnClick = CheckBox7Click
     end
     object CheckBox8: TCheckBox
@@ -273,7 +255,7 @@ object Form1: TForm1
       Width = 104
       Height = 17
       Caption = 'setPosCroCorner'
-      TabOrder = 25
+      TabOrder = 23
       OnClick = CheckBox8Click
     end
     object CheckBox9: TCheckBox
@@ -282,7 +264,7 @@ object Form1: TForm1
       Width = 104
       Height = 17
       Caption = 'Buff 100%'
-      TabOrder = 26
+      TabOrder = 24
       OnClick = CheckBox9Click
     end
     object Button9: TButton
@@ -291,7 +273,7 @@ object Form1: TForm1
       Width = 75
       Height = 25
       Caption = 'set Turn'
-      TabOrder = 27
+      TabOrder = 25
       OnClick = Button9Click
     end
     object Button1: TButton
@@ -300,7 +282,7 @@ object Form1: TForm1
       Width = 120
       Height = 25
       Caption = 'Pve GetTotalMarket'
-      TabOrder = 28
+      TabOrder = 26
       OnClick = Button1Click
     end
     object Button11: TButton
@@ -309,7 +291,7 @@ object Form1: TForm1
       Width = 120
       Height = 25
       Caption = 'pveAllOtherthinkmarket'
-      TabOrder = 29
+      TabOrder = 27
       OnClick = Button11Click
     end
     object Button12: TButton
@@ -318,7 +300,7 @@ object Form1: TForm1
       Width = 75
       Height = 25
       Caption = 'test lifepspan'
-      TabOrder = 30
+      TabOrder = 28
       OnClick = Button12Click
     end
     object Button13: TButton
@@ -327,7 +309,7 @@ object Form1: TForm1
       Width = 75
       Height = 25
       Caption = 'newseason'
-      TabOrder = 31
+      TabOrder = 29
       OnClick = Button13Click
     end
     object Button14: TButton
@@ -336,7 +318,7 @@ object Form1: TForm1
       Width = 75
       Height = 25
       Caption = 'lstSoccer'
-      TabOrder = 32
+      TabOrder = 30
       OnClick = Button14Click
     end
     object CheckBox10: TCheckBox
@@ -345,7 +327,7 @@ object Form1: TForm1
       Width = 104
       Height = 17
       Caption = 'onlymygame'
-      TabOrder = 33
+      TabOrder = 31
       OnClick = CheckBox10Click
     end
     object Button15: TButton
@@ -354,7 +336,7 @@ object Form1: TForm1
       Width = 75
       Height = 25
       Caption = 'spritereset'
-      TabOrder = 34
+      TabOrder = 32
       OnClick = Button15Click
     end
     object Button16: TButton
@@ -363,7 +345,7 @@ object Form1: TForm1
       Width = 75
       Height = 25
       Caption = 'viewplayer'
-      TabOrder = 35
+      TabOrder = 33
       OnClick = Button16Click
     end
   end
@@ -1028,13 +1010,6 @@ object Form1: TForm1
     Left = 760
     Top = 1016
   end
-  object ThreadCurrentIncMove: SE_ThreadTimer
-    Interval = 5000
-    KeepAlive = True
-    OnTimer = ThreadCurrentIncMoveTimer
-    Left = 824
-    Top = 1016
-  end
   object FolderDialog1: TFolderDialog
     Caption = 'Select Folder Replay'
     Title = 'Select Folder Replay'
@@ -1356,5 +1331,15 @@ object Form1: TForm1
     RenderBitmap = VisibleRender
     Left = 776
     Top = 888
+  end
+  object SE_Speaker: SE_Engine
+    ClickSprites = False
+    PixelCollision = False
+    HiddenSpritesMouseMove = False
+    IsoPriority = False
+    Priority = 6
+    Theater = SE_Theater1
+    Left = 736
+    Top = 808
   end
 end

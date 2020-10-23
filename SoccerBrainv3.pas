@@ -932,7 +932,7 @@ end;
     function GetFK4: TSoccerPlayer;
     function GetInjuredPlayer( Team: integer ): TSoccerPlayer;
 
-    function IsOffSide ( aPlayer : TSoccerPlayer ): Boolean;
+    function IsOffSide ( FromPlayer, ToPlayer : TSoccerPlayer ): Boolean;
     function IsLastMan ( aPlayer : TSoccerPlayer ): Boolean;
 
     function AllowCount ( team: Integer ): Integer;
@@ -4911,34 +4911,51 @@ begin
     end;
 
 end;
-function TSoccerBrain.IsOffSide ( aPlayer : TSoccerPlayer ): Boolean;
+function TSoccerBrain.IsOffSide ( FromPlayer, ToPlayer : TSoccerPlayer ): Boolean;
 var
   i: integer;
 begin
   Result := True;
   // nella propria metacampo non è fuorigioco
-  if (aPlayer.Team = 0) and (aPlayer.CellX <= 5) then begin
+  if (ToPlayer.Team = 0) and (ToPlayer.CellX <= 5) then begin
     Result := false;
     Exit;
   end
-  else if (aPlayer.Team = 1) and (aPlayer.CellX >= 6) then  begin
+  else if (ToPlayer.Team = 1) and (ToPlayer.CellX >= 6) then  begin
     Result := false;
     Exit;
   end;
 
+  // prima check del passaggio in sè. non è mai fuorigioco se il linea o da davanti
+  if FromPlayer.Team = 0 then begin
+    if FromPlayer.CellX >= ToPlayer.CellX then begin
+      Result:= false;
+      Exit;
+    end;
+
+  end
+  else if FromPlayer.Team = 1 then begin
+    if FromPlayer.CellX <= ToPlayer.CellX then begin
+      Result:= false;
+      Exit;
+    end;
+
+  end;
+
+
   // Cerco un avversario oltre la linea che non sia il GK
   for I := lstSoccerPlayer.Count -1 downto 0 do begin
-    if IsOutSide( lstSoccerPlayer[i].CellX ,lstSoccerPlayer[i].CellY ) or (lstSoccerPlayer[i].Team  = aPlayer.Team) then Continue;
+    if IsOutSide( lstSoccerPlayer[i].CellX ,lstSoccerPlayer[i].CellY ) or (lstSoccerPlayer[i].Team  = ToPlayer.Team) then Continue;
 
-    case aPlayer.team of
+    case ToPlayer.team of
       0: begin // qui ciclano team 1
-        if (lstSoccerPlayer[i].Role  <> 'G') and (lstSoccerPlayer[i].CellX >= aPlayer.cellX) then begin
+        if (lstSoccerPlayer[i].Role  <> 'G') and (lstSoccerPlayer[i].CellX >= ToPlayer.cellX) then begin
           Result:= false;
           Exit;
         end;
       end;
       1: begin  // qui ciclano team 0
-        if (lstSoccerPlayer[i].Role  <> 'G') and (lstSoccerPlayer[i].CellX <= aPlayer.cellX)  then begin
+        if (lstSoccerPlayer[i].Role  <> 'G') and (lstSoccerPlayer[i].CellX <= ToPlayer.cellX)  then begin
           Result:= false;
           Exit;
         end;
@@ -6736,7 +6753,7 @@ begin
                      // intercept, checkoffside sul bounce a centrocampo
                      aPossibleOffside := GetSoccerPlayer(ball.CellX, Ball.cellY);
                      if aPossibleoffside <> nil then begin
-                      if isOffside ( aPossibleoffside )   then begin
+                      if isOffside ( anIntercept, aPossibleoffside )   then begin
                         //come fallo freekick1
                         TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
                         if aPossibleoffside.team = 0 then
@@ -6798,7 +6815,7 @@ begin
 
            aPossibleOffside := GetSoccerPlayer(Ball.CellX , ball.cellY );
            if aPossibleoffside <> nil then begin
-            if isOffside ( aPossibleoffside )   then begin
+            if isOffside ( aPlayer, aPossibleoffside )   then begin
               //come fallo freekick1
                     TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
                     if aPossibleoffside.team = 0 then
@@ -6852,7 +6869,7 @@ begin
                    Ball.Cells  := Point ( aFriend2.cellX,aFriend2.CellY) ;  // posiziona la palla
                    TsScript[incMove].add ('sc_ball.move,'+ IntTostr(aFriend.CellX)+','+ IntTostr(aFriend.CellY)+','+  IntTostr(Ball.CellX)+','+ IntTostr(Ball.CellY) + ',0,0') ;
 
-                    if isOffside ( aFriend2 )   then begin
+                    if isOffside (aFriend, aFriend2 )   then begin
                     //come fallo freekick1
                           TsScript[incMove].add ('sc_fault,' + aFriend2.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
                           if aFriend2.team = 0 then
@@ -7014,7 +7031,7 @@ begin
 
          aPossibleOffside := GetSoccerPlayer(Ball.CellX , ball.cellY ); // verifica fuorigioco
          if aPossibleoffside <> nil then begin
-            if isOffside ( aPossibleoffside )   then begin
+            if isOffside ( aPlayer, aPossibleoffside )   then begin
               // se è offside fallo freekick1
               TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
               if aPossibleoffside.team = 0 then
@@ -7058,7 +7075,7 @@ begin
 
          aPossibleOffside := GetSoccerPlayer(Ball.CellX , ball.cellY );
          if aPossibleoffside <> nil then begin
-          if isOffside ( aPossibleoffside )   then begin
+          if isOffside ( aPlayer, aPossibleoffside )   then begin
             //come fallo freekick1
             TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
             if aPossibleoffside.team = 0 then
@@ -7153,7 +7170,7 @@ begin
                    Ball.Cells := aCell;
                      aPossibleOffside := GetSoccerPlayer(Ball.CellX , ball.cellY );
                      if aPossibleoffside <> nil then begin
-                      if isOffside ( aPossibleoffside )   then begin
+                      if isOffside ( aFriend, aPossibleoffside )   then begin
                         //come fallo freekick1
                         TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
                         if aPossibleoffside.team = 0 then
@@ -7187,7 +7204,7 @@ begin
                    Ball.CellS := aCell;
                    aPossibleOffside := GetSoccerPlayer(Ball.CellX , ball.cellY );
                    if aPossibleoffside <> nil then begin
-                    if isOffside ( aPossibleoffside )   then begin
+                    if isOffside ( aFriend, aPossibleoffside )   then begin
                       //come fallo freekick1
                       TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
                       if aPossibleoffside.team = 0 then
@@ -7213,7 +7230,7 @@ begin
                    else Begin
                      aPossibleOffside := GetSoccerPlayer(Ball.CellX , ball.cellY );
                      if aPossibleoffside <> nil then begin
-                      if isOffside ( aPossibleoffside )   then begin
+                      if isOffside ( aFriend, aPossibleoffside )   then begin
                         //come fallo freekick1
                         TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
                         if aPossibleoffside.team = 0 then
@@ -7242,7 +7259,7 @@ begin
 
                    aPossibleOffside := GetSoccerPlayer(Ball.CellX , ball.cellY );
                    if aPossibleoffside <> nil then begin
-                    if isOffside ( aPossibleoffside )   then begin
+                    if isOffside (aFriend, aPossibleoffside )   then begin
                       //come fallo freekick1
                       TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
                       if aPossibleoffside.team = 0 then
@@ -7270,7 +7287,7 @@ begin
 
              aPossibleOffside := GetSoccerPlayer(Ball.CellX , ball.cellY );
              if aPossibleoffside <> nil then begin
-              if isOffside ( aPossibleoffside )   then begin
+              if isOffside ( aPlayer, aPossibleoffside )   then begin
                 //come fallo freekick1
                 TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
                 if aPossibleoffside.team = 0 then
@@ -7565,7 +7582,7 @@ begin
             else if aGhost.Team =  aPlayer.Team then begin    // cella sbagliata compagno ball.control - 2
                aPossibleOffside := GetSoccerPlayer(Ball.CellX , ball.cellY );
                if aPossibleoffside <> nil then begin
-                if isOffside ( aPossibleoffside )   then begin
+                if isOffside ( aPlayer, aPossibleoffside )   then begin
                   //come fallo freekick1
                   TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
                   if aPossibleoffside.team = 0 then
@@ -7597,7 +7614,7 @@ begin
                    Ball.Cells := aCell;
                    aPossibleOffside := GetSoccerPlayer(Ball.CellX , ball.cellY );
                    if aPossibleoffside <> nil then begin
-                    if isOffside ( aPossibleoffside )   then begin
+                    if isOffside ( afriend, aPossibleoffside )   then begin
                       //come fallo freekick1
                       TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
                       if aPossibleoffside.team = 0 then
@@ -7621,7 +7638,7 @@ begin
                      Ball.CellS := aCell;
                    aPossibleOffside := GetSoccerPlayer(Ball.CellX , ball.cellY );
                    if aPossibleoffside <> nil then begin
-                    if isOffside ( aPossibleoffside )   then begin
+                    if isOffside ( aFriend, aPossibleoffside )   then begin
                       //come fallo freekick1
                       TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
                       if aPossibleoffside.team = 0 then
@@ -7657,7 +7674,7 @@ begin
 
                      aPossibleOffside := GetSoccerPlayer(Ball.CellX , ball.cellY );
                      if aPossibleoffside <> nil then begin
-                      if isOffside ( aPossibleoffside )   then begin
+                      if isOffside ( aPlayer, aPossibleoffside )   then begin
                         //come fallo freekick1
                         TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
                         if aPossibleoffside.team = 0 then
@@ -7764,7 +7781,7 @@ begin
          aPossibleOffside := GetSoccerPlayer(Ball.CellX , ball.cellY );
 
          if aPossibleoffside <> nil then begin
-          if isOffside ( aPossibleoffside )   then begin
+          if isOffside ( aPlayer, aPossibleoffside )   then begin
             //come fallo freekick1
             TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
             if aPossibleoffside.team = 0 then
@@ -7925,7 +7942,7 @@ GK:
           //  ---------->>>      altro compagno    - 1 heading e avversario ( +altri bonus da posizione)
                  aPossibleOffside := GetSoccerPlayer(aCell.X ,acell.Y );
                  if aPossibleoffside <> nil then begin
-                  if isOffside ( aPossibleoffside )   then begin
+                  if isOffside ( aPlayer, aPossibleoffside )   then begin
                     //come fallo freekick1
                     TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
                     if aPossibleoffside.team = 0 then
@@ -8008,7 +8025,7 @@ GK:
           Ball.Cells := aCell;
          aPossibleOffside := GetSoccerPlayer(aCell.X ,acell.Y );
          if aPossibleoffside <> nil then begin
-          if isOffside ( aPossibleoffside )   then begin
+          if isOffside ( aPlayer, aPossibleoffside )   then begin
             //come fallo freekick1
             TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
             if aPossibleoffside.team = 0 then
@@ -8040,16 +8057,17 @@ GK:
           goto HVSH;
     end
 
-    else if (aRnd >= CRO_MAX1) and (aRnd <= c)   then begin
+    else if (aRnd >= CRO_MAX1) and (aRnd <= MAX_LEVEL)   then begin
       //Roll 10 la palla termina esattamente sul friend a cellx,celly e il compagno ha +1 in heading (lancio perfetto). la difesa ha comunque i suoi bonus
        //HVSH con certi bonus
+
          aPlayer.xpDevT := aPlayer.xpDevT + 2; // cross perfetto
           aCell.X := CellX;
           aCell.Y := CellY;
           Ball.Cells := aCell;
          aPossibleOffside := GetSoccerPlayer(aCell.X ,acell.Y );
          if aPossibleoffside <> nil then begin
-          if isOffside ( aPossibleoffside )   then begin
+          if isOffside (  aPlayer, aPossibleoffside )   then begin
             //come fallo freekick1
             TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
             if aPossibleoffside.team = 0 then
@@ -8101,8 +8119,8 @@ HVSH:
 //            goto cro_crossbar;
             // prima i difensori di testa , se falliscono rimane il portiere.
 
-                TsScript[incMove].add ( 'sc_DICE,' + IntTostr(aHeadingFriend.cellx) + ',' + Inttostr(aHeadingFriend.cellY) +','+  IntTostr(aRnd3) + ','+
-                IntToStr(aHeadingFriend.Heading)+',Heading,'+aHeadingFriend.ids+','+IntTostr(Roll3.value) + ',' + Roll3.fatigue + '.' + ACT + ',' + IntToStr(Modifier));
+            TsScript[incMove].add ( 'sc_DICE,' + IntTostr(aHeadingFriend.cellx) + ',' + Inttostr(aHeadingFriend.cellY) +','+  IntTostr(aRnd3) + ','+
+            IntToStr(aHeadingFriend.Heading)+',Heading,'+aHeadingFriend.ids+','+IntTostr(Roll3.value) + ',' + Roll3.fatigue + '.' + ACT + ',' + IntToStr(Modifier));
                 ACT := '0';
               for I := 0 to LstHeading.Count -1 do begin
                 aHeadingOpponent := LstHeading[i].Player;
@@ -14100,7 +14118,7 @@ begin
      for x := 1 to Ball.Player.CellX -1 do begin
        aPlayer := GetSoccerPlayer (X, ball.Player.CellY, ball.Player.team );
        if aPlayer = nil then Continue;
-       if IsOffSide(aPlayer) then continue;
+       if IsOffSide(ball.Player,aPlayer) then continue;
 
 
        if AbsDistance(aPlayer.cellX, aPlayer.CellX, ball.Player.CellX,ball.Player.cellY)  <= ShortPassRange then begin
@@ -14115,7 +14133,7 @@ begin
      for x := 10 downto Ball.Player.CellX +1 do begin
        aPlayer := GetSoccerPlayer (X, ball.Player.CellY, ball.Player.team );
        if aPlayer = nil then Continue;
-       if IsOffSide(aPlayer) then Exit;
+       if IsOffSide(ball.Player,aPlayer) then Exit;
 
        if AbsDistance(aPlayer.cellX, aPlayer.CellX, ball.Player.CellX,ball.Player.cellY)  <= ShortPassRange then begin
           BrainInput(  IntTostr(score.TeamGuid [team]) + ',' +'SHP' +',' + IntToStr(aPlayer.cellX) + ',' + IntToStr(aPlayer.cellY) );
@@ -14187,7 +14205,7 @@ begin
   aVolleyFriend:= GetDummyVolleyFriend (Ball.Player);
 
   if ( aHeadingfriend <> nil ) and ( aVolleyFriend = nil ) then begin
-    if IsOffSide(aHeadingFriend) then Exit;
+    if IsOffSide(ball.Player,aHeadingFriend) then Exit;
 
     BrainInput(  IntTostr(score.TeamGuid [team]) + ',' +'CRO,'  + IntToStr(aHeadingFriend.cellX) + ',' + IntToStr(aHeadingFriend.cellY) );
     result := True;
@@ -14196,8 +14214,8 @@ begin
   // non può esistere che ho un volley ma non un heading
   // qui hho tutti e 2 disponibili
   else if ( aHeadingfriend <> nil ) and ( aVolleyFriend <> nil ) then begin
-    if IsOffSide(aVolleyFriend) then Exit;
-    if IsOffSide(aHeadingFriend) then Exit;
+    if IsOffSide(ball.Player,aVolleyFriend) then Exit;
+    if IsOffSide(ball.Player,aHeadingFriend) then Exit;
 
     if Ball.Player.Passing >= MAX_STAT then  // se posso fare 10f o 16m
         BrainInput(  IntTostr(score.TeamGuid [team]) + ',' +'LOP,'  + IntToStr(aVolleyFriend.cellX) + ',' + IntToStr(aVolleyFriend.cellY) + ',N' )
@@ -14536,7 +14554,7 @@ begin
           aList.Add(dstCell);
           continue;
         end;
-        if (DummyFriend.Team = Ball.player.Team) and ( DummyFriend.Ids <>  Ball.Player.ids  ) and (not IsOffSide(DummyFriend)) then begin // se è un compagno
+        if (DummyFriend.Team = Ball.player.Team) and ( DummyFriend.Ids <>  Ball.Player.ids  ) and (not IsOffSide(ball.Player,DummyFriend)) then begin // se è un compagno
           aList.Add(dstCell);
           continue;
         end;
@@ -14583,7 +14601,7 @@ begin
           if DummyFriend = nil then begin
             aList.Add(dstCell);
           end
-          else if (DummyFriend.Ids <>  Ball.Player.ids) and not (IsOffSide(DummyFriend))   then begin // se è un compagno
+          else if (DummyFriend.Ids <>  Ball.Player.ids) and not (IsOffSide(ball.Player,DummyFriend))   then begin // se è un compagno
             aList.Add(dstCell);
 //            continue;
           end;
@@ -14630,7 +14648,7 @@ begin
           TvCell := AiField2TV ( Ball.player.Team, dstCell.X,dstCell.Y );
           DummyFriend := GetSoccerPlayer (TvCell.X,TvCell.Y,ball.Player.team);
           if DummyFriend = nil then continue;
-          if IsOffSide(DummyFriend) then continue;
+          if IsOffSide(ball.Player,DummyFriend) then continue;
 
           if DummyFriend.Ids <>  Ball.Player.ids  then begin // se è un compagno
             aList.Add(dstCell);
@@ -14780,7 +14798,7 @@ begin
             aList.Add(dstCell);
         end
           // passaggio su compagno
-        else if (DummyFriend.Ids <>  Ball.Player.ids) and (Dummyfriend.Role <> 'G') and (not IsOffSide(DummyFriend))  then begin // se è un compagno
+        else if (DummyFriend.Ids <>  Ball.Player.ids) and (Dummyfriend.Role <> 'G') and (not IsOffSide(ball.Player,DummyFriend))  then begin // se è un compagno
           aList.Add(dstCell);
           continue;
         end;

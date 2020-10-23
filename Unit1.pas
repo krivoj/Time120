@@ -22,8 +22,14 @@
   { TODO -ctodo prima del rilascio patreon :
 
 
-    il threadcurrent è sempre fermo. non serve.
+   bug su un suo cross
+        if flags[0] = 'F' then begin
+      aPlayer.se_sprite.AddSubSprite( dir_interface + 'fatigue.bmp'  ,'fatigue', 16, 16 , true ) ;
+      aSubSprite := aPlayer.se_sprite.FindSubSprite('fatigue');
+
+
     andrebbe tutto bene ma ho fatto PASS e ogni animazione non si è vista.
+    dopo un lop in tmp debug si resetta in modo strano.
 
     freekick a mio favore ha proseguito con AUTO, ma lo deve fare di suo, il CRO2. ci sarà lo stesso problema su COR
 
@@ -352,7 +358,6 @@ type
       CheckBoxAI1: TCheckBox;
       CheckBox2: TCheckBox;
       Edit3: TEdit;
-      CheckBox3: TCheckBox;
       Button4: TButton;
       CnSpinEdit1: TCnSpinEdit;
       editN1: TEdit;
@@ -362,7 +367,6 @@ type
       btnReplay: TcnSpeedButton;
 
     mainThread: SE_ThreadTimer;
-    ThreadCurrentIncMove: SE_ThreadTimer;
     Timer1: TTimer;
 
     tcp: TWSocket;
@@ -452,6 +456,7 @@ type
     Button15: TButton;
     SE_DEBUG: SE_Engine;
     Button16: TButton;
+    SE_Speaker: SE_Engine;
 
 // General
     function ChangeResolution(XResolution, YResolution, Depth: DWORD): boolean;
@@ -462,6 +467,7 @@ type
     procedure BtnLoginClick(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure onAppMessage(var Msg: TMsg; var Handled: Boolean);
+    procedure NextCurrentIncMove;
     procedure CompleteAllMatches;
     procedure pveFinalizeAllbrain;
     procedure pveEmulationAllbrain;
@@ -478,7 +484,6 @@ type
 // Threads And timers
     procedure mainThreadTimer(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
-    procedure ThreadCurrentIncMoveTimer(Sender: TObject);
     procedure LoadAnimationScript; // tsScript arriva dal server e contiene l'animazione da realizzare qui sul client
     function GetAnimationEstimatedTime ( aScript: TstringList ): Integer;
 // Help
@@ -493,8 +498,6 @@ type
     procedure Button10Click(Sender: TObject);
     procedure Button8Click(Sender: TObject);
     procedure Button6Click(Sender: TObject);
-    procedure Button3Click(Sender: TObject);
-    procedure CheckBox3Click(Sender: TObject);
     procedure Button4Click(Sender: TObject);
     procedure Edit2KeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 
@@ -675,6 +678,7 @@ type
     procedure SelectedPlayerPopupSkill ( CellX, CellY: integer);
     procedure ShowSingleSkill;
     procedure ShowMultipleSkills;
+    procedure ShowSpeaker ( aSkillName: string) ;
     procedure HideHH_Skill ;
     procedure HH_Skill ( SkillMouseMove: string );
 
@@ -1469,23 +1473,6 @@ begin
 
 end;
 
-procedure TForm1.Button3Click(Sender: TObject);
-begin
-  {$ifdef tools}
-  CheckBox3.Enabled := False;
-  ThreadCurrentIncMove.Enabled := False;
-  if  CnSpinEdit1.Value > 0 then
-   ClientLoadBrainMM ( trunc( CnSpinEdit1.Value - 1) );
-  CurrentIncMove :=  trunc( CnSpinEdit1.Value);
-  ClientLoadScript( trunc( CnSpinEdit1.Value)  );
-  if Mybrain.tsScript[MyBrain.incMove].Count = 0 then begin
-    ClientLoadBrainMM ( trunc( CnSpinEdit1.Value) );
-  end
-  else
-    LoadAnimationScript; // if ts[0] = server_Plm CL_ ecc..... il vecchio ClientLoadbrain . alla fine il thread chiama  ClientLoadBrainMM
-  {$endif tools}
-end;
-
 procedure TForm1.Button4Click(Sender: TObject);
 begin
   MyBrain.AI_Think(MyBrain.TeamTurn);
@@ -1625,14 +1612,13 @@ begin
 
 
         //SpriteReset;
-        EstimatedTime:= 5000;
       //  ThreadCurrentIncMove.Enabled := true;
       end;
 
       while incMoveAllProcessed [LastMoveBrain] = false do begin // fino a quando c'è l'animazione non fa ai_think
         mainThread.OnTimer (mainThread);
         SE_Theater1.thrdAnimate.OnTimer(SE_Theater1.thrdAnimate);
-        ThreadCurrentIncMove.OnTimer (ThreadCurrentIncMove);
+        NextCurrentIncMove;
       end;
 
        // ritardo necessario o l'ultima parte della animazione viene troncata e non spariscono le mainskillused
@@ -1641,6 +1627,10 @@ begin
         se_Theater1.thrdAnimate.OnTimer (se_Theater1.thrdAnimate);
       end;
 
+      //EstimatedTime := imax (5000, GetAnimationEstimatedTime( Mybrain.tsScript [CurrentIncMove])  );
+
+      Sleep(1000);
+      SE_Speaker.Visible := false;
       AllBrainThink; // viene chiamata qui dopo ogni mia mossa o della AI e in i_tuc cioè quando la AI deve cominciare a giocare
 
     end
@@ -5633,12 +5623,6 @@ begin
   {$endif tools}
 end;
 
-procedure TForm1.CheckBox3Click(Sender: TObject);
-begin
-
-  ThreadCurrentIncMove.Enabled := CheckBox3.Checked;
-
-end;
 procedure TForm1.CheckBox5Click(Sender: TObject);
 begin
 {$ifdef tools}
@@ -6253,6 +6237,7 @@ begin
   WaitForSingleObject(MutexPveSyncBrain,INFINITE);
 
   SE_Skills.Visible := False;
+  SE_Speaker.Visible := False;
   se_players.RemoveAllSprites ;
   SE_players.ProcessSprites(2000);
  // CurrentIncMove  := MyBrain.incMove;
@@ -6612,6 +6597,7 @@ var
 begin
   WaitForSingleObject(MutexClientLoadbrain,INFINITE);
   SE_Skills.Visible := False;
+  SE_Speaker.Visible := False;
     se_players.RemoveAllSprites ;
 {      for I := 0 to SE_players.SpriteCount -1 do begin
         aPlayer := se_Players.Sprites[i];
@@ -10088,52 +10074,14 @@ begin
     //5 cellx         // non sempre
     //6 cellY         // non sempre
     aPlayer := MyBrain.GetSoccerPlayer(ts[2]);
-{
-    bmp:= Se_bitmap.Create ( aPlayer.se_sprite.BmpCurrentFrame.Width ,14);
-    bmp.Bitmap.Canvas.Brush.color := clGray;
-    bmp.FillRect(0,0,bmp.Width,bmp.Height,clGray);
-    bmp.Bitmap.Canvas.Font.Name := 'Calibri';
-    bmp.Bitmap.Canvas.Font.Size := 10;
-    bmp.Bitmap.Canvas.Font.Color := clWhite;
-    bmp.Bitmap.Canvas.Font.Quality := fqAntialiased;
-    bmp.Bitmap.Canvas.Brush.Style := bsSolid;
-    bmp.Bitmap.Canvas.TextOut( 1,0, Capitalize(Translate( 'skill_' + ts[1])));
-  }
-
 
     // la skill usata è un subsprite che si muove con il player in caso di move o tackle
-//    aPlayer := MyBrain.GetSoccerPlayer ( Ts[2] );
-//    aMainSkillSubSprite := SE_SubSprite.create( bmp,'mainskill',
-//      (aPlayer.se_sprite.BmpCurrentFrame.Width div 2) - (bmp.Width div 2) , (aPlayer.se_sprite.BmpCurrentFrame.Height div 2), true,false );
-//    aMainSkillSubSprite.LifeSpan := ShowRollLifeSpan + 400;
-//    aPlayer.se_sprite.AddSubSprite( aMainSkillSubSprite );
-//    bmp.Free;
-
-   // bmp:= Se_bitmap.Create ( dir_skill + Ts[1]+'.bmp');
-    //bmp.Stretch(24,24);
-    //RoundBorder ( bmp.Bitmap );
    // if aPlayer.Team = 1 then
     aPlayer.se_sprite.AddSubSprite( dir_skill + Ts[1]+'.bmp'  ,'mainskill',
       (aPlayer.se_sprite.Bmp.Width div 2)-16 , (aPlayer.se_sprite.Bmp.Height div 2), true ) ;        // 16 è metà di subsprite. subsprite va 0 0 non al centro
-   // aSubSprite := aPlayer.se_sprite.FindSubSprite('mainskill');
-   // aSubSprite.LifeSpan := ShowRollLifeSpan ;
 
-  //  else
-  //  aMainSkillSubSprite := SE_SubSprite.create( bmp  ,'mainskill',
-   //   (aPlayer.se_sprite.BmpCurrentFrame.Width div 2) - (bmp.Width div 2) , (aPlayer.se_sprite.BmpCurrentFrame.Height div 2), true,true );
-
-
-  //  bmp.Free;
-
-
-   // HHFP( StrToInt(Ts[3]), StrToInt(Ts[4]) , ShowRollLifeSpan * 2);
-   // HHFP( StrToInt(Ts[5]), StrToInt(Ts[6]) , ShowRollLifeSpan * 2);
-
-
-   // aFieldPointSpr := SE_FieldPoints.FindSprite( Ts[5] + '.' + Ts[6] );
-   // posY := aFieldPointSpr.Position.Y;// - 40;
-   // SeSprite := se_numbers.CreateSprite( dir_interface + 'selected.bmp', 'cone', 1, 1, 1000, aFieldPointSpr.Position.X  ,posY , true );
-   // SeSprite.LifeSpan := ShowRollDestination;
+    ShowSpeaker ( Ts[1]) ;
+    SE_Speaker.Visible := true;
 
   end
   else if ts[0] = 'cl_player.priority' then begin
@@ -11416,6 +11364,7 @@ LoadGridSkill:
   ShowMultipleSkills;
 
   SE_Skills.Visible := True;
+  SE_Speaker.Visible := False;
 
 
 end;
@@ -11541,7 +11490,7 @@ begin
     MyText := Capitalize(Translate( 'skill_' + SelectedPlayer.ActiveSkills.Names[i] ) );
 
     if i <> Index_WheelSkill then begin                        // evidenzia la skill selezionata dalla wheel
-         aSpriteLabel := SE_SpriteLabel.create( 0,8,'Calibri',clWhite-1,clBlack,12, MyText ,True  ,1, dt_Center  );
+      aSpriteLabel := SE_SpriteLabel.create( 0,8,'Calibri',clWhite-1,clBlack,12, MyText ,True  ,1, dt_Center  );
     end
     else begin
       aSpriteLabel := SE_SpriteLabel.create( 0,8,'Calibri',clYellow,clBlack,12, MyText ,True  ,1, dt_Center );
@@ -11559,6 +11508,39 @@ begin
   end;
 
   bmpQuestion.free;
+
+end;
+procedure Tform1.ShowSpeaker ( aSkillName: string) ;
+var
+  aSprite: SE_Sprite;
+  aSpriteLabel : SE_SpriteLabel;
+  MyText: string;
+  bmp :SE_Bitmap;
+  const BaseY = 768;
+begin
+
+
+  SE_Speaker.RemoveAllSprites;
+  SE_Speaker.ProcessSprites(2000);
+
+  bmp := SE_Bitmap.Create ( SE_Theater1.VisibleBitmap.Width, 40 );
+  bmp.Bitmap.Canvas.Brush.Color :=  clBlue;
+  bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
+
+  aSprite := SE_Speaker.CreateSprite ( bmp.Bitmap,'skillname',1,1,1000,  SE_Theater1.VisibleBitmap.Width div 2 , BaseY , false,10 ) ;
+  bmp.Free;
+
+  MyText := Capitalize(Translate( 'skill_' + aSkillName ) );
+
+  aSpriteLabel := SE_SpriteLabel.create( 0,8,'Calibri',clWhite,clBlack,14, MyText ,True  ,1, dt_Center );
+  //aSpriteLabel.lFontStyle := [fsBold];
+  aSprite.Labels.add (aSpriteLabel);
+
+    // lo Sprite a sinistra è un SubSprite
+  aSprite.AddSubSprite ( dir_skill + aSkillName + '.bmp','sprite', 0,6,true );
+
+  // qui la concatenazione del nome contine la stringa in inglese così per l'help diventa es. btnhelp_short.passing.txt
+
 
 end;
 
@@ -15187,9 +15169,9 @@ begin
         // se è la prima volta, ricevo una partita terminata
         if (mybrain.finished) then begin //and   (Mybrain.Score.TeamGuid [0]  = MyGuidTeam ) or (Mybrain.Score.TeamGuid [1]  = MyGuidTeam ) then begin
           ShowMatchInfo ( SE_Theater1.Width div 2, SE_Theater1.Height div 2,0, MyBrain.MatchInfo.CommaText ) ;
-        end
-        else
-          ThreadCurrentIncMove.Enabled := true; // eventuale splahscreen compare tramite tsscript e obbliga al pulsante exit. 30 seconplay se c'è il suo guidteam
+        end;
+//        else
+//          ThreadCurrentIncMove.Enabled := true; // eventuale splahscreen compare tramite tsscript e obbliga al pulsante exit. 30 seconplay se c'è il suo guidteam
       end;
 
       MM.Free;
@@ -15240,7 +15222,7 @@ begin
 
 
             SpriteReset;
-            ThreadCurrentIncMove.Enabled := true;
+
 
           end;
 
@@ -15250,7 +15232,6 @@ begin
     end
     else if MidStr(tmpStr,1,9 )= 'BEGINTEAM' then begin
 
-      ThreadCurrentIncMove.Enabled := false; // parte solo in beginbrain
       MemoC.Lines.Add( 'Compressed size: ' + IntToStr(Len) );
 
       // elimino beginbrain
@@ -15272,7 +15253,6 @@ begin
       Exit;
     end
     else if MidStr(tmpStr,1,11 )= 'BEGINMARKET' then begin
-      ThreadCurrentIncMove.Enabled := false; // parte solo in beginbrain
       MemoC.Lines.Add( 'Compressed size: ' + IntToStr(Len) );
 
       // elimino beginbrain
@@ -15293,7 +15273,6 @@ begin
       Exit;
     end
     else if MidStr(tmpStr,1,8 )= 'BEGINAML' then begin
-      ThreadCurrentIncMove.Enabled := false; // parte solo in beginbrain
       MemoC.Lines.Add( 'Compressed size: ' + IntToStr(Len) );
 
       // elimino beginbrain
@@ -15314,7 +15293,6 @@ begin
       Exit;
     end;
 
-    ThreadCurrentIncMove.Enabled := false; // parte solo in beginbrain
     MemoC.Lines.Add( 'normal size: ' + IntToStr(Len) );
 
   //  Buf[Len]       := #0;              { Nul terminate  }
@@ -15404,7 +15382,6 @@ begin
       MyBrain.lstSoccerPlayer.Clear;
       MyBrain.lstSoccerReserve.Clear;
       MyBrain.lstSoccerPlayerALL.Clear;
-      ThreadCurrentIncMove.Enabled := False;
       viewMatch := false;
       LiveMatch := false;
 end;
@@ -15418,7 +15395,6 @@ begin
       MouseWaitFor := WaitForAuth;
       lbl_ConnectionStatus.Color := clRed;
       lbl_ConnectionStatus.Caption := 'Server offline';
-      ThreadCurrentIncMove.Enabled := False;
       viewMatch := false;
       LiveMatch := false;
 
@@ -15434,7 +15410,7 @@ begin
     end;
 end;
 
-procedure TForm1.ThreadCurrentIncMoveTimer(Sender: TObject);
+procedure TForm1.NextCurrentIncMove;
 var
   oldCurrent: byte;
   tmp1,tmp2: Integer;
@@ -15442,19 +15418,6 @@ begin
       // brain in memoria e sprite a video
       // se c'è lo script lo eseguo
   // diviso in 2 parti per pvp e pve
-  WaitForSingleObject ( MutexAnimation, INFINITE );
-
-  if ( SE_ball.IsAnySpriteMoving  ) or (SE_players.IsAnySpriteMoving )  then begin
-    ReleaseMutex(MutexAnimation);
-    Exit;
-  end;
-
- // tmp1:= GetTickCount;
- // tmp2:= OldGetTickCount + EstimatedTime;
- // if tmp2 > tmp1 then
-//  //  if (OldGetTickCount + EstimatedTime) < tmp1 then
- //   exit;
-
 
 
   if GameMode = pvp then begin
@@ -15488,6 +15451,8 @@ begin
    // nel pve il brain viene riempito di AI begibrain, ha già elaborato 4 risposte. qui non faccio in tempo a leggere Mybrain.tsScript.CommaText
   else if GameMode = pve then begin
 
+  //  if (GetTickCount - OldGetTickCount) <=  EstimatedTime then
+  //    Exit;
 
     if CurrentIncMove < LastMoveBrain  then begin //  MyBrain.incMove è quello che dico io. LastMoveBrain è 4 mosse avanti quando c'è la AI
       // questa parte rinnova scriptanimation incrementando currentIncMove fino al massimo di  MyBrain.incMove
@@ -15509,8 +15474,7 @@ begin
             AnimationScript.Reset ;
             LoadAnimationScript; // riempe animationScript.  alla fine il thread chiama  ClientLoadBrainMM
             EstimatedTime := imax (5000, GetAnimationEstimatedTime( Mybrain.tsScript [CurrentIncMove])  );
-          //  ThreadCurrentIncMove.Interval := EstimatedTime+10000000;  // forse non necessario
-          //  OldGetTickCount := GetTickCount;
+            OldGetTickCount := GetTickCount;
           end
           else begin
             incMoveAllProcessed [CurrentIncMove] := true; // se è vuota dico che è stata processata
@@ -15535,8 +15499,7 @@ begin
           AnimationScript.Reset ;
           LoadAnimationScript; // riempe animationScript.  alla fine il thread chiama  ClientLoadBrainMM
           EstimatedTime := imax (5000, GetAnimationEstimatedTime( Mybrain.tsScript [CurrentIncMove])  );
-         // ThreadCurrentIncMove.Interval := EstimatedTime+1000000;
-      //    OldGetTickCount := GetTickCount;
+          OldGetTickCount := GetTickCount;
 
         end
         else begin
@@ -15636,7 +15599,6 @@ procedure TForm1.toolSpinKeyPress(Sender: TObject; var Key: Char);
 begin
   {$ifdef tools}
   if Key=#13 then begin
-    ThreadCurrentIncMove.Enabled := False;
     Key:=#0;
 
     ViewReplay := True;
@@ -15696,6 +15658,7 @@ procedure TForm1.HideAllEnginesExcept ( SE_Engine1,SE_Engine2,SE_Engine3,SE_Engi
 label skipC;
 begin
 
+  SE_Speaker.Visible := False;
   SE_matchInfo.Visible := False;
   SE_InfoError.Visible := False;
   SE_Simulation.Visible := false;
@@ -15917,7 +15880,6 @@ begin
     ShowStadiumAndPlayers (0);
 
     SE_interface.ClickSprites := false;
-    ThreadCurrentIncMove.Enabled := false; // parte solo in beginbrain
     WaitForSingleObject ( MutexAnimation, INFINITE );
     AnimationScript.Reset;
     FirstLoadOK:= False;
