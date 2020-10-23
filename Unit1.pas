@@ -22,6 +22,8 @@
   { TODO -ctodo prima del rilascio patreon :
 
 
+    il threadcurrent è sempre fermo. non serve.
+    andrebbe tutto bene ma ho fatto PASS e ogni animazione non si è vista.
 
     freekick a mio favore ha proseguito con AUTO, ma lo deve fare di suo, il CRO2. ci sarà lo stesso problema su COR
 
@@ -1624,7 +1626,7 @@ begin
 
         //SpriteReset;
         EstimatedTime:= 5000;
-        ThreadCurrentIncMove.Enabled := true;
+      //  ThreadCurrentIncMove.Enabled := true;
       end;
 
       while incMoveAllProcessed [LastMoveBrain] = false do begin // fino a quando c'è l'animazione non fa ai_think
@@ -7724,6 +7726,7 @@ begin
   RefreshTML;
 
   SE_TacticsSubs.visible := False;
+
   aSprite := SE_LIVE.FindSprite('btnmenu_tactics');
   aSprite.Visible :=  Mybrain.Score.TeamGuid [ StrToInt(team) ]  = MyGuidTeam;// Mybrain.Score.TeamGuid [ Mybrain.TeamTurn ]  = MyGuidTeam;
   aSprite := SE_LIVE.FindSprite('btnmenu_subs');
@@ -15506,7 +15509,7 @@ begin
             AnimationScript.Reset ;
             LoadAnimationScript; // riempe animationScript.  alla fine il thread chiama  ClientLoadBrainMM
             EstimatedTime := imax (5000, GetAnimationEstimatedTime( Mybrain.tsScript [CurrentIncMove])  );
-            ThreadCurrentIncMove.Interval := EstimatedTime;  // forse non necessario
+          //  ThreadCurrentIncMove.Interval := EstimatedTime+10000000;  // forse non necessario
           //  OldGetTickCount := GetTickCount;
           end
           else begin
@@ -15532,7 +15535,7 @@ begin
           AnimationScript.Reset ;
           LoadAnimationScript; // riempe animationScript.  alla fine il thread chiama  ClientLoadBrainMM
           EstimatedTime := imax (5000, GetAnimationEstimatedTime( Mybrain.tsScript [CurrentIncMove])  );
-          ThreadCurrentIncMove.Interval := EstimatedTime;
+         // ThreadCurrentIncMove.Interval := EstimatedTime+1000000;
       //    OldGetTickCount := GetTickCount;
 
         end
