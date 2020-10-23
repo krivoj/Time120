@@ -13,19 +13,33 @@
 
     check fine partita sul client
     pvp testare sell/buy sembra andare bene
-    AI Hide120 anche  free e stay pass sono ok fare anche per tactics. le sub si possono fare
 
     Server, gender bonus. controllare anche AI.
 
 
   }
   { TODO -ctodo prima del rilascio patreon :
+   InputSecureExit
+
+   fare
+                      TeamMovesLeft := TeamMovesLeft - 1;
+                      AI_moveAll ;
+                      if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
+                      TsScript[incMove].add ('E');
+                      reason :='';
+
+                      InputSecureExit ( DoAiMoveAll );
+                      goto MyExit;
 
 
    bug su un suo cross
-        if flags[0] = 'F' then begin
-      aPlayer.se_sprite.AddSubSprite( dir_interface + 'fatigue.bmp'  ,'fatigue', 16, 16 , true ) ;
-      aSubSprite := aPlayer.se_sprite.FindSubSprite('fatigue');
+   controllare tutt i:   ce ne sono di pià in server_lop
+
+                  TeamMovesLeft := TeamMovesLeft - 1;
+                  AI_moveAll ;
+                  if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
+                  TsScript[incMove].add ('E');
+                  goto MyExit;
 
 
     andrebbe tutto bene ma ho fatto PASS e ogni animazione non si è vista.
@@ -35,36 +49,14 @@
 
     le sub sono piene di bug.
 
-    ora sembra risolto tutto, ma è da verificare.
-    RIASSUNTO: DOPO il 120 se c'è un fallo o un gol è un problema.
-    se c'è un fallo deve mettere flagendgame di nuovo a 0. flagendgame = STO PER FISCHIARE. fallo= non fischio piu'. si
-    settano le barriere, si cambia di turno, ma essendo in w:qualcosa non mettee fflagendgame a 1. si batte il fallo, si mette flagendgame a 1.
-
-
-
-    BUG se punizione e quindi i_tuc dopo 120 si batte fino a fkd2 is ma prima è arrivato un sc_GameOver.
-
-    PLM.waiting freekick bug AI_ForceRandomMove strano perchè dovrebbe battere la punizione o settare i player. forse accade dopo il 120
+    TEST DOPO il 120 se c'è un fallo
 
 
     bug strano: fatigue poca stamina per 1 giocatore del bologna.... ?
 
-    FARE ORA:è già cosi reloadteamdefaultposition Per evitare lastsciptgol userò un brain resettato senza tscscript. cosi' risolvo per sempre. il brain farà perforza il reset.
-    dopo il mio gol la palla la aveo io a centrocampo.
-    controllare BonusGK dalla distanza. adesso si applica solo a lui. piu' parate ora.
-
-    gol live non resetta ma va direttamente all'azione.
-      while ( SE_ball.IsAnySpriteMoving  ) or (SE_players.IsAnySpriteMoving ) do begin
-        se_Theater1.thrdAnimate.OnTimer (se_Theater1.thrdAnimate);   con speedX = 14 invece di 0.
-      end;
-      InterruptLiveGame;
-
-
-
 
     exit da partita solo se tools altrimenti non è proprio possibile.
 
-    BUG quando devo schierare la barriera, forse già risolto
 
     i portieri devono gaudagnare meno xp, anche nel brain. 8 a partita sono troppi. oppure invece di 120 arrivo a 180 punti xp solo per GK
     oppure 50-70% di guaganare xp random sui pos, prs ecc...

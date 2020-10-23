@@ -6761,7 +6761,7 @@ begin
                         else
                           FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
                         reason := '';
-                        TsScript[incMove].add ('E');
+                       // TsScript[incMove].add ('E');
                         goto MyExit;
                       end;
 
@@ -6823,7 +6823,7 @@ begin
                     else
                       FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
                     reason := '';
-                    TsScript[incMove].add ('E');
+                   // TsScript[incMove].add ('E');
                     goto MyExit;
 
             end;
@@ -7039,7 +7039,7 @@ begin
               else
                 FreeKickSetup1( 0 ); // passa di turno all'avversario e aspetta short.passing o lofted.pass
               reason := '';
-              TsScript[incMove].add ('E');
+             // TsScript[incMove].add ('E');
               goto MyExit;
             end;
          end;
@@ -7066,6 +7066,15 @@ begin
                                                 IntTostr(anOpponent.CellX)+','+ IntTostr(anOpponent.CellY)  ) ;
 
           end;
+
+          TeamMovesLeft := TeamMovesLeft - 1;
+          AI_moveAll ;
+          if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
+          TsScript[incMove].add ('E');
+          reason :='';
+          goto MyExit;
+
+
       end
       else if (aRnd >= LOP_MID1) and (aRnd <= LOP_MID2)   then begin // la palla cade nella cella del target, ma 1=soggetto a heading e rimbalzerà 2= se heading difensivo va a vuoto, si procede col ball.control del target
           // se non c'è nessuno solo ball.control del target
@@ -7083,7 +7092,7 @@ begin
             else
               FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
             reason := '';
-            TsScript[incMove].add ('E');
+          //  TsScript[incMove].add ('E');
             goto MyExit;
           end;
          end;
@@ -7178,7 +7187,7 @@ begin
                         else
                           FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
                         reason := '';
-                        TsScript[incMove].add ('E');
+                       // TsScript[incMove].add ('E');
                         goto MyExit;
                       end;
                      end;
@@ -7196,6 +7205,12 @@ begin
                       Ball.Player.Shot := Ball.Player.Shot + 1;
                       Ball.Player.BonusFinishingTurn := 1;
                     end;
+                      TeamMovesLeft := TeamMovesLeft - 1;
+                      AI_moveAll ;
+                      if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
+                      TsScript[incMove].add ('E');
+                      reason :='';
+                      goto MyExit;
 
 
               end
@@ -7212,7 +7227,7 @@ begin
                       else
                         FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
                       reason := '';
-                      TsScript[incMove].add ('E');
+                    //  TsScript[incMove].add ('E');
                       goto MyExit;
                     end;
                    end;
@@ -7226,6 +7241,14 @@ begin
 
                      aFriend.CellS:= aCell;
                      tsSpeaker.Add(aPlayer.Surname +' controlla e si sposta ');
+
+                      TeamMovesLeft := TeamMovesLeft - 1;
+                      AI_moveAll ;
+                      if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
+                      TsScript[incMove].add ('E');
+                      reason :='';
+                      goto MyExit;
+
                    end
                    else Begin
                      aPossibleOffside := GetSoccerPlayer(Ball.CellX , ball.cellY );
@@ -7238,7 +7261,7 @@ begin
                         else
                           FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
                         reason := '';
-                        TsScript[incMove].add ('E');
+                       // TsScript[incMove].add ('E');
                         goto MyExit;
                       end;
                      end;
@@ -7267,7 +7290,7 @@ begin
                       else
                         FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
                       reason := '';
-                      TsScript[incMove].add ('E');
+                    //  TsScript[incMove].add ('E');
                       goto MyExit;
                     end;
                    end;
@@ -7295,7 +7318,7 @@ begin
                 else
                   FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
                 reason := '';
-                TsScript[incMove].add ('E');
+              //  TsScript[incMove].add ('E');
                 goto MyExit;
               end;
              end;
@@ -7350,7 +7373,7 @@ begin
                             IntTostr ( anOpponent.Defense ) +',Defense,'+ anOpponent.ids+','+IntTostr(Roll3.value) + ',' + Roll3.fatigue+'.0' + ',' + IntToStr(Modifier));
                             anOpponent.xpDevA := anOpponent.xpDevA + 1; // anche se non prende la palla
 
-                            if aRnd3 > aRnd2 then begin // power.Shot ---> avversario prende la palla e c'è il rimbalzo
+                            if aRnd3 > aRnd2 then begin // lop heading ---> avversario prende la palla e c'è il rimbalzo
 
                               // back o path di tiro non prevede ballmove
                              oldball:= Point ( anOpponent.CellX, anOpponent.CellY);
@@ -7392,8 +7415,8 @@ begin
                                 AI_moveAll ;
                                 if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
                                 TsScript[incMove].add ('E');
-                                  reason :='';
-                                  goto MyExit;
+                                reason :='';
+                                goto MyExit;
 
                             end;
 
@@ -7416,7 +7439,7 @@ begin
                           aGK.xp_Defense:= aGK.xp_Defense+1;
                           aGK.xpDevA := aGK.xpDevA + 1;
               //            goto palo;
-                          if aRnd4 > aRnd2 then begin // power.Shot ---> il portiere para e c'è il rimbalzo
+                          if aRnd4 > aRnd2 then begin // lop heading ---> il portiere para e c'è il rimbalzo
                              aCell := GetGKBounceCell (aGK,  aGK.cellX, aGK.CellY,  RndGenerate (2), true );
                              Ball.Cells := aCell;
                              aGK.xpDevT := aGK.xpDevT + 1;
@@ -7446,8 +7469,13 @@ begin
                                 Ball.Player.xpDevA := Ball.Player.xpDevA + 1;
                               end;
 
+                              TeamMovesLeft := TeamMovesLeft - 1;
+                              AI_moveAll ;
+                              if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
+                              TsScript[incMove].add ('E');
+                              reason :='';
+                              goto MyExit;
 
-                               TsScript[incMove].add ('E') ;
 
                           end
 
@@ -7527,10 +7555,11 @@ begin
                end;
 
       end;
-    //  aPlayer.resetALL;
+//      aPlayer.resetALL;
 //      TeamMovesLeft := TeamMovesLeft - 1;
 //      if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
 //      TsScript[incMove].add ('E');
+
 
     end
 
@@ -7590,7 +7619,7 @@ begin
                   else
                     FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
                   reason := '';
-                  TsScript[incMove].add ('E');
+                //  TsScript[incMove].add ('E');
                   goto MyExit;
                 end;
                end;
@@ -7622,7 +7651,7 @@ begin
                       else
                         FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
                       reason := '';
-                      TsScript[incMove].add ('E');
+                    //  TsScript[incMove].add ('E');
                       goto MyExit;
                     end;
                    end;
@@ -7646,7 +7675,7 @@ begin
                       else
                         FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
                       reason := '';
-                      TsScript[incMove].add ('E');
+                    //  TsScript[incMove].add ('E');
                       goto MyExit;
                     end;
                    end;
@@ -7682,7 +7711,7 @@ begin
                         else
                           FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
                         reason := '';
-                        TsScript[incMove].add ('E');
+                     //   TsScript[incMove].add ('E');
                         goto MyExit;
                       end;
                      end;
@@ -7789,7 +7818,7 @@ begin
             else
               FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
             reason := '';
-            TsScript[incMove].add ('E');
+            //TsScript[incMove].add ('E');
             goto MyExit;
           end;
          end;
@@ -7950,7 +7979,7 @@ GK:
                     else
                       FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
                     reason := '';
-                    TsScript[incMove].add ('E');
+                   // TsScript[incMove].add ('E');
                     goto MyExit;
                   end;
                  end;
@@ -8033,7 +8062,7 @@ GK:
             else
               FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
             reason := '';
-            TsScript[incMove].add ('E');
+          //  TsScript[incMove].add ('E');
             goto MyExit;
           end;
          end;
@@ -8075,7 +8104,7 @@ GK:
             else
               FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
             reason := '';
-            TsScript[incMove].add ('E');
+           // TsScript[incMove].add ('E');
             goto MyExit;
           end;
          end;
@@ -8256,6 +8285,11 @@ HVSH:
                     ball.Player.xpDevA := ball.Player.xpDevA + 1;
                   end;
 
+                  TeamMovesLeft := TeamMovesLeft - 1;
+                  AI_moveAll ;
+                  if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
+                  TsScript[incMove].add ('E');
+                  goto MyExit;
               end
 
               else begin // cross finisce in gol
@@ -9039,7 +9073,7 @@ setCorner:
                 if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
                 TsScript[incMove].add ('E');
                 reason:='';
-                    goto MyExit;
+                goto MyExit;
 
               end;
 
@@ -9101,8 +9135,8 @@ PRSvsGK:
               AI_moveAll ;
               if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
               TsScript[incMove].add ('E');
-reason:='';
-                    goto MyExit;
+              reason:='';
+              goto MyExit;
             end
 
                  // PRS finisce con in gol
@@ -9149,7 +9183,7 @@ prs_crossbar:
                     AI_moveAll ;
                     if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
                     TsScript[incMove].add ('E');
-reason:='';
+                    reason:='';
                     goto MyExit;
                   end
                   else begin
