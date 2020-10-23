@@ -126,6 +126,7 @@ const MARKET_VALUE_TALENT1 = 1.4 ;
 const MARKET_VALUE_TALENT2 = 1.2 ;
 const GOLD_START = 210 ;
 
+type TDecMovesLeft = ( DecNone, DecNormal, DecNoResetPlayer);
 //--------------------------------------------------------
 Type TShotCell = Class
   DoorTeam: integer;
@@ -688,6 +689,12 @@ end;
       procedure Start;
       procedure LoadDefaultTeamPos ( aTeam: integer);
       procedure BrainInput ( aCmd: string );
+        procedure InputSecureExit ( DoAiMoveAll: Boolean; DoTeamMovesLeft: TDecMovesLeft);
+        function ChackInputShp (aPlayer: TsoccerPlayer; CellX, CellY: integer; tsCmd: Tstringlist): string;
+        function ChackInputLop (aPlayer: TsoccerPlayer; CellX, CellY: integer; tsCmd: Tstringlist): string;
+
+        function CheckOffside ( FromPlayer, aPossibleoffside: TSoccerPlayer ): boolean;
+
       function GetOpponentDoor (SelectedPlayer: TSoccerPlayer ): TPoint;
       function GetCorner (Team: integer; Y: integer; CornerMode: TCornerMode ): TCornerMap;
 
@@ -6495,7 +6502,116 @@ begin
   end;
   ReleaseMutex(Mutex);
 end;
+procedure TSoccerbrain.InputSecureExit ( DoAiMoveAll: Boolean; DoTeamMovesLeft: TDecMovesLeft);
+begin
 
+  if DoAiMoveAll  then
+    AI_moveAll;
+
+  if DoTeamMovesLeft = DecNormal then begin
+    TeamMovesLeft := TeamMovesLeft - 1;
+  end
+  else if DoTeamMovesLeft = DecNoResetPlayer then begin
+    fTeamMovesLeft := fTeamMovesLeft - 1;
+  end;
+  if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
+  TsScript[incMove].add ('E');
+end;
+function TSoccerbrain.CheckOffside ( FromPlayer, aPossibleoffside: TSoccerPlayer ): boolean;
+begin
+  Result := False;
+  if aPossibleoffside <> nil then begin
+    if isOffside ( FromPlayer, aPossibleoffside )   then begin
+      //come fallo freekick1
+      TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
+      if aPossibleoffside.team = 0 then
+        FreeKickSetup1( 1 ) // aspetta short.passing o lofted.pass
+      else
+        FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
+
+      Result := True;
+    end;
+
+  end;
+
+end;
+
+function TSoccerbrain.ChackInputShp (aPlayer: TsoccerPlayer; CellX, CellY: integer; tsCmd: Tstringlist ): string;
+begin
+  if aPlayer = nil then begin
+   Result := 'SHP,Ball.Player not found';
+   Exit; // hack
+  end;
+  if not aPlayer.CanSkill then begin
+   Result := 'SHP,Player ' + aPlayer.SurName +' unable to use skill '  + 'Ts:' + tsCmd.CommaText;
+   Exit; // hack
+  end;
+  if  aPlayer.TalentId1 = TALENT_ID_GOALKEEPER then begin
+   Result := 'SHP,GoalKeeper can not use skill short.passing ' + 'Ts:' +tsCmd.CommaText ;
+   Exit; // hack
+  end;
+
+  aPlayer.tmp := ShortPassRange;
+  if (aPlayer.TalentId1 = TALENT_ID_LONGPASS) or (aPlayer.TalentId2 = TALENT_ID_LONGPASS) then
+    aPlayer.tmp := aPlayer.tmp +1;
+
+  if (absDistance( Ball.CellX ,Ball.CellY,  CellX, CellY ) > (aPlayer.tmp))
+     or (absDistance (Ball.Player.CellX , Ball.Player.CellY, Cellx, Celly  ) = 0) then begin
+    Result := 'SHP,Destination range error: ' + 'Ts:' +tsCmd.CommaText ;
+    Exit;
+  end;
+
+  if w_SomeThing  then begin
+   Result := 'SHP, waiting freekick ' + 'Ts:' +tsCmd.CommaText;
+   Exit; // hack
+  end;   // freekick1 concesso
+
+end;
+function TSoccerbrain.ChackInputLop (aPlayer: TsoccerPlayer; CellX, CellY: integer; tsCmd: Tstringlist ): string;
+var
+  aFriend: TSoccerPlayer;
+begin
+  if aPlayer = nil then begin
+   Result := 'LOP,Ball.Player not found ' + 'Ts:' +tsCmd.CommaText ;
+   Exit; // hack
+  end;
+  if not aPlayer.CanSkill then begin
+   Result := 'LOP,Player unable to use skill ' + 'Ts:' +tsCmd.CommaText ;
+   Exit; // hack
+  end;
+  { lop su freekick1 può esistere. }
+  if w_CornerSetup or w_Coa or w_cod or w_CornerKick {or w_FreeKickSetup1 or w_Fka1 or w_FreeKick1} or w_Fka2 or w_FreeKickSetup2 or w_Fka2 or w_Fkd2 or w_FreeKick2
+  or w_FreeKickSetup3 or w_Fka3 or w_Fkd3 or w_FreeKick3 or w_Fka4 or w_FreeKickSetup4 or w_FreeKick4  then begin
+   Result := 'LOP, waiting freekick '+ 'Ts:' +tsCmd.CommaText ;
+   Exit; // hack
+  end;  // concesso nulla
+
+  if tsCmd[3] <> 'GKLOP' then begin
+    aPlayer.tmp := LoftedPassRangeMax;
+    if (aPlayer.TalentId1 = TALENT_ID_LONGPASS) or (aPlayer.TalentId2 = TALENT_ID_LONGPASS) then
+      aPlayer.tmp := aPlayer.tmp +1;
+
+    if (absDistance( Ball.CellX ,Ball.CellY,  CellX, CellY ) > (aPlayer.tmp))
+    or (absDistance( Ball.CellX ,Ball.CellY,  CellX, CellY ) < LoftedPassRangeMin)  then begin
+      Result := 'LOP,Destination range error: ' + tsCmd.CommaText ;
+      Exit;
+    end;
+  end;
+
+  aFriend := GetSoccerPlayer ( CellX, CellY, aPlayer.Team );
+  if aFriend <> nil then Begin
+    if aFriend.Team <> aPlayer.team then begin
+    Result := 'LOP,Destination Player unfriendly ' + 'Ts:' +tsCmd.CommaText ;
+    Exit;
+  end;
+  end;
+  if IsGKCell(CellX,Celly) then begin
+    Result := 'LOP,Destination is GK '+ 'Ts:' +tsCmd.CommaText ;
+    Exit;
+  end;
+
+
+end;
 procedure TSoccerbrain.BrainInput ( aCmd: string );
 var
   MyFile: THandle;
@@ -6591,33 +6707,9 @@ begin
 
 
     aPlayer := Ball.Player;//   GetSoccerPlayer ( tsCmd[1]);
-    if aPlayer = nil then begin
-     reason := 'SHP,Ball.Player not found';
-     goto myexit; // hack
-    end;
-    if not aPlayer.CanSkill then begin
-     reason := 'SHP,Player ' + aPlayer.SurName +' unable to use skill';
-     goto myexit; // hack
-    end;
-    if  aPlayer.TalentId1 = TALENT_ID_GOALKEEPER then begin
-     reason := 'SHP,GoalKeeper can not use skill short.passing';
-     goto myexit; // hack
-    end;
+    reason := ChackInputShp (aPlayer, CellX, CellY);
+    if reason <> '' then goto myexit; // hack
 
-    aPlayer.tmp := ShortPassRange;
-    if (aPlayer.TalentId1 = TALENT_ID_LONGPASS) or (aPlayer.TalentId2 = TALENT_ID_LONGPASS) then
-      aPlayer.tmp := aPlayer.tmp +1;
-
-    if (absDistance( Ball.CellX ,Ball.CellY,  CellX, CellY ) > (aPlayer.tmp))
-       or (absDistance (Ball.Player.CellX , Ball.Player.CellY, Cellx, Celly  ) = 0) then begin
-      reason := 'SHP,Destination range error: ' + tsCmd.CommaText ;
-      goto MyExit;
-    end;
-
-    if w_SomeThing  then begin
-     reason := 'SHP, waiting freekick ';
-     goto myexit; // hack
-    end;   // freekick1 concesso
 
 
     // calcola il percorso della palla in linea retta e ottiene un path di celle interessate
@@ -6696,11 +6788,11 @@ begin
 
                   if aPlayer.TalentId1 <> TALENT_ID_GOALKEEPER then Dec(ShpFree);
                   if (ShpFree < 0) and (aPlayer.TalentId1 <> TALENT_ID_GOALKEEPER)then TeamMovesLeft := TeamMovesLeft - 1; //<--- esaurische shpfree se minore di 0, non uguale
-                    AI_moveAll;
-                    if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-                    TsScript[incMove].add ('E');
-                    reason:='';
-                    goto MyExit;
+
+
+                  reason:='';
+                  InputSecureExit ( True, DecNormal );
+                  goto MyExit;
 
               end;
       end
@@ -6752,21 +6844,11 @@ begin
 
                      // intercept, checkoffside sul bounce a centrocampo
                      aPossibleOffside := GetSoccerPlayer(ball.CellX, Ball.cellY);
-                     if aPossibleoffside <> nil then begin
-                      if isOffside ( anIntercept, aPossibleoffside )   then begin
-                        //come fallo freekick1
-                        TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
-                        if aPossibleoffside.team = 0 then
-                          FreeKickSetup1( 1 ) // aspetta short.passing o lofted.pass
-                        else
-                          FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
-                        reason := '';
-                       // TsScript[incMove].add ('E');
-                        goto MyExit;
-                      end;
-
-
+                     if checkOffside  ( anIntercept, aPossibleoffside ) then begin
+                       reason := '';
+                       goto MyExit;
                      end;
+
 
                      TsScript[incMove].add ('sc_ball.move,'+ IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+  IntTostr(aPath[i].X)+','+ IntTostr(aPath[i].Y)
                      +','+anIntercept.Ids+',intercept' ) ;
@@ -6796,10 +6878,8 @@ begin
                    // aPlayer.resetALL;
                     if aPlayer.Role <> 'G' then Dec(ShpFree);
                     if ShpFree < 0 then TeamMovesLeft := TeamMovesLeft - 1; //<--- esaurische shpfree se minore di 0, non uguale
-                    AI_moveAll;
-                    if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-                    TsScript[incMove].add ('E');
                     reason := '';
+                    InputSecureExit ( True, DecNormal );
                     goto MyExit;
             end;  // if arnd >0 arnd
           end; // if (anIntercept.Cell.X = aPath[i].X) and (anIntercept.Cell.Y = aPath[i].Y) then begin
@@ -6814,22 +6894,10 @@ begin
            TsScript[incMove].add ('sc_ball.move,'+ IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+  IntTostr(Ball.CellX)+','+ IntTostr(Ball.CellY) + ',0,0') ;
 
            aPossibleOffside := GetSoccerPlayer(Ball.CellX , ball.cellY );
-           if aPossibleoffside <> nil then begin
-            if isOffside ( aPlayer, aPossibleoffside )   then begin
-              //come fallo freekick1
-                    TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
-                    if aPossibleoffside.team = 0 then
-                      FreeKickSetup1( 1 ) // aspetta short.passing o lofted.pass
-                    else
-                      FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
-                    reason := '';
-                   // TsScript[incMove].add ('E');
-                    goto MyExit;
-
-            end;
-
+           if checkOffside  ( aPlayer, aPossibleoffside ) then begin
+             reason := '';
+             goto MyExit;
            end;
-
 
 
          { Playmaker if aplyaer.tal_playmaker shp in area avversaria +N lunghezza passaggio al shot }
@@ -6869,18 +6937,10 @@ begin
                    Ball.Cells  := Point ( aFriend2.cellX,aFriend2.CellY) ;  // posiziona la palla
                    TsScript[incMove].add ('sc_ball.move,'+ IntTostr(aFriend.CellX)+','+ IntTostr(aFriend.CellY)+','+  IntTostr(Ball.CellX)+','+ IntTostr(Ball.CellY) + ',0,0') ;
 
-                    if isOffside (aFriend, aFriend2 )   then begin
-                    //come fallo freekick1
-                          TsScript[incMove].add ('sc_fault,' + aFriend2.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
-                          if aFriend2.team = 0 then
-                            FreeKickSetup1( 1 ) // aspetta short.passing o lofted.pass
-                          else
-                            FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
-                          reason := '';
-                          TsScript[incMove].add ('E');
-                          goto MyExit;
-
-                    end;
+                   if checkOffside  ( aFriend, aFriend2 ) then begin
+                     reason := '';
+                     goto MyExit;
+                   end;
 
                  end;
                end;
@@ -6898,9 +6958,9 @@ begin
                 ExceptPlayers.Add(aPlayer);
 
             shpBuff := true;  // chi raggiunge la palla ottiene il buff    { TODO : forse se afreind = nil. aggiustare tutto con nuovo talento }
-            AI_moveAll;
-            if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-            TsScript[incMove].add ('E');
+            reason := '';
+            InputSecureExit ( True, DecNormal );
+            goto MyExit;
         end;
 
     end; // for  aPath ball
@@ -6935,46 +6995,13 @@ begin
     CellY := StrToIntDef (tsCmd[2],-1);
 
     aPlayer := Ball.Player;
-    if aPlayer = nil then begin
-     reason := 'LOP,Ball.Player not found';
-     goto myexit; // hack
-    end;
-    if not aPlayer.CanSkill then begin
-     reason := 'LOP,Player unable to use skill';
-     goto myexit; // hack
-    end;
-    { lop su freekick1 può esistere. }
-    if w_CornerSetup or w_Coa or w_cod or w_CornerKick {or w_FreeKickSetup1 or w_Fka1 or w_FreeKick1} or w_Fka2 or w_FreeKickSetup2 or w_Fka2 or w_Fkd2 or w_FreeKick2
-    or w_FreeKickSetup3 or w_Fka3 or w_Fkd3 or w_FreeKick3 or w_Fka4 or w_FreeKickSetup4 or w_FreeKick4  then begin
-     reason := 'LOP, waiting freekick ';
-     goto myexit; // hack
-    end;  // concesso nulla
+    reason := ChackInputLop (aPlayer, CellX, CellY, tsCmd );
+    if reason <> '' then goto myexit; // hack
 
-    if tsCmd[3] <> 'GKLOP' then begin
-      aPlayer.tmp := LoftedPassRangeMax;
-      if (aPlayer.TalentId1 = TALENT_ID_LONGPASS) or (aPlayer.TalentId2 = TALENT_ID_LONGPASS) then
-        aPlayer.tmp := aPlayer.tmp +1;
-
-      if (absDistance( Ball.CellX ,Ball.CellY,  CellX, CellY ) > (aPlayer.tmp))
-    or (absDistance( Ball.CellX ,Ball.CellY,  CellX, CellY ) < LoftedPassRangeMin)  then begin
-      reason := 'LOP,Destination range error: ' + tsCmd.CommaText ;
-      goto MyExit;
-    end;
-    end;
 
     aFriend := GetSoccerPlayer ( CellX, CellY, aPlayer.Team );
     ToEmptyCell:= 0;
-    if aFriend = nil then ToEmptyCell := ToEmptyCellBonusDefending
-    else begin
-      if aFriend.Team <> aPlayer.team then begin
-      reason := 'LOP,Destination Player unfriendly';
-      goto MyExit;
-    end;
-    end;
-    if IsGKCell(CellX,Celly) then begin
-          reason := 'LOP,Destination is GK';
-          goto MyExit;
-    end;
+    if aFriend = nil then ToEmptyCell := ToEmptyCellBonusDefending;
 
 
     if aFriend <> nil then tsSpeaker.Add( aPlayer.Surname +' cerca un passaggio alto per ' + aFriend.SurName   )
@@ -7030,19 +7057,11 @@ begin
         Ball.Cells := aCell;
 
          aPossibleOffside := GetSoccerPlayer(Ball.CellX , ball.cellY ); // verifica fuorigioco
-         if aPossibleoffside <> nil then begin
-            if isOffside ( aPlayer, aPossibleoffside )   then begin
-              // se è offside fallo freekick1
-              TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
-              if aPossibleoffside.team = 0 then
-                FreeKickSetup1( 1 ) // passa di turno all'avversario e aspetta short.passing o lofted.pass
-              else
-                FreeKickSetup1( 0 ); // passa di turno all'avversario e aspetta short.passing o lofted.pass
-              reason := '';
-             // TsScript[incMove].add ('E');
-              goto MyExit;
-            end;
+         if checkOffside  ( aPlayer, aPossibleOffside ) then begin
+           reason := '';
+           goto MyExit;
          end;
+
 
         if (AbsDistance(aPlayer.CellX,aPlayer.CellY, aCell.X, aCell.Y ) <=1) then // = 1) or (aPlayer.CellY = aCell.Y) or (aPlayer.CellX = aCell.X) then
           ExceptPlayers.Add(aPlayer); // no ai_moveAll dopo per questo player
@@ -7067,11 +7086,8 @@ begin
 
           end;
 
-          TeamMovesLeft := TeamMovesLeft - 1;
-          AI_moveAll ;
-          if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-          TsScript[incMove].add ('E');
-          reason :='';
+          reason := '';
+          InputSecureExit ( True, DecNormal );
           goto MyExit;
 
 
@@ -7083,18 +7099,9 @@ begin
          // OldBall:= Point ( Ball.CellX , Ball.Celly );
 
          aPossibleOffside := GetSoccerPlayer(Ball.CellX , ball.cellY );
-         if aPossibleoffside <> nil then begin
-          if isOffside ( aPlayer, aPossibleoffside )   then begin
-            //come fallo freekick1
-            TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
-            if aPossibleoffside.team = 0 then
-              FreeKickSetup1( 1 ) // aspetta short.passing o lofted.pass
-            else
-              FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
-            reason := '';
-          //  TsScript[incMove].add ('E');
-            goto MyExit;
-          end;
+         if checkOffside  ( aPlayer, aPossibleOffside ) then begin
+           reason := '';
+           goto MyExit;
          end;
 
           CompileHeadingList (aPlayer.Team{avversari di}, 1{MaxDistance}, CellX, CellY, LstHeading  );
@@ -7140,17 +7147,14 @@ begin
                 Ball.Player.xpDevA := Ball.Player.xpDevA + 1; // riceve il rimbalzo
               end;
 
-                TeamMovesLeft := TeamMovesLeft - 1;
 
                 ExceptPlayers.Add(aPlayer);
                 ExceptPlayers.Add(aFriend);
                 ExceptPlayers.Add(aHeadingOpponent);
-                AI_moveAll;
-                if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-                TsScript[incMove].add ('E');
-
-                reason :='';
+                reason := '';
+                InputSecureExit ( True, DecNormal );
                 goto MyExit;
+
             end
             else begin // lop su friend se heading difensivo NON riesce passo al prossimo I lstHeading
                // passo la cella dove è avvenuto il colpo di testa o tentativo
@@ -7177,20 +7181,11 @@ begin
               if (aRnd3 >= LOP_BC_MIN1) and (aRnd3 <= LOP_BC_MIN2)   then begin //freind non controlla la palla
                    aCell:= GetRandomCell  (  Ball.CellX, Ball.CellY , 1 , false ,true);
                    Ball.Cells := aCell;
-                     aPossibleOffside := GetSoccerPlayer(Ball.CellX , ball.cellY );
-                     if aPossibleoffside <> nil then begin
-                      if isOffside ( aFriend, aPossibleoffside )   then begin
-                        //come fallo freekick1
-                        TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
-                        if aPossibleoffside.team = 0 then
-                          FreeKickSetup1( 1 ) // aspetta short.passing o lofted.pass
-                        else
-                          FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
-                        reason := '';
-                       // TsScript[incMove].add ('E');
-                        goto MyExit;
-                      end;
-                     end;
+                   aPossibleOffside := GetSoccerPlayer(Ball.CellX , ball.cellY );
+                   if checkOffside  ( aFriend, aPossibleOffside ) then begin
+                     reason := '';
+                     goto MyExit;
+                   end;
                    tsSpeaker.Add(aFriend.Surname + ' controlla male');
 
                      TsScript[incMove].add ('sc_lop.ballcontrol.bounce,' + aPlayer.Ids {Lop} + ','+ aFriend.ids{cella}
@@ -7205,12 +7200,10 @@ begin
                       Ball.Player.Shot := Ball.Player.Shot + 1;
                       Ball.Player.BonusFinishingTurn := 1;
                     end;
-                      TeamMovesLeft := TeamMovesLeft - 1;
-                      AI_moveAll ;
-                      if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-                      TsScript[incMove].add ('E');
-                      reason :='';
-                      goto MyExit;
+
+                    reason := '';
+                    InputSecureExit ( True, DecNormal );
+                    goto MyExit;
 
 
               end
@@ -7218,18 +7211,9 @@ begin
                  aCell:= GetRandomCell  ( Ball.CellX, Ball.CellY , 1, false ,true ); {  : possibile cell=nil }
                    Ball.CellS := aCell;
                    aPossibleOffside := GetSoccerPlayer(Ball.CellX , ball.cellY );
-                   if aPossibleoffside <> nil then begin
-                    if isOffside ( aFriend, aPossibleoffside )   then begin
-                      //come fallo freekick1
-                      TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
-                      if aPossibleoffside.team = 0 then
-                        FreeKickSetup1( 1 ) // aspetta short.passing o lofted.pass
-                      else
-                        FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
-                      reason := '';
-                    //  TsScript[incMove].add ('E');
-                      goto MyExit;
-                    end;
+                   if checkOffside  ( aFriend, aPossibleOffside ) then begin
+                     reason := '';
+                     goto MyExit;
                    end;
 
                    if GetSoccerPlayer (ball.CellX , ball.celly) = nil then begin
@@ -7242,28 +7226,16 @@ begin
                      aFriend.CellS:= aCell;
                      tsSpeaker.Add(aPlayer.Surname +' controlla e si sposta ');
 
-                      TeamMovesLeft := TeamMovesLeft - 1;
-                      AI_moveAll ;
-                      if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-                      TsScript[incMove].add ('E');
-                      reason :='';
+                      reason := '';
+                      InputSecureExit ( True, DecNormal );
                       goto MyExit;
 
                    end
                    else Begin
                      aPossibleOffside := GetSoccerPlayer(Ball.CellX , ball.cellY );
-                     if aPossibleoffside <> nil then begin
-                      if isOffside ( aFriend, aPossibleoffside )   then begin
-                        //come fallo freekick1
-                        TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
-                        if aPossibleoffside.team = 0 then
-                          FreeKickSetup1( 1 ) // aspetta short.passing o lofted.pass
-                        else
-                          FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
-                        reason := '';
-                       // TsScript[incMove].add ('E');
-                        goto MyExit;
-                      end;
+                     if checkOffside  ( aFriend, aPossibleOffside ) then begin
+                       reason := '';
+                       goto MyExit;
                      end;
                      TsScript[incMove].add ('sc_lop.ballcontrol.bounce,' + aPlayer.Ids {Lop} + ','+ aFriend.ids{cella}
                                                            + ',' + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) {celle}
@@ -7281,18 +7253,9 @@ begin
                    aFriend.xpDevT := aFriend.xpDevT + 2;
 
                    aPossibleOffside := GetSoccerPlayer(Ball.CellX , ball.cellY );
-                   if aPossibleoffside <> nil then begin
-                    if isOffside (aFriend, aPossibleoffside )   then begin
-                      //come fallo freekick1
-                      TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
-                      if aPossibleoffside.team = 0 then
-                        FreeKickSetup1( 1 ) // aspetta short.passing o lofted.pass
-                      else
-                        FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
-                      reason := '';
-                    //  TsScript[incMove].add ('E');
-                      goto MyExit;
-                    end;
+                   if checkOffside  ( aFriend, aPossibleOffside ) then begin
+                     reason := '';
+                     goto MyExit;
                    end;
 
               end;
@@ -7309,18 +7272,9 @@ begin
            Ball.CellS := Point (CellX, CellY);
 
              aPossibleOffside := GetSoccerPlayer(Ball.CellX , ball.cellY );
-             if aPossibleoffside <> nil then begin
-              if isOffside ( aPlayer, aPossibleoffside )   then begin
-                //come fallo freekick1
-                TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
-                if aPossibleoffside.team = 0 then
-                  FreeKickSetup1( 1 ) // aspetta short.passing o lofted.pass
-                else
-                  FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
-                reason := '';
-              //  TsScript[incMove].add ('E');
-                goto MyExit;
-              end;
+             if checkOffside  ( aPlayer, aPossibleOffside ) then begin
+               reason := '';
+               goto MyExit;
              end;
 
 
@@ -7409,14 +7363,9 @@ begin
                                   Ball.Player.xpDevA := Ball.Player.xpDevA + 1;
                                 end;
                               end;
-                                // POS finisce con rimbalzo della difesa grazie a intercept
-                              //  aPlayer.resetALL;
-                                TeamMovesLeft := TeamMovesLeft - 1;
-                                AI_moveAll ;
-                                if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-                                TsScript[incMove].add ('E');
-                                reason :='';
-                                goto MyExit;
+                              reason := '';
+                              InputSecureExit ( True, DecNormal );
+                              goto MyExit;
 
                             end;
 
@@ -7469,11 +7418,8 @@ begin
                                 Ball.Player.xpDevA := Ball.Player.xpDevA + 1;
                               end;
 
-                              TeamMovesLeft := TeamMovesLeft - 1;
-                              AI_moveAll ;
-                              if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-                              TsScript[incMove].add ('E');
-                              reason :='';
+                              reason := '';
+                              InputSecureExit ( True, DecNormal );
                               goto MyExit;
 
 
@@ -7514,11 +7460,8 @@ begin
                                     Ball.Player.xpDevA := Ball.Player.xpDevA + 1;
                                   end;
 
-                                  TeamMovesLeft := TeamMovesLeft - 1;
-                                  AI_moveAll ;
-                                  if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-                                  TsScript[incMove].add ('E');
-                                  reason :='';
+                                  reason := '';
+                                  InputSecureExit ( True, DecNormal );
                                   goto MyExit;
                                 end
                                 else begin
@@ -7555,11 +7498,6 @@ begin
                end;
 
       end;
-//      aPlayer.resetALL;
-//      TeamMovesLeft := TeamMovesLeft - 1;
-//      if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-//      TsScript[incMove].add ('E');
-
 
     end
 
@@ -7610,18 +7548,9 @@ begin
             end
             else if aGhost.Team =  aPlayer.Team then begin    // cella sbagliata compagno ball.control - 2
                aPossibleOffside := GetSoccerPlayer(Ball.CellX , ball.cellY );
-               if aPossibleoffside <> nil then begin
-                if isOffside ( aPlayer, aPossibleoffside )   then begin
-                  //come fallo freekick1
-                  TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
-                  if aPossibleoffside.team = 0 then
-                    FreeKickSetup1( 1 ) // aspetta short.passing o lofted.pass
-                  else
-                    FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
-                  reason := '';
-                //  TsScript[incMove].add ('E');
-                  goto MyExit;
-                end;
+               if checkOffside  ( aPlayer, aPossibleOffside ) then begin
+                 reason := '';
+                 goto MyExit;
                end;
 
                 aFriend := aGhost;
@@ -7642,18 +7571,9 @@ begin
                    aCell:= GetRandomCell  (  Ball.CellX, Ball.CellY , 1 , false ,true);
                    Ball.Cells := aCell;
                    aPossibleOffside := GetSoccerPlayer(Ball.CellX , ball.cellY );
-                   if aPossibleoffside <> nil then begin
-                    if isOffside ( afriend, aPossibleoffside )   then begin
-                      //come fallo freekick1
-                      TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
-                      if aPossibleoffside.team = 0 then
-                        FreeKickSetup1( 1 ) // aspetta short.passing o lofted.pass
-                      else
-                        FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
-                      reason := '';
-                    //  TsScript[incMove].add ('E');
-                      goto MyExit;
-                    end;
+                   if checkOffside  ( aFriend, aPossibleOffside ) then begin
+                     reason := '';
+                     goto MyExit;
                    end;
                    tsSpeaker.Add(aFriend.Surname + ' controlla male ');
 
@@ -7666,18 +7586,9 @@ begin
                    aCell:= GetRandomCell  ( Ball.CellX, Ball.CellY , 1, false  ,true);
                      Ball.CellS := aCell;
                    aPossibleOffside := GetSoccerPlayer(Ball.CellX , ball.cellY );
-                   if aPossibleoffside <> nil then begin
-                    if isOffside ( aFriend, aPossibleoffside )   then begin
-                      //come fallo freekick1
-                      TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
-                      if aPossibleoffside.team = 0 then
-                        FreeKickSetup1( 1 ) // aspetta short.passing o lofted.pass
-                      else
-                        FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
-                      reason := '';
-                    //  TsScript[incMove].add ('E');
-                      goto MyExit;
-                    end;
+                   if checkOffside  ( aFriend, aPossibleOffside ) then begin
+                     reason := '';
+                     goto MyExit;
                    end;
 
                    if GetSoccerPlayer (ball.CellX , ball.celly) = nil then begin
@@ -7702,18 +7613,9 @@ begin
                 else if (aRnd3 >= LOP_BC_MAX1) and (aRnd3 <= MAXINT )   then begin // controlla perfettamente
 
                      aPossibleOffside := GetSoccerPlayer(Ball.CellX , ball.cellY );
-                     if aPossibleoffside <> nil then begin
-                      if isOffside ( aPlayer, aPossibleoffside )   then begin
-                        //come fallo freekick1
-                        TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
-                        if aPossibleoffside.team = 0 then
-                          FreeKickSetup1( 1 ) // aspetta short.passing o lofted.pass
-                        else
-                          FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
-                        reason := '';
-                     //   TsScript[incMove].add ('E');
-                        goto MyExit;
-                      end;
+                     if checkOffside  ( aPlayer, aPossibleOffside ) then begin
+                       reason := '';
+                       goto MyExit;
                      end;
                        TsScript[incMove].add ('sc_lop.ballcontrol.ok10,' + aPlayer.Ids {Lop} + ','+ aFriend.ids{cella}
                                                              + ',' + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) {celle}
@@ -7809,19 +7711,10 @@ begin
           Ball.Cells := Point (CellX, CellY );
          aPossibleOffside := GetSoccerPlayer(Ball.CellX , ball.cellY );
 
-         if aPossibleoffside <> nil then begin
-          if isOffside ( aPlayer, aPossibleoffside )   then begin
-            //come fallo freekick1
-            TsScript[incMove].add ('sc_fault,' + aPossibleoffside.Ids +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
-            if aPossibleoffside.team = 0 then
-              FreeKickSetup1( 1 ) // aspetta short.passing o lofted.pass
-            else
-              FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
-            reason := '';
-            //TsScript[incMove].add ('E');
-            goto MyExit;
-          end;
-         end;
+           if checkOffside  ( aPlayer, aPossibleOffside ) then begin
+             reason := '';
+             goto MyExit;
+           end;
           if (AbsDistance(aPlayer.CellX,aPlayer.CellY, ball.cellX, Ball.CellY ) <=1) then // = 1) or (aPlayer.CellY = aCell.Y) or (aPlayer.CellX = aCell.X) then
 //              if (AbsDistance(aPlayer.CellX,aPlayer.CellY, aCell.X, aCell.Y ) = 1) or (aPlayer.CellY = aCell.Y) or (aPlayer.CellX = aCell.X) then
             ExceptPlayers.Add(aPlayer);
@@ -7829,11 +7722,9 @@ begin
 
     end;
 //      aPlayer.resetALL;
-      TeamMovesLeft := TeamMovesLeft - 1;
-
-      AI_moveAll ;
-      if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-      TsScript[incMove].add ('E');
+    reason := '';
+    InputSecureExit ( True, DecNormal );
+    goto MyExit;
 
 
   end // LOP
@@ -7959,11 +7850,8 @@ GK:
           aGK.Stamina := aGK.Stamina - cost_GKprs;// presa semplice
           aGK.xp_Defense:= aGK.xp_Defense+1;
           aGK.xpDevA := aGK.xpDevA + 1;
-          TeamMovesLeft := TeamMovesLeft - 1;
-          AI_moveAll ;
-          if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-          TsScript[incMove].add ('E');
           reason := '';
+          InputSecureExit ( True, DecNormal );
           goto MyExit;
 
         end
@@ -7979,7 +7867,6 @@ GK:
                     else
                       FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
                     reason := '';
-                   // TsScript[incMove].add ('E');
                     goto MyExit;
                   end;
                  end;
@@ -8037,11 +7924,8 @@ GK:
 
         end;
 
-        TeamMovesLeft := TeamMovesLeft - 1;
-        AI_moveAll ;
-        if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-        TsScript[incMove].add ('E');
         reason := '';
+        InputSecureExit ( True, DecNormal );
         goto MyExit;
     end
 
@@ -8062,7 +7946,6 @@ GK:
             else
               FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
             reason := '';
-          //  TsScript[incMove].add ('E');
             goto MyExit;
           end;
          end;
@@ -8104,7 +7987,6 @@ GK:
             else
               FreeKickSetup1( 0 ); // aspetta short.passing o lofted.pass
             reason := '';
-           // TsScript[incMove].add ('E');
             goto MyExit;
           end;
          end;
@@ -8222,11 +8104,8 @@ HVSH:
 
               if DefenseHeadingWin then begin
             //    aPlayer.resetALL;
-                TeamMovesLeft := TeamMovesLeft - 1;
-                AI_moveAll ;
-                if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-                TsScript[incMove].add ('E');
                 reason := '';
+                InputSecureExit ( True, DecNormal );
                 goto MyExit;
               end;
 
@@ -8285,10 +8164,8 @@ HVSH:
                     ball.Player.xpDevA := ball.Player.xpDevA + 1;
                   end;
 
-                  TeamMovesLeft := TeamMovesLeft - 1;
-                  AI_moveAll ;
-                  if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-                  TsScript[incMove].add ('E');
+                  reason := '';
+                  InputSecureExit ( True, DecNormal );
                   goto MyExit;
               end
 
@@ -8329,11 +8206,8 @@ cro_crossbar:
                       ball.Player.xpDevA := ball.Player.xpDevA + 1;
                     end;
 
-                    TeamMovesLeft := TeamMovesLeft - 1;
-                    AI_moveAll ;
-                    if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-                    TsScript[incMove].add ('E');
                     reason := '';
+                    InputSecureExit ( True, DecNormal );
                     goto MyExit;
                   end;
 
@@ -8512,10 +8386,9 @@ cro_crossbar:
         tsSpeaker.Add( aPlayer.Surname +' (Dribbling) perde il dribbling su ' + anOpponent.Surname );
       end;
 
-                  TeamMovesLeft := TeamMovesLeft - 1;
-                  AI_moveAll ;
-                  if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-                  TsScript[incMove].add ('E');
+      reason := '';
+      InputSecureExit ( True, DecNormal );
+      goto MyExit;
 
 
 
@@ -8629,12 +8502,10 @@ cro_crossbar:
                 Ball.Player.BonusFinishingTurn := 1;
               end;
             // POS3 finisce con rimbalzo della difesa grazie a intercept
-           // aPlayer.resetALL;
-            TeamMovesLeft := TeamMovesLeft - 1;
-            AI_moveAll ;
-            //if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-            TsScript[incMove].add ('E');
+
+            //if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);  ??????????
             reason := '';
+            InputSecureExit ( True, DecNormal );
             goto MyExit;
           end
 
@@ -8729,13 +8600,9 @@ cro_crossbar:
                 end;
 
                   // POS finisce con rimbalzo della difesa grazie a intercept
-//                  aPlayer.resetALL;
-                  TeamMovesLeft := TeamMovesLeft - 1;
-                  AI_moveAll ;
-                  if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-                  TsScript[incMove].add ('E');
-                  reason:='';
-                  goto MyExit;
+                reason := '';
+                InputSecureExit ( True, DecNormal );
+                goto MyExit;
 
               end;
 
@@ -8792,9 +8659,9 @@ POSvsGK:
                  if Ball.BallisOutside then begin  // POS finisce con rimbalzo del portiere  in corner
 setCorner:
 //                  aPlayer.resetALL;
-                  CornerSetup ( aPlayer );
-                  reason:='';
-                    goto MyExit;
+                   CornerSetup ( aPlayer );
+                   reason:='';
+                   goto MyExit;
                  end;
                   // se chi riceve il rimbalzo è dello stesso Team
                   if Ball.Player <> nil then begin
@@ -8806,11 +8673,8 @@ setCorner:
                     Ball.Player.xpDevA := Ball.Player.xpDevA + 1;
                   end;
 
-                  TeamMovesLeft := TeamMovesLeft - 1;
-                  AI_moveAll ;
-                  if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-                  TsScript[incMove].add ('E');
-                  reason:='';
+                  reason := '';
+                  InputSecureExit ( True, DecNormal );
                   goto MyExit;
 
             end
@@ -8851,11 +8715,8 @@ setCorner:
                       Ball.Player.xpDevA := Ball.Player.xpDevA + 1;
                     end;
 
-                    TeamMovesLeft := TeamMovesLeft - 1;
-                    AI_moveAll ;
-                    if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-                    TsScript[incMove].add ('E');
-                    reason:='';
+                    reason := '';
+                    InputSecureExit ( True, DecNormal );
                     goto MyExit;
                   end
                   else begin
@@ -8985,12 +8846,9 @@ setCorner:
 
 
             // PRS3 finisce con rimbalzo della difesa grazie a intercept
-//            aPlayer.resetALL;
-            TeamMovesLeft := TeamMovesLeft - 1;
-            AI_moveAll ;
-            //if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-            TsScript[incMove].add ('E');
+            //if TeamMovesLeft <= 0 then TurnChange  (TurnMoves); ?????
             reason := '';
+            InputSecureExit ( True, DecNormal );
             goto MyExit;
           end;
         end;
@@ -9068,11 +8926,8 @@ setCorner:
 
                 // PRS finisce con cattura della difesa
 //                aPlayer.resetALL;
-                TeamMovesLeft := TeamMovesLeft - 1;
-                AI_moveAll;
-                if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-                TsScript[incMove].add ('E');
-                reason:='';
+                reason := '';
+                InputSecureExit ( True, DecNormal );
                 goto MyExit;
 
               end;
@@ -9131,11 +8986,8 @@ PRSvsGK:
 
               // PRS finisce con palla al portiere
 //              aPlayer.resetALL;
-              TeamMovesLeft := TeamMovesLeft - 1;
-              AI_moveAll ;
-              if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-              TsScript[incMove].add ('E');
-              reason:='';
+              reason := '';
+              InputSecureExit ( True, DecNormal );
               goto MyExit;
             end
 
@@ -9179,11 +9031,8 @@ prs_crossbar:
                       Ball.Player.xpDevA := Ball.Player.xpDevA + 1;
                     end;
 
-                    TeamMovesLeft := TeamMovesLeft - 1;
-                    AI_moveAll ;
-                    if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-                    TsScript[incMove].add ('E');
-                    reason:='';
+                    reason := '';
+                    InputSecureExit ( True, DecNormal );
                     goto MyExit;
                   end
                   else begin
@@ -9201,7 +9050,7 @@ prs_crossbar:
                     LoadDefaultTeamPos ( aGK.Team ) ;
                     TurnChange(TurnMovesStart);
                     TsScript[incMove].add ('E') ;
-reason:='';
+                    reason:='';
                     goto MyExit;
                   End;
             end;
@@ -9307,9 +9156,8 @@ Normalpressing:
           Minute := Minute + 1; // il minuto passa anche se non ha costo la skill
         end else TeamMovesLeft := TeamMovesLeft - 1;
 
-      if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-      TsScript[incMove].add ('E');
-      reason:='';
+      reason := '';
+      InputSecureExit(True,DecNone ); // doaimoveall, TeamMovesLeft l'ha fatto sopra in base al talento
       goto MyExit;
 
     end;
@@ -9344,10 +9192,9 @@ Normalpressing:
     aPlayer.BallControl := aPlayer.BallControl + PRO_VALUE;
     aPlayer.CanMove := false;
     aPlayer.CanSkill := false;
-    TeamMovesLeft := TeamMovesLeft - 1;
-    if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-    TsScript[incMove].add ('E');
-    reason:='';
+
+    reason := '';
+    InputSecureExit ( False, DecNormal );
     goto MyExit;
   end
 
@@ -9377,10 +9224,8 @@ Normalpressing:
 
     TsScript[incMove].add ('SERVER_STAY,' + aPlayer.ids ) ;
     aPlayer.stay := True;
-    TeamMovesLeft := TeamMovesLeft - 1;
-    if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-    TsScript[incMove].add ('E');
-    reason:='';
+    reason := '';
+    InputSecureExit ( False, DecNoResetPlayer );
     goto MyExit;
   end
   else if tsCmd[0] = 'FREE' then  begin
@@ -9409,10 +9254,8 @@ Normalpressing:
 
     TsScript[incMove].add ('SERVER_FREE,' + aPlayer.ids ) ;
     aPlayer.stay := false;
-    TeamMovesLeft := TeamMovesLeft - 1;
-    if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-    TsScript[incMove].add ('E');
-    reason:='';
+    reason := '';
+    InputSecureExit ( False, DecNoResetPlayer );
     goto MyExit;
   end
 
@@ -9448,11 +9291,8 @@ Normalpressing:
     Isfault := exec_tackle ( tsCmd[1]) ;
     case Isfault of
       0:Begin   // non è fallo
-        TeamMovesLeft := TeamMovesLeft - 1;
-        if TeamMovesLeft <= 0 then TurnChange (TurnMoves);// else TsScript[incMove].add ('E') ;
-        AI_MoveAll;
-        TsScript[incMove].add ('E');
-        reason:='';
+        reason := '';
+        InputSecureExit ( True, DecNormal );
         goto MyExit;
       end;
       1:Begin    // normale nella propria metacampo
@@ -9553,11 +9393,9 @@ Normalpressing:
 
     TsScript[incMove].add ('sc_tactic,' + aPlayer.ids + ',' + IntToStr(aPlayer.defaultCellX) + ',' + IntToStr(aPlayer.defaultCellY) + ',' + tsCmd[2] + ',' + tsCmd[3]) ;
     TsScript[incMove].add ('sc_TML,' + IntTostr(FTeamMovesLeft) + ',' + IntTostr(TeamTurn)+ ',' + IntToStr(ShpFree) ) ;    // non incremento i minuti ma le mosse decrementano
-    fTeamMovesLeft := fTeamMovesLeft -1 ;
-    if TeamMovesLeft <= 0 then TurnChange (TurnMoves);// else TsScript[incMove].add ('E') ;
-//    TeamMovesLeft := TeamMovesLeft -1 ;
-    TsScript[incMove].add ('E');
-    reason:='';
+
+    reason := '';
+    InputSecureExit ( False, DecNoResetPlayer );
     goto MyExit;
 
 
@@ -9661,12 +9499,11 @@ Normalpressing:
     Score.TeamSubs[aPlayer2.Team]:= Score.TeamSubs[aPlayer2.Team] + 1;
     TsScript[incMove].add ('sc_sub,' + aPlayer.ids  + ',' + aPlayer2.ids) ;
 
-    fTeamMovesLeft := fTeamMovesLeft -1 ;
     TsScript[incMove].add ('sc_TML,' + IntTostr(FTeamMovesLeft) + ',' + IntTostr(TeamTurn)+ ',' + IntToStr(ShpFree) ) ;    // non incremento i minuti
-//    TeamMovesLeft := TeamMovesLeft -1 ;
-    if TeamMovesLeft <= 0 then TurnChange (TurnMoves);// else TsScript[incMove].add ('E') ;
-    TsScript[incMove].add ('E');
-    reason:='';
+    reason := '';
+    InputSecureExit ( False, DecNoResetPlayer );
+    goto MyExit;
+
     if GameMode = pvp then
       MatchInfo.Add( IntToStr(fminute) + '.sub.' + aPlayer.ids + '.' + aPlayer2.ids  )
       else MatchInfo.Add( IntToStr(fminute) + '.sub.' + aPlayer.ids + '.' + aPlayer.SurName + '.' + aPlayer2.ids + '.' + aPlayer2.SurName);
@@ -9745,12 +9582,9 @@ Normalpressing:
     IntTostr ( aPlayer.Speed ) +',Speed,'+ aPlayer.ids+','+IntTostr(Roll.value)+','+Roll.fatigue+ '.0'+',0');
 
     if aPlayer.MovePath.Count = 0 then begin  // USCITA per via del roll con fatigue
-      TeamMovesLeft := TeamMovesLeft - 1;
       ExceptPlayers.Add(aPlayer);
-      AI_moveAll;
-      if TeamMovesLeft <= 0 then TurnChange (TurnMoves);// else TsScript[incMove].add ('E') ;
-      TsScript[incMove].add ('E');
-      reason:='';
+      reason := '';
+      InputSecureExit ( true, DecNormal );
       goto MyExit;
     end;
 
@@ -9820,7 +9654,7 @@ Normalpressing:
      aPlayer.Shot   := aPlayer.Defaultshot + 2 + aPlayer.tmp;   // sono differenti buff tra tackle, dribbling e movetoball
      aPlayer.Passing   := aPlayer.DefaultPassing + 2 ;
     end;
-    TeamMovesLeft := TeamMovesLeft - 1;
+
     case aPlayer.Team of
       0: begin
         if aPlayer.CellX <= 5 then
@@ -9837,10 +9671,8 @@ Normalpressing:
     //if aPlayer.HasBall and ( w_FreeKick1 ) then Ball.Player.isFK1 := True;
 
     ExceptPlayers.Add(aPlayer);
-    AI_moveAll;
-    if TeamMovesLeft <= 0 then TurnChange (TurnMoves);// else TsScript[incMove].add ('E') ;
-    TsScript[incMove].add ('E');
-    reason:='';
+    reason := '';
+    InputSecureExit ( true, DecNormal );
     goto MyExit;
 
   end
@@ -10426,10 +10258,8 @@ buffd:
     TsScript[incMove].add ('SERVER_BUFFD,' + aPlayer.ids ) ;
 
 
-    TeamMovesLeft := TeamMovesLeft - 1;
-    if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-    TsScript[incMove].add ('E');
-    reason:='';
+    reason := '';
+    InputSecureExit ( true, DecNoResetPlayer );
     goto MyExit;
   end
   else if tsCmd[0] = 'BUFFM' then  begin
@@ -10485,10 +10315,8 @@ buffm:
       end;
       aList.Free;
     end;
-    TeamMovesLeft := TeamMovesLeft - 1;
-    if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-    TsScript[incMove].add ('E');
-    reason:='';
+    reason := '';
+    InputSecureExit ( true, DecNoResetPlayer );
     goto MyExit;
   end
   else if tsCmd[0] = 'BUFFF' then  begin
@@ -10543,10 +10371,8 @@ bufff:
       aList.Free;
     end;
 
-    TeamMovesLeft := TeamMovesLeft - 1;
-    if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-    TsScript[incMove].add ('E');
-    reason:='';
+    reason := '';
+    InputSecureExit ( true, DecNoResetPlayer );
     goto MyExit;
   end
 
