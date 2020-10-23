@@ -22,9 +22,8 @@
   { TODO -ctodo prima del rilascio patreon :
 
 
-    Thread minimo 5 secondi. massimo la somma di ai_moveall + clwait vari
-    Invece di gettickcount uso un dec (EstimatedTime). In OnAppMessage cambio con application.processmessages oppure chiamo
-    il thread ogni N millisecondi.
+
+    freekick a mio favore ha proseguito con AUTO, ma lo deve fare di suo, il CRO2. ci sarà lo stesso problema su COR
 
     le sub sono piene di bug.
 
@@ -1631,7 +1630,6 @@ begin
       while incMoveAllProcessed [LastMoveBrain] = false do begin // fino a quando c'è l'animazione non fa ai_think
         mainThread.OnTimer (mainThread);
         SE_Theater1.thrdAnimate.OnTimer(SE_Theater1.thrdAnimate);
-
         ThreadCurrentIncMove.OnTimer (ThreadCurrentIncMove);
       end;
 
@@ -14282,7 +14280,7 @@ begin
             HHFP (SelectedPlayer.MovePath[SelectedPlayer.MovePath.count-1].X , SelectedPlayer.MovePath[SelectedPlayer.MovePath.count-1].Y, 0 );
             if  SelectedPlayer.HasBall then begin
               BaseChancePlmBallControl:= MyBrain.CalculateBasePlmBallControl ( SelectedPlayer );
-              CreateBaseAttribute (  CellX, CellY, BaseChancePlmBallControl );
+              CreateBaseAttribute (  SelectedPlayer.CellX, SelectedPlayer.CellY, BaseChancePlmBallControl );
               ArrowShowMoveAutoTackle  ( SelectedPlayer.MovePath[SelectedPlayer.MovePath.count-1].X , SelectedPlayer.MovePath[SelectedPlayer.MovePath.count-1].Y) ;
               HHFP (SelectedPlayer.MovePath[SelectedPlayer.MovePath.count-1].X , SelectedPlayer.MovePath[SelectedPlayer.MovePath.count-1].Y, 0 );
             end;
@@ -14340,7 +14338,7 @@ begin
               CreateBaseAttribute (  MyBrain.Ball.Player.CellX, MyBrain.Ball.Player.CellY, BaseCrossingChance );
               ArrowShowCrossingHeading( CellX, CellY) ;  // createattribute all'interno
               // FRIEND
-              BaseCrossingHeadingFriendChance := MyBrain.CalculateBaseCrossingHeadingFriend( CellX, CellY, aPlayer );
+              BaseCrossingHeadingFriendChance := MyBrain.CalculateBaseCrossingHeadingFriend( CellX, CellY, aFriend );
               CreateBaseAttribute (  CellX, CellY, BaseCrossingHeadingFriendChance );
               HHFP( CellX, CellY, 0);
             end;
