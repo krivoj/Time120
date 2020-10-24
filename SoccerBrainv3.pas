@@ -696,6 +696,16 @@ end;
         function CheckInputDri (aPlayer: TsoccerPlayer; CellX, CellY: integer; tsCmd: Tstringlist): string;
         function CheckInputPos (aPlayer: TsoccerPlayer; CellX, CellY: integer; tsCmd: Tstringlist): string;
         function CheckInputPrs (aPlayer: TsoccerPlayer; CellX, CellY: integer; tsCmd: Tstringlist): string;
+        function CheckInputPre (aPlayer: TsoccerPlayer; tsCmd: Tstringlist): string;
+        function CheckInputPro (aPlayer: TsoccerPlayer; tsCmd: Tstringlist): string;
+        function CheckInputTac (aPlayer: TsoccerPlayer; tsCmd: Tstringlist): string;
+        function CheckInputPlm (aPlayer: TsoccerPlayer; CellX, CellY: integer; tsCmd: Tstringlist): string;
+
+        function CheckInputStay (aPlayer: TsoccerPlayer; tsCmd: Tstringlist): string;
+        function CheckInputFree (aPlayer: TsoccerPlayer; tsCmd: Tstringlist): string;
+
+        function CheckInputTactic (aPlayer: TsoccerPlayer; CellX, CellY: integer; tsCmd: Tstringlist): string;
+        function CheckInputSub (aPlayer,aPlayer2: TsoccerPlayer; tsCmd: Tstringlist): string;
 
         function CheckOffside ( FromPlayer, aPossibleoffside: TSoccerPlayer ): boolean;
 
@@ -6542,6 +6552,7 @@ end;
 
 function TSoccerbrain.CheckInputShp (aPlayer: TsoccerPlayer; CellX, CellY: integer; tsCmd: Tstringlist ): string;
 begin
+  Result := '';
   if aPlayer = nil then begin
    Result := 'SHP,Ball.Player not found Ts:' + tsCmd.CommaText;
    Exit; // hack
@@ -6575,6 +6586,7 @@ function TSoccerbrain.CheckInputLop (aPlayer: TsoccerPlayer; CellX, CellY: integ
 var
   aFriend: TSoccerPlayer;
 begin
+  Result := '';
   if aPlayer = nil then begin
    Result := 'LOP,Ball.Player not found Ts:' +tsCmd.CommaText ;
    Exit; // hack
@@ -6620,6 +6632,7 @@ function TSoccerbrain.CheckInputCro (aPlayer: TsoccerPlayer; CellX, CellY: integ
 var
   aHeadingFriend: TSoccerPlayer;
 begin
+  Result := '';
   if w_SomeThing  then begin
    Result := 'CRO, waiting freekick Ts:' + tsCmd.CommaText;
    Exit; // hack
@@ -6656,6 +6669,12 @@ function TSoccerbrain.CheckInputDri (aPlayer: TsoccerPlayer; CellX, CellY: integ
 var
   anOpponent: TSoccerPlayer;
 begin
+  Result := '';
+  if w_SomeThing  then begin
+   Result := 'DRI, waiting freekick Ts:'+ tsCmd.CommaText;
+   Exit; // hack
+  end;  // concesso nulla
+
   if aPlayer = nil then begin
    Result := 'DRI,Ball.Player not found Ts:'+ tsCmd.CommaText;
    Exit; // hack
@@ -6688,6 +6707,7 @@ begin
 end;
 function TSoccerbrain.CheckInputPos (aPlayer: TsoccerPlayer; CellX, CellY: integer; tsCmd: Tstringlist ): string;
 begin
+  Result := '';
   if w_CornerSetup or w_Coa or w_cod or w_CornerKick or w_FreeKickSetup1 or w_Fka1 or w_Fka2 or w_FreeKick1 or w_FreeKickSetup2 or w_Fka2 or w_Fkd2 or w_FreeKick2
   {or w_FreeKickSetup3 or w_Fka3 or w_Fkd3 or  w_Fka4 or w_FreeKickSetup4 }   then begin
    Result := 'POS, waiting freekick  Ts:'+ tsCmd.CommaText;
@@ -6715,6 +6735,7 @@ begin
 end;
 function TSoccerbrain.CheckInputPrs (aPlayer: TsoccerPlayer; CellX, CellY: integer; tsCmd: Tstringlist ): string;
 begin
+  Result := '';
   if w_CornerSetup or w_Coa or w_cod or w_CornerKick or w_FreeKickSetup1 or w_FreeKick1 or  w_Fka1 or w_Fka2 or w_FreeKickSetup2 or w_Fka2 or w_Fkd2 or w_FreeKick2
   {or w_FreeKickSetup3 or w_Fka3 or w_Fkd3 or  w_Fka4 or w_FreeKickSetup4}    then begin
    result := 'PRS, waiting freekick  Ts:'+ tsCmd.CommaText;
@@ -6741,6 +6762,288 @@ begin
   end;
 
 end;
+function TSoccerbrain.CheckInputPre (aPlayer: TsoccerPlayer; tsCmd: Tstringlist): string;
+begin
+  Result := '';
+  if w_SomeThing  then begin
+   result := 'PRE, waiting freekick Ts:'+ tsCmd.CommaText;
+   exit; // hack
+  end;  // concesso nulla
+
+  if aPlayer = nil then begin
+   result := 'PRE,Player not found Ts:'+ tsCmd.CommaText;
+   exit; // hack
+  end;
+  if not aPlayer.CanSkill then begin
+   result := 'PRE,Player unable to use skill Ts:'+ tsCmd.CommaText;
+   exit; // hack
+  end;
+  if Ball.Player = nil then begin
+   result := 'PRE,Ball.Player not found Ts:'+ tsCmd.CommaText;
+   exit; // hack
+  end;
+  if Ball.Player.team = aPlayer.Team then Begin
+   result := 'PRE,Ball.Player same team Ts:'+ tsCmd.CommaText;
+   exit; // hack
+  End;
+  if Ball.Player.TalentId1 =  TALENT_ID_GOALKEEPER then begin
+   result := 'PRE,Ball.Player is GK Ts:'+ tsCmd.CommaText;
+   exit; // hack
+  end;
+
+end;
+function TSoccerbrain.CheckInputPro (aPlayer: TsoccerPlayer; tsCmd: Tstringlist): string;
+begin
+  Result := '';
+  if w_SomeThing  then begin
+   result := 'PRO, waiting freekick Ts:'+ tsCmd.CommaText;
+   exit; // hack
+  end;  // concesso nulla
+  if aPlayer = nil then begin
+   result := 'PRO,Player not found Ts:'+ tsCmd.CommaText;
+   exit; // hack
+  end;
+  if not aPlayer.CanSkill then begin
+   result := 'PRO,Player unable to use skill Ts:'+ tsCmd.CommaText;
+   exit; // hack
+  end;
+  if Ball.Player.Team <> teamTurn then begin
+   result := 'PRO,turn mismatch Ts:'+ tsCmd.CommaText;
+   exit; // hack
+  end;
+end;
+function TSoccerbrain.CheckInputTac (aPlayer: TsoccerPlayer; tsCmd: Tstringlist): string;
+begin
+  Result := '';
+  if w_SomeThing  then begin
+   result := 'TAC, waiting freekick ';
+   exit; // hack
+  end;  // concesso nulla
+
+  if aPlayer = nil then begin
+   result := 'TAC,Player not found';
+   exit; // hack
+  end;
+  if not aPlayer.CanSkill then begin
+   result := 'TAC,Player unable to Skill';
+   exit; // hack
+  end;
+  if Ball.player = nil then begin
+   result := 'TAC,Ball.Player not found';
+   exit; // hack
+  end;
+end;
+function TSoccerbrain.CheckInputStay (aPlayer: TsoccerPlayer; tsCmd: Tstringlist): string;
+begin
+  Result := '';
+  if w_SomeThing  then begin
+   result := 'STAY, waiting freekick Ts:'+ tsCmd.CommaText;
+   exit; // hack
+  end;  // concesso nulla
+  if aPlayer = nil then begin
+   result := 'STAY,Player not found Ts:'+ tsCmd.CommaText;
+   exit; // hack
+  end;
+  if aPlayer.Team <> teamTurn then begin
+   result := 'STAY,turn mismatch Ts:'+ tsCmd.CommaText;
+   exit; // hack
+  end;
+  if aPlayer.TalentID1 = TALENT_ID_GOALKEEPER then begin
+   result := 'STAY,GK Ts:'+ tsCmd.CommaText;
+   exit; // hack
+  end;
+  if minute >= 120 then begin
+   result := 'STAY, 120+ Ts:'+ tsCmd.CommaText;
+   exit; // hack
+
+  end;
+end;
+function TSoccerbrain.CheckInputFree (aPlayer: TsoccerPlayer; tsCmd: Tstringlist): string;
+begin
+  Result := '';
+  if w_SomeThing  then begin
+   result := 'FREE, waiting freekick Ts:'+ tsCmd.CommaText;
+   exit; // hack
+  end;  // concesso nulla
+  if aPlayer = nil then begin
+   result := 'FREE,Player not found Ts:'+ tsCmd.CommaText;
+   exit; // hack
+  end;
+  if aPlayer.Team <> teamTurn then begin
+   result := 'FREE,turn mismatch Ts:'+ tsCmd.CommaText;
+   exit; // hack
+  end;
+  if aPlayer.TalentID1 = TALENT_ID_GOALKEEPER then begin
+   result := 'FREE,GK Ts:'+ tsCmd.CommaText;
+   exit; // hack
+  end;
+  if minute >= 120 then begin
+   result := 'FREE, 120+  Ts:'+ tsCmd.CommaText;
+   exit; // hack
+
+  end;
+end;
+function TSoccerbrain.CheckInputTactic (aPlayer: TsoccerPlayer; CellX, CellY: integer; tsCmd: Tstringlist): string;
+var
+  aPossiblePlayer2: TSoccerPlayer;
+begin
+  Result := '';
+  if w_SomeThing  then begin
+   result := 'TACTIC, waiting freekick Ts:'+ tsCmd.CommaText;
+   exit; // hack
+  end;  // concesso nulla
+
+  if aPlayer = nil then begin
+   result := 'TACTIC,Player not found Ts:'+ tsCmd.CommaText;
+   exit; // hack
+  end;
+
+
+  if IsOutSide(  CellX, CellY) then Begin
+   result := 'TACTIC,Cells outside Ts:'+ tsCmd.CommaText;
+   exit; // hack
+
+  End;
+
+  if (isGKcell ( CellX, CellY ) ) and (aPlayer.talentID1 <> TALENT_ID_GOALKEEPER) then Begin
+      // un goalkeeper può essere schierato solo in porta
+   result := 'TACTIC,GK cell Ts:'+ tsCmd.CommaText;
+   exit; // hack
+  End;
+  if  ( not isGKcell ( CellX, CellY ) ) and (aPlayer.talentID1 = TALENT_ID_GOALKEEPER) then begin
+  // un goalkeeper può essere schierato solo in porta
+   result := 'TACTIC, not GK cell Ts:'+ tsCmd.CommaText;
+   exit; // hack
+  end;
+
+  if (aPlayer.Team  = 0)
+    and ( (CellX = 1) or (CellX = 3)  or (CellX = 4) or (CellX = 6) or (CellX = 7) or (CellX = 9) or (CellX = 10) or (CellX = 11) ) then Begin
+   result := 'TACTIC, Cell mismatch team Ts:'+ tsCmd.CommaText;
+   exit; // hack
+  End;
+
+  if (aPlayer.Team  = 1)
+    and ( (CellX = 0) or (CellX = 1)  or (CellX = 2) or (CellX = 4) or (CellX = 5) or (CellX = 7) or (CellX = 8) or (CellX = 10) ) then Begin
+   result := 'TACTIC, Cell mismatch team  Ts:'+ tsCmd.CommaText;
+   exit; // hack
+  End;
+
+  if isReserveSlot ( aPlayer.CellX , aPlayer.CellY ) then begin
+   result := 'TACTIC, Player is outside ';
+   exit; // hack
+  End;
+
+  aPossiblePlayer2 := GetSoccerPlayerDefault ( CellX, CellY); // importante default
+  if aPossiblePlayer2 <> nil then begin
+   result := 'TACTIC, Cells occupied  Ts:'+ tsCmd.CommaText;
+   exit; // hack
+  End;
+
+  if minute >= 120 then begin
+   result := 'TACTIC, 120+ Ts:'+ tsCmd.CommaText;
+   exit; // hack
+
+  end;
+end;
+function TSoccerbrain.CheckInputSub (aPlayer, aPlayer2: TsoccerPlayer; tsCmd: Tstringlist): string;
+var
+  CellX, CellY: Integer;
+begin
+  Result := '';
+  if w_SomeThing  then begin
+   result := 'SUB, waiting freekick Ts:'+ tsCmd.CommaText;
+   exit; // hack
+  end;  // concesso nulla
+
+  if aPlayer = nil then begin
+   result := 'SUB,Player not found Ts:'+ tsCmd.CommaText;
+   exit; // hack
+  end;
+
+  if Score.TeamSubs [ aPlayer.Team ]  >= 3 then Begin
+   result := 'SUB, Max 3 substitution Ts:'+ tsCmd.CommaText;
+   exit; // hack
+  end;
+
+  if aPlayer2 = nil then begin
+   result := 'SUB,Player2 not found Ts:'+ tsCmd.CommaText;
+   exit; // hack
+  end;
+
+  if aPlayer2.Team <> aPlayer.Team then begin
+   result := 'SUB, Players team mismatch Ts:'+ tsCmd.CommaText;
+   exit; // hack
+  End;
+
+  if aPlayer2.ids = aPlayer.ids then begin
+   result := 'SUB, same Players Ts:'+ tsCmd.CommaText;
+   exit; // hack
+  End;
+
+  CellX := aPlayer2.cellX;
+  CellY := aPlayer2.cellY;
+
+  if IsOutSide(  CellX, CellY) then Begin
+   result := 'SUB,Cells outside Ts:'+ tsCmd.CommaText;
+   exit; // hack
+
+  End;
+
+  if (isGKcell ( CellX, CellY ) ) and (aPlayer.TalentID1 <> TALENT_ID_GOALKEEPER) then Begin
+      // un goalkeeper può essere schierato solo in porta
+   result := 'SUB,GK cell Ts:'+ tsCmd.CommaText;
+   exit; // hack
+  End;
+  if  ( not isGKcell ( CellX, CellY ) ) and (aPlayer.TalentID1 = TALENT_ID_GOALKEEPER) then begin
+  // un goalkeeper può essere schierato solo in porta
+   result := 'SUB, not GK cell Ts:'+ tsCmd.CommaText;
+   exit; // hack
+  end;
+
+{    if ((CellX = 0) or (CellX = 2)  or  (CellX = 5) or (CellX = 8)) and (aPlayer.Team <> 0) then Begin
+   result := 'SUB, Cell mismatch team ';
+   exit; // hack
+  End;
+
+  if ((CellX = 11) or (CellX = 9)  or  (CellX = 6) or (CellX = 3)) and (aPlayer.Team <> 1) then begin
+   result := 'SUB, Cell mismatch team ';
+   exit; // hack
+  End;  }
+
+  if (aPlayer.RedCard > 0) or (aPlayer2.RedCard > 0) or (aPlayer.Gameover ) or (aPlayer2.Gameover ) then begin  // espulso o già sostituito o finite subs
+   result := 'SUB, Player error Ts:'+ tsCmd.CommaText;
+   exit; // hack
+  end;
+
+  if( AbsDistance(aPlayer2.CellX, aPlayer2.CellY,Ball.CellX ,Ball.celly) < 4) or
+   ( w_CornerSetup ) or ( w_FreeKickSetup1 ) or ( w_FreeKickSetup2 ) or ( w_FreeKickSetup3 ) or ( w_FreeKickSetup4 ) then begin
+   result := 'SUB, Distanza < 4 or freekicksetup  Ts:'+ tsCmd.CommaText;
+   exit; // hack
+  end;
+
+end;
+function TSoccerbrain.CheckInputPlm (aPlayer: TsoccerPlayer; CellX, CellY: integer; tsCmd: Tstringlist): string;
+begin
+  Result := '';
+  if w_SomeThing  then begin
+   result := 'PLM, waiting freekick Ts:'+ tsCmd.CommaText;
+   Exit; // hack
+  end;  // concesso nulla
+
+  if aPlayer = nil then begin
+   result := 'PLM,Player not found Ts:'+ tsCmd.CommaText;
+   Exit; // cheat
+  end;
+  if not aPlayer.CanMove then begin
+   result := 'PLM,Player unable to move Ts:'+ tsCmd.CommaText;
+   Exit; // cheat
+  end;
+  if ( aPlayer.isCOF ) or ( aPlayer.isFK1 ) or ( aPlayer.isFK2 ) or ( aPlayer.isFK3 ) or ( aPlayer.isFK4 ) then begin
+   result := 'PLM,Player is some FK Ts:'+ tsCmd.CommaText;;
+   Exit; // cheat
+  end;
+end;
+  // poi attack defense ecc....
 procedure TSoccerbrain.BrainInput ( aCmd: string );
 var
   MyFile: THandle;
@@ -8346,11 +8649,6 @@ cro_crossbar:
 }
 
 
-    if w_SomeThing  then begin
-     reason := 'DRI, waiting freekick ';
-     goto myexit; // hack
-    end;  // concesso nulla
-
     CellX := StrToIntDef (tsCmd[1],-1);
     CellY := StrToIntDef (tsCmd[2],-1);
     aPlayer := Ball.Player ;
@@ -9100,33 +9398,10 @@ prs_crossbar:
 }
 
 
-    if w_SomeThing  then begin
-     reason := 'PRE, waiting freekick ';
-     goto myexit; // hack
-    end;  // concesso nulla
-
     aPlayer := GetSoccerPlayer ( tsCmd[1]);
+    reason := CheckInputPre(aPlayer, tsCmd);
+    if reason <> '' then goto MyExit;
 
-    if aPlayer = nil then begin
-     reason := 'PRE,Player not found';
-     goto myexit; // hack
-    end;
-    if not aPlayer.CanSkill then begin
-     reason := 'PRE,Player unable to use skill';
-     goto myexit; // hack
-    end;
-    if Ball.Player = nil then begin
-     reason := 'PRE,Ball.Player not found';
-     goto myexit; // hack
-    end;
-    if Ball.Player.team = aPlayer.Team then Begin
-     reason := 'PRE,Ball.Player same team';
-     goto myexit; // hack
-    End;
-    if Ball.Player.TalentId1 =  TALENT_ID_GOALKEEPER then begin
-     reason := 'PRE,Ball.Player is GK';
-     goto myexit; // hack
-    end;
 
     TsScript[incMove].add ('SERVER_PRE,' + aPlayer.ids + ',' + IntToStr(aPlayer.CellX) + ',' + IntToStr(aPlayer.CellY) + ',' + IntToStr(Ball.Player.CellX) + ',' + IntToStr(Ball.Player.CellY) ) ;
     TsScript[incMove].add ('ST,' + aPlayer.ids +',' + IntToStr(cost_pre) ) ; // pressing costa come tackle. molto.
@@ -9195,23 +9470,11 @@ Normalpressing:
     end;
   end
   else if tsCmd[0] = 'PRO' then  begin
-    if w_SomeThing  then begin
-     reason := 'PRO, waiting freekick ';
-     goto myexit; // hack
-    end;  // concesso nulla
+
     aPlayer := Ball.Player;
-    if aPlayer = nil then begin
-     reason := 'PRO,Player not found';
-     goto myexit; // hack
-    end;
-    if not aPlayer.CanSkill then begin
-     reason := 'PRO,Player unable to use skill';
-     goto myexit; // hack
-    end;
-    if Ball.Player.Team <> teamTurn then begin
-     reason := 'PRO,turn mismatch';
-     goto myexit; // hack
-    end;
+    reason := CheckInputPro(aPlayer, tsCmd);
+    if reason <> '' then goto MyExit;
+
 
     TsScript[incMove].add ('SERVER_PRO,' + aPlayer.ids + ',' + IntToStr(aPlayer.cellX) + ',' + IntToStr(aPlayer.cellY)+ ',' + IntToStr(aPlayer.cellX) + ',' + IntToStr(aPlayer.cellY) ) ;
     aPlayer.Stamina := aPlayer.Stamina - cost_pro;
@@ -9231,28 +9494,10 @@ Normalpressing:
   end
 
   else if tsCmd[0] = 'STAY' then  begin
-    if w_SomeThing  then begin
-     reason := 'STAY, waiting freekick ';
-     goto myexit; // hack
-    end;  // concesso nulla
     aPlayer := GetSoccerPlayer ( tsCmd[1]);
-    if aPlayer = nil then begin
-     reason := 'STAY,Player not found';
-     goto myexit; // hack
-    end;
-    if aPlayer.Team <> teamTurn then begin
-     reason := 'STAY,turn mismatch';
-     goto myexit; // hack
-    end;
-    if aPlayer.TalentID1 = TALENT_ID_GOALKEEPER then begin
-     reason := 'STAY,GK';
-     goto myexit; // hack
-    end;
-    if minute >= 120 then begin
-     reason := 'STAY, 120+ ';
-     goto myexit; // hack
+    reason := CheckInputStay (aPlayer, tsCmd);
+    if reason <> '' then goto myexit; // hack
 
-    end;
 
     TsScript[incMove].add ('SERVER_STAY,' + aPlayer.ids ) ;
     aPlayer.stay := True;
@@ -9261,28 +9506,9 @@ Normalpressing:
     goto MyExit;
   end
   else if tsCmd[0] = 'FREE' then  begin
-    if w_SomeThing  then begin
-     reason := 'FREE, waiting freekick ';
-     goto myexit; // hack
-    end;  // concesso nulla
     aPlayer := GetSoccerPlayer ( tsCmd[1]);
-    if aPlayer = nil then begin
-     reason := 'FREE,Player not found';
-     goto myexit; // hack
-    end;
-    if aPlayer.Team <> teamTurn then begin
-     reason := 'FREE,turn mismatch';
-     goto myexit; // hack
-    end;
-    if aPlayer.TalentID1 = TALENT_ID_GOALKEEPER then begin
-     reason := 'FREE,GK';
-     goto myexit; // hack
-    end;
-    if minute >= 120 then begin
-     reason := 'FREE, 120+ ';
-     goto myexit; // hack
-
-    end;
+    reason := CheckInputFree (aPlayer, tsCmd);
+    if reason <> '' then goto myexit; // hack
 
     TsScript[incMove].add ('SERVER_FREE,' + aPlayer.ids ) ;
     aPlayer.stay := false;
@@ -9292,10 +9518,6 @@ Normalpressing:
   end
 
   else if tsCmd[0] = 'TAC' then  begin
-    if w_SomeThing  then begin
-     reason := 'TAC, waiting freekick ';
-     goto myexit; // hack
-    end;  // concesso nulla
 
 //Contrasto (1)
 //Contrasto viene effettuato solo verso il giocatore avversario portatore di palla e quando questi si trova a 1 cella di distanza.
@@ -9305,18 +9527,9 @@ Normalpressing:
 //Contrasto sia superiore a Difesa di 2 o più, il giocatore vince il Contrasto e, se possibile, avanza di 1 cella nella direzione
 // attuale. Effettuare un Contrasto da dietro alza moltissimo la probabilità di fare fallo con possibili infortuni e/o cartellini.
     aPlayer := GetSoccerPlayer ( tsCmd[1] );
-    if aPlayer = nil then begin
-     reason := 'TAC,Player not found';
-     goto myexit; // hack
-    end;
-    if not aPlayer.CanSkill then begin
-     reason := 'TAC,Player unable to Skill';
-     goto myexit; // hack
-    end;
-    if Ball.player = nil then begin
-     reason := 'TAC,Ball.Player not found';
-     goto myexit; // hack
-    end;
+    reason := CheckInputTac (aPlayer, tsCmd);
+    if reason <> '' then goto myexit; // hack
+
     TsScript[incMove].add('SERVER_TAC,' + aPlayer.ids + ',' + IntToStr(aPlayer.CellX) + ',' + IntToStr(aPlayer.CellY)+ ',' + IntToStr(Ball.Player.CellX) + ',' + IntToStr(Ball.Player.CellY) ) ;
 
 
@@ -9357,68 +9570,15 @@ Normalpressing:
 
   end
   else if tsCmd[0] = 'TACTIC' then  begin
-    if w_SomeThing  then begin
-     reason := 'TACTIC, waiting freekick ';
-     goto myexit; // hack
-    end;  // concesso nulla
 
 //        aPlayer.DefaultCellS  := point (CellX,CellY);
 //        MoveInDefaultField(aPlayer);
 
     aPlayer := GetSoccerPlayer ( tsCmd[1]);
-    if aPlayer = nil then begin
-     reason := 'TACTIC,Player not found';
-     goto myexit; // hack
-    end;
-
     CellX := StrToIntDef (tsCmd[2],-1);
     CellY := StrToIntDef (tsCmd[3],-1);
-
-    if IsOutSide(  CellX, CellY) then Begin
-     reason := 'TACTIC,Cells outside';
-     goto myexit; // hack
-
-    End;
-
-    if (isGKcell ( CellX, CellY ) ) and (aPlayer.talentID1 <> TALENT_ID_GOALKEEPER) then Begin
-        // un goalkeeper può essere schierato solo in porta
-     reason := 'TACTIC,GK cell';
-     goto myexit; // hack
-    End;
-    if  ( not isGKcell ( CellX, CellY ) ) and (aPlayer.talentID1 = TALENT_ID_GOALKEEPER) then begin
-    // un goalkeeper può essere schierato solo in porta
-     reason := 'TACTIC, not GK cell';
-     goto myexit; // hack
-    end;
-
-    if (aPlayer.Team  = 0)
-      and ( (CellX = 1) or (CellX = 3)  or (CellX = 4) or (CellX = 6) or (CellX = 7) or (CellX = 9) or (CellX = 10) or (CellX = 11) ) then Begin
-     reason := 'TACTIC, Cell mismatch team ';
-     goto myexit; // hack
-    End;
-
-    if (aPlayer.Team  = 1)
-      and ( (CellX = 0) or (CellX = 1)  or (CellX = 2) or (CellX = 4) or (CellX = 5) or (CellX = 7) or (CellX = 8) or (CellX = 10) ) then Begin
-     reason := 'TACTIC, Cell mismatch team ';
-     goto myexit; // hack
-    End;
-
-    if isReserveSlot ( aPlayer.CellX , aPlayer.CellY ) then begin
-     reason := 'TACTIC, Player is outside ';
-     goto myexit; // hack
-    End;
-
-    aPossiblePlayer2 := GetSoccerPlayerDefault ( CellX, CellY); // importante default
-    if aPossiblePlayer2 <> nil then begin
-     reason := 'TACTIC, Cells occupied ';
-     goto myexit; // hack
-    End;
-
-    if minute >= 120 then begin
-     reason := 'TACTIC, 120+ ';
-     goto myexit; // hack
-
-    end;
+    reason := CheckInputTactic (aPlayer, CellX, CellY, tsCmd);
+    if reason <> '' then goto myexit; // hack
 
     TsScript[incMove].add ('SERVER_TACTIC,' + aPlayer.ids + ',' + IntToStr(aPlayer.defaultCellX) + ',' + IntToStr(aPlayer.defaultCellY) + ',' + tsCmd[2] + ',' + tsCmd[3]) ;
     aPlayer.DefaultCells := Point(CellX,CellY);
@@ -9435,80 +9595,18 @@ Normalpressing:
   end
   else if tsCmd[0] = 'SUB' then  begin
   // si fanno sempre anche oltre 120+
-    if w_SomeThing  then begin
-     reason := 'SUB, waiting freekick ';
-     goto myexit; // hack
-    end;  // concesso nulla
 
 //        aPlayer.DefaultCellS  := point (CellX,CellY);
 //        MoveInDefaultField(aPlayer);
     aPlayer := GetSoccerPlayerReserve ( tsCmd[1]);
-    if aPlayer = nil then begin
-     reason := 'SUB,Player not found';
-     goto myexit; // hack
-    end;
-
-    if Score.TeamSubs [ aPlayer.Team ]  >= 3 then Begin
-     reason := 'SUB, Max 3 substitution';
-     goto myexit; // hack
-    end;
-
     aPlayer2 := GetSoccerPlayer ( tsCmd[2]);
-    if aPlayer2 = nil then begin
-     reason := 'SUB,Player2 not found';
-     goto myexit; // hack
-    end;
 
-    if aPlayer2.Team <> aPlayer.Team then begin
-     reason := 'SUB, Players team mismatch';
-     goto myexit; // hack
-    End;
-
-    if aPlayer2.ids = aPlayer.ids then begin
-     reason := 'SUB, same Players';
-     goto myexit; // hack
-    End;
+    reason := CheckInputSub (aPlayer, aPlayer2, tsCmd);
+    if reason <> '' then goto myexit; // hack
 
     CellX := aPlayer2.cellX;
     CellY := aPlayer2.cellY;
 
-    if IsOutSide(  CellX, CellY) then Begin
-     reason := 'SUB,Cells outside';
-     goto myexit; // hack
-
-    End;
-
-    if (isGKcell ( CellX, CellY ) ) and (aPlayer.TalentID1 <> TALENT_ID_GOALKEEPER) then Begin
-        // un goalkeeper può essere schierato solo in porta
-     reason := 'SUB,GK cell';
-     goto myexit; // hack
-    End;
-    if  ( not isGKcell ( CellX, CellY ) ) and (aPlayer.TalentID1 = TALENT_ID_GOALKEEPER) then begin
-    // un goalkeeper può essere schierato solo in porta
-     reason := 'SUB, not GK cell';
-     goto myexit; // hack
-    end;
-
-{    if ((CellX = 0) or (CellX = 2)  or  (CellX = 5) or (CellX = 8)) and (aPlayer.Team <> 0) then Begin
-     reason := 'SUB, Cell mismatch team ';
-     goto myexit; // hack
-    End;
-
-    if ((CellX = 11) or (CellX = 9)  or  (CellX = 6) or (CellX = 3)) and (aPlayer.Team <> 1) then begin
-     reason := 'SUB, Cell mismatch team ';
-     goto myexit; // hack
-    End;  }
-
-    if (aPlayer.RedCard > 0) or (aPlayer2.RedCard > 0) or (aPlayer.Gameover ) or (aPlayer2.Gameover ) then begin  // espulso o già sostituito o finite subs
-     reason := 'SUB, Player error ';
-     goto myexit; // hack
-    end;
-
-    if( AbsDistance(aPlayer2.CellX, aPlayer2.CellY,Ball.CellX ,Ball.celly) < 4) or
-     ( w_CornerSetup ) or ( w_FreeKickSetup1 ) or ( w_FreeKickSetup2 ) or ( w_FreeKickSetup3 ) or ( w_FreeKickSetup4 ) then begin
-     reason := 'SUB, Distanza < 4 or freekicksetup ';
-     goto myexit; // hack
-    end;
 
 
     TsScript[incMove].add ('SERVER_SUB,' + aPlayer.ids + ',' +  aPlayer2.ids);
@@ -9547,27 +9645,13 @@ Normalpressing:
 
 
   else if tsCmd[0] = 'PLM' then  begin
-    if w_SomeThing  then begin
-     reason := 'PLM, waiting freekick ';
-     goto myexit; // hack
-    end;  // concesso nulla
-
     aPlayer := GetSoccerPlayer ( tsCmd[1]);
-    if aPlayer = nil then begin
-     reason := 'PLM,Player not found';
-     goto myexit; // cheat
-    end;
-    if not aPlayer.CanMove then begin
-     reason := 'PLM,Player unable to move';
-     goto myexit; // cheat
-    end;
-    if ( aPlayer.isCOF ) or ( aPlayer.isFK1 ) or ( aPlayer.isFK2 ) or ( aPlayer.isFK3 ) or ( aPlayer.isFK4 ) then begin
-     reason := 'PLM,Player is some FK';
-     goto myexit; // cheat
-    end;
-
     CellX := StrToIntDef (tsCmd[2],-1);
     CellY := StrToIntDef (tsCmd[3],-1);
+    reason := CheckInputPlm (aPlayer, CellX, CellY, tsCmd);
+    if reason <> '' then goto myexit; // hack
+
+
 
     // controllo client del movimento
     aPlayer.Stamina := aPlayer.Stamina - cost_plm;
@@ -9597,9 +9681,10 @@ Normalpressing:
       GetPath (aPlayer.Team , aPlayer.CellX , aPlayer.CellY, CellX, CellY,
                               MoveValue{Limit},false{useFlank},FriendlyWall{FriendlyWall},
                               OpponentWall{OpponentWall},FinalWall{FinalWall},TruncOneDir{OneDir}, aPlayer.MovePath );
-    if aPlayer.MovePath.Count = 0 then begin
+
+    if aPlayer.MovePath.Count = 0 then begin // aggiuntivo , va bene qui e non in checinputplm
       TsScript[incMove].add ('E');
-      reason := 'PLM,Path not found';
+      reason := 'PLM,Path not found Ts:'+ tsCmd.CommaText;
       goto myexit; // hack
     end;
 
@@ -10321,7 +10406,7 @@ buffd:
     end;
 
     if Score.buffM[aPlayer.team] <> 0 then begin
-     reason := 'BUFFM, buff defense is active';
+     reason := 'BUFFM, buff middle is active';
      goto myexit; // hack
     end;
 
@@ -10378,7 +10463,7 @@ buffm:
     end;
 
     if Score.buffF[aPlayer.team] <> 0 then begin
-     reason := 'BUFFF, buff defense is active';
+     reason := 'BUFFF, buff attack is active';
      goto myexit; // hack
     end;
 
