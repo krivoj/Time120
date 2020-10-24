@@ -21,8 +21,6 @@
   { TODO -ctodo prima del rilascio patreon :
 
 
-    mettere frecce sui freekick
-
     freekick a mio favore ha proseguito con AUTO, ma lo deve fare di suo, il CRO2. ci sarà lo stesso problema su COR
 
     le sub sono piene di bug.
@@ -6406,12 +6404,12 @@ begin
 
   if MyBrain.w_Fka1 then begin
     if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
+//        HHFP ( MyBrain.ball.cellx,MyBrain.ball.cellY  ,0 );
+      MouseWaitFor :=  WaitForXY_FKF1; //'Scegli chi batterà il fk1';
+      GameScreen := ScreenFreeKick;
       HHFP_Friendly( MyBrain.TeamTurn);
       ShowFreeKickArrows( MyBrain.ball.cellx,MyBrain.ball.cellY );
-//        HHFP ( MyBrain.ball.cellx,MyBrain.ball.cellY  ,0 );
-        MouseWaitFor :=  WaitForXY_FKF1; //'Scegli chi batterà il fk1';
-        GameScreen := ScreenFreeKick;
-        MyBrain.GetGK(MyBrain.TeamTurn).se_sprite.GrayScaled := True; // i gk non possono battere freekick1
+      MyBrain.GetGK(MyBrain.TeamTurn).se_sprite.GrayScaled := True; // i gk non possono battere freekick1
 
     end;
   end
@@ -6423,22 +6421,22 @@ begin
   else if MyBrain.w_Fka2 then begin
     if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
 //        HHFP ( MyBrain.ball.cellx,MyBrain.ball.cellY  ,0 );
+        GameScreen := ScreenFreeKick;
       HHFP_Friendly( MyBrain.TeamTurn);
       ShowFreeKickArrows( MyBrain.ball.cellx,MyBrain.ball.cellY );
         MouseWaitFor := WaitForXY_FKF2; //'Scegli chi batterà il fk2';
-        GameScreen := ScreenFreeKick;
         MyBrain.GetGK(MyBrain.TeamTurn).se_sprite.GrayScaled := True; // i gk non possono battere freekick2
     end;
   end
   else if MyBrain.w_Fkd2 then begin
 
     if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
+      GameScreen := ScreenFreeKick;
       CornerMap := MyBrain.GetCorner (MyBrain.TeamTurn , Mybrain.Ball.CellY, FriendlyCorner );
       HHFP_Friendly( MyBrain.TeamTurn);
       ShowFreeKickArrows( CornerMap.HeadingCellD [0].X,CornerMap.HeadingCellD [0].Y );
 //      HHFP( CornerMap.HeadingCellD [0].X,CornerMap.HeadingCellD [0].Y,0);
       MouseWaitFor := WaitForXY_FKD2;
-      GameScreen := ScreenFreeKick;
       MyBrain.GetGK(MyBrain.TeamTurn).se_sprite.GrayScaled := True; // i gk non possono essere cod2
     end;
   end
@@ -6449,23 +6447,23 @@ begin
   end
   else if MyBrain.w_Fka3 then begin
     if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
+      GameScreen := ScreenFreeKick;
 //      HHFP ( MyBrain.ball.cellx,MyBrain.ball.cellY  ,0 );
       HHFP_Friendly( MyBrain.TeamTurn);
       ShowFreeKickArrows( CornerMap.HeadingCellD [0].X,CornerMap.HeadingCellD [0].Y );
       MouseWaitFor := WaitForXY_FKF3; //'Scegli chi batterà il fk3';
-      GameScreen := ScreenFreeKick;
       MyBrain.GetGK(MyBrain.TeamTurn).se_sprite.GrayScaled := True; // i gk non possono battere freekick3
     end;
   end
   else if MyBrain.w_Fkd3 then begin
     if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
+      GameScreen := ScreenFreeKick;
       ACellBarrier :=  MyBrain.GetBarrierCell ( MyBrain.TeamFreeKick,MyBrain.Ball.CellX, MyBrain.Ball.cellY)  ; // la cella barriera !!!!
       //HHFP( aCellBarrier.X,  aCellBarrier.Y,0 );
       HHFP_Friendly( MyBrain.TeamTurn);
       ShowFreeKickArrows( aCellBarrier.X,  aCellBarrier.Y );
       MouseWaitFor := WaitForXY_FKD3;
       GBIndex := 0;
-      GameScreen := ScreenFreeKick;
       MyBrain.GetGK(MyBrain.TeamTurn).se_sprite.GrayScaled := True; // i gk non possono essere barriera
     end;
 
@@ -6477,13 +6475,13 @@ begin
   end
   else if MyBrain.w_Fka4 then begin
     if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
+      GameScreen := ScreenFreeKick;
       PenaltyCell := MyBrain.GetPenaltyCell ( MyBrain.TeamTurn );
       PenaltySetBall  ;// la ball è già settata su 10,3 o 1,3
 //      HHFP_Special( PenaltyCell.x,PenaltyCell.Y  ,0 );
       HHFP_Friendly( MyBrain.TeamTurn);
       ShowFreeKickArrows( PenaltyCell.x,PenaltyCell.Y   );
       MouseWaitFor := WaitForXY_FKF4; //'Scegli chi batterà il fk4';
-      GameScreen := ScreenFreeKick;
       MyBrain.GetGK(MyBrain.TeamTurn).se_sprite.GrayScaled := True; // i gk non possono battere i penalty
     end;
   end
@@ -6495,25 +6493,25 @@ begin
   else if MyBrain.w_Coa then begin
     CornerSetBall;
     if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
+      GameScreen := ScreenFreeKick;
       aFieldPointSpr := SE_FieldPointsSpecial.FindSprite(IntToStr (MyBrain.Ball.CellX ) + '.' + IntToStr (MyBrain.Ball.CellY ));
       aFieldPointSpr.Visible := True;
 //      HHFP_Special ( MyBrain.ball.cellx,MyBrain.ball.cellY  ,0 );
       HHFP_Friendly( MyBrain.TeamTurn);
       ShowFreeKickArrows(  MyBrain.ball.cellx,MyBrain.ball.cellY   );
       MouseWaitFor := WaitForXY_CornerCOF;
-      GameScreen := ScreenFreeKick;
       MyBrain.GetGK(MyBrain.TeamTurn).se_sprite.GrayScaled := True; // i gk non possono battere i corner
     end;
   end
   else if MyBrain.w_Cod then begin
     CornerSetBall;
     if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
+      GameScreen := ScreenFreeKick;
       CornerMap := MyBrain.GetCorner (MyBrain.TeamTurn , Mybrain.Ball.CellY, FriendlyCorner );
 //      HHFP( CornerMap.HeadingCellD [0].X,CornerMap.HeadingCellD [0].Y,0);
       HHFP_Friendly( MyBrain.TeamTurn);
       ShowFreeKickArrows(  CornerMap.HeadingCellD [0].X,CornerMap.HeadingCellD [0].Y   );
       MouseWaitFor := WaitForXY_CornerCOD;
-      GameScreen := ScreenFreeKick;
       MyBrain.GetGK(MyBrain.TeamTurn).se_sprite.GrayScaled := True; // i gk non possono essere cod sui corner
     end;
 
@@ -7422,11 +7420,11 @@ begin
   if MyBrain.w_Fka1 then begin
     if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
       //HideFP_Friendly;
+      GameScreen := ScreenFreeKick;
       HHFP_Friendly( MyBrain.TeamTurn);
       ShowFreeKickArrows( MyBrain.ball.cellx,MyBrain.ball.cellY );
       //HHFP ( MyBrain.ball.cellx,MyBrain.ball.cellY  ,0 );
       MouseWaitFor :=  WaitForXY_FKF1; //'Scegli chi batterà il fk1';
-      GameScreen := ScreenFreeKick;
       MyBrain.GetGK(MyBrain.TeamTurn).se_sprite.GrayScaled := True; // i gk non possono battere freekick1
 
     end;
@@ -7439,25 +7437,25 @@ begin
   end
   else if MyBrain.w_Fka2 then begin
     if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
+      GameScreen := ScreenFreeKick;
   //    HideFP_Friendly;
       ShowFreeKickArrows( MyBrain.ball.cellx,MyBrain.ball.cellY );
       HHFP_Friendly( MyBrain.TeamTurn);
 //      HHFP ( MyBrain.ball.cellx,MyBrain.ball.cellY  ,0 );
       MouseWaitFor := WaitForXY_FKF2; //'Scegli chi batterà il fk2';
-      GameScreen := ScreenFreeKick;
       MyBrain.GetGK(MyBrain.TeamTurn).se_sprite.GrayScaled := True; // i gk non possono battere freekick2
     end;
   end
   else if MyBrain.w_Fkd2 then begin
 
     if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
+      GameScreen := ScreenFreeKick;
       CornerMap := MyBrain.GetCorner (MyBrain.TeamTurn , Mybrain.Ball.CellY, FriendlyCorner );
 //      HideFP_Friendly;
       HHFP_Friendly( MyBrain.TeamTurn);
       ShowFreeKickArrows( CornerMap.HeadingCellD [0].X,CornerMap.HeadingCellD [0].Y );
 //      HHFP( CornerMap.HeadingCellD [0].X,CornerMap.HeadingCellD [0].Y,0);
       MouseWaitFor := WaitForXY_FKD2;
-      GameScreen := ScreenFreeKick;
       MyBrain.GetGK(MyBrain.TeamTurn).se_sprite.GrayScaled := True; // i gk non possono essere cod2
     end;
   end
@@ -7476,16 +7474,17 @@ begin
   else if MyBrain.w_Fka3 then begin
     if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
 //      HideFP_Friendly;
+      GameScreen := ScreenFreeKick;
       HHFP_Friendly( MyBrain.TeamTurn);
       ShowFreeKickArrows( MyBrain.ball.cellx,MyBrain.ball.cellY );
 //      HHFP ( MyBrain.ball.cellx,MyBrain.ball.cellY  ,0 );
       MouseWaitFor := WaitForXY_FKF3; //'Scegli chi batterà il fk3';
-      GameScreen := ScreenFreeKick;
       MyBrain.GetGK(MyBrain.TeamTurn).se_sprite.GrayScaled := True; // i gk non possono battere freekick3
     end;
   end
   else if MyBrain.w_Fkd3 then begin
     if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
+      GameScreen := ScreenFreeKick;
       ACellBarrier :=  MyBrain.GetBarrierCell ( MyBrain.TeamFreeKick,MyBrain.Ball.CellX, MyBrain.Ball.cellY)  ; // la cella barriera !!!!
 //      HideFP_Friendly;
       HHFP_Friendly( MyBrain.TeamTurn);
@@ -7493,7 +7492,6 @@ begin
 //      HHFP( aCellBarrier.X,  aCellBarrier.Y,0 );
       MouseWaitFor := WaitForXY_FKD3;
       GBIndex := 0;
-      GameScreen := ScreenFreeKick;
       MyBrain.GetGK(MyBrain.TeamTurn).se_sprite.GrayScaled := True; // i gk non possono essere barriera
     end;
 
@@ -7505,6 +7503,7 @@ begin
   end
   else if MyBrain.w_Fka4 then begin
     if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
+      GameScreen := ScreenFreeKick;
       PenaltyCell := MyBrain.GetPenaltyCell ( MyBrain.TeamTurn );
       PenaltySetBall  ;// la ball è già settata su 10,3 o 1,3
       HHFP_Friendly( MyBrain.TeamTurn);
@@ -7512,7 +7511,6 @@ begin
       ShowFreeKickArrows( PenaltyCell.x,PenaltyCell.Y );
 //      HHFP_Special( PenaltyCell.x,PenaltyCell.Y  ,0 );
       MouseWaitFor := WaitForXY_FKF4; //'Scegli chi batterà il fk4';
-      GameScreen := ScreenFreeKick;
       MyBrain.GetGK(MyBrain.TeamTurn).se_sprite.GrayScaled := True; // i gk non possono battere i penalty
     end;
   end
@@ -7524,6 +7522,7 @@ begin
   else if MyBrain.w_Coa then begin
     CornerSetBall;
     if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
+      GameScreen := ScreenFreeKick;
       aFieldPointSpr := SE_FieldPointsSpecial.FindSprite(IntToStr (MyBrain.Ball.CellX ) + '.' + IntToStr (MyBrain.Ball.CellY ));
       aFieldPointSpr.Visible := True;
 //      HideFP_Friendly;
@@ -7531,20 +7530,19 @@ begin
       ShowFreeKickArrows( MyBrain.ball.cellx,MyBrain.ball.cellY );
 //      HHFP_Special ( MyBrain.ball.cellx,MyBrain.ball.cellY  ,0 );
       MouseWaitFor := WaitForXY_CornerCOF;
-      GameScreen := ScreenFreeKick;
       MyBrain.GetGK(MyBrain.TeamTurn).se_sprite.GrayScaled := True; // i gk non possono battere i corner
     end;
   end
   else if MyBrain.w_Cod then begin
     CornerSetBall;
     if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
+      GameScreen := ScreenFreeKick;
       CornerMap := MyBrain.GetCorner (MyBrain.TeamTurn , Mybrain.Ball.CellY, FriendlyCorner );
 //      HideFP_Friendly;
       HHFP_Friendly( MyBrain.TeamTurn);
       ShowFreeKickArrows( CornerMap.HeadingCellD [0].X,CornerMap.HeadingCellD [0].Y );
 //      HHFP( CornerMap.HeadingCellD [0].X,CornerMap.HeadingCellD [0].Y,0);
       MouseWaitFor := WaitForXY_CornerCOD;
-      GameScreen := ScreenFreeKick;
       MyBrain.GetGK(MyBrain.TeamTurn).se_sprite.GrayScaled := True; // i gk non possono essere cod sui corner
     end;
 
@@ -11492,7 +11490,7 @@ begin
 
     if i <> Index_WheelSkill then                         // evidenzia la skill selezionata dalla wheel
       bmp.Bitmap.Canvas.Brush.Color :=  $007B5139
-    else bmp.Bitmap.Canvas.Brush.Color :=  clGreen;
+    else bmp.Bitmap.Canvas.Brush.Color :=  clBlue;
 
 
     bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
@@ -11541,8 +11539,8 @@ begin
   SE_interface.ProcessSprites(2000);
 
   aFieldPoint := SE_FieldPoints.FindSprite(IntToStr (CellX ) + '.' + IntToStr (CellY ));
-  SE_interface.CreateSprite ( dir_interface + 'arrowmoving.bmp' ,'arrows',8,1,200,  CellX, CellY, True,10 ) ;
-
+  SE_interface.CreateSprite ( dir_interface + 'arrowmoving.bmp' ,'arrows',8,1,200, aFieldPoint.Position.X, aFieldPoint.Position.Y , True,10 ) ;
+  SE_interface.Visible := true;
 
 end;
 procedure Tform1.ShowSpeaker ( aSkillName: string) ;
@@ -11559,7 +11557,7 @@ begin
   SE_Speaker.ProcessSprites(2000);
 
   bmp := SE_Bitmap.Create ( SE_Theater1.VisibleBitmap.Width, 40 );
-  bmp.Bitmap.Canvas.Brush.Color :=  clBlue;
+  bmp.Bitmap.Canvas.Brush.Color :=  clgreen;
   bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
 
   aSprite := SE_Speaker.CreateSprite ( bmp.Bitmap,'skillname',1,1,1000,  SE_Theater1.VisibleBitmap.Width div 2 , BaseY , false,10 ) ;
