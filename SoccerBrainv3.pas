@@ -690,8 +690,12 @@ end;
       procedure LoadDefaultTeamPos ( aTeam: integer);
       procedure BrainInput ( aCmd: string );
         procedure InputSecureExit ( DoAiMoveAll: Boolean; DoTeamMovesLeft: TDecMovesLeft);
-        function ChackInputShp (aPlayer: TsoccerPlayer; CellX, CellY: integer; tsCmd: Tstringlist): string;
-        function ChackInputLop (aPlayer: TsoccerPlayer; CellX, CellY: integer; tsCmd: Tstringlist): string;
+        function CheckInputShp (aPlayer: TsoccerPlayer; CellX, CellY: integer; tsCmd: Tstringlist): string;
+        function CheckInputLop (aPlayer: TsoccerPlayer; CellX, CellY: integer; tsCmd: Tstringlist): string;
+        function CheckInputCro (aPlayer: TsoccerPlayer; CellX, CellY: integer; tsCmd: Tstringlist): string;
+        function CheckInputDri (aPlayer: TsoccerPlayer; CellX, CellY: integer; tsCmd: Tstringlist): string;
+        function CheckInputPos (aPlayer: TsoccerPlayer; CellX, CellY: integer; tsCmd: Tstringlist): string;
+        function CheckInputPrs (aPlayer: TsoccerPlayer; CellX, CellY: integer; tsCmd: Tstringlist): string;
 
         function CheckOffside ( FromPlayer, aPossibleoffside: TSoccerPlayer ): boolean;
 
@@ -861,8 +865,8 @@ end;
     function GetSoccerPlayer (ids: string): TSoccerPlayer;overload;
     function GetSoccerPlayer (ids: string; team: integer): TSoccerPlayer;overload;
     function GetSoccerPlayer (X,Y, Team: integer): TSoccerPlayer;overload;
-    function GetSoccerPlayer (X,Y: Integer; OpponentTeam: boolean; Team: integer): TSoccerPlayer;overload;
-    function GetSoccerPlayer (ids: string; OpponentTeam: boolean; Team: integer): TSoccerPlayer;overload;
+    function GetSoccerPlayerOpponent (X,Y: Integer; Team: integer): TSoccerPlayer;overload;
+    function GetSoccerPlayerOpponent (ids: string; Team: integer): TSoccerPlayer;overload;
 
     function GetSoccerPlayerDefault (X,Y: integer): TSoccerPlayer;
     function GetSoccerPlayerDefault2 (X,Y: integer): TSoccerPlayer;
@@ -3768,11 +3772,11 @@ begin
 Result := nil;
     case aPlayer.cellY of
       0..1: begin
-              Result := GetSoccerPlayer ( aPlayer.cellX, aPlayer.CellY+1, True, aPlayer.team );
+              Result := GetSoccerPlayerOpponent ( aPlayer.cellX, aPlayer.CellY+1, aPlayer.team );
 
             end;
       5..6: begin
-              Result := GetSoccerPlayer ( aPlayer.cellX, aPlayer.CellY-1,True, aPlayer.team );
+              Result := GetSoccerPlayerOpponent ( aPlayer.cellX, aPlayer.CellY-1, aPlayer.team );
             end;
     end;
 
@@ -4230,7 +4234,7 @@ begin
   end;
 
 end;
-function TSoccerBrain.GetSoccerPlayer (X,Y: Integer; OpponentTeam: boolean; Team: integer): TSoccerPlayer;
+function TSoccerBrain.GetSoccerPlayerOpponent (X,Y: Integer; Team: integer): TSoccerPlayer;
 var
   i: integer;
 begin
@@ -4243,7 +4247,7 @@ begin
 
   end;
 end;
-function TSoccerBrain.GetSoccerPlayer (ids: string; OpponentTeam: boolean; Team: integer): TSoccerPlayer;
+function TSoccerBrain.GetSoccerPlayerOpponent (ids: string; Team: integer): TSoccerPlayer;
 var
   i: integer;
 begin
@@ -6536,18 +6540,18 @@ begin
 
 end;
 
-function TSoccerbrain.ChackInputShp (aPlayer: TsoccerPlayer; CellX, CellY: integer; tsCmd: Tstringlist ): string;
+function TSoccerbrain.CheckInputShp (aPlayer: TsoccerPlayer; CellX, CellY: integer; tsCmd: Tstringlist ): string;
 begin
   if aPlayer = nil then begin
-   Result := 'SHP,Ball.Player not found';
+   Result := 'SHP,Ball.Player not found Ts:' + tsCmd.CommaText;
    Exit; // hack
   end;
   if not aPlayer.CanSkill then begin
-   Result := 'SHP,Player ' + aPlayer.SurName +' unable to use skill '  + 'Ts:' + tsCmd.CommaText;
+   Result := 'SHP,Player ' + aPlayer.SurName +' unable to use skill Ts:' + tsCmd.CommaText;
    Exit; // hack
   end;
   if  aPlayer.TalentId1 = TALENT_ID_GOALKEEPER then begin
-   Result := 'SHP,GoalKeeper can not use skill short.passing ' + 'Ts:' +tsCmd.CommaText ;
+   Result := 'SHP,GoalKeeper can not use skill short.passing Ts:' +tsCmd.CommaText ;
    Exit; // hack
   end;
 
@@ -6557,32 +6561,32 @@ begin
 
   if (absDistance( Ball.CellX ,Ball.CellY,  CellX, CellY ) > (aPlayer.tmp))
      or (absDistance (Ball.Player.CellX , Ball.Player.CellY, Cellx, Celly  ) = 0) then begin
-    Result := 'SHP,Destination range error: ' + 'Ts:' +tsCmd.CommaText ;
+    Result := 'SHP,Destination range Ts:' +tsCmd.CommaText ;
     Exit;
   end;
 
   if w_SomeThing  then begin
-   Result := 'SHP, waiting freekick ' + 'Ts:' +tsCmd.CommaText;
+   Result := 'SHP, waiting freekick Ts:' +tsCmd.CommaText;
    Exit; // hack
   end;   // freekick1 concesso
 
 end;
-function TSoccerbrain.ChackInputLop (aPlayer: TsoccerPlayer; CellX, CellY: integer; tsCmd: Tstringlist ): string;
+function TSoccerbrain.CheckInputLop (aPlayer: TsoccerPlayer; CellX, CellY: integer; tsCmd: Tstringlist ): string;
 var
   aFriend: TSoccerPlayer;
 begin
   if aPlayer = nil then begin
-   Result := 'LOP,Ball.Player not found ' + 'Ts:' +tsCmd.CommaText ;
+   Result := 'LOP,Ball.Player not found Ts:' +tsCmd.CommaText ;
    Exit; // hack
   end;
   if not aPlayer.CanSkill then begin
-   Result := 'LOP,Player unable to use skill ' + 'Ts:' +tsCmd.CommaText ;
+   Result := 'LOP,Player unable to use skill Ts:' +tsCmd.CommaText ;
    Exit; // hack
   end;
   { lop su freekick1 può esistere. }
   if w_CornerSetup or w_Coa or w_cod or w_CornerKick {or w_FreeKickSetup1 or w_Fka1 or w_FreeKick1} or w_Fka2 or w_FreeKickSetup2 or w_Fka2 or w_Fkd2 or w_FreeKick2
   or w_FreeKickSetup3 or w_Fka3 or w_Fkd3 or w_FreeKick3 or w_Fka4 or w_FreeKickSetup4 or w_FreeKick4  then begin
-   Result := 'LOP, waiting freekick '+ 'Ts:' +tsCmd.CommaText ;
+   Result := 'LOP, waiting freekick Ts:' +tsCmd.CommaText ;
    Exit; // hack
   end;  // concesso nulla
 
@@ -6593,7 +6597,7 @@ begin
 
     if (absDistance( Ball.CellX ,Ball.CellY,  CellX, CellY ) > (aPlayer.tmp))
     or (absDistance( Ball.CellX ,Ball.CellY,  CellX, CellY ) < LoftedPassRangeMin)  then begin
-      Result := 'LOP,Destination range error: ' + tsCmd.CommaText ;
+      Result := 'LOP,Destination range ts: ' + tsCmd.CommaText ;
       Exit;
     end;
   end;
@@ -6601,15 +6605,140 @@ begin
   aFriend := GetSoccerPlayer ( CellX, CellY, aPlayer.Team );
   if aFriend <> nil then Begin
     if aFriend.Team <> aPlayer.team then begin
-    Result := 'LOP,Destination Player unfriendly ' + 'Ts:' +tsCmd.CommaText ;
+    Result := 'LOP,Destination Player unfriendly Ts:' +tsCmd.CommaText ;
     Exit;
   end;
   end;
   if IsGKCell(CellX,Celly) then begin
-    Result := 'LOP,Destination is GK '+ 'Ts:' +tsCmd.CommaText ;
+    Result := 'LOP,Destination is GK Ts:' +tsCmd.CommaText ;
     Exit;
   end;
 
+
+end;
+function TSoccerbrain.CheckInputCro (aPlayer: TsoccerPlayer; CellX, CellY: integer; tsCmd: Tstringlist ): string;
+var
+  aHeadingFriend: TSoccerPlayer;
+begin
+  if w_SomeThing  then begin
+   Result := 'CRO, waiting freekick Ts:' + tsCmd.CommaText;
+   Exit; // hack
+  end;  // concesso nulla
+
+  aPlayer := Ball.Player;
+  if aPlayer = nil then begin
+   Result := 'CRO,Ball.Player not found Ts:' + tsCmd.CommaText;
+   Exit; // hack
+  end;
+  if not aPlayer.CanSkill then begin
+   Result := 'CRO,Player unable to use skill Ts:' + tsCmd.CommaText;
+   Exit; // hack
+  end;
+
+  aPlayer.tmp := CrossingRangeMax;
+  if (aPlayer.TalentId1 = TALENT_ID_LONGPASS) or (aPlayer.TalentId2 = TALENT_ID_LONGPASS) then
+    aPlayer.tmp := aPlayer.tmp +1;
+
+  if (absDistance( Ball.CellX ,Ball.CellY,  CellX, CellY ) > (aPlayer.tmp))
+  or (absDistance( Ball.CellX ,Ball.CellY,  CellX, CellY ) < CrossingRangeMin)  then begin
+    Result := 'CRO,Destination range ts: ' + tsCmd.CommaText + ' ball=' + IntToStr(Ball.CellX)+','+IntToStr(Ball.CellY );
+    Exit;
+  end;
+
+  aHeadingFriend := GetSoccerPlayer ( CellX, CellY,aPlayer.Team );
+
+  if aHeadingFriend = nil then begin
+    Result := 'CRO,Destination Player unfriendly or nil Ts:'+ tsCmd.CommaText;
+    Exit;
+  end;
+end;
+function TSoccerbrain.CheckInputDri (aPlayer: TsoccerPlayer; CellX, CellY: integer; tsCmd: Tstringlist ): string;
+var
+  anOpponent: TSoccerPlayer;
+begin
+  if aPlayer = nil then begin
+   Result := 'DRI,Ball.Player not found Ts:'+ tsCmd.CommaText;
+   Exit; // hack
+  end;
+  if not aPlayer.CanSkill then begin
+   Result := 'DRI,Player unable to use skillTs:'+ tsCmd.CommaText;
+   Exit; // hack
+  end;
+
+  if absDistance( Ball.CellX ,Ball.CellY,  CellX, CellY ) > 1 then begin
+    Result := 'DRI,Destination range ts: ' + tsCmd.CommaText ;
+    Exit;
+  end;
+  if not aPlayer.canDribbling then begin
+    Result := 'DRI,player unable to dribbling Ts:'+ tsCmd.CommaText;
+    Exit;
+  end;
+
+  anOpponent := GetSoccerPlayerOpponent ( CellX, CellY, aPlayer.team );
+  if anOpponent = nil then begin
+    Result := 'DRI,Destination Player missing Ts:'+ tsCmd.CommaText;
+    Exit;
+
+  end;
+  if (anOpponent.Role ='G')  then Begin
+    Result := 'DRI,Destination Player GK Ts:'+ tsCmd.CommaText;
+    Exit;
+  End;
+
+end;
+function TSoccerbrain.CheckInputPos (aPlayer: TsoccerPlayer; CellX, CellY: integer; tsCmd: Tstringlist ): string;
+begin
+  if w_CornerSetup or w_Coa or w_cod or w_CornerKick or w_FreeKickSetup1 or w_Fka1 or w_Fka2 or w_FreeKick1 or w_FreeKickSetup2 or w_Fka2 or w_Fkd2 or w_FreeKick2
+  {or w_FreeKickSetup3 or w_Fka3 or w_Fkd3 or  w_Fka4 or w_FreeKickSetup4 }   then begin
+   Result := 'POS, waiting freekick  Ts:'+ tsCmd.CommaText;
+   exit; // hack
+  end;  // concessi i tiri
+
+  if aPlayer = nil then begin
+   Result := 'POS,Ball.Player not found Ts:'+ tsCmd.CommaText;
+   exit; // hack
+  end;
+  if not aPlayer.CanSkill then begin
+   Result := 'POS,Player unable to use skill Ts:'+ tsCmd.CommaText;
+   exit; // hack
+  end;
+
+  if (absDistance( Ball.CellX ,Ball.CellY,  CellX, CellY ) > ( PowerShotRange  )) then begin
+    Result := 'POS,Shot range  Ts:'+ tsCmd.CommaText;
+    exit;
+  end;
+  if (Not aPlayer.InShotCell) and (not w_FreeKick3) then begin // diventa una shot cell
+    Result := 'POS,Not in shot cell Ts:'+ tsCmd.CommaText;
+    exit;
+  end;
+
+end;
+function TSoccerbrain.CheckInputPrs (aPlayer: TsoccerPlayer; CellX, CellY: integer; tsCmd: Tstringlist ): string;
+begin
+  if w_CornerSetup or w_Coa or w_cod or w_CornerKick or w_FreeKickSetup1 or w_FreeKick1 or  w_Fka1 or w_Fka2 or w_FreeKickSetup2 or w_Fka2 or w_Fkd2 or w_FreeKick2
+  {or w_FreeKickSetup3 or w_Fka3 or w_Fkd3 or  w_Fka4 or w_FreeKickSetup4}    then begin
+   result := 'PRS, waiting freekick  Ts:'+ tsCmd.CommaText;
+   Exit; // hack
+  end;  // concessi i tiri
+
+  // non è uguale a pos. rimbalzo a e non a 2
+  if aPlayer = nil then begin
+   result := 'PRS,Ball.Player not found Ts:'+ tsCmd.CommaText;
+   Exit; // hack
+  end;
+  if not aPlayer.CanSkill then begin
+   result := 'PRS,Player unable to use skill Ts:'+ tsCmd.CommaText;
+   Exit; // hack
+  end;
+
+  if (absDistance( Ball.CellX ,Ball.CellY,  CellX, CellY ) > (PrecisionShotRange  )) then begin
+    result := 'PRS,Shot range  Ts:'+ tsCmd.CommaText;
+    Exit;
+  end;
+  if (Not aPlayer.InShotCell) and (not w_FreeKick3) then begin // diventa una shot cell
+    result := 'PRS,Not in shot cell Ts:'+ tsCmd.CommaText;
+    Exit;
+  end;
 
 end;
 procedure TSoccerbrain.BrainInput ( aCmd: string );
@@ -6707,7 +6836,7 @@ begin
 
 
     aPlayer := Ball.Player;//   GetSoccerPlayer ( tsCmd[1]);
-    reason := ChackInputShp (aPlayer, CellX, CellY, tsCmd);
+    reason := CheckInputShp (aPlayer, CellX, CellY, tsCmd);
     if reason <> '' then goto myexit; // hack
 
 
@@ -6763,7 +6892,7 @@ begin
        // cella per cella o trovo un opponente o trovo un intercept
       OldBall:= Point ( Ball.CellX , Ball.Celly );
 
-      anOpponent:= GetSoccerPlayer ( aPath[i].X,aPath[i].Y , True, aPlayer.team );
+      anOpponent:= GetSoccerPlayerOpponent ( aPath[i].X,aPath[i].Y , aPlayer.team );
       if anOpponent <> nil then begin
             ExceptPlayers.Add(anOpponent);
             preRoll2 :=  RndGenerate (anOpponent.Defense + ToEmptyCell) ; // sarebbe un intercept bonus
@@ -6995,7 +7124,7 @@ begin
     CellY := StrToIntDef (tsCmd[2],-1);
 
     aPlayer := Ball.Player;
-    reason := ChackInputLop (aPlayer, CellX, CellY, tsCmd );
+    reason := CheckInputLop (aPlayer, CellX, CellY, tsCmd );
     if reason <> '' then goto myexit; // hack
 
 
@@ -7309,7 +7438,7 @@ begin
                         // tra le celle adiacenti, solo la X attuale e ciclo per le Y
                         for c := 0 to  ShotCells[ii].subCell.Count -1 do begin
                           aPoint := ShotCells[ii].subCell[c];
-                          anOpponent := GetSoccerPlayer(aPoint.X ,aPoint.Y, true, aPlayer.team );
+                          anOpponent := GetSoccerPlayerOpponent(aPoint.X ,aPoint.Y, aPlayer.team );
 
                           if  anOpponent = nil then continue;                                                 // non c'è player sulla cella adiacente
                           ExceptPlayers.Add(anOpponent);
@@ -7748,38 +7877,15 @@ TALENT_ID_PRECISE_CROSSING ( +1 crossing solo dal fondo campo, l'ultima cella )
 
     CellX := StrToIntDef (tsCmd[1],-1);
     CellY := StrToIntDef (tsCmd[2],-1);
-//
-    if w_SomeThing  then begin
-     reason := 'CRO, waiting freekick ';
-     goto myexit; // hack
-    end;  // concesso nulla
-
     aPlayer := Ball.Player;
-    if aPlayer = nil then begin
-     reason := 'CRO,Ball.Player not found';
-     goto myexit; // hack
-    end;
-    if not aPlayer.CanSkill then begin
-     reason := 'CRO,Player unable to use skill';
-     goto myexit; // hack
-    end;
+    reason := CheckInputCro (aPlayer, CellX, CellY, tsCmd);
+    if reason <> '' then goto myexit; // hack
 
       aPlayer.tmp := CrossingRangeMax;
       if (aPlayer.TalentId1 = TALENT_ID_LONGPASS) or (aPlayer.TalentId2 = TALENT_ID_LONGPASS) then
         aPlayer.tmp := aPlayer.tmp +1;
 
-      if (absDistance( Ball.CellX ,Ball.CellY,  CellX, CellY ) > (aPlayer.tmp))
-      or (absDistance( Ball.CellX ,Ball.CellY,  CellX, CellY ) < CrossingRangeMin)  then begin
-        reason := 'CRO,Destination range error: ' + tsCmd.CommaText + ' ball=' + IntToStr(Ball.CellX)+','+IntToStr(Ball.CellY );
-        goto MyExit;
-      end;
-
     aHeadingFriend := GetSoccerPlayer ( CellX, CellY,aPlayer.Team );
-
-    if aHeadingFriend = nil then begin
-      reason := 'CRO,Destination Player unfriendly or nil ';
-      goto MyExit;
-    end;
 
     tsSpeaker.Add( aPlayer.Surname +' cerca un cross per ' + aHeadingFriend.SurName   );
 
@@ -8247,36 +8353,12 @@ cro_crossbar:
 
     CellX := StrToIntDef (tsCmd[1],-1);
     CellY := StrToIntDef (tsCmd[2],-1);
-
-
     aPlayer := Ball.Player ;
-    if aPlayer = nil then begin
-     reason := 'DRI,Ball.Player not found';
-     goto myexit; // hack
-    end;
-    if not aPlayer.CanSkill then begin
-     reason := 'DRI,Player unable to use skill';
-     goto myexit; // hack
-    end;
+    anOpponent := GetSoccerPlayerOpponent ( CellX, CellY,  aPlayer.team );
 
-    if absDistance( Ball.CellX ,Ball.CellY,  CellX, CellY ) > 1 then begin
-      reason := 'DRI,Destination range error: ' + tsCmd.CommaText ;
-      goto MyExit;
-    end;
-    if not aPlayer.canDribbling then begin
-      reason := 'DRI,player unable to dribbling';
-      goto MyExit;
-    end;
-    anOpponent := GetSoccerPlayer ( CellX, CellY, True, aPlayer.team );
-    if anOpponent = nil then begin
-      reason := 'DRI,Destination Player missing';
-      goto MyExit;
+    reason := CheckInputDri (aPlayer, CellX, CellY, tsCmd);
+    if reason <> '' then goto myexit; // hack
 
-    end;
-    if (anOpponent.Role ='G')  then Begin
-      reason := 'DRI,Destination Player GK';
-      goto MyExit;
-    End;
       ExceptPlayers.Add(anOpponent);
 
       aPlayer.canDribbling := false;
@@ -8389,35 +8471,14 @@ cro_crossbar:
 
   // Power shot
   else if tsCmd[0] = 'POS' then  begin
-    if w_CornerSetup or w_Coa or w_cod or w_CornerKick or w_FreeKickSetup1 or w_Fka1 or w_Fka2 or w_FreeKick1 or w_FreeKickSetup2 or w_Fka2 or w_Fkd2 or w_FreeKick2
-    {or w_FreeKickSetup3 or w_Fka3 or w_Fkd3 or  w_Fka4 or w_FreeKickSetup4 }   then begin
-     reason := 'POS, waiting freekick  ';
-     goto myexit; // hack
-    end;  // concessi i tiri
 
     aPlayer:= Ball.Player;
-    if aPlayer = nil then begin
-     reason := 'POS,Ball.Player not found';
-     goto myexit; // hack
-    end;
-    if not aPlayer.CanSkill then begin
-     reason := 'POS,Player unable to use skill';
-     goto myexit; // hack
-    end;
-
-
     aDoor:= GetOpponentDoor (Ball.Player );
     CellX := aDoor.X;
     CellY := aDoor.Y;
+    reason := CheckInputPos (aPlayer, CellX, CellY, tsCmd);
+    if reason <> '' then goto myexit; // hack
 
-    if (absDistance( Ball.CellX ,Ball.CellY,  CellX, CellY ) > ( PowerShotRange  )) then begin
-      reason := 'POS,Shot range error';
-      goto MyExit;
-    end;
-    if (Not aPlayer.InShotCell) and (not w_FreeKick3) then begin // diventa una shot cell
-      reason := 'POS,Not in shot cell';
-      goto MyExit;
-    end;
 
     tsSpeaker.Add(  aPlayer.Surname +' tira in porta'   );
     BaseShotChance := CalculateBasePowerShot( aPlayer );
@@ -8541,7 +8602,7 @@ cro_crossbar:
           // tra le celle adiacenti, solo la X attuale e ciclo per le Y
           for c := 0 to  ShotCells[ii].subCell.Count -1 do begin
             aPoint := ShotCells[ii].subCell.Items [c];
-            anOpponent := GetSoccerPlayer(aPoint.X ,aPoint.Y, True , aPlayer.Team);
+            anOpponent := GetSoccerPlayerOpponent (aPoint.X ,aPoint.Y, aPlayer.Team);
 
             if  anOpponent = nil then continue;                                                 // non c'è player sulla cella adiacente
             ExceptPlayers.Add(anOpponent);
@@ -8740,37 +8801,15 @@ setCorner:
   // Precision shot
   // è come Power.shot ma senza rimbalzi e qundi corner
   else if tsCmd[0] = 'PRS' then  begin
-    if w_CornerSetup or w_Coa or w_cod or w_CornerKick or w_FreeKickSetup1 or w_FreeKick1 or  w_Fka1 or w_Fka2 or w_FreeKickSetup2 or w_Fka2 or w_Fkd2 or w_FreeKick2
-    {or w_FreeKickSetup3 or w_Fka3 or w_Fkd3 or  w_Fka4 or w_FreeKickSetup4}    then begin
-     reason := 'PRS, waiting freekick ';
-     goto myexit; // hack
-    end;  // concessi i tiri
 
   // non è uguale a pos. rimbalzo a e non a 2
     aPlayer:= Ball.Player;
-    if aPlayer = nil then begin
-     reason := 'PRS,Ball.Player not found';
-     goto myexit; // hack
-    end;
-    if not aPlayer.CanSkill then begin
-     reason := 'PRS,Player unable to use skill';
-     goto myexit; // hack
-    end;
-
-
     penalty:= false;
     aDoor:= GetOpponentDoor (Ball.Player );
     CellX := aDoor.X;
     CellY := aDoor.Y;
-
-    if (absDistance( Ball.CellX ,Ball.CellY,  CellX, CellY ) > (PrecisionShotRange  )) then begin
-      reason := 'PRS,Shot range error';
-      goto MyExit;
-    end;
-    if (Not aPlayer.InShotCell) and (not w_FreeKick3) then begin // diventa una shot cell
-      reason := 'PRS,Not in shot cell';
-      goto MyExit;
-    end;
+    reason := CheckInputPrs(aPlayer, CellX, CellY, tsCmd);
+    if reason <> '' then goto myexit; // hack
 
     tsSpeaker.Add(  aPlayer.Surname +' tira in porta'   );
     BaseShotChance := CalculateBasePrecisionShot (  aPlayer ); // punizione bonus +1 fisso  o rigore o normale
@@ -8882,7 +8921,7 @@ setCorner:
           // tra le celle adiacenti, solo la X attuale e ciclo per le Y
           for c := 0 to  ShotCells[ii].subCell.Count -1 do begin
             aPoint := ShotCells[ii].subCell.Items [c];
-            anOpponent := GetSoccerPlayer(aPoint.X ,aPoint.Y ,   true, aPlayer.team );
+            anOpponent := GetSoccerPlayerOpponent(aPoint.X ,aPoint.Y ,  aPlayer.team );
 
             if  anOpponent = nil then continue;
             ExceptPlayers.Add(anOpponent);

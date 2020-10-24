@@ -19,28 +19,8 @@
 
   }
   { TODO -ctodo prima del rilascio patreon :
-   InputSecureExit
 
-   fare
-                      TeamMovesLeft := TeamMovesLeft - 1;
-                      AI_moveAll ;
-                      if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-                      TsScript[incMove].add ('E');
-                      reason :='';
-
-                      InputSecureExit ( DoAiMoveAll );
-                      goto MyExit;
-
-
-   bug su un suo cross
-   controllare tutt i:   ce ne sono di pià in server_lop
-
-                  TeamMovesLeft := TeamMovesLeft - 1;
-                  AI_moveAll ;
-                  if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
-                  TsScript[incMove].add ('E');
-                  goto MyExit;
-
+   finire checkinput
 
     andrebbe tutto bene ma ho fatto PASS e ogni animazione non si è vista.
     dopo un lop in tmp debug si resetta in modo strano.
