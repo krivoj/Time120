@@ -16,6 +16,8 @@
 
     Server, gender bonus. controllare anche AI.
     islastman da testare la nuova versione
+    test gkxpr su molti campionati
+    test dopo interrupt non funziona piu' AI auto. forse va in 2.0
 
   }
   { TODO -ctodo prima del rilascio patreon :
@@ -34,9 +36,6 @@
     exit da partita solo se tools altrimenti non è proprio possibile.
 
 
-    i portieri devono gaudagnare meno xp, anche nel brain. 8 a partita sono troppi. oppure invece di 120 arrivo a 180 punti xp solo per GK
-    oppure 50-70% di guaganare xp random sui pos, prs ecc...
-
     Newseason fare i rewards in denaro matchcost 14 money a partita se pareggi. 14*2 se vinci ( ti ripaghi quasi il costo completo di tutti a 3 cost )
     rewards 38 o 30 partite * 2 +  puoi comprare X player
 
@@ -45,7 +44,6 @@
 
     help x buffdm,f corner frekick 2,3 penalty    Corner.Kick, crossing stay, free
 
-    dopo interrupt non funziona piu' AI auto. forse va in 2.0
 
     showmatchinfo finire bene.
 
@@ -90,7 +88,7 @@
     finire checkinput
     market finire bene con label matchcost
     denaro: ogni giocatore chiede a partita X.
-    im market indicare matchcost e team di provenienza
+    im market indicare matchcost
     talento convergi verso il centro
     talento autorità GK 50% -1 sui cross avversari o 50% +1 defense a heading
     +4 buff corsa ma solo pos
@@ -106,7 +104,6 @@
     quindi rndgenerate(1000) piu' o meno
 
     pve coppe e nazionali
-    tempi supplementari regola del 120+
     pve switch veloce fra simulazione e play sarebbe il massimno
 
     fare mouseclick .di nuovo mouseclick chiude. se_simulation = mostra matchinfo  (gol). e lo fa anche nella standings.c'è già sTAG matchinfo
@@ -18660,6 +18657,8 @@ begin
   HideFP_Friendly_ALL;
 
   MyBrain := oldbrain;
+  MyBrain.Score.AI [0]:= False;
+  MyBrain.Score.AI [1]:= False;
   GameScreen := ScreenFormation;
   ClientLoadFormation;
 

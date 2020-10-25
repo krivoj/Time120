@@ -19,7 +19,7 @@ const TurnMovesStart = 2;         // il calcio d'inizio ha solo 2 mosse
 const SEASON_MATCHES = 38;        // numero di partite a stagione
 const REGEN_STAMINA = 10;         // rigenerazione stamina dopo 1 partita
 const YELLOW_DISQUALIFIED = 3;
-
+const GKXP_REDUCTION = 20; // 20% di fare xp
 const xp_SPEED_POINTS = 120;
 const xp_DEFENSE_POINTS = 120;
 const xp_PASSING_POINTS = 120;
@@ -7118,7 +7118,7 @@ var
   aFriend, aHeadingFriend, aPlayer2,aFriend2: TSoccerPlayer; // un compagno che riceve la palla
   anOpponent, aSoccerPlayer,oldPlayerBall,aPlayerHeading, aPossiblePlayer2,aPossibleoffside: TSoccerPlayer; // altri puntatori ai player
   SwapPlayer,  aGhost, aGK, aHeadingOpponent: TSoccerPlayer;
-
+  Gkxpr : Integer;
   ACT: string;
 
   penalty: boolean;
@@ -7873,13 +7873,20 @@ begin
                           IntTostr ( aGK.defense ) +',Defense,'+ aGK.ids+','+IntTostr(Roll4.value) + ',' + Roll4.fatigue + '.0' + ',0');
                           // o angolo o respinta o gol
                           aGK.Stamina := aGK.Stamina - cost_GKheading;
-                          aGK.xp_Defense:= aGK.xp_Defense+1;
-                          aGK.xpDevA := aGK.xpDevA + 1;
+
+                          GKxpr:= RndGenerate(100);
+                          if GKxpr <= GKXP_REDUCTION then begin
+                            aGK.xp_Defense:= aGK.xp_Defense+1;
+                            aGK.xpDevA := aGK.xpDevA + 1;
+                          end;
+
               //            goto palo;
                           if aRnd4 > aRnd2 then begin // lop heading ---> il portiere para e c'è il rimbalzo
                              aCell := GetGKBounceCell (aGK,  aGK.cellX, aGK.CellY,  RndGenerate (2), true );
                              Ball.Cells := aCell;
-                             aGK.xpDevT := aGK.xpDevT + 1;
+                            if GKxpr <= GKXP_REDUCTION then begin
+                               aGK.xpDevT := aGK.xpDevT + 1;
+                            end;
 
                             // la palla, che ora è in possesso del portiere , rimbalza e finisce in posizione random che calcolo adesso
                               TsScript[incMove].add ('sc_lop.bounce.gk,' + aPlayer.ids + ',' + aGK.ids{sfidante} +','
@@ -8310,8 +8317,11 @@ GK:
           tsSpeaker.Add( aPlayer.Surname +' la palla direttamente tra le braccia di ' + aGK.SurName  );
           //aPlayer.resetALL;
           aGK.Stamina := aGK.Stamina - cost_GKprs;// presa semplice
-          aGK.xp_Defense:= aGK.xp_Defense+1;
-          aGK.xpDevA := aGK.xpDevA + 1;
+          GKxpr:= RndGenerate(100);
+          if GKxpr <= GKXP_REDUCTION then begin
+            aGK.xp_Defense:= aGK.xp_Defense+1;
+            aGK.xpDevA := aGK.xpDevA + 1;
+          end;
           reason := '';
           InputSecureExit ( True, DecNormal );
           goto MyExit;
@@ -8587,7 +8597,11 @@ HVSH:
               aGK.xpTal[TALENT_ID_GoalKeeper] := aGK.xpTal[TALENT_ID_GoalKeeper] + 1;
               //              TsScript[incMove].add ('gkdive,'+ anOpponent.Ids ) ;
               aGK.Stamina := aGK.Stamina - cost_GKheading;
-              aGK.xp_Defense:= aGK.xp_Defense+1;
+              GKxpr:= RndGenerate(100);
+              if GKxpr <= GKXP_REDUCTION then begin
+                aGK.xp_Defense:= aGK.xp_Defense+1;
+                aGK.xpdevA := aGK.xpdevA + 1;
+              end;
 
 
               // o angolo o respinta o gol
@@ -8596,8 +8610,9 @@ HVSH:
 
               if aRnd4 > aRnd3 then begin // heading ---> il portiere para e c'è il rimbalzo
                 // la palla, che ora è in possesso del portiere , rimbalza e finisce in posizione random che calcolo adesso
-                 aGK.xpdevA := aGK.xpdevA + 1;
+              if GKxpr <= GKXP_REDUCTION then begin
                  aGK.xpdevT := aGK.xpdevT + 1;
+              end;
                  aCell := GetGKBounceCell (aGK,  aGK.cellX, aGK.CellY,  RndGenerate (2),true );
                  Ball.Cells := aCell;
 
@@ -9034,8 +9049,12 @@ POSvsGK:
             if debug_Setposcrosscorner then aRnd2:=20;
 
             aGK.Stamina := aGK.Stamina - cost_GKpos;
-            aGK.xpDevA := aGK.xpDevA + 1;
-            aGK.xp_Defense := aGK.xp_Defense + 1;
+            GKxpr:= RndGenerate(100);
+            if GKxpr <= GKXP_REDUCTION then begin
+              aGK.xpDevA := aGK.xpDevA + 1;
+              aGK.xp_Defense := aGK.xp_Defense + 1;
+            end;
+
             aGK.xpTal[TALENT_ID_GoalKeeper] := aGK.xpTal[TALENT_ID_GoalKeeper] + 1;
             TsScript[incMove].add ( 'sc_DICE,' + IntTostr(aGK.CellX) + ',' + Inttostr(aGK.CellY) +','+  IntTostr(aRnd2) +','+
             IntTostr ( aGK.defense ) +',Defense,'+ aGK.ids+','+IntTostr(Roll2.value)+','+Roll2.fatigue+ '.0'+',0');
@@ -9047,9 +9066,15 @@ POSvsGK:
                   MatchInfo.Add( IntToStr(fminute) + '.pos4fail.' + aPlayer.ids)
                   else MatchInfo.Add( IntToStr(fminute) + '.pos4fail.' + aPlayer.ids+'.'+aPlayer.SurName);
 
+              if GKxpr <= GKXP_REDUCTION then begin
                  aGK.xpDevT := aGK.xpDevT + 2;
+              end
                end
-               else aGK.xpDevT := aGK.xpDevT + 1;
+               else begin
+              if GKxpr <= GKXP_REDUCTION then begin
+                aGK.xpDevT := aGK.xpDevT + 1;
+              end;
+               end;
 
                aCell := GetGKBounceCell (aGK,  aGK.cellX, aGK.CellY,  RndGenerate (2), true );
 
@@ -9349,8 +9374,11 @@ PRSvsGK:
             aRnd2:= roll2.value + aGK.tmp; // talento
             aGK.xpTal[TALENT_ID_GoalKeeper] := aGK.xpTal[TALENT_ID_GoalKeeper] + 1;
             aGK.Stamina := aGK.Stamina - cost_GKprs;
+            GKxpr:= RndGenerate(100);
+            if GKxpr <= GKXP_REDUCTION then begin
             aGK.xp_Defense:= aGK.xp_Defense+1;
             aGK.xpDevA := aGK.xpDevA + 1;
+            end;
             // o gol o presa
               TsScript[incMove].add ( 'sc_DICE,' + IntTostr(aGK.CellX) + ',' + Inttostr(aGK.CellY) +','+  IntTostr(aRnd2) +','+
               IntTostr ( aGK.defense ) +',Defense,'+ aGK.ids+','+IntTostr(Roll2.value)+','+Roll2.fatigue+ '.' +ACT +',0');
@@ -9362,9 +9390,15 @@ PRSvsGK:
                    MatchInfo.Add( IntToStr(fminute) + '.prs4fail.' + aPlayer.ids)
                      else MatchInfo.Add( IntToStr(fminute) + '.prs4fail.' + aPlayer.ids+'.'+aPlayer.SurName);
 
+              if GKxpr <= GKXP_REDUCTION then begin
                  aGK.xpDevT := aGK.xpDevT + 2
+              end;
                end
-               else aGK.xpDevT := aGK.xpDevT + 1;
+               else begin
+              if GKxpr <= GKXP_REDUCTION then begin
+               aGK.xpDevT := aGK.xpDevT + 1;
+              end;
+               end;
               // la palla,  ora è in possesso del portiere
 
                Ball.Cells := aGK.Cells;
@@ -12172,7 +12206,7 @@ end;
 
 procedure TSoccerbrain.exec_corner ;
 var
-  aRnd  , aRnd2, preRoll, preRoll2, preroll3, arnd3, preroll4, arnd4: integer;
+  aRnd  , aRnd2, preRoll, preRoll2, preroll3, arnd3, preroll4, arnd4,GKxpr: integer;
   Roll, Roll2, roll3, roll4: TRoll;
   aPlayer, aheadingFriend, aHeadingOpponent, aGK : TSoccerPlayer;
   CornerMap: TCornerMap;
@@ -12372,8 +12406,11 @@ begin
               aRnd4 := Roll4.value +  BonusDefenseHeading ;
               aGK.xpTal[TALENT_ID_GoalKeeper] := aGK.xpTal[TALENT_ID_GoalKeeper] + 1;
               aGK.Stamina := aGK.Stamina - cost_GKheading;
+              GKxpr:= RndGenerate(100);
+              if GKxpr <= GKXP_REDUCTION then begin
               aGK.xp_Defense:= aGK.xp_Defense+1;
               aGK.xpDevA := aGK.xpDevA + 1;
+              end;
              // aRnd4:= 10;
 
                  TsScript[incMove].add ( 'sc_DICE,' + IntTostr(aGK.CellX) + ',' + Inttostr(aGK.CellY) +','+  IntTostr(aRnd4) +','+
@@ -12382,7 +12419,9 @@ begin
               // o angolo o respinta o gol
               if aRnd4 > aRnd3 then begin // heading ---> il portiere para e c'è il rimbalzo
                 // la palla, che ora è in possesso del portiere , rimbalza e finisce in posizione random che calcolo adesso
+              if GKxpr <= GKXP_REDUCTION then begin
                  aGK.xpDevT := aGK.xpDevT + 1;
+              end;
                  aCell := GetGKBounceCell (aGK,  aGK.cellX, aGK.CellY,  RndGenerate (2),true );
 
                  Ball.Cells := aCell;
@@ -12474,7 +12513,7 @@ cor_crossbar:
 end;
 procedure TSoccerbrain.exec_freekick2 ;
 var
-  aRnd  , aRnd2, preRoll, preRoll2, preroll3, arnd3, preroll4, arnd4: integer;
+  aRnd  , aRnd2, preRoll, preRoll2, preroll3, arnd3, preroll4, arnd4,GKxpr: integer;
   Roll, Roll2, roll3, roll4: TRoll;
   aPlayer, aheadingFriend, aHeadingOpponent, aGK : TSoccerPlayer;
   CornerMap: TCornerMap;
@@ -12657,8 +12696,11 @@ begin
               aRnd4 := Roll4.value +  BonusDefenseHeading ;
               aGK.xpTal[TALENT_ID_GoalKeeper] := aGK.xpTal[TALENT_ID_GoalKeeper] + 1;
               aGK.Stamina := aGK.Stamina - cost_GKheading;
+              GKxpr:= RndGenerate(100);
+              if GKxpr <= GKXP_REDUCTION then begin
               aGK.xp_Defense:= aGK.xp_Defense+1;
               aGK.xpDevA := aGK.xpDevA + 1;
+              end;
              // aRnd4:= 10;
 
                  TsScript[incMove].add ( 'sc_DICE,' + IntTostr(aGK.CellX) + ',' + Inttostr(aGK.CellY) +','+  IntTostr(aRnd4) +','+
@@ -12667,7 +12709,9 @@ begin
               // o angolo o respinta o gol
               if aRnd4 > aRnd3 then begin // heading ---> il portiere para e c'è il rimbalzo
                 // la palla, che ora è in possesso del portiere , rimbalza e finisce in posizione random che calcolo adesso
+              if GKxpr <= GKXP_REDUCTION then begin
                  aGK.xpDevT := aGK.xpDevT + 1;
+              end;
 
                  aCell := GetGKBounceCell (aGK,  aGK.cellX, aGK.CellY,  RndGenerate (2),true );
 
