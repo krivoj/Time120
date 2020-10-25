@@ -954,7 +954,7 @@ end;
     function GetInjuredPlayer( Team: integer ): TSoccerPlayer;
 
     function IsOffSide ( FromPlayer, ToPlayer : TSoccerPlayer ): Boolean;
-    function IsLastMan ( aPlayer : TSoccerPlayer ): Boolean;
+    function IsLastMan ( aPlayer, BallPlayer : TSoccerPlayer ): Boolean;
 
     function AllowCount ( team: Integer ): Integer;
     function CurrentCount ( team: Integer ): Integer;
@@ -4984,30 +4984,90 @@ begin
     end;
   end;
 end;
-function TSoccerBrain.IsLastMan ( aPlayer : TSoccerPlayer ): Boolean;
+function TSoccerBrain.IsLastMan ( aPlayer, BallPlayer : TSoccerPlayer ): Boolean;
 var
+  AnotherPlayer : TSoccerPlayer;
   i: integer;
 begin
   // l'ultimo uomo è sempre oltre tutti a parte il portiere. anche in compagnia ma è l'ultima linea
   Result := True;
-  for I := lstSoccerPlayer.Count -1 downto 0 do begin
-    if lstSoccerPlayer[i].Team = aPlayer.team then begin
+
+    if aPlayer.CellX = BallPlayer.CellX then begin // se il fallo è SIDE
+      for I := lstSoccerPlayer.Count -1 downto 0 do begin
+        AnotherPlayer:= lstSoccerPlayer[i];
+        if (AnotherPlayer.ids = aPlayer.ids) or (AnotherPlayer.Team <> aPlayer.team ) and (AnotherPlayer.Role = 'G') then continue; // non calcolo chi fa il fallo e il team avversario
+          case aPlayer.team of
+            // in pratica: il fallo è di lato. Se ne trovo un altro di fianco o più arretrato non è ultimo uomo
+            0: begin // qui ciclano team 0, il fallo è sel team 0
+              if  AnotherPlayer.CellX <= aPlayer.cellX   then begin
+                Result:= false;
+                Exit;
+              end;
+            end;
+            1: begin  // qui ciclano team 1, il fallo è sel team 1
+              if AnotherPlayer.CellX >= aPlayer.cellX  then begin
+                Result:= false;
+                Exit;
+              end;
+            end;
+          end;
+
+        exit;
+
+      end;
+    end
+
+    // se il fallo è da davanti o dietro
+    else begin
       case aPlayer.team of
-        0: begin // qui ciclano team 0
-          if (lstSoccerPlayer[i].Role  <> 'G') and (lstSoccerPlayer[i].CellX < aPlayer.cellX) and (lstSoccerPlayer[i].CellX > 0) then begin
-            Result:= false;
-            Exit;
+        0: begin // qui ciclano team 0, il fallo è sel team 0
+          if aPlayer.CellX < Ball.Player.cellX then begin // fallo da davanti
+            for I := lstSoccerPlayer.Count -1 downto 0 do begin
+              AnotherPlayer:= lstSoccerPlayer[i];
+              if (AnotherPlayer.ids = aPlayer.ids) or (AnotherPlayer.Team <> aPlayer.team ) and (AnotherPlayer.Role = 'G') then continue; // non calcolo chi fa il fallo e il team avversario
+                if (AnotherPlayer.CellX <= aPlayer.cellX) or (AnotherPlayer.CellX = BallPlayer.cellX) then begin
+                  Result:= false;
+                  Exit;
+                end;
+            end;
+          end
+          else if aPlayer.CellX > Ball.Player.cellX then begin // fallo da dietro
+            for I := lstSoccerPlayer.Count -1 downto 0 do begin
+              AnotherPlayer:= lstSoccerPlayer[i];
+              if (AnotherPlayer.ids = aPlayer.ids) or (AnotherPlayer.Team <> aPlayer.team ) and (AnotherPlayer.Role = 'G') then continue; // non calcolo chi fa il fallo e il team avversario
+                if (AnotherPlayer.CellX <= BallPlayer.cellX) then begin
+                  Result:= false;
+                  Exit;
+                end;
+            end;
+
           end;
         end;
-        1: begin  // qui ciclano team 1
-          if (lstSoccerPlayer[i].Role  <> 'G') and (lstSoccerPlayer[i].CellX > aPlayer.cellX)  and (lstSoccerPlayer[i].CellX < 11)  then begin
-            Result:= false;
-            Exit;
+        1: begin  // qui ciclano team 1, il fallo è sel team 1
+          if aPlayer.CellX > Ball.Player.cellX then begin // fallo da davanti
+            for I := lstSoccerPlayer.Count -1 downto 0 do begin
+              AnotherPlayer:= lstSoccerPlayer[i];
+              if (AnotherPlayer.ids = aPlayer.ids) or (AnotherPlayer.Team <> aPlayer.team ) and (AnotherPlayer.Role = 'G') then continue; // non calcolo chi fa il fallo e il team avversario
+                if (AnotherPlayer.CellX >= aPlayer.cellX) or (AnotherPlayer.CellX = BallPlayer.cellX) then begin
+                  Result:= false;
+                  Exit;
+                end;
+            end;
+          end
+          else if aPlayer.CellX < Ball.Player.cellX then begin // fallo da dietro
+            for I := lstSoccerPlayer.Count -1 downto 0 do begin
+              AnotherPlayer:= lstSoccerPlayer[i];
+              if (AnotherPlayer.ids = aPlayer.ids) or (AnotherPlayer.Team <> aPlayer.team ) and (AnotherPlayer.Role = 'G') then continue; // non calcolo chi fa il fallo e il team avversario
+                if (AnotherPlayer.CellX >= BallPlayer.cellX) then begin
+                  Result:= false;
+                  Exit;
+                end;
+            end;
+
           end;
         end;
       end;
     end;
-  end;
 
 end;
 function TSoccerBrain.AllowCount ( team: Integer ): Integer;
@@ -11177,6 +11237,15 @@ begin
               injured:= 10;
               if ball.Player.Fitness = 0 then
                 Injured := 15;
+              if IsLastMan ( aPlayer, Ball.Player ) then begin
+                {$IFDEF ADDITIONAL_MATCHINFO}
+                if GameMode = pvp then
+                  MatchInfo.Add( IntToStr(fminute) + '.lastman.' + aPlayer.ids)
+                  else  MatchInfo.Add( IntToStr(fminute) + '.lastman.' + aPlayer.ids+'.'+aPlayer.SurName);
+                  {$ENDIF}
+                redCard := 100;
+                YellowCard := 0;
+              end;
             end;
             TackleSide: begin
               fault := 25;
@@ -11187,9 +11256,9 @@ begin
               injured:= 5;
               if ball.Player.Fitness = 0 then
                 Injured := 10;
-              // se è l'ultimo uomo ( ma non davanti ) la chance di essere espulso è del 100%
-              if IsLastMan ( aPlayer ) then begin
-  {$IFDEF ADDITIONAL_MATCHINFO}
+              // se è l'ultimo uomo la chance di essere espulso è del 100%
+              if IsLastMan ( aPlayer, Ball.Player ) then begin
+                {$IFDEF ADDITIONAL_MATCHINFO}
                 if GameMode = pvp then
                   MatchInfo.Add( IntToStr(fminute) + '.lastman.' + aPlayer.ids)
                   else  MatchInfo.Add( IntToStr(fminute) + '.lastman.' + aPlayer.ids+'.'+aPlayer.SurName);
@@ -11204,8 +11273,13 @@ begin
               Card := 30;
               redCard := 1;
               YellowCard := 99;
-              // se è l'ultimo uomo ( ma non davanti ) la chance di essere espulso è del 100%
-              if IsLastMan ( aPlayer ) then begin
+              // se è l'ultimo uomo  la chance di essere espulso è del 100%
+              if IsLastMan ( aPlayer, Ball.Player ) then begin
+                {$IFDEF ADDITIONAL_MATCHINFO}
+                if GameMode = pvp then
+                  MatchInfo.Add( IntToStr(fminute) + '.lastman.' + aPlayer.ids)
+                  else  MatchInfo.Add( IntToStr(fminute) + '.lastman.' + aPlayer.ids+'.'+aPlayer.SurName);
+                  {$ENDIF}
                 redCard := 100;
                 YellowCard := 0;
               end;

@@ -15,7 +15,7 @@
     pvp testare sell/buy sembra andare bene
 
     Server, gender bonus. controllare anche AI.
-
+    islastman da testare la nuova versione
 
   }
   { TODO -ctodo prima del rilascio patreon :
@@ -51,8 +51,6 @@
 
     help diviso per lingue . finire bene anche descrizione skill buff reparti e marking
 
-    bug lastman. ricalcolare le condizioni . anche la nuova versione forse non va bene. c'è sicuro errore perchè compare al 44' di una partita
-    islastman diventa islastman ( aplayer, ballplayer)
 
     testare gameover e fare nextMF usare minute per continuare
 
@@ -11539,7 +11537,7 @@ begin
   SE_interface.ProcessSprites(2000);
 
   aFieldPoint := SE_FieldPoints.FindSprite(IntToStr (CellX ) + '.' + IntToStr (CellY ));
-  SE_interface.CreateSprite ( dir_interface + 'arrowmoving.bmp' ,'arrows',8,1,200, aFieldPoint.Position.X, aFieldPoint.Position.Y , True,10 ) ;
+  SE_interface.CreateSprite ( dir_interface + 'arrowmoving.bmp' ,'arrows',8,1,100, aFieldPoint.Position.X, aFieldPoint.Position.Y , True,10 ) ;
   SE_interface.Visible := true;
 
 end;
