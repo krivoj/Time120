@@ -1,5 +1,6 @@
 ﻿unit Unit1;
 {$DEFINE TOOLS}
+//{$DEFINE SE_DEBUG}
 {$R-}
 
   { TODO -cbug :
@@ -104,11 +105,7 @@
     quindi rndgenerate(1000) piu' o meno
 
     pve coppe e nazionali
-    pve switch veloce fra simulazione e play sarebbe il massimno
 
-    fare mouseclick .di nuovo mouseclick chiude. se_simulation = mostra matchinfo  (gol). e lo fa anche nella standings.c'è già sTAG matchinfo
-    tipo aSprite := SE_Standings.FindSprite('matchinfo')
-    una specie di clientloadmatchinfo ma spostata
 
     aggiungere info. seaseon round: risultato partita e sell/buy/dismiss. history players. con frecce doppie. il file è un semplice textfile con readln e writeln
     caricato in una Tstringlist. Forse i giornali LUCKY POINT
@@ -1735,7 +1732,7 @@ var
 begin
   BuildString := 'Build: ' + kfVersionInfo;
 
-  {$IFDEF tools}
+  {$IFDEF se_debug}
   bmp := SE_Bitmap.Create ( 400,40 );
   bmp.Bitmap.Canvas.Brush.Color :=  clGray;
   bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
@@ -1748,7 +1745,7 @@ begin
   aSprite.Labels.Add(aSpriteLabel);
   aSpriteLabel := SE_SpriteLabel.create( 0,20,'Calibri',clwhite-1,clBlack,12,'',True , 2, dt_Left );
   aSprite.Labels.Add(aSpriteLabel);
-  {$endIF tools}
+  {$endIF e_debug}
 
   debug_OnlyMyGame := False;
 
@@ -5469,9 +5466,9 @@ begin
       anim (AnimationScript.Ts[ AnimationScript.Index ]); // muove gli sprite
       AnimationScript.Index := AnimationScript.Index + 1; // INCREMENTA PER FORZA OLTRE IL LIMITE COUNT
 
-      {$IFDEF tools}
+      {$IFDEF se_debug}
       SE_DEBUG.Sprites[0].Labels[0].lText := ' AnimationScript.Index  ' + IntTostr( AnimationScript.Index  ) +  ' AnimationScript.Ts.Count  ' + IntTostr( AnimationScript.Ts.Count );
-      {$endIF tools}
+      {$endIF se_debug}
 
       if AnimationScript.Index > AnimationScript.Ts.Count -1 then begin     // attendo la fine di ANIM
         while ( SE_ball.IsAnySpriteMoving  ) or  (se_players.IsAnySpriteMoving) do begin
@@ -7837,10 +7834,12 @@ var
   BaseY,XScoreFrame,YScoreFrame : integer;
   const Xbmp = 30; XDescr = 60;
 begin
+  SE_matchInfo.RemoveAllSprites;
+  SE_matchInfo.ProcessSprites(2000);
+
   if Length(MatchInfoString) = 0 then
     Exit;
 
-  SE_matchInfo.RemoveAllSprites;
 
   MatchInfo := TStringList.Create;
   MatchInfo.StrictDelimiter := True;
@@ -7852,72 +7851,83 @@ begin
   BaseY := 0;
 
   bmp := SE_Bitmap.Create ( 250, MatchInfo.Count * 22 );// dinamico con aggiunta di spritelabels
-  bmp.Bitmap.Canvas.Brush.Color :=  clGray;
+  bmp.Bitmap.Canvas.Brush.Color :=  clBlue;
   bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
-  aSprite:=SE_matchInfo.CreateSprite(bmp.Bitmap ,'scoreframemf',1,1,1000, posX ,posY ,false,2 );
+  RoundBorder(bmp.bitmap);
+  aSprite:=SE_matchInfo.CreateSprite(bmp.Bitmap ,'scoreframemf',1,1,1000, posX ,posY ,true,2 );
   bmp.Free;
 
   for y:= StartIndex to MatchInfo.Count -1 do begin         //   es. MatchInfo[y] 19.golprs.454.surname 45.sub.126.durname1.138.surname2
     tmp.DelimitedText := MatchInfo[y];
 
-    aSpriteLabel := SE_SpriteLabel.create(0,BaseY,'Calibri',clWhite,clblack, 12,tmp[0] + '''',true ,1, dt_left);
+    aSpriteLabel := SE_SpriteLabel.create(0,BaseY,'Calibri',clWhite-1,clblack, 12,tmp[0] + '''',true ,1, dt_left);
     aSprite.Labels.Add(aSpriteLabel);
 
     if tmp[1] = 'sub' then begin
       aSprite.AddSubSprite(dir_interface + 'infoinout.bmp','infoinout'+IntToStr(y),Xbmp,BaseY,True );
-      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, tmp[3] + '--->'+  tmp[5],true ,1, dt_left);
+      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite-1,clblack, 12, tmp[3] + '--->'+  tmp[5],true ,1, dt_left);
       aSprite.Labels.Add(aSpriteLabel);
     end
     else if ( pos ('gol', tmp[1], 1 ) <> 0) and  (  pos ('4', tmp[1], 1 )  = 0)  then begin // gol normali, prs,pos,prs3pos3,gol.volley,gol.crossing
       aSprite.AddSubSprite(dir_interface + 'infogolball.bmp','infogolball'+IntToStr(y),Xbmp,BaseY,True );
-      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, tmp[3],true,1, dt_left );
+      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite-1,clblack, 12, tmp[3],true,1, dt_left );
       aSprite.Labels.Add(aSpriteLabel);
     end
     else if ( pos ('gol', tmp[1], 1 ) <> 0) and  (  pos ('4', tmp[1], 1 ) <> 0)  then begin // gol su rigore
       aSprite.AddSubSprite(dir_interface + 'infopenaltygol.bmp','infopenaltygol'+IntToStr(y),Xbmp,BaseY,True );
-      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, tmp[3],true,1, dt_left );
+      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite-1,clblack, 12, tmp[3],true,1, dt_left );
       aSprite.Labels.Add(aSpriteLabel);
     end
     else if ( pos ('4fail', tmp[1], 1 ) <> 0) then begin // rigore fallito
       aSprite.AddSubSprite(dir_interface + 'infopenaltyfail.bmp','infopenaltyfail'+IntToStr(y),Xbmp,BaseY,True );
-      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, tmp[3],true,1, dt_left );
+      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite-1,clblack, 12, tmp[3],true,1, dt_left );
       aSprite.Labels.Add(aSpriteLabel);
     end
     else if ( pos ('yc', tmp[1], 1 ) <> 0) then begin
       aSprite.AddSubSprite(dir_interface + 'infoyellow.bmp','infoyellow'+IntToStr(y),Xbmp,BaseY,True );
-      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, tmp[3],true,1, dt_left );
+      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite-1,clblack, 12, tmp[3],true,1, dt_left );
       aSprite.Labels.Add(aSpriteLabel);
     end
     {$IFDEF  TOOLS}
     else if ( pos ('crossbar', tmp[1], 1 ) <> 0) then begin
       aSprite.AddSubSprite(dir_interface + 'infocrossbar.bmp','infocrossbar'+IntToStr(y),Xbmp,BaseY,True);
-      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12,'', true ,1, dt_left);
+      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite-1,clblack, 12,'', true ,1, dt_left);
       aSprite.Labels.Add(aSpriteLabel);
     end
     else if ( pos ('corner', tmp[1], 1 ) <> 0) then begin
       aSprite.AddSubSprite(dir_interface + 'infocorner.bmp','infocorner'+IntToStr(y),Xbmp,BaseY,True);
-      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12,'', true,1, dt_left );
+      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite-1,clblack, 12,'', true,1, dt_left );
+      aSprite.Labels.Add(aSpriteLabel);
+    end
+    else if ( pos ('freekick1', tmp[1], 1 ) <> 0) then begin
+      aSprite.AddSubSprite(dir_interface + 'infogeneric.bmp','infofreekick1'+IntToStr(y),Xbmp,BaseY,True);
+      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite-1,clblack, 12, '' ,true,1, dt_left );
+      aSprite.Labels.Add(aSpriteLabel);
+    end
+    else if ( pos ('freekick2', tmp[1], 1 ) <> 0) then begin
+      aSprite.AddSubSprite(dir_interface + 'infogeneric.bmp','infofreekick2'+IntToStr(y),Xbmp,BaseY,True);
+      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, '' ,true,1, dt_left );
       aSprite.Labels.Add(aSpriteLabel);
     end
     else if ( pos ('freekick3', tmp[1], 1 ) <> 0) then begin
       aSprite.AddSubSprite(dir_interface + 'infofreekick3.bmp','infofreekick3'+IntToStr(y),Xbmp,BaseY,True);
-      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, '' ,true,1, dt_left );
+      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite-1,clblack, 12, '' ,true,1, dt_left );
       aSprite.Labels.Add(aSpriteLabel);
     end
     else if ( pos ('freekick4', tmp[1], 1 ) <> 0) then begin
       aSprite.AddSubSprite(dir_interface + 'infofreekick4.bmp','infofreekick4'+IntToStr(y),Xbmp,BaseY,True);
-      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, '' ,true ,1, dt_left);
+      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite-1,clblack, 12, '' ,true ,1, dt_left);
       aSprite.Labels.Add(aSpriteLabel);
     end
     else if ( pos ('lastman', tmp[1], 1 ) <> 0) then begin
       aSprite.AddSubSprite(dir_interface + 'infolastman.bmp','infolastman'+IntToStr(y),Xbmp,BaseY,True);
-      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, '',true,1, dt_left );
+      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite-1,clblack, 12, '',true,1, dt_left );
       aSprite.Labels.Add(aSpriteLabel);
     end
     {$ENDIF TOOLS}
     else if ( pos ('rc', tmp[1], 1 ) <> 0) then begin
       aSprite.AddSubSprite(dir_interface + 'infored.bmp','infored'+IntToStr(y),Xbmp,BaseY,True);
-      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, tmp[3],true,1, dt_left);
+      aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite-1,clblack, 12, tmp[3],true,1, dt_left);
       aSprite.Labels.Add(aSpriteLabel);
     end;
 
@@ -9957,9 +9967,9 @@ begin
 
   ts := TstringList.Create ;
   ts.CommaText := Script;
-    {$IFDEF tools}
+    {$IFDEF se_debug}
     SE_DEBUG.Sprites[0].Labels[1].lText := '  ts  ' +  ts.CommaText;
-    {$endIF tools}
+    {$endIF se_debug}
 
   if ts[0] = 'cl_showroll' then begin
     //1 aPlayer.ids
