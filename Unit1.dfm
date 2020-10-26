@@ -1305,7 +1305,6 @@ object Form1: TForm1
     Top = 696
   end
   object SE_matchInfo: SE_Engine
-    ClickSprites = False
     PixelCollision = False
     HiddenSpritesMouseMove = False
     IsoPriority = False

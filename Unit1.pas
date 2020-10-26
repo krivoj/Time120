@@ -24,6 +24,7 @@
   { TODO -ctodo prima del rilascio patreon :
 
 
+
     freekick a mio favore ha proseguito con AUTO, ma lo deve fare di suo, il CRO2. ci sarà lo stesso problema su COR
 
     le sub sono piene di bug.
@@ -46,7 +47,6 @@
     help x buffdm,f corner frekick 2,3 penalty    Corner.Kick, crossing stay, free
 
 
-    showmatchinfo finire bene.
 
     help diviso per lingue . finire bene anche descrizione skill buff reparti e marking
 
@@ -86,6 +86,7 @@
 
   }
   { TODO -csviluppo :
+    showmatchinfo devono essere aggiunti anche il nome del team in ogni info e allargare leggermente o modificare il font_ problema team nomi linghi
     finire checkinput
     market finire bene con label matchcost
     denaro: ogni giocatore chiede a partita X.
@@ -482,6 +483,7 @@ type
       procedure ScreenSpectator_SE_GameOver ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
       procedure ScreenAll_SE_YesNo ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
       procedure ScreenAll_SE_InfoError ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
+      procedure ScreenAll_SE_MatchInfo ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
 
       procedure ScreenLive_SE_Green ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
       procedure ScreenLive_SE_Players ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
@@ -683,7 +685,7 @@ type
       procedure ClientLoadAML;
       procedure ClientLoadCountries ( index: Integer);
       procedure ClientLoadTeams ( index: Integer);
-      procedure ShowMatchInfo ( posX,posY,StartIndex: Integer; MatchInfoString: string) ;  // dinamico. rimuove e ricrea sprites. Troppe informazioni. Fa uso di SE_MatchInfo
+      procedure ShowMatchInfo ( posX,posY: Integer; MatchInfoString: string) ;  // dinamico. rimuove e ricrea sprites. Troppe informazioni. Fa uso di SE_MatchInfo
       procedure ClientLoadStandings ( Season, Country, Division : integer ) ; // parametri utili per display di altre nazione ecc...; // solo pve ;
       procedure ShowLoading;
 
@@ -7824,67 +7826,75 @@ begin
 //    aPlayer:= MyBrain.GetSoccerPlayer2(ids);
 
 end;
-procedure TForm1.ShowMatchInfo ( posX,posY,StartIndex: Integer; MatchInfoString: string) ; // standings startindex=5
+procedure TForm1.ShowMatchInfo ( posX,posY: Integer; MatchInfoString: string) ; // standings startindex=5
 var
   y: Integer;
   matchinfo,tmp: TStringList;
+  Title : string;
   bmp: SE_Bitmap;
-  aSprite : SE_Sprite;
+  aSprite, aSpriteFrame : SE_Sprite;
   aSpriteLabel : SE_SpriteLabel;
   BaseY,XScoreFrame,YScoreFrame : integer;
-  const Xbmp = 30; XDescr = 60;
+  const Xbmp = 30; XDescr = 60; SubSpriteY = 4;
 begin
   SE_matchInfo.RemoveAllSprites;
   SE_matchInfo.ProcessSprites(2000);
-
-  if Length(MatchInfoString) = 0 then
-    Exit;
 
 
   MatchInfo := TStringList.Create;
   MatchInfo.StrictDelimiter := True;
   MatchInfo.CommaText := MatchInfoString;
+  if MatchInfo.Count <= 0 then begin
+    MatchInfo.Free;
+    Exit;
+  end;
 
   tmp := TStringList.Create;
   tmp.Delimiter := '.';
   tmp.StrictDelimiter := True;
   BaseY := 0;
 
-  bmp := SE_Bitmap.Create ( 250, MatchInfo.Count * 22 );// dinamico con aggiunta di spritelabels
-  bmp.Bitmap.Canvas.Brush.Color :=  clBlue;
+  bmp := SE_Bitmap.Create ( 280, (MatchInfo.Count-3) * 22 );// dinamico con aggiunta di spritelabels  -1  è +1 team0-team1 0-0
+  bmp.Bitmap.Canvas.Brush.Color :=  clBlue;                                                              // ma anche -4 per le prime 4 id,team,id,team
   bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
   RoundBorder(bmp.bitmap);
   aSprite:=SE_matchInfo.CreateSprite(bmp.Bitmap ,'scoreframemf',1,1,1000, posX ,posY ,true,2 );
   bmp.Free;
 
-  for y:= StartIndex to MatchInfo.Count -1 do begin         //   es. MatchInfo[y] 19.golprs.454.surname 45.sub.126.durname1.138.surname2
+  Title := MatchInfo[1]+ '-'+ MatchInfo[3] + ' '+ MatchInfo[4];
+  aSpriteLabel := SE_SpriteLabel.create(0,BaseY,'Calibri',clWhite-1,clblack, 12,Title ,true ,1, dt_Center);
+  aSprite.Labels.Add(aSpriteLabel);
+  BaseY := BaseY + 22;
+ // BaseY := BaseY + 22; // Spazio
+
+  for y:= 5 to MatchInfo.Count -1 do begin         //   es. MatchInfo[y] 19.golprs.454.surname 45.sub.126.durname1.138.surname2
     tmp.DelimitedText := MatchInfo[y];
 
-    aSpriteLabel := SE_SpriteLabel.create(0,BaseY,'Calibri',clWhite-1,clblack, 12,tmp[0] + '''',true ,1, dt_left);
+    aSpriteLabel := SE_SpriteLabel.create(0,BaseY,'Calibri',clWhite-1,clblack, 12, tmp[0]+'''' ,true ,1, dt_left);
     aSprite.Labels.Add(aSpriteLabel);
 
     if tmp[1] = 'sub' then begin
-      aSprite.AddSubSprite(dir_interface + 'infoinout.bmp','infoinout'+IntToStr(y),Xbmp,BaseY,True );
+      aSprite.AddSubSprite(dir_interface + 'infoinout.bmp','infoinout'+IntToStr(y),Xbmp,BaseY+SubSpriteY,True );
       aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite-1,clblack, 12, tmp[3] + '--->'+  tmp[5],true ,1, dt_left);
       aSprite.Labels.Add(aSpriteLabel);
     end
     else if ( pos ('gol', tmp[1], 1 ) <> 0) and  (  pos ('4', tmp[1], 1 )  = 0)  then begin // gol normali, prs,pos,prs3pos3,gol.volley,gol.crossing
-      aSprite.AddSubSprite(dir_interface + 'infogolball.bmp','infogolball'+IntToStr(y),Xbmp,BaseY,True );
+      aSprite.AddSubSprite(dir_interface + 'infogolball.bmp','infogolball'+IntToStr(y),Xbmp,BaseY+SubSpriteY,True );
       aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite-1,clblack, 12, tmp[3],true,1, dt_left );
       aSprite.Labels.Add(aSpriteLabel);
     end
     else if ( pos ('gol', tmp[1], 1 ) <> 0) and  (  pos ('4', tmp[1], 1 ) <> 0)  then begin // gol su rigore
-      aSprite.AddSubSprite(dir_interface + 'infopenaltygol.bmp','infopenaltygol'+IntToStr(y),Xbmp,BaseY,True );
+      aSprite.AddSubSprite(dir_interface + 'infopenaltygol.bmp','infopenaltygol'+IntToStr(y),Xbmp,BaseY+SubSpriteY,True );
       aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite-1,clblack, 12, tmp[3],true,1, dt_left );
       aSprite.Labels.Add(aSpriteLabel);
     end
     else if ( pos ('4fail', tmp[1], 1 ) <> 0) then begin // rigore fallito
-      aSprite.AddSubSprite(dir_interface + 'infopenaltyfail.bmp','infopenaltyfail'+IntToStr(y),Xbmp,BaseY,True );
+      aSprite.AddSubSprite(dir_interface + 'infopenaltyfail.bmp','infopenaltyfail'+IntToStr(y),Xbmp,BaseY+SubSpriteY,True );
       aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite-1,clblack, 12, tmp[3],true,1, dt_left );
       aSprite.Labels.Add(aSpriteLabel);
     end
     else if ( pos ('yc', tmp[1], 1 ) <> 0) then begin
-      aSprite.AddSubSprite(dir_interface + 'infoyellow.bmp','infoyellow'+IntToStr(y),Xbmp,BaseY,True );
+      aSprite.AddSubSprite(dir_interface + 'infoyellow.bmp','infoyellow'+IntToStr(y),Xbmp,BaseY+SubSpriteY,True );
       aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite-1,clblack, 12, tmp[3],true,1, dt_left );
       aSprite.Labels.Add(aSpriteLabel);
     end
@@ -7895,17 +7905,17 @@ begin
       aSprite.Labels.Add(aSpriteLabel);
     end
     else if ( pos ('corner', tmp[1], 1 ) <> 0) then begin
-      aSprite.AddSubSprite(dir_interface + 'infocorner.bmp','infocorner'+IntToStr(y),Xbmp,BaseY,True);
+      aSprite.AddSubSprite(dir_interface + 'infocorner.bmp','infocorner'+IntToStr(y),Xbmp,BaseY+SubSpriteY,True);
       aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite-1,clblack, 12,'', true,1, dt_left );
       aSprite.Labels.Add(aSpriteLabel);
     end
     else if ( pos ('freekick1', tmp[1], 1 ) <> 0) then begin
-      aSprite.AddSubSprite(dir_interface + 'infogeneric.bmp','infofreekick1'+IntToStr(y),Xbmp,BaseY,True);
+      aSprite.AddSubSprite(dir_interface + 'infogeneric.bmp','infofreekick1'+IntToStr(y),Xbmp,BaseY+SubSpriteY,True);
       aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite-1,clblack, 12, '' ,true,1, dt_left );
       aSprite.Labels.Add(aSpriteLabel);
     end
     else if ( pos ('freekick2', tmp[1], 1 ) <> 0) then begin
-      aSprite.AddSubSprite(dir_interface + 'infogeneric.bmp','infofreekick2'+IntToStr(y),Xbmp,BaseY,True);
+      aSprite.AddSubSprite(dir_interface + 'infogeneric.bmp','infofreekick2'+IntToStr(y),Xbmp,BaseY+SubSpriteY,True);
       aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, '' ,true,1, dt_left );
       aSprite.Labels.Add(aSpriteLabel);
     end
@@ -7915,18 +7925,18 @@ begin
       aSprite.Labels.Add(aSpriteLabel);
     end
     else if ( pos ('freekick4', tmp[1], 1 ) <> 0) then begin
-      aSprite.AddSubSprite(dir_interface + 'infofreekick4.bmp','infofreekick4'+IntToStr(y),Xbmp,BaseY,True);
+      aSprite.AddSubSprite(dir_interface + 'infofreekick4.bmp','infofreekick4'+IntToStr(y),Xbmp,BaseY+SubSpriteY,True);
       aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite-1,clblack, 12, '' ,true ,1, dt_left);
       aSprite.Labels.Add(aSpriteLabel);
     end
     else if ( pos ('lastman', tmp[1], 1 ) <> 0) then begin
-      aSprite.AddSubSprite(dir_interface + 'infolastman.bmp','infolastman'+IntToStr(y),Xbmp,BaseY,True);
+      aSprite.AddSubSprite(dir_interface + 'infolastman.bmp','infolastman'+IntToStr(y),Xbmp,BaseY+SubSpriteY,True);
       aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite-1,clblack, 12, '',true,1, dt_left );
       aSprite.Labels.Add(aSpriteLabel);
     end
     {$ENDIF TOOLS}
     else if ( pos ('rc', tmp[1], 1 ) <> 0) then begin
-      aSprite.AddSubSprite(dir_interface + 'infored.bmp','infored'+IntToStr(y),Xbmp,BaseY,True);
+      aSprite.AddSubSprite(dir_interface + 'infored.bmp','infored'+IntToStr(y),Xbmp,BaseY+SubSpriteY,True);
       aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite-1,clblack, 12, tmp[3],true,1, dt_left);
       aSprite.Labels.Add(aSpriteLabel);
     end;
@@ -7939,6 +7949,18 @@ begin
 
   tmp.Free;
   MatchInfo.free;
+
+  aSpriteFrame :=SE_matchInfo.FindSprite('scoreframemf');
+  bmp :=SE_Bitmap.Create ( 120, 24 );
+  bmp.Canvas.Brush.Color := clGray;
+  bmp.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
+  aSprite := SE_MatchInfo.CreateSprite( bmp.Bitmap , 'close',1,1,1000, aSpriteFrame.Position.X , aSpriteFrame.Position.Y + aSpriteFrame.BMP.Height div 2 ,false,3 );
+  aSpriteLabel := SE_SpriteLabel.create(-1,0,'Calibri',clWhite-1,clgreen,16,Capitalize(Translate('lbl_Close' )),true,1,dt_center);
+  aSprite.Labels.Add(aSpriteLabel);
+  aSpriteLabel.lFontQuality := fqdefault;
+  aSprite.sTag := 'close';
+  bmp.Free;
+
   SE_matchInfo.Visible := true;
 
 end;
@@ -10593,7 +10615,7 @@ begin
       //CreateSplash (se_theater1.VirtualBitmap.Width div 2,se_theater1.VirtualBitmap.Height div 2,400,200, 'GOAL !!!', 2000,24, FontColor,BackColor, false) ;
   end
   else if ts[0]= 'cl_splash.gameover' then begin
-    ShowMatchInfo ( SE_Theater1.Width div 2, SE_Theater1.Height div 2,0, MyBrain.MatchInfo.CommaText ) ;
+    ShowMatchInfo ( SE_Theater1.Width div 2, SE_Theater1.Height div 2, MyBrain.MatchInfo.CommaText ) ;
     Sleep(2000);
     AnimationScript.Reset ;
     if LiveMatch then begin
@@ -12536,6 +12558,8 @@ begin
   end;
 end;
 procedure TForm1.ScreenStandings_SE_Standings ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
+var
+  i,RM : Integer;
 const RowH = 18;
 begin
   if aSpriteClicked.Guid = 'btnmenu_back' then begin
@@ -12550,8 +12574,19 @@ begin
     ClientLoadStandings( ActiveSeason, MyGuidCountry, MyDivision );
   end
   else if LeftStr(aSpriteClicked.Guid,15) = 'standings_round' then begin
-    ShowMatchInfo ( mouse.CursorPos.X + 200 , mouse.CursorPos.Y+200,5,  aSpriteClicked.Labels[aSpriteClicked.Mousey div Rowh].stag);
+    RM := aSpriteClicked.Mousey div Rowh; // round match
+//    OutputDebugString( PChar(Inttostr(RM) ) );
+//    OutputDebugString( PChar(Inttostr(aSpriteClicked.Labels[RM].Itag) ) );
+//    OutputDebugString( PChar(aSpriteClicked.Labels[RM].stag ) );
 //    ShowMessage(aSpriteClicked.Labels[aSpriteClicked.Mousey div Rowh].stag);
+    for I := 0 to aSpriteClicked.Labels.Count -1 do begin
+      if aSpriteClicked.Labels[i].itag = RM then begin
+        ShowMatchInfo ( SE_Theater1.Width div 2, SE_Theater1.Height div 2,  aSpriteClicked.Labels[i].stag);
+        break;
+      end;
+
+    end;
+
   end;
 end;
 procedure TForm1.ScreenSelectCountryTeam_SE_CountryTeam ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
@@ -13422,6 +13457,12 @@ begin
     SE_InfoError.Visible := False;
   end
 end;
+procedure TForm1.ScreenAll_SE_MatchInfo ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
+begin
+  if aSpriteClicked.sTag = 'close' then begin
+    SE_MatchInfo.Visible := False;
+  end;
+end;
 procedure TForm1.ScreenLive_SE_Skills ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
 var
   aDoor: TPoint;
@@ -13985,7 +14026,7 @@ begin
 
 
   for I := 0 to lstSprite.Count -1 do begin
-
+//    OutputDebugString( PChar(lstSprite[i].Engine.Name ) );
     if lstSprite[i].Engine = SE_YesNo then begin     // YesNo gestiti a parte
       ScreenAll_SE_yesNo ( lstSprite[i], Button );
       exit;
@@ -13993,6 +14034,11 @@ begin
 
     else if lstSprite[i].Engine = SE_InfoError then begin     // InfoError gestiti a parte
       ScreenAll_SE_InfoError ( lstSprite[i], Button );
+      exit;
+    end
+
+    else if lstSprite[i].Engine = SE_MatchInfo  then begin     // Matchinfo gestiti a parte, ha solo CLOSE
+      ScreenAll_SE_MatchInfo ( lstSprite[i], Button );
       exit;
     end
 
@@ -14228,7 +14274,7 @@ begin
     else if lstSprite[i].Engine = SE_Score  then begin
       if lstSprite[i].Guid = 'scorescore' then begin
         ScoreMouseMove := True;
-        ShowMatchInfo ( SE_Theater1.Width div 2, SE_Theater1.Height div 2, 0,MyBrain.MatchInfo.CommaText ) ;
+        ShowMatchInfo ( SE_Theater1.Width div 2, SE_Theater1.Height div 2, MyBrain.MatchInfo.CommaText ) ;
       end
       else if lstSprite[i].Guid = 'scorenick0' then begin
          ScoreNick := True;
@@ -15215,7 +15261,7 @@ begin
         SpriteReset;
         // se è la prima volta, ricevo una partita terminata
         if (mybrain.finished) then begin //and   (Mybrain.Score.TeamGuid [0]  = MyGuidTeam ) or (Mybrain.Score.TeamGuid [1]  = MyGuidTeam ) then begin
-          ShowMatchInfo ( SE_Theater1.Width div 2, SE_Theater1.Height div 2,0, MyBrain.MatchInfo.CommaText ) ;
+          ShowMatchInfo ( SE_Theater1.Width div 2, SE_Theater1.Height div 2, MyBrain.MatchInfo.CommaText ) ;
         end;
 //        else
 //          ThreadCurrentIncMove.Enabled := true; // eventuale splahscreen compare tramite tsscript e obbliga al pulsante exit. 30 seconplay se c'è il suo guidteam
@@ -16516,7 +16562,7 @@ begin
 
 
   SE_Standings.RemoveAllSprites  ('standings');
-
+  SE_Standings.ProcessSprites(2000);
 
 
   if (IndexRound + MaxDisplayRound) > RoundCount then
@@ -16548,12 +16594,13 @@ begin
         ts2.commatext := ini.ReadString('round' + IntToStr(R), 'match' + IntToStr(M),''  );
         aSpriteLabel := SE_SpriteLabel.create( 0,m*RowH,'Calibri',clWhite-1,clBlack,12,ts2[1]+'-'+ts2[3],True ,1,dt_left ); // da 1 x N partite
         aSpriteLabel.sTag := ts2.commatext ; //<-- la assegno per vederla facile dopo sul mouseover o mouseclick XY
+        aSpriteLabel.itag := M;
         aSprite.Labels.Add(aSpriteLabel);
         if ts2.Count > 4 then begin // partite con risultato e matchinfo
           aSpriteLabel := SE_SpriteLabel.create( 260,m*RowH,'Calibri',clWhite-1,$007B5139-1,12,ts2[4]{+'-'+ts2[5]},True ,2,dt_right );
+          aSpriteLabel.itag := M;
+          aSpriteLabel.sTag := ts2.commatext ; //<-- la assegno per vederla facile dopo sul mouseover o mouseclick XY
           aSprite.Labels.Add(aSpriteLabel);
-
-
 
         end;
       end;
@@ -17214,7 +17261,7 @@ procedure TForm1.pveForceGameOver ;
 var
   asprite : SE_Sprite;
 begin
-  ShowMatchInfo( SE_Theater1.Width div 2, SE_Theater1.Height div 2,0, MyBrain.MatchInfo.CommaText );
+  ShowMatchInfo( SE_Theater1.Width div 2, SE_Theater1.Height div 2, MyBrain.MatchInfo.CommaText );
   SE_Live.HideAllSprites;
   asprite:= SE_Live.FindSprite('btnmenu_back' );
   asprite.Visible := True;

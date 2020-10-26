@@ -1,6 +1,6 @@
 ﻿{$R-}
 
-{$DEFINE ADDITIONAL_MATCHINFO}
+//{$DEFINE ADDITIONAL_MATCHINFO}
 unit SoccerBrainv3;
 
 
