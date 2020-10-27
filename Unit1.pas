@@ -23,9 +23,13 @@
   }
   { TODO -ctodo prima del rilascio patreon :
 
+    testare gameover e fare nextMF usare minute per continuare
+  PASS deve sparire dopo 120, e anche tactics, sub si puo' fare.
+  il gameover non funziona se non c'è matchinfo. fare matchinfo anche vuota. no exit se non c'è matchinfo
 
-
-    freekick a mio favore ha proseguito con AUTO, ma lo deve fare di suo, il CRO2. ci sarà lo stesso problema su COR
+   Bug rndgenerate ma ballcontrol può essere a 0 ?
+        // (Ball.Player.ballControl è minimo a 1 anche se underpressure, e il talento gli conferisce minimo 1 aggiuntivo
+       preRoll2 := RndGenerate (Ball.Player.ballControl+ Ball.Player.tmp);
 
     le sub sono piene di bug.
 
@@ -51,7 +55,6 @@
     help diviso per lingue . finire bene anche descrizione skill buff reparti e marking
 
 
-    testare gameover e fare nextMF usare minute per continuare
 
     FARE AIthinkdev e Animazioni per sviluppo attributo o talento.
 
@@ -68,7 +71,7 @@
 
     icona skill short.passing piede+palla
 
-    fare talento quando riceve passaggiocorot prova a fare un dribbling a costo 0 puo' drbblare di nuovo
+    fare talento quando riceve passaggiocorot prova a fare un dribbling a costo 0 , ma può perdere la palla.non puo' drbblare di nuovo
     // --------------------- PVP ----------------------------
     pvp cl_splash.gameover aggiungere miGain, rank e stelle in showgameover
 
@@ -7454,7 +7457,7 @@ begin
     end;
   end
   else if MyBrain.w_FreeKick2  then begin
-    if GameMode = pve then begin
+    if GameMode = pvp then begin
       if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
         tcp.SendStr( 'CRO2' + endofline);
       end;
