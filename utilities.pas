@@ -1358,7 +1358,7 @@ var
   ini : TIniFile;
   ts2 : Tstringlist;
   M: Integer;
-
+  aString : string;
 begin
   ini:= TIniFile.Create(dirSaves + aBrain.Gender + 'S' + Format('%.3d', [aBrain.Season]) + 'C' + Format('%.3d', [aBrain.Country]) + 'D' + Format('%.1d', [aBrain.Division] ) + '.ini') ;
 
@@ -1373,20 +1373,23 @@ begin
     ts2.commatext := ini.ReadString('round' + IntToStr(aBrain.Round), 'match' + IntToStr(M),''  );
     if (ts2[0] = IntToStr(aBrain.Score.TeamGuid[0])) and (ts2[2] = IntToStr(aBrain.Score.TeamGuid[1])) then begin
 
-      if ts2.Count = 4 then begin // non c'è il risultato
-        ini.WriteString('round' + IntToStr(aBrain.Round), 'match' + IntToStr(M),
-        ts2.CommaText + ',' + IntToStr(aBrain.Score.gol[0])+'-'+ IntToStr(aBrain.Score.gol[1]) + ','+ aBrain.MatchInfo.CommaText );
-        Continue;
-      end;
+     // if ts2.Count = 4 then begin // non c'è il risultato
+        aString := ts2.CommaText + ',' + IntToStr(aBrain.Score.gol[0])+'-'+ IntToStr(aBrain.Score.gol[1]);
+        if  aBrain.MatchInfo.Count > 0 then
+          aString := aString + ',' + aBrain.MatchInfo.CommaText;
 
-      if ts2.Count > 4 then begin
-        ts2[4] := IntToStr(aBrain.Score.gol[0])+'-'+ IntToStr(aBrain.Score.gol[1]) ;
-        ini.WriteString('round' + IntToStr(aBrain.Round), 'match' + IntToStr(M), ts2.CommaText);
-      end;
-      if ts2.Count > 5 then begin
-        ts2[5] := aBrain.MatchInfo.CommaText;
-        ini.WriteString('round' + IntToStr(aBrain.Round), 'match' + IntToStr(M), ts2.CommaText);
-      end
+        ini.WriteString('round' + IntToStr(aBrain.Round), 'match' + IntToStr(M),aString );
+    //    Continue;
+    //  end;
+
+    //  if ts2.Count > 4 then begin
+   //     ts2[4] := IntToStr(aBrain.Score.gol[0])+'-'+ IntToStr(aBrain.Score.gol[1]) ;
+    //    ini.WriteString('round' + IntToStr(aBrain.Round), 'match' + IntToStr(M), ts2.CommaText);
+    //  end;
+    //  if ts2.Count > 5 then begin
+    //    ts2[5] := aBrain.MatchInfo.CommaText;
+    //    ini.WriteString('round' + IntToStr(aBrain.Round), 'match' + IntToStr(M), ts2.CommaText);
+    //  end
     end;
 
   end;

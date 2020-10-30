@@ -23,9 +23,11 @@
   }
   { TODO -ctodo prima del rilascio patreon :
 
+  lop palla neutrale 2 player si sono sovraposti
+
+  il gameover non funziona se non c'è matchinfo. fare matchinfo anche vuota. no exit se non c'è matchinfo
     testare gameover e fare nextMF usare minute per continuare
   PASS deve sparire dopo 120, e anche tactics, sub si puo' fare.
-  il gameover non funziona se non c'è matchinfo. fare matchinfo anche vuota. no exit se non c'è matchinfo
 
    Bug rndgenerate ma ballcontrol può essere a 0 ?
         // (Ball.Player.ballControl è minimo a 1 anche se underpressure, e il talento gli conferisce minimo 1 aggiuntivo
@@ -1529,8 +1531,8 @@ begin
     end;
   end
   else begin
-    MyBrain.incMove := StrtoInt(EditN2.Text);
-    if MyBrain.incMove >= 120
+    MyBrain.Minute := StrtoInt(EditN2.Text);
+    if MyBrain.Minute >= 120
       then MyBrain.FlagEndGame:= True;
 
   end;
@@ -6524,6 +6526,7 @@ begin
   //devo farlo qui
 
   if GameScreen = ScreenLive  then begin
+
     aSprite:=SE_LIVE.FindSprite('btnmenu_skillpass' );
     aSprite.Visible := Mybrain.Score.TeamGuid [  MyBrain.TeamTurn  ]  = MyGuidTeam;
 
@@ -7831,7 +7834,7 @@ begin
 end;
 procedure TForm1.ShowMatchInfo ( posX,posY: Integer; MatchInfoString: string) ; // standings startindex=5
 var
-  y: Integer;
+  y,h: Integer;
   matchinfo,tmp: TStringList;
   Title : string;
   bmp: SE_Bitmap;
@@ -7842,33 +7845,58 @@ var
 begin
   SE_matchInfo.RemoveAllSprites;
   SE_matchInfo.ProcessSprites(2000);
-
+  SE_Standings.SetSpriteAlpha ('standings_', 80);   // round teams toposcorers
 
   MatchInfo := TStringList.Create;
   MatchInfo.StrictDelimiter := True;
   MatchInfo.CommaText := MatchInfoString;
-  if MatchInfo.Count <= 0 then begin
-    MatchInfo.Free;
-    Exit;
-  end;
+ // if MatchInfo.Count <= 0 then begin
+ //   MatchInfo.Free;
+ //   Exit;
+ // end;
 
-  tmp := TStringList.Create;
-  tmp.Delimiter := '.';
-  tmp.StrictDelimiter := True;
   BaseY := 0;
 
-  bmp := SE_Bitmap.Create ( 280, (MatchInfo.Count-3) * 22 );// dinamico con aggiunta di spritelabels  -1  è +1 team0-team1 0-0
-  bmp.Bitmap.Canvas.Brush.Color :=  clBlue;                                                              // ma anche -4 per le prime 4 id,team,id,team
+  case  matchinfo.Count of
+    4: begin
+      h:= 44;
+      Title := MatchInfo[1]+ '-'+ MatchInfo[3] ;
+    end;
+    5: begin
+      h:= 44;
+      Title := MatchInfo[1]+ '-'+ MatchInfo[3] + ' '+ MatchInfo[4];
+    end;
+
+    else begin
+      Title := MatchInfo[1]+ '-'+ MatchInfo[3] + ' '+ MatchInfo[4];
+      h := (MatchInfo.Count-3) * 22  ;// dinamico con aggiunta di spritelabels  -1  è +1 team0-team1 0-0 ma anche -4 per le prime 4 id,team,id,team
+    end;
+  end;
+
+  bmp := SE_Bitmap.Create ( 280, h );
+  bmp.Bitmap.Canvas.Brush.Color :=  clBlue;
   bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
   RoundBorder(bmp.bitmap);
   aSprite:=SE_matchInfo.CreateSprite(bmp.Bitmap ,'scoreframemf',1,1,1000, posX ,posY ,true,2 );
   bmp.Free;
 
-  Title := MatchInfo[1]+ '-'+ MatchInfo[3] + ' '+ MatchInfo[4];
+
+
   aSpriteLabel := SE_SpriteLabel.create(0,BaseY,'Calibri',clWhite-1,clblack, 12,Title ,true ,1, dt_Center);
   aSprite.Labels.Add(aSpriteLabel);
   BaseY := BaseY + 22;
  // BaseY := BaseY + 22; // Spazio
+
+  if MatchInfo.Count < 6 then begin
+    MatchInfo.free;
+    SE_matchInfo.Visible := true;
+    exit;
+  end;
+
+
+  tmp := TStringList.Create;
+  tmp.Delimiter := '.';
+  tmp.StrictDelimiter := True;
 
   for y:= 5 to MatchInfo.Count -1 do begin         //   es. MatchInfo[y] 19.golprs.454.surname 45.sub.126.durname1.138.surname2
     tmp.DelimitedText := MatchInfo[y];
@@ -7958,7 +7986,7 @@ begin
   bmp.Canvas.Brush.Color := clGray;
   bmp.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
   aSprite := SE_MatchInfo.CreateSprite( bmp.Bitmap , 'close',1,1,1000, aSpriteFrame.Position.X , aSpriteFrame.Position.Y + aSpriteFrame.BMP.Height div 2 ,false,3 );
-  aSpriteLabel := SE_SpriteLabel.create(-1,0,'Calibri',clWhite-1,clgreen,16,Capitalize(Translate('lbl_Close' )),true,1,dt_center);
+  aSpriteLabel := SE_SpriteLabel.create(-1,0,'Calibri',clWhite-1,clgreen,14,Capitalize(Translate('lbl_Close' )),true,1,dt_center);
   aSprite.Labels.Add(aSpriteLabel);
   aSpriteLabel.lFontQuality := fqdefault;
   aSprite.sTag := 'close';
@@ -10618,7 +10646,19 @@ begin
       //CreateSplash (se_theater1.VirtualBitmap.Width div 2,se_theater1.VirtualBitmap.Height div 2,400,200, 'GOAL !!!', 2000,24, FontColor,BackColor, false) ;
   end
   else if ts[0]= 'cl_splash.gameover' then begin
-    ShowMatchInfo ( SE_Theater1.Width div 2, SE_Theater1.Height div 2, MyBrain.MatchInfo.CommaText ) ;
+
+    aString := IntToStr(MyBrain.Score.TeamGuid[0]) + ',' +
+    MyBrain.Score.Team[0] + ',' +
+    IntToStr(MyBrain.Score.TeamGuid[1]) +','+
+    MyBrain.Score.Team[1] +',' +
+    IntTostr(MyBrain.Score.gol[0])+'-'+ IntTostr(MyBrain.Score.gol[1]);
+
+    if MyBrain.MatchInfo.Count > 0 then
+      aString := aString + ',' + MyBrain.MatchInfo.CommaText;
+      ShowMatchInfo ( SE_Theater1.Width div 2, SE_Theater1.Height div 2,aString );
+
+
+
     Sleep(2000);
     AnimationScript.Reset ;
     if LiveMatch then begin
@@ -12565,6 +12605,8 @@ var
   i,RM : Integer;
 const RowH = 18;
 begin
+  if SE_matchInfo.SpriteCount > 0 then exit; // se mostro sullo sfondo sfuocato un matchinfo non posso cliccare altro.
+
   if aSpriteClicked.Guid = 'btnmenu_back' then begin
     GameScreen := ScreenFormation;
   end
@@ -13463,6 +13505,9 @@ end;
 procedure TForm1.ScreenAll_SE_MatchInfo ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
 begin
   if aSpriteClicked.sTag = 'close' then begin
+    SE_Standings.SetSpriteAlpha ('standings_', 0);   // round teams toposcorers
+    SE_matchInfo.RemoveAllSprites;
+    SE_matchInfo.ProcessSprites(2000);
     SE_MatchInfo.Visible := False;
   end;
 end;
@@ -14232,7 +14277,7 @@ var
   aSprite: SE_Sprite;
   aSpriteLabel: SE_SpriteLabel;
   ts : TStringList;
-  BtnMenu,BtnLevelUp,Player,BtnTv,SkillMouseMove,UniformMouseMove,MatchInfo: string;
+  BtnMenu,BtnLevelUp,Player,BtnTv,SkillMouseMove,UniformMouseMove,MatchInfo,aString: string;
   ScoreMouseMove,ScoreNick,UniformMouseMoveTF: boolean;
   BaseChancePlmBallControl,BaseShortPassingChance,BaseLoftedPassChance,BaseLoftedPassBallControlChance,
   BaseCrossingChance,BaseCrossingHeadingFriendChance, BaseDribblingChance : TChance;
@@ -14277,7 +14322,20 @@ begin
     else if lstSprite[i].Engine = SE_Score  then begin
       if lstSprite[i].Guid = 'scorescore' then begin
         ScoreMouseMove := True;
-        ShowMatchInfo ( SE_Theater1.Width div 2, SE_Theater1.Height div 2, MyBrain.MatchInfo.CommaText ) ;
+        aString :=
+                    IntToStr(MyBrain.Score.TeamGuid[0])+','+
+                    MyBrain.Score.Team[0]+ ','+
+                    IntTostr(MyBrain.Score.TeamGuid[1])+','+
+                    MyBrain.Score.Team[1]+ ',' +
+                    IntTostr(MyBrain.Score.gol[0])+'-'+ IntTostr(MyBrain.Score.gol[1]);
+
+                    if MyBrain.MatchInfo.Count > 0 then
+                      aString := AString + ',' + MyBrain.MatchInfo.CommaText;
+        ShowMatchInfo ( SE_Theater1.Width div 2, SE_Theater1.Height div 2, AString);
+
+
+
+
       end
       else if lstSprite[i].Guid = 'scorenick0' then begin
          ScoreNick := True;
@@ -15264,7 +15322,14 @@ begin
         SpriteReset;
         // se è la prima volta, ricevo una partita terminata
         if (mybrain.finished) then begin //and   (Mybrain.Score.TeamGuid [0]  = MyGuidTeam ) or (Mybrain.Score.TeamGuid [1]  = MyGuidTeam ) then begin
-          ShowMatchInfo ( SE_Theater1.Width div 2, SE_Theater1.Height div 2, MyBrain.MatchInfo.CommaText ) ;
+          ShowMatchInfo ( SE_Theater1.Width div 2, SE_Theater1.Height div 2,
+                    IntToStr(MyBrain.Score.TeamGuid[0])+','+
+                    MyBrain.Score.Team[0]+ ','+
+                    IntTostr(MyBrain.Score.TeamGuid[1])+','+
+                    MyBrain.Score.Team[1]+ ',' +
+                    IntTostr(MyBrain.Score.gol[0])+'-'+ IntTostr(MyBrain.Score.gol[1])+','+
+                    MyBrain.MatchInfo.CommaText ) ;
+
         end;
 //        else
 //          ThreadCurrentIncMove.Enabled := true; // eventuale splahscreen compare tramite tsscript e obbliga al pulsante exit. 30 seconplay se c'è il suo guidteam
@@ -17263,8 +17328,11 @@ end;
 procedure TForm1.pveForceGameOver ;
 var
   asprite : SE_Sprite;
+  aString: string;
 begin
-  ShowMatchInfo( SE_Theater1.Width div 2, SE_Theater1.Height div 2, MyBrain.MatchInfo.CommaText );
+ // aString := IntToStr(MyBrain.Score.TeamGuid[0])+','+ MyBrain.Score.Team[0]+ ','+IntTostr(MyBrain.Score.TeamGuid[1])+','+ MyBrain.Score.Team[1]+ ',' + MyBrain.Score.Team[1]+ MyBrain.MatchInfo.CommaText;
+
+ // ShowMatchInfo( SE_Theater1.Width div 2, SE_Theater1.Height div 2,aString );
   SE_Live.HideAllSprites;
   asprite:= SE_Live.FindSprite('btnmenu_back' );
   asprite.Visible := True;
@@ -17568,7 +17636,7 @@ begin
   bmp.Canvas.Brush.Color := clGray;
   bmp.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
   aSprite := SE_InfoError.CreateSprite( bmp.Bitmap , 'close',1,1,1000, (form1.Width div 2) , (form1.height div 2) + 60  ,false,2 );
-  aSpriteLabel := SE_SpriteLabel.create(-1,0,'Calibri',clWhite-1,clgreen,16,Capitalize(Translate('lbl_Close' )),true,1,dt_center);
+  aSpriteLabel := SE_SpriteLabel.create(-1,0,'Calibri',clWhite-1,clgreen,14,Capitalize(Translate('lbl_Close' )),true,1,dt_center);
   aSprite.Labels.Add(aSpriteLabel);
   aSpriteLabel.lFontQuality := fqdefault;
   aSprite.sTag := paramSpecial;
