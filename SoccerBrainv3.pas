@@ -16395,9 +16395,14 @@ begin
                               aPlayer.Stamina := aPlayer.Stamina - cost_pre;
                               Ball.Player.UnderPressureTurn := 2;
                               Ball.Player.CanMove := False;  // NON PUO' MUOVERE , ma può dribblare con -2
-                              Ball.Player.BallControl  := Ball.Player.BallControl - 2;  //  MINIMO 0, mai in negativo
-                              Ball.Player.Passing  := Ball.Player.passing - 2;
-                              Ball.Player.Shot := Ball.Player.Shot - 2;
+                              Ball.Player.BallControl  := Ball.Player.BallControl - PRE_VALUE;  //  MINIMO 0, mai in negativo
+                              Ball.Player.Passing  := Ball.Player.passing - PRE_VALUE;
+                              Ball.Player.Shot := Ball.Player.Shot - PRE_VALUE;
+
+                              if Ball.Player.BallControl <= 0 then Ball.Player.BallControl :=1;
+                              if Ball.Player.Passing <= 0 then Ball.Player.Passing :=1;
+                              if Ball.Player.Shot <= 0 then Ball.Player.Shot :=1;
+
 
                               tsSpeaker.Add( aPlayer.Surname +' (Pressing) fa pressing su ' + Ball.Player.ids {cella}  ) ;
                             end;

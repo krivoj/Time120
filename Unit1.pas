@@ -25,13 +25,8 @@
 
   lop palla neutrale 2 player si sono sovraposti
 
-  il gameover non funziona se non c'è matchinfo. fare matchinfo anche vuota. no exit se non c'è matchinfo
     testare gameover e fare nextMF usare minute per continuare
-  PASS deve sparire dopo 120, e anche tactics, sub si puo' fare.
 
-   Bug rndgenerate ma ballcontrol può essere a 0 ?
-        // (Ball.Player.ballControl è minimo a 1 anche se underpressure, e il talento gli conferisce minimo 1 aggiuntivo
-       preRoll2 := RndGenerate (Ball.Player.ballControl+ Ball.Player.tmp);
 
     le sub sono piene di bug.
 
@@ -7842,6 +7837,7 @@ var
   aSpriteLabel : SE_SpriteLabel;
   BaseY,XScoreFrame,YScoreFrame : integer;
   const Xbmp = 30; XDescr = 60; SubSpriteY = 4;
+  label sExit;
 begin
   SE_matchInfo.RemoveAllSprites;
   SE_matchInfo.ProcessSprites(2000);
@@ -7887,11 +7883,9 @@ begin
   BaseY := BaseY + 22;
  // BaseY := BaseY + 22; // Spazio
 
-  if MatchInfo.Count < 6 then begin
-    MatchInfo.free;
-    SE_matchInfo.Visible := true;
-    exit;
-  end;
+  if MatchInfo.Count < 6 then
+    goto sExit;
+
 
 
   tmp := TStringList.Create;
@@ -7979,6 +7973,7 @@ begin
   end;
 
   tmp.Free;
+sExit:
   MatchInfo.free;
 
   aSpriteFrame :=SE_matchInfo.FindSprite('scoreframemf');
@@ -12605,7 +12600,7 @@ var
   i,RM : Integer;
 const RowH = 18;
 begin
-  if SE_matchInfo.SpriteCount > 0 then exit; // se mostro sullo sfondo sfuocato un matchinfo non posso cliccare altro.
+  if SE_matchInfo.visible then exit; // se mostro sullo sfondo sfuocato un matchinfo non posso cliccare altro.
 
   if aSpriteClicked.Guid = 'btnmenu_back' then begin
     GameScreen := ScreenFormation;
@@ -18803,6 +18798,7 @@ begin
     se_Theater1.thrdAnimate.OnTimer (se_Theater1.thrdAnimate);
     application.ProcessMessages ;
   end;
+  SE_matchInfo.Visible := false;
   ShowLoading;
   se_Theater1.thrdAnimate.OnTimer (se_Theater1.thrdAnimate);
   SE_players.RemoveAllSprites;
