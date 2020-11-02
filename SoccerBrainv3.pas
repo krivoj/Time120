@@ -76,9 +76,9 @@ const TALENT_ID_ADVANCED_BOMB       = 136; //  prereq tiro 3/5 talent bomb --> 5
 const TALENT_ID_PRECISE_CROSSING = 137; // prereq passing 3 TALENT_ID_CROSSING  --> +1 crossing dal fondo
 const  TALENT_ID_SUPER_DRIBBLING = 138; // prereq almeno 3 ball.control, talent dribbling --> dribbling +3 chance 15%  ( dribbling2 è +1 fisso )
 
-const TALENT_ID_BUFF_DEFENSE = 139; //prereq almeno 3/5 Defense, 1 talento qualsiasi --> skill 2x buff reparto (20% chance) dif 25 turni + tutti attr 1 (speed e heading max 4)
-const  TALENT_ID_BUFF_MIDDLE = 140; //prereq almeno 3/5 passing, 1 talento qualsiasi --> skill 2x buff reparto (20% chance) cen  25 turni + tutti attr 1 (speed e heading max 4)
-const  TALENT_ID_BUFF_FORWARD = 141; //prereq almeno 3/5 Shot , 1 talento qualsiasi --> skill 2x buff reparto (20% chance) att 25 turni + tutti attr 1 (speed e heading max 4)
+const TALENT_ID_BUFF_DEFENSE = 139; //prereq almeno 3/5 Defense, 1 talento qualsiasi --> skill 2x buff reparto (5% chance) dif 20 turni + defense ballcontrol passing  +1
+const  TALENT_ID_BUFF_MIDDLE = 140; //prereq almeno 3/5 passing, 1 talento qualsiasi --> skill 2x buff reparto (5% chance) cen  20 turni + speed max 4,ballcontrol,passing ,shot +1
+const  TALENT_ID_BUFF_FORWARD = 141; //prereq almeno 3/5 Shot , 1 talento qualsiasi --> skill 2x buff reparto (5% chance) att 20 turni + ballcontrol, passing,shot +1
 
 const TALENT_ID_GKMIRACLE = 250; //solo GK  Ha una chance del 10% di ottenere +2 Difesa sui tiri precisi a distanza 1. Non valido sui rigori.
 const TALENT_ID_GKPENALTY = 251; //specialista para rigori. ottiene +1 10% chance .
@@ -6117,7 +6117,7 @@ begin
 
 
       if Minute >= 120 then begin
-        if Not W_Something then
+        if Not W_Something then  // potrebbe andare avanti all'infinito a forza di falli. forse minute e incmove vanno messi a smallint
           FlagEndGame := True // le sostituzioni non incrementano i minuti
           else FlagEndGame := false; // in caso di freekick non finisce la partita
       end;

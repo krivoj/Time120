@@ -23,12 +23,11 @@
   }
   { TODO -ctodo prima del rilascio patreon :
 
+  ancora .err waitingfreekick ma solo dopo 120
   lop palla neutrale 2 player si sono sovraposti
 
-    testare gameover e fare nextMF usare minute per continuare
 
-
-    le sub sono piene di bug.
+    le sub sono piene di bug. back è spostato, auto non si deve vedere e inv ece è visibile, click destro un casino
 
     TEST DOPO il 120 se c'è un fallo
 
@@ -36,22 +35,13 @@
     bug strano: fatigue poca stamina per 1 giocatore del bologna.... ?
 
 
-    exit da partita solo se tools altrimenti non è proprio possibile.
-
-
     Newseason fare i rewards in denaro matchcost 14 money a partita se pareggi. 14*2 se vinci ( ti ripaghi quasi il costo completo di tutti a 3 cost )
     rewards 38 o 30 partite * 2 +  puoi comprare X player
 
-    face paint shop pro 9 blackpencil 80 30  ufficiale + molte faces
+    face paint shop pro 9 blackpencil 80 30  ufficiale + molte faces + cognomi
 
 
-    help x buffdm,f corner frekick 2,3 penalty    Corner.Kick, crossing stay, free
-
-
-
-    help diviso per lingue . finire bene anche descrizione skill buff reparti e marking
-
-
+    help diviso per lingue . finire bene anche descrizione  marking
 
     FARE AIthinkdev e Animazioni per sviluppo attributo o talento.
 
@@ -64,7 +54,7 @@
 
     ischeatingball è  da rifare. Isolare la palla tenendo conto dle fatto che i Gk può finire il turno con la palla tra le mani.
     verificare se il gk può ricevere un shp e applicare il concetto di palla infuocata  --> non puoi giocare 3 mosse move +1 il gk da via la palla.
-    il Gk si deve liberare subito della palla. massimo una mossa.
+    il Gk si deve liberare subito della palla. massimo una mossa. attenzione a STAY e alle barricate
 
     icona skill short.passing piede+palla
 
@@ -94,7 +84,7 @@
     talento convergi verso il centro
     talento autorità GK 50% -1 sui cross avversari o 50% +1 defense a heading
     +4 buff corsa ma solo pos
-     talento +1 passaggi adesso col nuovo sistema di roll ha senso.ma anche prima, forse c'è già
+
     talento intuito: dopo lop ballcontrol cella vuota --> +1 +2 a movimento verso palla
     in alcune function uso MM e buf3 quando ibuf3 non tratta stringhe quindi posso evitare. Provare a lavorare solo con stream. mm.memory + cur
     campi bagnati -passaggio e controllo di palla, caldo + fatica, freddo + infortuni
@@ -2985,7 +2975,7 @@ const FontSize = 14;
 begin
 
   bmp := SE_Bitmap.Create ( dir_interface + 'button.bmp' );
-  aBtnSprite:=SE_TacticsSubs.CreateSprite(bmp.Bitmap ,'btnmenu_back',1,1,1000,100,YMAINBUTTON,true ,1200);
+  aBtnSprite:=SE_TacticsSubs.CreateSprite(bmp.Bitmap ,'btnmenu_back',1,1,1000,90,YMAINBUTTON,true ,1200);
   aBtnSprite.TransparentForced := true;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
   aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'back',90-40,56-40,true );
@@ -13746,6 +13736,7 @@ begin
       se_dragGuid.DeleteSubSprite('surname');
       SE_DragGuid := nil;
       HideFP_Friendly_ALL;
+
       GameScreen := ScreenSubs ;
       Exit;
     end;
@@ -13782,21 +13773,7 @@ begin
 
   if aSpriteClicked.Guid = 'btnmenu_back' then begin
 
-    SE_TacticsSubs.Visible := False;
-    aSprite := SE_LIVE.FindSprite('btnmenu_tactics');
-    aSprite.Visible := true;
-    aSprite := SE_LIVE.FindSprite('btnmenu_subs');
-    aSprite.Visible := True;
-    aSprite:=SE_LIVE.FindSprite('btnmenu_skillpass' );
-    aSprite.Visible := True;
-    if GameMode = pve then  begin
-      aSprite:=SE_LIVE.FindSprite('btnmenu_back' );
-      aSprite.Visible := True;
-    end;
-    Hide120;
-
-
-    MyBrain.Ball.SE_Sprite.Visible := true;
+    //MyBrain.Ball.SE_Sprite.Visible := true;
     for I := 0 to MyBrain.lstSoccerPlayer.Count -1  do begin     // player visibili
       MyBrain.lstSoccerPlayer [i].se_sprite.Visible := True;
     end;
@@ -13809,8 +13786,9 @@ begin
       MyBrain.lstSoccerGameOver [i].se_sprite.Visible := true;
     end;
 
+  //  fGameScreen := ScreenLive;    // attenzione alla f, non innescare
+    GameScreen := ScreenLive;
     SpriteReset;
-    fGameScreen := ScreenLive;    // attenzione alla f, non innescare
 
   end;
 
@@ -13942,45 +13920,14 @@ begin
 
   (* Premuto durante la partita  mostra anche la formazione avversaria , premuto solo nel mio turno *)
   // posso cliccare quando è tuto fermo e quando sta a me. Se termina il tempo a disposizione , torna automaticamente in livemode con gamescreen = live
-    SE_TacticsSubs.visible := True;
-    aSprite := SE_LIVE.FindSprite('btnmenu_tactics');
-    aSprite.Visible := False;
-    aSprite := SE_LIVE.FindSprite('btnmenu_subs');
-    aSprite.Visible := False;
-    aSprite:=SE_LIVE.FindSprite('btnmenu_skillpass' );
-    aSprite.Visible := false;
 
-    if GameMode = pve then begin
-      aSprite:=SE_LIVE.FindSprite('btnmenu_back' );
-      aSprite.Visible := false;
-    end;
-
-    MyBrain.Ball.SE_Sprite.Visible := False;
-    SE_Skills.Visible := False;
     MouseWaitFor := WaitForNone;
-    hidechances ;
     GameScreen := ScreenTactics ;
 
   end
   else if aSpriteClicked.Guid = 'btnmenu_subs' then begin
   (* Premuto durante la partita , premuto solo nel mio turno *)
-    SE_TacticsSubs.visible := True;
-    aSprite := SE_LIVE.FindSprite('btnmenu_tactics');
-    aSprite.Visible := False;
-    aSprite := SE_LIVE.FindSprite('btnmenu_subs');
-    aSprite.Visible := False;
-    aSprite:=SE_LIVE.FindSprite('btnmenu_skillpass' );
-    aSprite.Visible := false;
-
-    if GameMode = pve then begin
-      aSprite:=SE_LIVE.FindSprite('btnmenu_back' );
-      aSprite.Visible := false;
-    end;
-
-    MyBrain.Ball.SE_Sprite.Visible := False;
-    SE_Skills.Visible := False;
     MouseWaitFor := WaitForNone;
-    hidechances ;
     GameScreen := ScreenSubs;
   end
 
@@ -14309,6 +14256,13 @@ begin
 
     end
     else if lstSprite[i].Engine = SE_InfoError  then begin
+      if (lstSprite[i].Guid = 'close') then begin
+        ScoreMouseMove := true; // tanto per
+      end;
+
+    end
+
+    else if lstSprite[i].Engine = SE_MatchInfo  then begin
       if (lstSprite[i].Guid = 'close') then begin
         ScoreMouseMove := true; // tanto per
       end;
@@ -16077,7 +16031,7 @@ begin
   end
   else if fGameScreen = ScreenTactics then begin    // btnTACTICS prende i dati dal brain
 
-    SE_Green.Visible:= False;
+    HideAllEnginesExcept ( SE_BackGround,SE_Score,SE_players,SE_TacticsSubs,nil );
     // passo da cells a defaultcell. Non è' visibile anche l'avversario
 
     for I := 0 to MyBrain.lstSoccerPlayer.Count -1 do begin
@@ -16107,7 +16061,7 @@ begin
   end
   else if fGameScreen = ScreenSubs then begin    // btnSubs
 
-    SE_Green.Visible:= False;
+    HideAllEnginesExcept ( SE_BackGround,SE_Score,SE_players,SE_TacticsSubs,nil );
 
     for I := 0 to MyBrain.lstSoccerPlayer.Count -1  do begin
       aPlayer := MyBrain.lstSoccerPlayer [i];
@@ -16218,7 +16172,7 @@ begin
   end
   else if fGameScreen = ScreenLive  then begin
 
-    HideAllEnginesExcept ( SE_BackGround,SE_Score,nil,nil,nil );
+    HideAllEnginesExcept ( SE_BackGround,SE_Score,se_players,se_ball,nil );
     ShowStadiumAndPlayers(1);
 
     // annulla tutto in tactics e subs
@@ -16227,14 +16181,21 @@ begin
       SE_DragGuid := nil;
     end;
 
-    SE_TacticsSubs.Visible := false;
-    aSprite := SE_LIVE.FindSprite('btnmenu_tactics');
-    aSprite.Visible := true;
-    aSprite := SE_LIVE.FindSprite('btnmenu_subs');
-    aSprite.Visible := True;
+//    aSprite := SE_LIVE.FindSprite('btnmenu_tactics');
+//    aSprite.Visible := true;
+ //   aSprite := SE_LIVE.FindSprite('btnmenu_subs');
+ //   aSprite.Visible := True;
+
 
     SE_Live.ShowAllSprites; // hideallsprites eccetto exit fatta da forcegameover
+    Hide120;
     SE_Live.Visible := true;
+
+    {$IFnDEF  DEBUG}
+    aSprite := SE_LIVE.FindSprite('btnmenu_back');
+    aSprite.Visible := false;
+    {$EndIF  DEBUG}
+
 
     LiveMatch := True;
     viewMatch := False;
