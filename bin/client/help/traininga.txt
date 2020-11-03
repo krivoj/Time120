@@ -1,2 +1,0 @@
-L'Allenamento attributi e' la probabilita' che ha un giocatore di incrementare un proprio attributo. Questa probabilita' incrementa se il giocatore tocca molti palloni
-durante le partite e decrementa se non gioca o quando passa di eta'.

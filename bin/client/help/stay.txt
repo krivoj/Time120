@@ -1,1 +1,0 @@
-Rimani ordina al giocatore di rimanere nella casella occupata.

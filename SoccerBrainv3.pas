@@ -344,16 +344,16 @@ TSoccerPlayer = class
     BuffMorale : Shortint; // possono andare in negativo
     BuffHome : Shortint;
 
-    BonusTackleTurn : byte;
-    BonusLopBallControlTurn: byte;
-    BonusProtectionTurn : byte; // n turni Protection BonusProtection attivo //< Protection vs Pressing
-    UnderPressureTurn : byte; // valore di difesa decrementato// n turni Pressing attivo
-    BonusSHPturn: byte;
-    BonusSHPAREAturn: byte;
-    BonusPLMturn: byte;
-    BonusBuffD: byte;
-    BonusBuffM: byte;
-    BonusBuffF: byte;
+    BonusTackleTurn : ShortInt;
+    BonusLopBallControlTurn: ShortInt;
+    BonusProtectionTurn : ShortInt; // n turni Protection BonusProtection attivo //< Protection vs Pressing
+    UnderPressureTurn : ShortInt; // valore di difesa decrementato// n turni Pressing attivo
+    BonusSHPturn: ShortInt;
+    BonusSHPAREAturn: ShortInt;
+    BonusPLMturn: ShortInt;
+    BonusBuffD: ShortInt;
+    BonusBuffM: ShortInt;
+    BonusBuffF: ShortInt;
     BonusFinishingTurn: ShortInt;
     BonusFinishing: ShortInt;
 
@@ -400,10 +400,10 @@ TSoccerPlayer = class
     XpTal: array [1..NUM_TALENT] of Integer;  // come i talenti sul db game.talents. xp guadagnata in questa partita(brain) per futuro trylevelup del talento
 
     PlayerOut : Boolean; // sostituito
-    Injured: Byte; // giornate di infortunio rimaste
-    YellowCard: Byte; // ammonizioni accumulate
-    RedCard: Byte; // espulsione diretta o con somma di gialli
-    disqualified: Byte; // giornate di squalifica
+    Injured: ShortInt; // giornate di infortunio rimaste
+    YellowCard: ShortInt; // ammonizioni accumulate
+    RedCard: ShortInt; // espulsione diretta o con somma di gialli
+    disqualified: ShortInt; // giornate di squalifica
 
     devA: Integer; // chance dopo N azioni di guadagnare 1 punto stat
     devT: Integer; // chance dopo N azioni di guadagnare 1 talento
@@ -1001,8 +1001,6 @@ end;
 
 
 
-const
-  TrueFalse:TTrueFalse = ('False','True');
   Function isValidFormationCell ( CellX, CellY: integer ) : boolean;
   Function IsOutSide ( CellX, CellY: integer ) : boolean;
   Function IsOutSideAI ( CellX, CellY: integer ) : boolean;
@@ -2474,7 +2472,7 @@ begin
              DefaultShot *   MARKET_VALUE_ATTRIBUTE [DefaultShot] +
              DefaultHeading *   MARKET_VALUE_ATTRIBUTE [DefaultHeading])
   end
-  else if TalentID1 = 1 then begin
+  else  begin // if TalentID1 = 1
   Value :=  Trunc ((DefaultDefense *   MARKET_VALUE_ATTRIBUTE [DefaultDefense] * MARKET_VALUE_ATTRIBUTE_DEFENSE_GK) +
              DefaultPassing *   MARKET_VALUE_ATTRIBUTE [DefaultPassing]  );
   end;
@@ -4441,7 +4439,6 @@ end;
 function TSoccerBrain.GetSoccerPlayerRandom3 : TSoccerPlayer; // cerca chi ha giocato in una partita ma non un GK
 var
   arnd :Integer;
-  i: integer;
   label retry,JustAplayer;
 begin
   Result := nil;
@@ -4886,8 +4883,6 @@ procedure TSoccerBrain.CompileRoleList (team: Integer; role: Char; var lstRole: 
 var
   p: integer;
   aPlayer : TSoccerPlayer;
-  aList: TObjectList<TSoccerPlayer>;
-  aInteractivePlayer: TInteractivePlayer;
 //  aList: TList<TSoccerPlayer>;
 
 begin
@@ -6120,7 +6115,8 @@ begin
         if Not W_Something then  // potrebbe andare avanti all'infinito a forza di falli. forse minute e incmove vanno messi a smallint
           FlagEndGame := True // le sostituzioni non incrementano i minuti
           else FlagEndGame := false; // in caso di freekick non finisce la partita
-      end;
+      end
+      else FlagEndGame := false;
    end;
 
    // solo se non ha la palla
@@ -11171,8 +11167,17 @@ begin
        aPlayer.xpTal[TALENT_ID_FAUL] := aPlayer.xpTal[TALENT_ID_FAUL] + 1;
        aPlayer.xpTal[TALENT_ID_MARKING] := aPlayer.xpTal[TALENT_ID_MARKING] + 1;
 
-        TsScript[incMove].add ( 'sc_DICE,' + IntTostr(aPlayer.CellX) + ',' + Inttostr(aPlayer.CellY) +','+  IntTostr(aRnd) +','+
-        IntTostr (aPlayer.Defense) + ',Tackle,'+ aPlayer.ids+','+IntTostr(Roll.value) + ','+ Roll.fatigue+ '.0' +','+IntToStr(aPlayer.tmp));
+        TsScript[incMove].add ( 'sc_DICE,' +
+                                  IntTostr(aPlayer.CellX) + ',' +
+                                  Inttostr(aPlayer.CellY) + ',' +
+                                  IntTostr(aRnd) + ',' +
+                                  IntTostr (aPlayer.Defense) +
+                                  ',Tackle,' +
+                                  aPlayer.ids + ',' +
+                                  IntTostr(Roll.value) + ',' +
+                                  Roll.fatigue +
+                                  '.0' + ',' +
+                                  IntToStr(aPlayer.tmp));
 
        Ball.Player.tmp:=0;
        ACT := '0';
@@ -11196,8 +11201,17 @@ begin
        ExceptPlayers.Add(ball.player);
 
 
-        TsScript[incMove].add ( 'sc_DICE,' + IntTostr(Ball.Player.CellX) + ',' + Inttostr(Ball.Player.CellY) +','+  IntTostr(aRnd2) +','+
-        IntTostr (  Ball.Player.ballControl ) +',Ball.Control,'+  Ball.Player.ids+','+IntTostr(Roll2.value) + ',' +Roll2.fatigue+ '.' +ACT +','+IntTostr(Ball.Player.tmp));
+        TsScript[incMove].add ( 'sc_DICE,' +
+                                IntTostr(Ball.Player.CellX) + ',' +
+                                Inttostr(Ball.Player.CellY) + ',' +
+                                IntTostr(aRnd2) +',' +
+                                IntTostr (  Ball.Player.ballControl ) +
+                                ',Ball.Control,'+
+                                Ball.Player.ids + ',' +
+                                IntTostr(Roll2.value) + ',' +
+                                Roll2.fatigue +
+                                '.' + ACT + ',' +
+                                IntTostr(Ball.Player.tmp));
 
        // Tackle ok normale ---> player prende la palla oppure tacle ok10 ma non cella dst libera
        //   if (( aRnd >= aRnd2 ) and ( (aRnd-aRnd2) < TackleDiff )) or (( (aRnd-aRnd2) >= TackleDiff ) and (dstCell.X = -1)) then begin
@@ -11397,6 +11411,7 @@ begin
                     TsScript[incMove].add ('sc_injured,' + Ball.Player.ids +',' + IntTostr(Ball.Player.CellX)+',' + IntTostr(Ball.Player.CellY) ) ;
                     Ball.Player.CanMove := False;
 //                    aPlayer.CanSkill := False;
+                    Ball.Player.Injured := 1;
                     Ball.Player.Stamina := 0;
                   //  aPlayer.DefaultCells := Point(-92,-92);
                   //  aPlayer.Cells := Point(-92,-92);

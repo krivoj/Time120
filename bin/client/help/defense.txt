@@ -1,5 +1,0 @@
-La difesa e' la capacita' di un giocatore di interecettare i tiri e i passaggi degli avversari oltre che essere l'attributo usato per rubare palla
-all'avversario. E naturalmente e' l'attributo piu' importante per i portieri!
-Se il valore di difesa di un giocatore raggiunge 5 nel gioco maschile o 3 nel gioco femminile, quel giocatore non potra' incrementare l'attributo Tiro oltre 
-il valore 5(uomini) o 3(donne).
-

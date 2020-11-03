@@ -1,3 +1,0 @@
-Il Tiro e' l'attributo piu' importante per gli attaccanti. E' anche l'unico attributo per fare gol oltre all'attributo Testa.
-Se il valore di Tiro di un giocatore raggiunge 5 nel gioco maschile o 3 nel gioco femminile, quel giocatore non potra' incrementare l'attributo Difesa oltre 
-il valore 5(uomini) o 3(donne).

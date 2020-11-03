@@ -1,0 +1,3 @@
+Un giocatore, una volta accumulata una certa esperienza, puo' cercare di sviluppare un talento. La probabilita' di riuscirci dipende dal tuo allenamento talento. in casi 
+molto fortunati puo' addirittura sviluppare 2 talenti. Una volta sviluppato un talento ( o addirittura 2 ) non potra' piu' impararne altri. L'esperienza per sviluppare 
+un talento incrementa giocando in partita in base al tipo di azione i giocatori compiono. Per conoscere nel dettaglio i dettagli passa sopra con il mouse ad ogni singolo talento. Invecchiando, i giocatori, tendono a ridurre la propria probabilita' di sviluppare talenti (Allenamento talento).

@@ -1,3 +1,0 @@
-La velocita' equivale alla capacita' di spostamento sulle caselle di un giocatore. Puo' raggiungere il valore massimo 4 e incrementa solo 1 volta
-nella vita di un giocatore. Dopo i 24 anni non puo' comunque piu' incrementare. Avere giocatori veloci e' una chiave di gioco fondamentale per vincere
-le partite: cerca di svilupparla il prima possibile.

@@ -2299,6 +2299,9 @@ begin
         if cli.sReason <> '' then  goto cheat;
         if Cli.GmLevel > 0 then begin
           TSoccerBrain(Cli.Brain).Minute := StrToInt(ts[1]);
+          if StrToInt(ts[1]) < 120 then
+            TSoccerBrain(Cli.Brain).FlagEndGame := False;
+
         end
         else begin
           cli.sReason := 'no GmLevel';

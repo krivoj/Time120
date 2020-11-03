@@ -1,7 +1,0 @@
-Puoi creare automaticamente una formazione oppure impostarla manualmente trascinando
-i giocatori su celle predefinite. Tutti i giocatori possono essere schierati in qualsiasi
-zona del campo, non ci sono ruoli predefiniti a parte il portiere. Per iniziare, ti consiglio
-di scegliere di schierare in difesa giocatori con un alto valore di Difesa e Testa, a centrocampo
-Passaggio e Controllo di palla, e in attacco di Tiro e Testa.
-Cliccando con pulsante destro del mouse accedi alla scheda dettagliata dei tuoi giocatori. Valuta 
-attentamente i loro talenti. 

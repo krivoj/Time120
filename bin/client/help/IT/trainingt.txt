@@ -1,0 +1,1 @@
+L'Allenamento talento e' la probabilita' che ha un giocatore di imparare uno o piu' talenti. Questa probabilita' incrementa se il giocatore tocca molti palloni e ha successo nelle sue azioni durante le partite e decrementa se non gioca o quando passa di eta'.
