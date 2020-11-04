@@ -23,13 +23,10 @@
   }
   { TODO -ctodo prima del rilascio patreon :
 
-  bug: come fa dopo 1 partita ad avere 0 stamina(forse injure). Come fa ad avere 2 cartellini gialli senza essere espulso.
-  tutti e 2 i problemi sono per forza in pvefinalizegame
 
-  forze fixed: adesso sono shortint e non byte. e injured non era mai settato
+  ancora .err waitingfreekick ma solo dopo 120
 
   errore exec_tackle in sc_dioce non verificabile in replay
-  ancora .err waitingfreekick ma solo dopo 120
   lop palla neutrale 2 player si sono sovraposti
 
 
@@ -38,15 +35,12 @@
     TEST DOPO il 120 se c'è un fallo
 
 
-    bug strano: fatigue poca stamina per 1 giocatore del bologna.... ?
-
-
     Newseason fare i rewards in denaro matchcost 14 money a partita se pareggi. 14*2 se vinci ( ti ripaghi quasi il costo completo di tutti a 3 cost )
     rewards 38 o 30 partite * 2 +  puoi comprare X player
 
     face paint shop pro 9 blackpencil 80 30  ufficiale + molte faces + cognomi
 
-    FARE AIthinkdev e Animazioni per sviluppo attributo o talento.
+    FARE AIthinkdev e Animazioni per sviluppo attributo o talento.  SE_Develop
 
     creare più formazioni , forse bug nella fatigue
 
@@ -16774,6 +16768,7 @@ begin
   bmp :=SE_Bitmap.Create ( 500, 32 );
   aSprite := SE_PreMatch.CreateSprite( bmp.Bitmap , 'param2',1,1,1000, (form1.Width div 2), (form1.height div 2) - 20  ,true,2 );
   aSpriteLabel := SE_SpriteLabel.create(-1,0,'Calibri',clWhite-1,clBlack,16,'',true,1, dt_center);
+  aSpriteLabel.lFontStyle := [fsBold];
   aSpriteLabel.lFontQuality := fqdefault;
   aSprite.Labels.Add(aSpriteLabel);
   bmp.Free;
@@ -18315,14 +18310,14 @@ begin
 
      // OutputDebugString(  PChar( IntTostr(aBrain.Score.TeamGuid[T]) +' '+aPlayerDB.ids ));
 
-     // if not (aPlayerDB.disqualified > 0) then begin // è per forza in GetSoccerPlayerALL altrimenti era a casa
+      if not (aPlayerDB.disqualified > 0) then begin // è per forza in GetSoccerPlayerALL altrimenti era a casa
         if (aPlayerDB.injured = 0) and ( aBrain.GetSoccerPlayerALL (aPlayerDB.ids).Injured = 0 ) then begin
           aPlayerDB.Stamina := aPlayerThisGame.Stamina + REGEN_STAMINA + GetFitnessModifier ( lstPlayersDB[p].Fitness  );
           if aPlayerDB.Stamina > 120 then aPlayerDB.Stamina := 120;
         end
         else aPlayerDB.Stamina:=0; // se è injured non recupera stamina
-    //  end
-    //  else aPlayerDB.Stamina := aPlayerDB.Stamina + REGEN_STAMINA + GetFitnessModifier ( lstPlayersDB[p].Fitness  );// se era disqualified
+      end
+      else aPlayerDB.Stamina := aPlayerDB.Stamina + REGEN_STAMINA + GetFitnessModifier ( lstPlayersDB[p].Fitness  );// se era disqualified
 
       NewMorale := 0;
       if aPlayerDB.TalentId1 <> TALENT_ID_GOALKEEPER then begin // il morale non funziona sui GK
