@@ -6106,6 +6106,9 @@ begin
    UpdateDevi;
 
    FTeamMovesLeft := value;
+   if FTeamMovesLeft < 0 then
+    FTeamMovesLeft := 0;
+
    if GameStarted then begin
       TsScript[incMove].add ('sc_TML,' + IntTostr(FTeamMovesLeft) + ',' + IntTostr(TeamTurn) + ',' + IntToStr(ShpFree) ) ;
       Minute := Minute + 1;
@@ -6258,7 +6261,8 @@ begin
       TsScript[incMove].add ('sc_fault.cheatballgk,' + intTostr(TeamFaultFavour) +',' + IntTostr(Ball.CellX) +','+IntTostr(Ball.CellY) ) ; // informo il client del fallo
       if TeamTurn = 0 then TeamTurn := 1 else TeamTurn :=0;
       FreeKickSetup4(TeamTurn);
-      Exit; // evito fine partita
+      FlagEndGame := false; // evito fine partita
+      Exit;
     end;
 
     // qui cambia effettivamente il turno
@@ -6268,6 +6272,13 @@ begin
     ResetPassiveSkills ;
     ShpFree:=  1;
     fmilliseconds := Turnmilliseconds;
+
+    if Minute >= 120 then begin
+      if Not W_Something then  // potrebbe andare avanti all'infinito a forza di falli. forse minute e incmove vanno messi a smallint
+        FlagEndGame := True // le sostituzioni non incrementano i minuti
+        else FlagEndGame := false; // in caso di freekick non finisce la partita
+    end
+    else FlagEndGame := false;
 
 
     if (GameStarted) and  (FlagEndGame)  then begin
@@ -7164,6 +7175,38 @@ begin
     InputGuidTeam := StrToInt(tsCmd[0]);
     tsCmd.Delete(0); // se serve lo uso
 //  end;
+
+  if ((InputGuidTeam = Score.TeamGuid[0]) and ( TeamTurn = 1 ))
+  or ((InputGuidTeam = Score.TeamGuid[1]) and ( TeamTurn = 0 ))
+   then begin
+   {
+    OutputDebugString( PChar( 'w_coa ' + BoolToStr(w_coa)) );
+    OutputDebugString( PChar( 'w_cod' + BoolToStr(w_cod)));
+    OutputDebugString( PChar( 'w_CornerSetup ' + BoolToStr(w_CornerSetup)) );
+    OutputDebugString( PChar( 'w_CornerKick ' + BoolToStr(w_CornerKick)) );
+
+    OutputDebugString( PChar( 'w_FreeKickSetup1 ' + BoolToStr(w_FreeKickSetup1)) );
+    OutputDebugString( PChar( 'w_Fka1 ' + BoolToStr(w_Fka1)) );
+    OutputDebugString( PChar( 'w_FreeKick1 ' + BoolToStr(w_FreeKick1)) );
+
+    OutputDebugString( PChar( 'w_FreeKickSetup2 ' + BoolToStr(w_FreeKickSetup2)) );
+    OutputDebugString( PChar( 'w_Fka2 ' + BoolToStr(w_Fka2)) );
+    OutputDebugString( PChar( 'w_Fkd2 ' + BoolToStr(w_Fkd2)) );
+    OutputDebugString( PChar( 'w_FreeKick2 ' + BoolToStr(w_FreeKick2)) );
+
+    OutputDebugString( PChar( 'w_FreeKickSetup3 ' + BoolToStr(w_FreeKickSetup3)) );
+    OutputDebugString( PChar( 'w_Fka3 ' + BoolToStr(w_Fka3)) );
+    OutputDebugString( PChar( 'w_Fkd3 ' + BoolToStr(w_Fkd3)) );
+    OutputDebugString( PChar( 'w_FreeKick3 ' + BoolToStr(w_FreeKick3)) );
+
+    OutputDebugString( PChar( 'w_FreeKickSetup4 ' + BoolToStr(w_FreeKickSetup4)) );
+    OutputDebugString( PChar( 'w_Fka4 ' + BoolToStr(w_Fka4)) );
+    OutputDebugString( PChar( 'w_FreeKick4 ' + BoolToStr(w_FreeKick4)) );
+    }
+
+    reason := 'TeamTurn Error ' + aCmd ;
+    goto myexit; // hack
+  end;
 
   if Working then begin
      reason := 'Brain working ' + aCmd ;
@@ -9977,11 +10020,11 @@ Normalpressing:
        if teamTurn = 0 then tt := '1' else tt :='0';
        TsScript[incMove].add ('COA.IS,'+  tt +','+ tsCmd[1]  +',' + tsCmd[2] +',' + tsCmd[3] +',' + tsCmd[4] + ',' + SwapString.CommaText );
 
+       w_coa := false;
+       w_cod := true;
        Turnchange(TurnMoves);
        SwapString.Free;
        TsScript[incMove].add ('E' ) ;
-       w_coa := false;
-       w_cod := true;
   end
   else if tsCmd[0] = 'CORNER_DEFENSE.SETUP' then  begin
       if not w_Cod  then begin
@@ -10035,12 +10078,12 @@ Normalpressing:
 
        if teamTurn = 0 then tt := '1' else tt :='0';
        TsScript[incMove].add ('COD.IS,' + tt + ',' + tsCmd[1] +',' + tsCmd[2] +',' + tsCmd[3]+','+SwapString.CommaText );
-       Turnchange(TurnMoves);
-       SwapString.Free;
-       TsScript[incMove].add ('E' ) ;
        w_coa := false;
        w_cod := false;
        w_CornerKick := True;
+       Turnchange(TurnMoves);
+       SwapString.Free;
+       TsScript[incMove].add ('E' ) ;
        goto Myexit;
   end
   else if  tsCmd[0] = 'COR' then  begin
@@ -10181,11 +10224,11 @@ Normalpressing:
        end;
        if teamTurn = 0 then tt := '1' else tt :='0';
        TsScript[incMove].add ('FKA2.IS,'+  tt + ',' + tsCmd[1]  +',' + tsCmd[2] +',' + tsCmd[3] +',' + tsCmd[4] + ',' + SwapString.CommaText );
+       w_fka2 := false;
+       w_fkd2 := true;
        Turnchange(TurnMoves);
        SwapString.Free;
        TsScript[incMove].add ('E' ) ;
-       w_fka2 := false;
-       w_fkd2 := true;
   end
   else if tsCmd[0] = 'FREEKICK2_DEFENSE.SETUP' then  begin
     if NOT w_Fkd2  then begin
@@ -10242,11 +10285,11 @@ Normalpressing:
        if teamTurn = 0 then tt := '1' else tt :='0';
        TsScript[incMove].add ('FKD2.IS,' + tt + ',' + tsCmd[1] +',' + tsCmd[2] +',' + tsCmd[3]+','+SwapString.CommaText );
        SwapString.Free;
-       Turnchange(TurnMoves);
-       TsScript[incMove].add ('E' ) ;
+       w_FreeKick2 := True;
        w_fka2 := false;
        w_fkd2 := false;
-       w_FreeKick2 := True;
+       Turnchange(TurnMoves);
+       TsScript[incMove].add ('E' ) ;
        goto Myexit;
   end
   else if tsCmd[0] = 'FREEKICK3_ATTACK.SETUP' then  begin  // Fkf3
@@ -10292,12 +10335,12 @@ Normalpressing:
 
        if teamTurn = 0 then tt := '1' else tt :='0';
        TsScript[incMove].add ('FKA3.IS,'+ tt +',' +tsCmd[1]  + ',' + SwapString.CommaText );
-       Turnchange(TurnMoves);
-       SwapString.Free;
-       TsScript[incMove].add ('E' ) ;
        w_fka3 := false;
        w_fkd3 := true;
        w_FreeKick3 := false;
+       Turnchange(TurnMoves);
+       SwapString.Free;
+       TsScript[incMove].add ('E' ) ;
        goto Myexit;
   end
   else if tsCmd[0] = 'FREEKICK3_DEFENSE.SETUP' then  begin
@@ -10349,11 +10392,11 @@ Normalpressing:
        if teamTurn = 0 then tt := '1' else tt :='0';
        TsScript[incMove].add ('FKD3.IS,' + tt +',' + tsCmd[1] +',' + tsCmd[2] +',' + tsCmd[3]+','+  tsCmd[4] + ',' + SwapString.CommaText );
        SwapString.Free;
-       Turnchange(TurnMoves);
-       TsScript[incMove].add ('E' ) ;
        w_fka3 := false;
        w_fkd3 := false;
        w_FreeKick3 := True;
+       Turnchange(TurnMoves);
+       TsScript[incMove].add ('E' ) ;
        goto Myexit;
   end
   else if tsCmd[0] = 'FREEKICK4_ATTACK.SETUP' then  begin  // Fkf3
@@ -13188,6 +13231,7 @@ begin
               BrainInput  ( IntTostr(score.TeamGuid [team]) + ',' +'PLM,' + aPlayer.Ids +',' +
                           IntToStr(aPlayer.MovePath[aPlayer.MovePath.Count-1].X) +','+ IntToStr(aPlayer.MovePath[aPlayer.MovePath.Count-1].Y));
               Result := true;
+              Exit; // importante o ripete sempre.
             end;
         end;
       end;
@@ -13330,7 +13374,8 @@ var
   aSol:TBetterSolution;
   label lopfkf1;
 begin
-  if not GameStarted then Exit;
+  if (not GameStarted) or (Finished) then Exit;
+
   // Prima vengono processate le palle inattive, corner, punizioni ecc..
 
   if w_Coa  then begin

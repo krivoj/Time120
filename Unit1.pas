@@ -24,7 +24,6 @@
   { TODO -ctodo prima del rilascio patreon :
 
 
-  ancora .err waitingfreekick ma solo dopo 120
 
   errore exec_tackle in sc_dioce non verificabile in replay
   lop palla neutrale 2 player si sono sovraposti
@@ -401,6 +400,7 @@ type
     SE_DEBUG: SE_Engine;
     Button16: TButton;
     SE_Speaker: SE_Engine;
+    Button3: TButton;
 
 // General
     function ChangeResolution(XResolution, YResolution, Depth: DWORD): boolean;
@@ -551,6 +551,7 @@ type
     procedure CheckBox10Click(Sender: TObject);
     procedure Button15Click(Sender: TObject);
     procedure Button16Click(Sender: TObject);
+    procedure Button3Click(Sender: TObject);
 
   private
     { Private declarations }
@@ -606,8 +607,8 @@ type
 
     // Animation
     procedure pveSynchBrain;
-    procedure ClientLoadBrainMM ( incMove: Byte) ;  // carica il brain e lo script
-    function ClientLoadScript ( incMove: Byte) : Integer;               // riempe TAnimationScript
+    procedure ClientLoadBrainMM ( incMove: SmallInt) ;  // carica il brain e lo script
+    function ClientLoadScript ( incMove: SmallInt) : Integer;               // riempe TAnimationScript
     procedure Anim ( Script: string );                                  // esegue TAnimationScript
       procedure AnimCommon ( Cmd:string);
     procedure PrepareAnim;
@@ -849,7 +850,7 @@ var
   Buf3 : array [0..255] of TArray8192;    // array globali. vengono riempiti in Tcp.dataavailable. una partita non va oltre 255 turni, di solito 120 + recupero
   MM3 : array [0..255] of TMemoryStream;  // copia di cui sopra ma in formato stream, per un accesso rapido a certe informazioni
 
-  LastTcpincMove,CurrentIncMove: byte;
+  LastTcpincMove,CurrentIncMove: smallInt;
   incMoveAllProcessed : array [0..255] of boolean;
   incMoveReadTcp : array [0..255] of boolean;
   LastIncProcessed,LastScriptGol: Boolean;
@@ -1418,6 +1419,11 @@ begin
 //  end;
   {$endif tools}
 
+end;
+
+procedure TForm1.Button3Click(Sender: TObject);
+begin
+  ShowMessage( IntToStr( MyBrain.TeamTurn));
 end;
 
 procedure TForm1.Button4Click(Sender: TObject);
@@ -6138,7 +6144,7 @@ begin
 end;
 
 
-function TForm1.ClientLoadScript ( incMove: Byte) : Integer;
+function TForm1.ClientLoadScript ( incMove: SmallInt) : Integer;
 var
   StartScript: Integer;
   SS : TStringStream;
@@ -6534,7 +6540,7 @@ begin
 
 end;
 
-procedure Tform1.ClientLoadBrainMM  ( incMove: Byte  );
+procedure Tform1.ClientLoadBrainMM  ( incMove: SmallInt  );
 var
   SS : TStringStream;
   lenuser0,lenuser1,lenteamname0,lenteamname1,lenuniform0,lenuniform1,lenSurname: byte;
@@ -7280,7 +7286,9 @@ begin
                                  aSurname,
                                  Attributes,
                                  TalentID1,TalentID2  );     // attributes e defaultAttrributes sono uguali
+
       MyBrain.AddSoccerGameOver(aPlayer);
+
       if Gamemode = pve then
         aPlayer.Age := aAge;
 
@@ -17693,9 +17701,11 @@ Continue; //DEBUG solo il mio match
         aBrain:= TSoccerBrain.Create ( Gender + ts2[0] + '_' + ts2[2]  ,Gender, Season , Country, D, Round) ; // no ids
         aBrain.GameMode := pve;
         aBrain.pvePostMessage := false;  // non manda OnappMessage
-       // {$IFDEF  tools}
+
         aBrain.dir_log := dir_tmp;
-      //  {$endIF  tools}
+        {$IFDEF  tools}
+        aBrain.LogUser[0]:=1;
+        {$endIF  tools}
 
         pveCreateMatch ( Season, Country, Round,   ts2[0],ts2[1],ts2[2], ts2[3], aBrain );
         lstbrain.Add(aBrain);
