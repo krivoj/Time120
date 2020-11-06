@@ -171,7 +171,6 @@ type TBetterSolution = ( SubAbs4, subDone, SubCant, TacticDone, StayFreeDone, Cl
 type TSubType = ( PossiblysameRole, BestShot, bestDefense, bestPassing );
 type TTacticType = ( D4M, D4F, M4D, M4F, F4d,F4M );
 type TTackleDirection = ( TackleBack, TackleSide, TackleAhead );
-type TSoccerAttribute =  ( atSpeed , atDefense, atPassing, atBallControl, atShot, atHeading );
 type TBottomPosition = ( NearCornerCell, BottomNoShot, BottomShot, BottomNone, BottomNoneCanCross);
 TYPE TNotifyFileData    = procedure (filename: string ) of object;
 type TAccelerationMode = ( AccBestDistance, AccSelfY, AccDoor );
@@ -479,13 +478,15 @@ TSoccerPlayer = class
     procedure resetPLM;
     procedure resetFIN;
 end;
-
   pSoccerPlayer = ^TSoccerplayer;
+
+  TAttributeName = ( atSpeed , atDefense, atBallControl, atPassing, atShot, atHeading);
+
 
   TInteractivePlayer = class // Player che puòpublic interagire durante il turno dell'avversario. ad esempio Intercept su Short.passing dell'avversario
     Player : TSoccerPlayer;  // il player che interagisce
     Cell: Tpoint;            // la cella su cui interagisce
-    Attribute : TSoccerAttribute;  // con quale attributo interagisce. per esempio heading su lofted.pass
+    Attribute : TAttributeName;// TSoccerAttribute;  // con quale attributo interagisce. per esempio heading su lofted.pass
   end;
 
 
@@ -766,8 +767,8 @@ end;
         function DummyAheadPass( Team: integer ): Boolean;
           function GetDummyAheadPass( Team: integer ): TSoccerPlayer; // in PlayMaker
           function DummyTryCross( Team: integer ): Boolean;
-          function DummyReachTheCrossinArea1Moves( aPlayer: TSoccerPlayer; bestAttribute:TSoccerAttribute) : boolean;
-          function DummyReachTheCrossinArea2Moves( aPlayer: TSoccerPlayer; bestAttribute:TSoccerAttribute) : boolean;
+          function DummyReachTheCrossinArea1Moves( aPlayer: TSoccerPlayer; bestAttribute:TAttributeName) : boolean;
+          function DummyReachTheCrossinArea2Moves( aPlayer: TSoccerPlayer; bestAttribute:TAttributeName) : boolean;
           function GetDummyCrossFriend ( aPlayer: TSoccerPlayer ): TSoccerPlayer;
           function GetDummyVolleyFriend ( aPlayer: TSoccerPlayer ): TSoccerPlayer;
 
@@ -14379,7 +14380,7 @@ begin
     result := True;
   end
 end;
-function TSoccerbrain.DummyReachTheCrossinArea1Moves ( aPlayer: TSoccerPlayer; bestAttribute:TSoccerAttribute) : boolean;
+function TSoccerbrain.DummyReachTheCrossinArea1Moves ( aPlayer: TSoccerPlayer; bestAttribute:TAttributeName) : boolean;
 var
   i,p: Integer;
   aCrossCell: TTvCrossAreaCell;
@@ -14460,7 +14461,7 @@ begin
   Listfriends.Free;
   tmpCrossCells.Free;
 end;
-function TSoccerbrain.DummyReachTheCrossinArea2Moves ( aPlayer: TSoccerPlayer; bestAttribute:TSoccerAttribute) : boolean;
+function TSoccerbrain.DummyReachTheCrossinArea2Moves ( aPlayer: TSoccerPlayer; bestAttribute:TAttributeName) : boolean;
 var
   i,p: Integer;
   aCrossCell: TTvCrossAreaCell;

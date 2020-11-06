@@ -24,13 +24,12 @@
   { TODO -ctodo prima del rilascio patreon :
 
 
-    test sub e tactics
 
-  errore exec_tackle in sc_dioce non verificabile in replay
+    bug e test sub e tactics
+
+  errore exec_tackle in sc_dice non verificabile in replay
   lop palla neutrale 2 player si sono sovraposti
 
-
-    le sub sono piene di bug. click destro un casino
 
 
     Newseason fare i rewards in denaro matchcost 14 money a partita se pareggi. 14*2 se vinci ( ti ripaghi quasi il costo completo di tutti a 3 cost )
@@ -38,22 +37,27 @@
 
     face paint shop pro 9 blackpencil 80 30  ufficiale + molte faces + cognomi
 
-    FARE AIthinkdev e Animazioni per sviluppo attributo o talento.  SE_Develop
+    FARE AIthinkdev E Animazioni per sviluppo attributo o talento.  SE_Develop
+        da server a utilities, e da usare anche in pve
+        function TrylevelUpAttribute  ( fm : Char; Guid, Attribute : integer; aValidPlayer: TValidPlayer ): TLevelUp;
+          function can6 (  const at : TAttributeName; var aPlayer: TSoccerPlayer ): boolean;
+          function can10 (  const at : TAttributeName; var aPlayer: TSoccerPlayer ): boolean;
+        function TrylevelUpTalent  ( fm : Char;Guid, Talent : integer; aValidPlayer: TValidPlayer ): TLevelUp;
+
 
     creare più formazioni , forse bug nella fatigue
-
 
     migliorare icone
     stadi diversi , ambienti più caldi con pubblico più grande
     .tmp da mettere come variabili gender  TALENT_ID_ADVANCED_CROSSING ha bisogno di +2 dal fondo
 
-    ischeatingball è  da rifare. Isolare la palla tenendo conto dle fatto che i Gk può finire il turno con la palla tra le mani.
+    ischeatingball è  da rifare. Isolare la palla tenendo conto del fatto che i Gk può finire il turno con la palla tra le mani.
     verificare se il gk può ricevere un shp e applicare il concetto di palla infuocata  --> non puoi giocare 3 mosse move +1 il gk da via la palla.
     il Gk si deve liberare subito della palla. massimo una mossa. attenzione a STAY e alle barricate
 
     icona skill short.passing piede+palla
 
-    fare talento quando riceve passaggiocorot prova a fare un dribbling a costo 0 , ma può perdere la palla.non puo' drbblare di nuovo
+    fare talento quando riceve passaggiocorto prova a fare un dribbling a costo 0 , ma può perdere la palla.non puo' drbblare di nuovo
     // --------------------- PVP ----------------------------
     pvp cl_splash.gameover aggiungere miGain, rank e stelle in showgameover
 
@@ -71,7 +75,7 @@
 
   }
   { TODO -csviluppo :
-    showmatchinfo devono essere aggiunti anche il nome del team in ogni info e allargare leggermente o modificare il font_ problema team nomi linghi
+    showmatchinfo cambiare icona gol devono essere aggiunti anche il nome del team in ogni info e allargare leggermente o modificare il font_ problema team nomi linghi
     finire checkinput
     market finire bene con label matchcost
     denaro: ogni giocatore chiede a partita X.
