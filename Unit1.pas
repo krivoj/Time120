@@ -24,7 +24,7 @@
   { TODO -ctodo prima del rilascio patreon :
 
 
-    SE_Theater1TheaterMouseUp fare tactics come sub
+    test sub e tactics
 
   errore exec_tackle in sc_dioce non verificabile in replay
   lop palla neutrale 2 player si sono sovraposti
@@ -482,7 +482,6 @@ type
       procedure ScreenFreeKick_SE_Players ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
 
 
-    procedure SE_Theater1SpriteMouseUp(Sender: TObject; lstSprite: TObjectList<DSE_theater.SE_Sprite>; Button: TMouseButton; Shift: TShiftState);
     procedure SE_Theater1TheaterMouseMove(Sender: TObject; VisibleX, VisibleY, VirtualX, VirtualY: Integer; Shift: TShiftState);
     procedure SE_ballSpriteDestinationReached(ASprite: SE_Sprite);
     procedure SE_Theater1TheaterMouseUp(Sender: TObject; VisibleX, VisibleY, VirtualX, VirtualY: Integer; Button: TMouseButton; Shift: TShiftState);
@@ -11675,8 +11674,8 @@ var
   GlobalFieldPointsSpr: TObjectList<SE_Sprite>;
   aPlayer,aPlayer2: TSoccerPlayer;
   aFieldPointSpr: SE_Sprite;
-  AICell,aCell,aCell2: TPoint;
-  label reserve,exitScreenSubs,exitNOSUB;
+  AICell,aCell,aCell2,tmpCell: TPoint;
+  label reserve,exitScreenSubs,exitNOSUB,exitNOTACTICS,exitScreenTactics;
 begin
   // qui passano solo mouseup da screenformation,  tactics e subs. è gestita conm proximity. altri mouseup passano da spritemouseup ( tactics e subs )
   // corner / penalty / freekick usano semplici click in mousedown
@@ -11847,93 +11846,77 @@ begin
     GlobalFieldPointsSpr.Free;
   end
 
-  //cellX e CellY devono essere in campo, mai fuori , sia in tactics che sub
-  //if CellX < 0 then begin      // test outside
- //   CancelDrag ( aPlayer, aPlayer.DefaultCellX , aPlayer.DefaultCellY );
-  //  HideFP_Friendly_ALL;
-  //  Exit;
- // end;
+  else if (GameScreen = ScreenTactics) and ( Button = mbLeft)then begin
 
- // if GCD > 0 then begin
- //   CancelDrag ( aPlayer, aPlayer.DefaultCellX , aPlayer.DefaultCellY );
- //   se_dragGuid.DeleteSubSprite('surname');
- //   Se_DragGuid := nil;
-  //  HideFP_Friendly_ALL;
-  //  Exit;
- // end;
-
-
-  else if GameScreen = ScreenTactics then begin
-
-    aPlayer := MyBrain.GetSoccerPlayer2 (SE_DragGuid.Guid); // mouseup su qualsiasi cella
-
-   { TODO : copiare da sopra GlobalFieldPointSpr }
+    aPlayer := MyBrain.GetSoccerPlayer (SE_DragGuid.Guid);
     GlobalFieldPointsSpr:= TObjectList<SE_Sprite>.Create(false);
-   {
-    for I := 0 to lstSprite.Count -1 do begin
+    if aPlayer = nil then goto exitNOTACTICS;  // deve essere in campo
 
-      if lstSprite[i].Engine = SE_FieldPoints then begin   // sposto solo players , non altri sprites
 
-        // il mouseup è solo in campo, mai click fuori dal campo
-        aPlayer2 := MyBrain.GetSoccerPlayerDefault (CellX, CellY); // mouseup su qualsiasi cella
-        if aPlayer2 <> nil then begin
-          CancelDrag ( aPlayer, aPlayer.DefaultCellX , aPlayer.DefaultCellY );
-          HideFP_Friendly_ALL;
-         Exit; // deve essere una cella vuota non ocupata da player
+    // le tactics devono puntare celle in campo tipo formazione o team 0 o 1 ma non GK
+    for I := 0 to SE_FieldPoints.SpriteCount -1 do begin
+    // escludo il GK escludo quella cella.
+      if (SE_FieldPoints.Sprites[i].Guid = '0.3') or (SE_FieldPoints.Sprites[i].Guid = '0.11') then Continue;
+
+      aCell := FieldGuid2Cell ( SE_FieldPoints.Sprites[i].guid);
+      if aPlayer.Team = 0 then begin
+        if (aCell.X = 0) or (aCell.X = 2)  or  (aCell.X = 5) or (aCell.X = 8) then
+          GlobalFieldPointsSpr.Add( SE_FieldPoints.Sprites[i] );
+      end
+      else if aPlayer.Team = 1 then begin
+        if (aCell.X = 11) or (aCell.X = 9)  or  (aCell.X = 6) or (aCell.X = 3) then
+          GlobalFieldPointsSpr.Add( SE_FieldPoints.Sprites[i] );
+      end
+    end;
+
+    GlobalFieldPointsSpr.sort(TComparer<SE_Sprite>.Construct(
+    function (const L, R: SE_Sprite): integer
+    begin
+      Result := AbsDistance( VirtualX, VirtualY, L.Position.X, L.Position.Y )  -  AbsDistance( VirtualX, VirtualY, R.Position.X, R.Position.Y )
+    end
+       ));
+    aCell2 := FieldGuid2Cell ( GlobalFieldPointsSpr[0].guid); // la cella più vicina
+    //cellX e CellY devono essere in campo, mai fuori
+    if AbsDistance( VirtualX, VirtualY, GlobalFieldPointsSpr[0].Position.X, GlobalFieldPointsSpr[0].Position.Y ) <= ProximityMouse then begin
+      if IsOutSide( aCell2.X, aCell2.Y) then goto exitNOTACTICS;
+      aPlayer2 := MyBrain.GetSoccerPlayerDefault (aCell2.X, aCell2.Y); // mouseup su qualsiasi cella
+      if aPlayer2 <> nil then goto exitNOTACTICS; // aplayer2 !  esiste, metto via tutto, al contrario di Subs
+      if aPlayer.Ids = aPlayer2.Ids then goto exitNOTACTICS;
+      if (isGKcell ( aCell2.X, aCell2.Y )) then goto exitNOTACTICS;    // goalkeeper no tactics
+      if aPlayer.Team <>  MyBrain.TeamTurn  then goto exitNOTACTICS;;  // sposto solo i miei
+      if aPlayer.disqualified > 0 then goto exitNOTACTICS;;  // non squalificati
+
+      if GameMode = pvp then begin
+        tcp.SendStr( 'TACTIC,' + aPlayer.ids + ',' + IntToStr(aCell2.X) + ',' + IntToStr(aCell2.Y) + EndOfLine );// il server risponde con clientLoadbrain
+      end
+      else if GameMode = pve then begin
+        if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
+          MyBrain.BrainInput ( IntToStr(MyGuidTeam)+ ',TACTIC,' + aPlayer.ids + ',' + IntToStr(aCell2.X) + ',' + IntToStr(aCell2.Y)  );
         end;
-
-        if (aPlayer.Team  = 0)
-        and ( (CellX = 1) or (CellX = 3)  or (CellX = 4) or (CellX = 6) or (CellX = 7) or (CellX = 9) or (CellX = 10) or (CellX = 11) ) then Begin
-          CancelDrag ( aPlayer, aPlayer.DefaultCellX , aPlayer.DefaultCellY );
-          HideFP_Friendly_ALL;
-          Exit;
-        end;
-
-        if (aPlayer.Team  = 1)
-        and ( (CellX = 0) or (CellX = 1)  or (CellX = 2) or (CellX = 4) or (CellX = 5) or (CellX = 7) or (CellX = 8) or (CellX = 10) ) then Begin
-          CancelDrag ( aPlayer, aPlayer.DefaultCellX , aPlayer.DefaultCellY );
-          HideFP_Friendly_ALL;
-          Exit;
-        end;
-
-          // se_dragguid deve essere uno già in campo
-//        if MyBrain.isReserveSlot ( aPlayer.CellX , aPlayer.CellY ) then Exit;   //
-
-        // gk solo nel posto del gk
-        if (isGKcell ( CellX, CellY ) ) and (aPlayer.TalentID1 <> TALENT_ID_GOALKEEPER) then  begin
-          CancelDrag ( aPlayer,aPlayer.DefaultCellX , aPlayer.DefaultCellY );
-          HideFP_Friendly_ALL;
-          exit;    // un goalkeeper può essere schierato solo in porta
-        end;
-        if  ( not isGKcell ( CellX, CellY ) ) and (aPlayer.TalentId1 = TALENT_ID_GOALKEEPER) then begin    // un goalkeeper può essere schierato solo in porta
-          CancelDrag (aPlayer, aPlayer.DefaultCellX , aPlayer.DefaultCellY );
-          HideFP_Friendly_ALL;
-          Exit;
-        end;
-        se_dragGuid.DeleteSubSprite('surname');
-        SE_DragGuid := nil;
-        if GameMode = pvp then begin
-          tcp.SendStr( 'TACTIC,' + aPlayer.ids + ',' + IntToStr(CellX) + ',' + IntToStr(CellY) + EndOfLine );// il server risponde con clientLoadbrain
-        end
-        else if GameMode = pve then begin
-          if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
-            MyBrain.BrainInput ( IntToStr(MyGuidTeam)+ ',TACTIC,' + aPlayer.ids + ',' + IntToStr(CellX) + ',' + IntToStr(CellY)  );
-          end;
-        end;
-        HideFP_Friendly_ALL;
-        fGameScreen := ScreenLive;
-        Exit;
-
-
       end;
 
+exitscreenTactics:
+        fGameScreen := ScreenLive; // provare
+  //      GameScreen := ScreenLive;
+        GlobalFieldPointsSpr.Free;
+        se_dragGuid.DeleteSubSprite('surname');
+        SE_DragGuid := nil;
+        HideFP_Friendly_ALL;
+        Exit;
+    end
+    else begin // se mollo e non è vicino a nessuna cella utile, lo rimetto dove era
+exitNOTACTICS:
+      //SpriteMoveInField(aPlayer);
+      // qui non è come sub, qui lo devo rimettere nel default, nemmeno in campo
+      CancelDrag ( aPlayer, aPlayer.DefaultCellX , aPlayer.DefaultCellY );
+      goto exitscreenTactics;
+    end;
 
-    end; }
   end
-  else if GameScreen = ScreenSubs then begin
-    if MyBrain.Score.TeamSubs [ aPlayer.team ] >= 3 then goto exitScreenSubs;
+  else if (GameScreen = ScreenSubs) and ( Button = mbLeft) then begin
     aPlayer := MyBrain.GetSoccerPlayer2 (SE_DragGuid.Guid); // mouseup su qualsiasi cella
     GlobalFieldPointsSpr:= TObjectList<SE_Sprite>.Create(false);
+    if MyBrain.Score.TeamSubs [ aPlayer.team ] >= 3 then goto exitScreenSubs;
 
     // le subs devono puntare celle in campo e occupate da player friendly
     for I := 0 to SE_FieldPoints.SpriteCount -1 do begin
@@ -11941,10 +11924,17 @@ begin
       if aPlayer.TalentID1 <> TALENT_ID_GOALKEEPER then Begin
         if (SE_FieldPoints.Sprites[i].Guid = '0.3') or (SE_FieldPoints.Sprites[i].Guid = '0.11') then Continue;
 
+        tmpCell := FieldGuid2Cell(SE_FieldPoints.Sprites[i].Guid);
+        if AbsDistance(tmpCell.X, tmpCell.Y, MyBrain.Ball.CellX ,MyBrain.Ball.celly) < 4 then Continue;
+
+        GlobalFieldPointsSpr.Add( SE_FieldPoints.Sprites[i] );
+
       end
       else begin
     // se è il GK aggiungo solo quella celle e le riserve.
-        if (SE_FieldPoints.Sprites[i].Guid = '0.3') then begin
+        if ((aPlayer.Team =0) and (SE_FieldPoints.Sprites[i].Guid = '0.3')) or
+        ((aPlayer.Team =1) and (SE_FieldPoints.Sprites[i].Guid = '0.11'))
+           then begin
           GlobalFieldPointsSpr.Add( SE_FieldPoints.Sprites[i] );
           Break;
         end;
@@ -11982,8 +11972,8 @@ begin
       end;
 
 exitScreenSubs:
-//      fGameScreen := ScreenLive; provare
-      GameScreen := ScreenLive;
+      fGameScreen := ScreenLive; // provare
+//      GameScreen := ScreenLive;
       GlobalFieldPointsSpr.Free;
       se_dragGuid.DeleteSubSprite('surname');
       SE_DragGuid := nil;
@@ -15133,167 +15123,6 @@ begin
   result.Y :=  StrToInt( RightStr(guid, Length(guid) - x   )  );
 
 end;
-procedure TForm1.SE_Theater1SpriteMouseUp(Sender: TObject; lstSprite: TObjectList<DSE_theater.SE_Sprite>; Button: TMouseButton;  Shift: TShiftState);
-var
-  aPlayer,aPlayer2: TSoccerPlayer;
-  i, CellX, CellY: integer;
-  Acell: TPoint;
-  label reserve;
-  label exitScreenSubs;
-begin
-  // corner / penalty / freekick usano semplici click in mousedown
-  // MouseUp viene usata durante screenformation, tactics e subs. Qui vengono gestite tactics e sub.
-  Exit;
-  if Se_DragGuid = nil then Exit;
-  CellX := -1;
-  CellY := -1;
-  // imparo CellX e CellY .
-
-  for I := 0 to lstSprite.Count -1 do begin
-    if lstSprite[i].Engine = SE_FieldPoints then begin
-   //   aFieldPointSpr := SE_FieldPoints.FindSprite(lstSprite[i].guid );
-      Acell := FieldGuid2Cell ( lstSprite[i].guid);
-      CellX := Acell.X;
-      Celly := acell.Y;
-      Break;
-    end;
-  end;
-
-  aPlayer := MyBrain.GetSoccerPlayer2 (SE_DragGuid.Guid); // mouseup su qualsiasi cella
-  //cellX e CellY devono essere in campo, mai fuori , sia in tactics che sub
-  //if CellX < 0 then begin      // test outside
- //   CancelDrag ( aPlayer, aPlayer.DefaultCellX , aPlayer.DefaultCellY );
-  //  HideFP_Friendly_ALL;
-  //  Exit;
- // end;
-
- // if GCD > 0 then begin
- //   CancelDrag ( aPlayer, aPlayer.DefaultCellX , aPlayer.DefaultCellY );
- //   se_dragGuid.DeleteSubSprite('surname');
- //   Se_DragGuid := nil;
-  //  HideFP_Friendly_ALL;
-  //  Exit;
- // end;
-
- {
-  if GameScreen = ScreenTactics then begin
-
-
-    for I := 0 to lstSprite.Count -1 do begin
-
-      if lstSprite[i].Engine = SE_FieldPoints then begin   // sposto solo players , non altri sprites
-
-        // il mouseup è solo in campo, mai click fuori dal campo
-        aPlayer2 := MyBrain.GetSoccerPlayerDefault (CellX, CellY); // mouseup su qualsiasi cella
-        if aPlayer2 <> nil then begin
-          CancelDrag ( aPlayer, aPlayer.DefaultCellX , aPlayer.DefaultCellY );
-          HideFP_Friendly_ALL;
-         Exit; // deve essere una cella vuota non ocupata da player
-        end;
-
-        if (aPlayer.Team  = 0)
-        and ( (CellX = 1) or (CellX = 3)  or (CellX = 4) or (CellX = 6) or (CellX = 7) or (CellX = 9) or (CellX = 10) or (CellX = 11) ) then Begin
-          CancelDrag ( aPlayer, aPlayer.DefaultCellX , aPlayer.DefaultCellY );
-          HideFP_Friendly_ALL;
-          Exit;
-        end;
-
-        if (aPlayer.Team  = 1)
-        and ( (CellX = 0) or (CellX = 1)  or (CellX = 2) or (CellX = 4) or (CellX = 5) or (CellX = 7) or (CellX = 8) or (CellX = 10) ) then Begin
-          CancelDrag ( aPlayer, aPlayer.DefaultCellX , aPlayer.DefaultCellY );
-          HideFP_Friendly_ALL;
-          Exit;
-        end;
-
-          // se_dragguid deve essere uno già in campo
-//        if MyBrain.isReserveSlot ( aPlayer.CellX , aPlayer.CellY ) then Exit;   //
-
-        // gk solo nel posto del gk
-        if (isGKcell ( CellX, CellY ) ) and (aPlayer.TalentID1 <> TALENT_ID_GOALKEEPER) then  begin
-          CancelDrag ( aPlayer,aPlayer.DefaultCellX , aPlayer.DefaultCellY );
-          HideFP_Friendly_ALL;
-          exit;    // un goalkeeper può essere schierato solo in porta
-        end;
-        if  ( not isGKcell ( CellX, CellY ) ) and (aPlayer.TalentId1 = TALENT_ID_GOALKEEPER) then begin    // un goalkeeper può essere schierato solo in porta
-          CancelDrag (aPlayer, aPlayer.DefaultCellX , aPlayer.DefaultCellY );
-          HideFP_Friendly_ALL;
-          Exit;
-        end;
-        se_dragGuid.DeleteSubSprite('surname');
-        SE_DragGuid := nil;
-        if GameMode = pvp then begin
-          tcp.SendStr( 'TACTIC,' + aPlayer.ids + ',' + IntToStr(CellX) + ',' + IntToStr(CellY) + EndOfLine );// il server risponde con clientLoadbrain
-        end
-        else if GameMode = pve then begin
-          if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
-            MyBrain.BrainInput ( IntToStr(MyGuidTeam)+ ',TACTIC,' + aPlayer.ids + ',' + IntToStr(CellX) + ',' + IntToStr(CellY)  );
-          end;
-        end;
-        HideFP_Friendly_ALL;
-        fGameScreen := ScreenLive;
-        Exit;
-
-
-      end;
-
-
-    end;
-  end
-  else if GameScreen = ScreenSubs then begin
-
-    // le subs devono puntare celle in campo e occupate da player friendly
-    for I := 0 to lstSprite.Count -1 do begin
-
-      if lstSprite[i].Engine = SE_FieldPoints then begin   // sposto solo players , non altri sprites
-
-        if MyBrain.Score.TeamSubs [ aPlayer.team ] >= 3 then goto exitScreenSubs;
-        //cellX e CellY devono essere in campo, mai fuori
-        if IsOutSide( CellX, CellY) then goto exitScreenSubs;
-        if SE_DragGuid = nil then goto exitScreenSubs;
-
-
-        // il mouseup è solo in campo, mai click fuori dal campo
-        aPlayer2 := MyBrain.GetSoccerPlayer (CellX, CellY, aPlayer.Team); // mouseup su qualsiasi cella
-        if aPlayer2 <> nil then begin
-          // se_dragguid deve essere uno che proviene dalla panchina
-          // gk solo nel posto del gk
-          if (MyBrain.W_SomeThing) or (Mybrain.Score.TeamGuid [ Mybrain.TeamTurn ]  <> MyGuidTeam) then goto exitScreenSubs;
-          if aPlayer.Ids = aPlayer2.Ids then goto exitScreenSubs;
-          if (isGKcell ( CellX, CellY ) ) and (aPlayer.TalentID1 <> TALENT_ID_GOALKEEPER) then goto exitScreenSubs;;    // un goalkeeper può essere schierato solo in porta
-          if  ( not isGKcell ( CellX, CellY ) ) and (aPlayer.TalentID1 = TALENT_ID_GOALKEEPER) then goto exitScreenSubs;;    // un goalkeeper può essere schierato solo in porta
-          if aPlayer.Team <>  MyBrain.TeamTurn  then goto exitScreenSubs;;  // sposto solo i miei
-          if aPlayer.disqualified > 0 then goto exitScreenSubs;;  // non squalificati
-          if not MyBrain.isReserveSlot ( aPlayer.CellX, aPlayer.cellY) then goto exitScreenSubs;; // solo uno dalla panchina su una cella già occupata
-          if AbsDistance(aPlayer2.CellX, aPlayer2.CellY, MyBrain.Ball.CellX ,MyBrain.Ball.celly) < 4 then goto exitScreenSubs;;
-
-          se_dragGuid.DeleteSubSprite('surname');
-          SE_DragGuid := nil;
-          HideFP_Friendly_ALL;
-          if GameMode = pvp then begin
-            tcp.SendStr( 'SUB,' + aPlayer.ids + ',' + aPlayer2.ids + EndOfLine );// il server risponde con clientLoadbrain
-          end
-          else if GameMode = pve then begin
-            if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
-              MyBrain.BrainInput ( IntToStr(MyGuidTeam)+ ',SUB,' + aPlayer.ids + ',' + aPlayer2.ids );
-            end;
-          end;
-          fGameScreen := ScreenLive;
-          Exit;
-        end
-        else begin // aplayer2 ! non esiste, metto via tutto
-exitScreenSubs:
-          se_dragGuid.DeleteSubSprite('surname');
-          SE_DragGuid := nil;
-          HideFP_Friendly_ALL;
-          SpriteMoveInReserves(aPlayer);
-          Exit;
-        end;
-      end;
-    end;
-
-  end;
-               }
-end;
 
 procedure TForm1.SetTcpFormation;
 var
@@ -16228,8 +16057,11 @@ begin
       end;
 
       // rendo invisibili i player friendly IN CAMPO distanti >= 4
-      if AbsDistance(aPlayer.CellX, aPlayer .CellY, MyBrain.Ball.CellX ,MyBrain.Ball.celly) < 4 then
+      if AbsDistance(aPlayer.CellX, aPlayer .CellY, MyBrain.Ball.CellX ,MyBrain.Ball.celly) < 4 then begin
         aPlayer.se_sprite.Visible := False;
+        aFieldPointSpr := SE_FieldPoints.FindSprite( IntToStr(aPlayer.CellX)+'.'+ IntToStr(aPlayer.CellY ));
+        aFieldPointSpr.Visible := False;
+      end;
     end;
 
     for I := 0 to MyBrain.lstSoccerReserve.Count -1  do begin

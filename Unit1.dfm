@@ -518,7 +518,6 @@ object Form1: TForm1
     OnAfterVisibleRender = SE_Theater1AfterVisibleRender
     OnSpriteMouseMove = SE_Theater1SpriteMouseMove
     OnSpriteMouseDown = SE_Theater1SpriteMouseDown
-    OnSpriteMouseUp = SE_Theater1SpriteMouseUp
     OnTheaterMouseMove = SE_Theater1TheaterMouseMove
     OnTheaterMouseDown = SE_Theater1TheaterMouseDown
     OnTheaterMouseUp = SE_Theater1TheaterMouseUp
