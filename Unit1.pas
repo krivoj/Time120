@@ -25,7 +25,7 @@
 
 
     FARE AIthinkdev E Animazioni per sviluppo attributo o talento.  SE_Develop
-      -->    fare pveTrylevelUpAttribute e talent
+      -->    test completo pveTrylevelUpAttribute e talent --> animazione
 
     bug e test sub e tactics
 
