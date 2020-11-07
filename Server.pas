@@ -1296,7 +1296,7 @@ MyStoreDone:
         ValidPlayer.chancetalentlvlUp :=  qPlayers.FieldByName ('devt').AsInteger;
 
 
-        TrylevelUpTalent(MySqlServerGame, 'f', qPlayers.FieldByName('guid').AsInteger,ValidPlayer.talentID1, ValidPlayer  );
+        pvpTrylevelUpTalent(MySqlServerGame, 'f', qPlayers.FieldByName('guid').AsInteger,ValidPlayer.talentID1, ValidPlayer  );
 Skip:
         qPlayers.Next;
 
@@ -1974,7 +1974,7 @@ begin
         TryDecimalStrToInt( ts[1], aValue); // ids è numerico passato da validate_levelup
         aValidPlayer := validate_player(  aValue, cli ); // disqualified ora non ci interessa , mi interessa la chance in base all'età
 
-        alvlUp:=  TrylevelUpAttribute (MySqlServerGame,Cli.ActiveGender,  StrToInt(ts[1]),  StrToInt( ts[2]), aValidPlayer ); // il client aggiorna in mybrainformation e resetta le infoxp
+        alvlUp:=  pvpTrylevelUpAttribute (MySqlServerGame,Cli.ActiveGender,  StrToInt(ts[1]),  StrToInt( ts[2]), aValidPlayer ); // il client aggiorna in mybrainformation e resetta le infoxp
         Cli.SendStr ( 'la,' + IntToStr(alvlup.Guid) + ',' + IntToStr(Integer(alvlup.value)) + ',' + alvlUp.xpString +  EndofLine);
         //Cli.SendStr ( 'BEGINTEAM' + GetTeamStream ( Cli.GuidTeam ) + EndofLine);
     end
@@ -1994,7 +1994,7 @@ begin
         end;
 
         WaitForSingleObject(Mutex,INFINITE);
-        alvlUp:=  TrylevelUpTalent (MySqlServerGame, Cli.ActiveGender, StrToInt(ts[1]),  StrToInt( ts[2]), aValidPlayer  ); // il client aggiorna in mybrainformation e resetta le infoxp
+        alvlUp:=  pvpTrylevelUpTalent (MySqlServerGame, Cli.ActiveGender, StrToInt(ts[1]),  StrToInt( ts[2]), aValidPlayer  ); // il client aggiorna in mybrainformation e resetta le infoxp
         ReleaseMutex(Mutex);
 //          Cli.SendStr ( 'BEGINTEAM' + GetTeamStream ( Cli.GuidTeam ) + EndofLine);
         Cli.SendStr ( 'lt,' + IntToStr(alvlup.Guid) + ',' + IntToStr(Integer(alvlup.value)) + ',' + alvlUp.xpString + EndofLine);
@@ -6920,7 +6920,7 @@ begin
     ValidPlayer.chancetalentlvlUp :=  qPlayers.FieldByName ('devt').AsInteger;
 
 
-    alvlUp := TrylevelUpTalent(MySqlServerGame,'f', qPlayers.FieldByName('guid').AsInteger, RndGenerate(NUM_TALENT), ValidPlayer  );
+    alvlUp := pvpTrylevelUpTalent(MySqlServerGame,'f', qPlayers.FieldByName('guid').AsInteger, RndGenerate(NUM_TALENT), ValidPlayer  );
    // if alvlUp.value then
    //   Memo1.Lines.Add('lvlup!');
     ProgressBar1.Position :=  (((i * 100 ) div qPlayers.RecordCount) div 2) ;
@@ -6971,7 +6971,7 @@ begin
     ValidPlayer.chancelvlUp := qPlayers.FieldByName ('deva').AsInteger;
     ValidPlayer.chancetalentlvlUp :=  qPlayers.FieldByName ('devt').AsInteger;
 
-    alvlUp := TrylevelUpTalent(MySqlServerGame,'m', qPlayers.FieldByName('guid').AsInteger, RndGenerate(NUM_TALENT), ValidPlayer  );
+    alvlUp := pvpTrylevelUpTalent(MySqlServerGame,'m', qPlayers.FieldByName('guid').AsInteger, RndGenerate(NUM_TALENT), ValidPlayer  );
   //  if alvlUp.value then
    //   Memo1.Lines.Add('lvlup!');
 
@@ -7036,7 +7036,7 @@ begin
     ValidPlayer.chancetalentlvlUp :=  qPlayers.FieldByName ('devt').AsInteger;
 
 
-    alvlUp := TrylevelUpTalent(MySqlServerGame, 'f', qPlayers.FieldByName('guid').AsInteger, ValidPlayer.talentID1 , ValidPlayer  );
+    alvlUp := pvpTrylevelUpTalent(MySqlServerGame, 'f', qPlayers.FieldByName('guid').AsInteger, ValidPlayer.talentID1 , ValidPlayer  );
    // if alvlUp.value then
    //   Memo1.Lines.Add('lvlup2!');
 
@@ -7068,7 +7068,7 @@ begin
     ValidPlayer.chancetalentlvlUp :=  qPlayers.FieldByName ('devt').AsInteger;
 
 
-    alvlUp:= TrylevelUpTalent(MySqlServerGame, 'm', qPlayers.FieldByName('guid').AsInteger, ValidPlayer.talentID1 , ValidPlayer  );
+    alvlUp:= pvpTrylevelUpTalent(MySqlServerGame, 'm', qPlayers.FieldByName('guid').AsInteger, ValidPlayer.talentID1 , ValidPlayer  );
   //  if alvlUp.value then
    //   Memo1.Lines.Add('lvlup2!');
 
@@ -7249,34 +7249,34 @@ begin
 
     // da qui in poi la function non passa dal validate. le richieste errate vengono semplicemente scartate con MyExit
     if ValidPlayer.xp_Speed >= xp_SPEED_POINTS then
-      alvlUp := TrylevelUpAttribute (MySqlServerGame,'f', qPlayers.FieldByName('guid').AsInteger, 0, ValidPlayer  );
+      alvlUp := pvpTrylevelUpAttribute (MySqlServerGame,'f', qPlayers.FieldByName('guid').AsInteger, 0, ValidPlayer  );
     if ValidPlayer.xp_Passing >= xp_PASSING_POINTS then
-      alvlUp := TrylevelUpAttribute (MySqlServerGame,'f', qPlayers.FieldByName('guid').AsInteger, 2, ValidPlayer  );
+      alvlUp := pvpTrylevelUpAttribute (MySqlServerGame,'f', qPlayers.FieldByName('guid').AsInteger, 2, ValidPlayer  );
     if ValidPlayer.xp_BallControl >= xp_BALLCONTROL_POINTS then
-      alvlUp := TrylevelUpAttribute (MySqlServerGame,'f', qPlayers.FieldByName('guid').AsInteger, 3, ValidPlayer  );
+      alvlUp := pvpTrylevelUpAttribute (MySqlServerGame,'f', qPlayers.FieldByName('guid').AsInteger, 3, ValidPlayer  );
     if ValidPlayer.xp_Heading >= xp_HEADING_POINTS then
-      alvlUp := TrylevelUpAttribute (MySqlServerGame,'f', qPlayers.FieldByName('guid').AsInteger, 5, ValidPlayer  );
+      alvlUp := pvpTrylevelUpAttribute (MySqlServerGame,'f', qPlayers.FieldByName('guid').AsInteger, 5, ValidPlayer  );
 
     // per defense e shot scelgo chi è già in vantaggio, altrimenti random
     if ValidPlayer.shot >  ValidPlayer.defense then begin
       if ValidPlayer.xp_Shot >= xp_SHOT_POINTS then
-        alvlUp := TrylevelUpAttribute (MySqlServerGame,'f', qPlayers.FieldByName('guid').AsInteger, 4, ValidPlayer  );
+        alvlUp := pvpTrylevelUpAttribute (MySqlServerGame,'f', qPlayers.FieldByName('guid').AsInteger, 4, ValidPlayer  );
 
     end
     else if ValidPlayer.shot <  ValidPlayer.defense then begin
       if ValidPlayer.xp_Defense >= xp_DEFENSE_POINTS then
-        alvlUp := TrylevelUpAttribute (MySqlServerGame,'f', qPlayers.FieldByName('guid').AsInteger, 1, ValidPlayer  );
+        alvlUp := pvpTrylevelUpAttribute (MySqlServerGame,'f', qPlayers.FieldByName('guid').AsInteger, 1, ValidPlayer  );
 
     end
     else if ValidPlayer.shot =  ValidPlayer.defense then begin
       aRnd := rndgenerate (100);
       if aRnd <= 50 then begin
       if ValidPlayer.xp_Defense >= xp_DEFENSE_POINTS then
-        alvlUp := TrylevelUpAttribute (MySqlServerGame,'f', qPlayers.FieldByName('guid').AsInteger, 1, ValidPlayer  );
+        alvlUp := pvpTrylevelUpAttribute (MySqlServerGame,'f', qPlayers.FieldByName('guid').AsInteger, 1, ValidPlayer  );
       end
       else begin
       if ValidPlayer.xp_Shot >= xp_SHOT_POINTS then
-        alvlUp := TrylevelUpAttribute (MySqlServerGame,'f', qPlayers.FieldByName('guid').AsInteger, 4, ValidPlayer  );
+        alvlUp := pvpTrylevelUpAttribute (MySqlServerGame,'f', qPlayers.FieldByName('guid').AsInteger, 4, ValidPlayer  );
 
       end;
     end;
@@ -7346,34 +7346,34 @@ begin
 
     // da qui in poi la function non passa dal validate. le richieste errate vengono semplicemente scartate con MyExit
     if ValidPlayer.xp_Speed >= xp_SPEED_POINTS then
-      alvlUp := TrylevelUpAttribute (MySqlServerGame,'m', qPlayers.FieldByName('guid').AsInteger, 0, ValidPlayer  );
+      alvlUp := pvpTrylevelUpAttribute (MySqlServerGame,'m', qPlayers.FieldByName('guid').AsInteger, 0, ValidPlayer  );
     if ValidPlayer.xp_Passing >= xp_PASSING_POINTS then
-      alvlUp := TrylevelUpAttribute (MySqlServerGame,'m', qPlayers.FieldByName('guid').AsInteger, 2, ValidPlayer  );
+      alvlUp := pvpTrylevelUpAttribute (MySqlServerGame,'m', qPlayers.FieldByName('guid').AsInteger, 2, ValidPlayer  );
     if ValidPlayer.xp_BallControl >= xp_BALLCONTROL_POINTS then
-      alvlUp := TrylevelUpAttribute (MySqlServerGame,'m', qPlayers.FieldByName('guid').AsInteger, 3, ValidPlayer  );
+      alvlUp := pvpTrylevelUpAttribute (MySqlServerGame,'m', qPlayers.FieldByName('guid').AsInteger, 3, ValidPlayer  );
     if ValidPlayer.xp_Heading >= xp_HEADING_POINTS then
-      alvlUp := TrylevelUpAttribute (MySqlServerGame,'m', qPlayers.FieldByName('guid').AsInteger, 5, ValidPlayer  );
+      alvlUp := pvpTrylevelUpAttribute (MySqlServerGame,'m', qPlayers.FieldByName('guid').AsInteger, 5, ValidPlayer  );
 
     // per defense e shot scelgo chi è già in vantaggio, altrimenti random
     if ValidPlayer.shot >  ValidPlayer.defense then begin
       if ValidPlayer.xp_Shot >= xp_SHOT_POINTS then
-        alvlUp := TrylevelUpAttribute (MySqlServerGame,'m', qPlayers.FieldByName('guid').AsInteger, 4, ValidPlayer  );
+        alvlUp := pvpTrylevelUpAttribute (MySqlServerGame,'m', qPlayers.FieldByName('guid').AsInteger, 4, ValidPlayer  );
 
     end
     else if ValidPlayer.shot <  ValidPlayer.defense then begin
       if ValidPlayer.xp_Defense >= xp_DEFENSE_POINTS then
-        alvlUp := TrylevelUpAttribute (MySqlServerGame,'m', qPlayers.FieldByName('guid').AsInteger, 1, ValidPlayer  );
+        alvlUp := pvpTrylevelUpAttribute (MySqlServerGame,'m', qPlayers.FieldByName('guid').AsInteger, 1, ValidPlayer  );
 
     end
     else if ValidPlayer.shot =  ValidPlayer.defense then begin
       aRnd := rndgenerate (100);
       if aRnd <= 50 then begin
       if ValidPlayer.xp_Defense >= xp_DEFENSE_POINTS then
-        alvlUp := TrylevelUpAttribute (MySqlServerGame,'m', qPlayers.FieldByName('guid').AsInteger, 1, ValidPlayer  );
+        alvlUp := pvpTrylevelUpAttribute (MySqlServerGame,'m', qPlayers.FieldByName('guid').AsInteger, 1, ValidPlayer  );
       end
       else begin
       if ValidPlayer.xp_Shot >= xp_SHOT_POINTS then
-        alvlUp := TrylevelUpAttribute (MySqlServerGame,'m', qPlayers.FieldByName('guid').AsInteger, 4, ValidPlayer  );
+        alvlUp := pvpTrylevelUpAttribute (MySqlServerGame,'m', qPlayers.FieldByName('guid').AsInteger, 4, ValidPlayer  );
 
       end;
     end;

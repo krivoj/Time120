@@ -144,6 +144,9 @@ end;
   function pveGetTotalPlayersOnMarket ( fm :Char; GuidTeam: Integer; dirSaves: string ): Integer;
 
   function pveGetDBPlayer ( FileName, guid: string; var MyBasePlayer :TBasePlayer ): boolean;
+  // FARE function pveSetDBPlayer ( FileName: string; aPlayer :TBasePlayer ): boolean;  come pveAddToTeam ma lo trova prima in memoria.
+  //--> pveloadteam if guid then set
+
   procedure pveAddToTeam (fm: Char; guid, FromGuidTeam, ToGuidTeam: integer; dirSaves: string );
   procedure pveDeleteFromTeam ( fm:Char; guid, GuidTeam : Integer; dirSaves:string); // riscrive es. f16.120
 
@@ -192,10 +195,15 @@ end;
   procedure Calc_Standing ( fm :char; Season, Country, Division: integer; dirSaves : string; var lstTeam: TObjectList<TeamStanding>; var lstScorers: TobjectList<TopScorer>  );
 //  procedure CreateTableResults; // crea la base 38*10 e la base 30*8
 
-  function TrylevelUpAttribute  ( DbServer: string; fm : Char; Guid, Attribute : integer; aValidPlayer: TValidPlayer ): TLevelUp;
-  function TrylevelUpTalent  ( DbServer: string; fm : Char;Guid, Talent : integer; aValidPlayer: TValidPlayer ): TLevelUp;
-    function can6 (  const at : TAttributeName; var aPlayer: TSoccerPlayer ): boolean;
-    function can10 (  const at : TAttributeName; var aPlayer: TSoccerPlayer ): boolean;
+  // uguali qui sotto, copia e incolla
+  function pveTrylevelUpAttribute  (  fm : Char; Guid, Attribute : integer;  GuidTeam: Integer;  dirSaves: string ): TLevelUp;
+  function pveTrylevelUpTalent  (  fm : Char;Guid, Talent : integer; GuidTeam: Integer;  dirSaves: string ): TLevelUp;
+  function pvpTrylevelUpAttribute  ( DbServer: string; fm : Char; Guid, Attribute : integer; aValidPlayer: TValidPlayer ): TLevelUp;
+  function pvpTrylevelUpTalent  ( DbServer: string; fm : Char;Guid, Talent : integer; aValidPlayer: TValidPlayer ): TLevelUp;
+    function can6 (  const at : TAttributeName; var aPlayer: TBasePlayer ): boolean;overload;//pve
+    function can10 (  const at : TAttributeName; var aPlayer: TBasePlayer ): boolean; overload;//pve
+    function can6 (  const at : TAttributeName; var aPlayer: TSoccerPlayer ): boolean;overload;//pvp
+    function can10 (  const at : TAttributeName; var aPlayer: TSoccerPlayer ): boolean;overload;//pvp
     function Player2BasePlayer ( aPlayer: TSoccerPlayer ) : TBasePlayer;
   function CreateTalentLevel2 ( fm :Char; aBasePlayer: TBasePlayer ) : Byte;  // può tornare anche 0
 
@@ -5847,7 +5855,7 @@ begin
   end;
 
 end;
-function TrylevelUpAttribute ( DbServer: string; fm : Char; Guid, Attribute : integer; aValidPlayer: TValidPlayer ): TLevelUp;
+function pvpTrylevelUpAttribute ( DbServer: string; fm : Char; Guid, Attribute : integer; aValidPlayer: TValidPlayer ): TLevelUp;
 var
   aRnd: Integer;
   aPlayer: TSoccerPlayer;
@@ -5856,6 +5864,8 @@ var
   qPlayers: TMyQuery;
   label myexit;
 begin
+// ATTENZIONE: MODIFICARE PVP PVE
+
   // il player è già validato e conosco le chance e le altre info che mi servono
   Result.Guid := Guid;
   result.AttrOrTalentId := Attribute;
@@ -6197,7 +6207,7 @@ MyExit:
   aPlayer.free;
 
 end;
-function TrylevelUpTalent ( DbServer: string;  fm :Char; Guid, Talent : integer; aValidPlayer: TValidPlayer ): TLevelUp;
+function pvpTrylevelUpTalent ( DbServer: string;  fm :Char; Guid, Talent : integer; aValidPlayer: TValidPlayer ): TLevelUp;
 var
   i, aRnd: Integer;
   aPlayer: TSoccerPlayer;
@@ -6207,6 +6217,7 @@ var
   qPlayers: TMyQuery;
   label TryTalent,myexit;
 begin
+// ATTENZIONE : MODIFICARE PVP PVE
   // il player è già validato e conosco le chance e le altre info che mi servono
   Result.Guid := Guid;
   result.AttrOrTalentId := Talent;
@@ -6311,6 +6322,428 @@ MyExit:
   aPlayer.free;
 
 end;
+function pveTrylevelUpAttribute (  fm : Char; Guid, Attribute : integer; GuidTeam: Integer;  dirSaves: string ): TLevelUp;
+var
+  aRnd: Integer;
+  aPlayer: TBasePlayer;
+  tsXP,tsXPHistory: TStringList;
+  ConnGame : TMyConnection;
+  qPlayers: TMyQuery;
+  label myexit;
+begin
+
+  // il player non è già validato e conosco le chance e le altre info che mi servono, lo prendo dal file .120
+  Result.Guid := Guid;
+  result.AttrOrTalentId := Attribute;
+  Result.value := false;
+  aRnd := RndGenerate( 100 );
+//Scelta direzione  Difesa esclude tiro e viceversa
+//ultimo valore 6 1% . calcolare numero calciatori reali a 6 su 500 calciatori
+
+//Speed e heading incrementano al massimo di 1 e mai più
+
+//CR7  deve nascere con speed 4 o anche 3, se incrementa di 1 prima dei 24 anni . sono 14 chances (al 30% nel migliore dei casi) sestina roulette
+{
+        x
+        x x
+x     x x x
+x   x x x x
+x   x x x x
+o o o o o o
+}
+
+  pveGetDBPlayer ( dirSaves + fm + IntToStr(GuidTeam) + '.120', IntToStr(guid), aPlayer );
+ // pveSetDBPlayer ( dirSaves + fm + GuidTeam + '.120',  aPlayer  );
+  Result.value := False;
+
+  // i 2 blocchi qui sotto sono uguali .cambiano valori difesa/attacco e can6 con can10
+  if fm = 'f' then begin
+
+    case Attribute of
+      0: begin
+        if aPlayer.xp_Speed >= xp_SPEED_POINTS then begin
+          aPlayer.xp_Speed := aPlayer.xp_Speed - xp_SPEED_POINTS;
+          tsXP[0]:= IntToStr(aPlayer.xp_Speed );
+          if aPlayer.Age > 24 then goto MyExit; // dopo i 24 anni non incrementa più in speed    . esce con result.value = false
+          if aRnd <= aPlayer.devA then begin
+            if (aPlayer.History_Speed = 0) and (aPlayer.DefaultSpeed < 4) then begin // speed incrementa solo una volta e al amssimo a 4
+              aPlayer.DefaultSpeed := aPlayer.DefaultSpeed + 1;
+              aPlayer.History_Speed := aPlayer.History_Speed + 1;
+              tsXPHistory[0]:= IntToStr( aPlayer.History_Speed ) ;
+              Result.value:= True;
+            end;
+          end;
+        end;
+      end;
+
+      1: begin
+        if aPlayer.xp_Defense >= xp_DEFENSE_POINTS then begin
+          aPlayer.xp_Defense := aPlayer.xp_Defense - xp_DEFENSE_POINTS;
+          tsXP[1]:= IntToStr(aPlayer.xp_Defense );
+          if aPlayer.DefaultShot >= F_DEFENSESHOT then goto MyExit; // difesa / shot        . esce con result.value = false
+          if aRnd <= aPlayer.devA then begin
+            if aPlayer.DefaultDefense < 6 then begin
+              if aPlayer.DefaultDefense +1 = 6 then Result.value :=   Can6 ( atDefense, aPlayer )
+              else begin
+                aPlayer.DefaultDefense := aPlayer.DefaultDefense + 1;
+                aPlayer.History_Defense := aPlayer.History_Defense + 1;
+                tsXPHistory[1]:= IntToStr( aPlayer.History_Defense ) ;
+                Result.value:= True;
+              end;
+            end;
+          end;
+        end;
+      end;
+
+      2:begin
+        if aPlayer.xp_Passing >= xp_PASSING_POINTS then begin
+          aPlayer.xp_Passing := aPlayer.xp_Passing - xp_Passing_POINTS;
+          tsXP[2]:= IntToStr(aPlayer.xp_Passing );
+          if aRnd <= aPlayer.devA then begin
+            if aPlayer.DefaultPassing < 6 then begin
+              if aPlayer.DefaultPassing +1 = 6 then Result.value := Can6 ( atPassing,aPlayer )
+              else begin
+                aPlayer.DefaultPassing := aPlayer.DefaultPassing + 1;
+                aPlayer.History_Passing := aPlayer.History_Passing + 1;
+                tsXPHistory[2]:= IntToStr( aPlayer.History_Passing ) ;
+                Result.value:= True;
+              end;
+            end;
+          end;
+        end;
+
+      end;
+
+      3:begin
+        if aPlayer.xp_BallControl  >= xp_BALLCONTROL_POINTS then begin
+          aPlayer.xp_BallControl := aPlayer.xp_BallControl - xp_BallControl_POINTS;
+          tsXP[3]:= IntToStr(aPlayer.xp_BallControl );
+          if aRnd <= aPlayer.devA then begin
+            if aPlayer.DefaultBallControl < 6 then begin
+              if aPlayer.DefaultBallControl +1 = 6 then Result.value := Can6 ( atBallControl, aPlayer )
+              else begin
+                aPlayer.DefaultBallControl := aPlayer.DefaultBallControl + 1;
+                aPlayer.History_BallControl := aPlayer.History_BallControl + 1;
+                tsXPHistory[3]:= IntToStr( aPlayer.History_BallControl ) ;
+                Result.value:= True;
+              end;
+            end;
+          end;
+        end;
+
+      end;
+
+      4:begin
+        if aPlayer.xp_Shot >= xp_SHOT_POINTS then begin
+          aPlayer.xp_Shot := aPlayer.xp_Shot - xp_Shot_POINTS;
+          tsXP[4]:= IntToStr(aPlayer.xp_Shot );
+            if aPlayer.DefaultDefense >= F_DEFENSESHOT then goto MyExit;; // difesa / shot
+          if aRnd <= aPlayer.devA then begin
+            if aPlayer.DefaultShot < 6 then begin
+              if aPlayer.DefaultShot +1 = 6 then Result.value :=Can6 ( atShot , aPlayer)
+              else begin
+                aPlayer.DefaultShot := aPlayer.DefaultShot + 1;
+                aPlayer.History_Shot := aPlayer.History_Shot + 1;
+                tsXPHistory[4]:= IntToStr( aPlayer.History_Shot ) ;
+                Result.value:= True;
+              end;
+            end;
+          end;
+        end;
+
+      end;
+
+      5:begin
+
+        if aPlayer.xp_Heading >= xp_HEADING_POINTS then begin
+          aPlayer.xp_Heading := aPlayer.xp_Heading - xp_Heading_POINTS;
+          tsXP[5]:= IntToStr(aPlayer.xp_Heading );
+          if aRnd <= aPlayer.devA then begin
+//            if aPlayer.History_Heading < 2  then begin // Heading incrementa solo 2 volte
+              if aPlayer.DefaultHeading < 6 then begin
+                if aPlayer.DefaultHeading + 1 = 6 then Result.value :=Can6 ( atHeading, aPlayer )
+                else begin
+                  aPlayer.DefaultHeading := aPlayer.DefaultHeading + 1;
+                  aPlayer.History_Heading := aPlayer.History_Heading + 1;
+                  tsXPHistory[5]:= IntToStr( aPlayer.History_Heading ) ;
+                  Result.value:= True;
+                end;
+              end;
+//            end;
+          end;
+        end;
+      end;
+    end;
+  end
+  else if fm ='m' then begin      // MALE
+    case Attribute of
+      0: begin
+        if aPlayer.xp_Speed >= xp_SPEED_POINTS then begin
+          aPlayer.xp_Speed := aPlayer.xp_Speed - xp_SPEED_POINTS;
+          tsXP[0]:= IntToStr(aPlayer.xp_Speed );
+          if aPlayer.Age > 24 then goto MyExit; // dopo i 24 anni non incrementa più in speed    . esce con result.value = false
+          if aRnd <= aPlayer.devA then begin
+            if (aPlayer.History_Speed = 0) and (aPlayer.DefaultSpeed < 4) then begin // speed incrementa solo una volta e al amssimo a 4
+              aPlayer.DefaultSpeed := aPlayer.DefaultSpeed + 1;
+              aPlayer.History_Speed := aPlayer.History_Speed + 1;
+              tsXPHistory[0]:= IntToStr( aPlayer.History_Speed ) ;
+              Result.value:= True;
+            end;
+          end;
+        end;
+      end;
+
+      1: begin
+        if aPlayer.xp_Defense >= xp_DEFENSE_POINTS then begin
+          aPlayer.xp_Defense := aPlayer.xp_Defense - xp_DEFENSE_POINTS;
+          tsXP[1]:= IntToStr(aPlayer.xp_Defense );
+          if aPlayer.DefaultShot >= M_DEFENSESHOT then goto MyExit; // difesa / shot   4 e non 5
+          if aRnd <= aPlayer.devA then begin
+            if aPlayer.DefaultDefense < 10 then begin
+              if aPlayer.DefaultDefense +1 = 10 then Result.value :=  Can10 ( atDefense, aPlayer )
+              else begin
+                aPlayer.DefaultDefense := aPlayer.DefaultDefense + 1;
+                aPlayer.History_Defense := aPlayer.History_Defense + 1;
+                tsXPHistory[1]:= IntToStr( aPlayer.History_Defense ) ;
+                Result.value:= True;
+              end;
+            end;
+          end;
+        end;
+      end;
+
+      2:begin
+        if aPlayer.xp_Passing >= xp_PASSING_POINTS then begin
+          aPlayer.xp_Passing := aPlayer.xp_Passing - xp_Passing_POINTS;
+          tsXP[2]:= IntToStr(aPlayer.xp_Passing );
+          if aRnd <= aPlayer.devA then begin
+            if aPlayer.DefaultPassing < 10 then begin
+              if aPlayer.DefaultPassing +1 = 10 then Result.value := Can10 ( atPassing,aPlayer )
+              else begin
+                aPlayer.DefaultPassing := aPlayer.DefaultPassing + 1;
+                aPlayer.History_Passing := aPlayer.History_Passing + 1;
+                tsXPHistory[2]:= IntToStr( aPlayer.History_Passing ) ;
+                Result.value:= True;
+              end;
+            end;
+          end;
+        end;
+
+      end;
+
+      3:begin
+        if aPlayer.xp_BallControl  >= xp_BALLCONTROL_POINTS then begin
+          aPlayer.xp_BallControl := aPlayer.xp_BallControl - xp_BallControl_POINTS;
+          tsXP[3]:= IntToStr(aPlayer.xp_BallControl );
+          if aRnd <= aPlayer.devA then begin
+            if aPlayer.DefaultBallControl < 10 then begin
+              if aPlayer.DefaultBallControl +1 = 10 then Result.value := Can10 ( atBallControl, aPlayer )
+              else begin
+                aPlayer.DefaultBallControl := aPlayer.DefaultBallControl + 1;
+                aPlayer.History_BallControl := aPlayer.History_BallControl + 1;
+                tsXPHistory[3]:= IntToStr( aPlayer.History_BallControl ) ;
+                Result.value:= True;
+              end;
+            end;
+          end;
+        end;
+
+      end;
+
+      4:begin
+        if aPlayer.xp_Shot >= xp_SHOT_POINTS then begin
+          aPlayer.xp_Shot := aPlayer.xp_Shot - xp_Shot_POINTS;
+          tsXP[4]:= IntToStr(aPlayer.xp_Shot );
+            if aPlayer.DefaultDefense >= M_DEFENSESHOT then goto MyExit;; // difesa / shot
+          if aRnd <= aPlayer.devA then begin
+            if aPlayer.DefaultShot < 10 then begin
+              if aPlayer.DefaultShot +1 = 10 then Result.value :=Can10 ( atShot , aPlayer)
+              else begin
+                aPlayer.DefaultShot := aPlayer.DefaultShot + 1;
+                aPlayer.History_Shot := aPlayer.History_Shot + 1;
+                tsXPHistory[4]:= IntToStr( aPlayer.History_Shot ) ;
+                Result.value:= True;
+              end;
+            end;
+          end;
+        end;
+
+      end;
+
+      5:begin
+
+        if aPlayer.xp_Heading >= xp_HEADING_POINTS then begin
+          aPlayer.xp_Heading := aPlayer.xp_Heading - xp_Heading_POINTS;
+          tsXP[5]:= IntToStr(aPlayer.xp_Heading );
+          if aRnd <= aPlayer.devA then begin
+//            if aPlayer.History_Heading < 2 then begin // Heading incrementa solo 2 volte
+              if aPlayer.DefaultHeading < 10 then begin
+                if aPlayer.DefaultHeading + 1 = 10 then Result.value :=Can10 ( atHeading, aPlayer )
+                else begin
+                  aPlayer.DefaultHeading := aPlayer.DefaultHeading + 1;
+                  aPlayer.History_Heading := aPlayer.History_Heading + 1;
+                  tsXPHistory[5]:= IntToStr( aPlayer.History_Heading ) ;
+                  Result.value:= True;
+                end;
+              end;
+  //          end;
+          end;
+        end;
+      end;
+    end;
+  end;
+
+MyExit:
+    Result.xpString := tsXP.CommaText;
+
+//   le commatext sono già pronte per storarle
+//  devo aggiornare anche in caso di false perchè ho speso i punti XP
+
+// guidteam e dirSaves mi indicano il file
+ // pveSetDBPlayer ( dirSaves + fm + GuidTeam + '.120',  aPlayer  );
+
+    ConnGame := TMyConnection.Create(nil);
+   // Conngame.Server := DbServer;
+    Conngame.Username:='root';
+    Conngame.Password:='root';
+    Conngame.Database:=fm + '_game';
+    Conngame.Connected := True;
+
+  if Result.value then begin
+
+
+    qPlayers := TMyQuery.Create(nil);
+
+    qPlayers.Connection := ConnGame;   // game
+
+    qPlayers.SQL.text := 'UPDATE '+fm+'_game.players SET ' +
+                                   'speed='+  IntToStr(aPlayer.DefaultSpeed) + ','+
+                                   'defense='+IntToStr(aPlayer.Defaultdefense) + ','+
+                                   'passing='+IntToStr(aPlayer.DefaultPassing) + ','+
+                                   'ballcontrol='+IntToStr(aPlayer.DefaultBallControl) + ','+
+                                   'shot='+IntToStr(aPlayer.DefaultShot)  + ','+
+                                   'heading='+ IntToStr(aPlayer.DefaultHeading) + ','+
+                                   'xp="' + tsXP.CommaText + '",' +
+                                   'history="' + tsXPhistory.CommaText + '" WHERE guid =' + IntToStr(Guid);
+    qPlayers.Execute ;
+    qPlayers.Free;
+  end
+  else begin  // aggirno solo la perdita di xp
+
+    qPlayers := TMyQuery.Create(nil);
+
+    qPlayers.Connection := ConnGame;   // game
+
+    qPlayers.SQL.text := 'UPDATE ' + fm +'_game.players SET ' +
+                                   'xp="' + tsXP.CommaText + '" WHERE guid =' + IntToStr(Guid);
+    qPlayers.Execute ;
+    qPlayers.Free;
+
+  end;
+    Conngame.Connected := false;
+    Conngame.Free;
+  tsXP.Free;
+  tsXPHistory.Free;
+
+end;
+function pveTrylevelUpTalent ( fm :Char; Guid, Talent : integer; GuidTeam: Integer;  dirSaves: string ): TLevelUp;
+var
+  i, aRnd: Integer;
+  aPlayer: TBasePlayer;
+  aBasePlayer: TBasePlayer;
+  tsXP,tsXPHistory: TStringList;
+  ConnGame : TMyConnection;
+  qPlayers: TMyQuery;
+  label TryTalent,myexit;
+begin
+       // il player lo prendo dal file .120
+  Result.Guid := Guid;
+  result.AttrOrTalentId := Talent;
+  Result.value := false;
+  aRnd := RndGenerate( 100 );
+
+  pveGetDBPlayer ( dirSaves + fm + IntToStr(GuidTeam) + '.120', IntToStr(guid), aPlayer );
+
+
+  Result.value := False;
+  // in caso di numerico id talent
+    if debug_TryTalentNoXp then goto TryTalent;
+
+
+    if aPlayer.XpTal[Talent] >= xpNeedTal[Talent] then begin
+      aPlayer.xpTal[Talent] := aPlayer.xpTal[Talent] - xpNeedTal[Talent]; // sottraggo la xp per il tentativo
+      tsXP[Talent+5]:= IntToStr(aPlayer.xpTal[Talent] );
+TryTalent:
+      if aRnd <= aPlayer.DevT then begin
+        aPlayer.TalentId1 := Talent;
+        Result.value:= True;
+        if RndGenerate(100) <= aPlayer.DevT then begin       // creo il secondo talento , fascia 1 molto giovane.
+          //aBasePlayer := Player2BasePlayer ( aPlayer ) ;
+          aPlayer.TalentId2 := CreateTalentLevel2 ( fm, aPlayer ); // ottiene un talent2 per GK
+        end;
+      end;
+    end;
+    Result.xpString := tsXP.CommaText;
+
+MyExit:
+
+//   le commatext sono già pronte per storarle
+//  devo aggiornare anche in caso di false perchè ho speso i punti XP
+// Genero il talentID2
+ // pveSetDBPlayer ( dirSaves + fm + GuidTeam + '.120',  aPlayer  );
+
+// guidteam e dirSaves mi indicano il file
+    ConnGame := TMyConnection.Create(nil);
+ //   Conngame.Server := DbServer;
+    Conngame.Username:='root';
+    Conngame.Password:='root';
+    Conngame.Database:=fm + '_game';
+    Conngame.Connected := True;
+
+  if Result.value then begin
+
+
+    qPlayers := TMyQuery.Create(nil);
+
+    qPlayers.Connection := ConnGame;   // game
+
+    qPlayers.SQL.text := 'UPDATE ' +fm +'_game.players SET ' +
+                                   'talentid1=' + IntToStr(aPlayer.TalentId1) + ','+
+                                   'talentid2=' + IntToStr(aPlayer.TalentId2) + ','+
+                                   'xp="' + tsXP.CommaText + '",' +
+                                   'history="' + tsXPhistory.CommaText + '" WHERE guid =' + IntToStr(Guid)+ ' and young=0';
+    qPlayers.Execute ;
+
+    // se è un GK azzero cartellini e injured
+    if aPlayer.TalentId1 = TALENT_ID_GOALKEEPER then begin
+      qPlayers.SQL.text := 'UPDATE ' +fm +'_game.players SET ' +
+                                     'injured=0,totyellowcard=0,disqualified=0' +
+                                     ' WHERE guid =' + IntToStr(Guid);
+      qPlayers.Execute ;
+
+    end;
+
+    qPlayers.Free;
+  end
+  else begin  // aggirno solo la perdita di xp
+
+    qPlayers := TMyQuery.Create(nil);
+
+    qPlayers.Connection := ConnGame;   // game
+
+    qPlayers.SQL.text := 'UPDATE ' + fm + '_game.players SET ' +
+                                   'xp="' + tsXP.CommaText + '" WHERE guid =' + IntToStr(Guid);
+    qPlayers.Execute ;
+    qPlayers.Free;
+
+  end;
+
+  Conngame.Connected := false;
+  Conngame.Free;
+  tsXP.Free;
+  tsXPHistory.Free;
+
+end;
 function Player2BasePlayer ( aPlayer: TSoccerPlayer ) : TBasePlayer;
 begin
   Result.devA :=   aPlayer.devA;
@@ -6329,7 +6762,7 @@ begin
 
 end;
 
-function can6 (  const at : TAttributeName; var aPlayer: TSoccerPlayer ): boolean;
+function can6 (  const at : TAttributeName; var aPlayer: TBasePlayer ): boolean;
 var
   aRnd: Integer;
 begin
@@ -6362,7 +6795,73 @@ begin
   end;
 
 end;
-function can10 (  const at : TAttributeName; var aPlayer: TSoccerPlayer ): boolean;
+function can10 (  const at : TAttributeName; var aPlayer: TBasePlayer ): boolean;
+var
+  aRnd: Integer;
+begin
+  Result := False;
+  // qui è già passato dal normale percA... 1 su 1000 ce la fa....
+  aRnd := RndGenerate(1000);
+  if aPlayer.TalentId1 = TALENT_ID_GOALKEEPER then exit;  // porieri a 10 non esistono per ora
+  if aRnd = 1 then begin
+    Result := True;
+    if at = AtDefense then begin
+      aPlayer.DefaultDefense := 10;
+      aPlayer.History_Defense := aPlayer.History_Defense + 1;
+    end
+    else if at = atBallControl then begin
+      aPlayer.DefaultBallControl := 10;
+      aPlayer.History_BallControl := aPlayer.History_BallControl + 1;
+    end
+    else if at = atPassing then begin
+      aPlayer.DefaultPassing := 10;
+      aPlayer.History_Passing := aPlayer.History_Passing + 1;
+    end
+    else if at = atShot then begin
+      aPlayer.DefaultShot := 10;
+      aPlayer.History_Shot := aPlayer.History_Shot + 1;
+    end
+    else if at = atHeading then begin
+      aPlayer.DefaultHeading := 10;
+      aPlayer.History_Heading := aPlayer.History_Heading + 1;
+    end
+  end;
+
+end;
+function can6 (  const at : TAttributeName; var aPlayer: TSoccerPlayer ): boolean;  // pvp
+var
+  aRnd: Integer;
+begin
+  Result := False;
+  // qui è già passato dal normale percA... 1 su 1000 ce la fa....
+  aRnd := RndGenerate(1000);
+  if aPlayer.TalentId1 = TALENT_ID_GOALKEEPER then exit;  // porieri a 6 non esistono per ora
+  if aRnd = 1 then begin
+    Result := True;
+    if at = AtDefense then begin
+      aPlayer.DefaultDefense := 6;
+      aPlayer.History_Defense := aPlayer.History_Defense + 1;
+    end
+    else if at = atBallControl then begin
+      aPlayer.DefaultBallControl := 6;
+      aPlayer.History_BallControl := aPlayer.History_BallControl + 1;
+    end
+    else if at = atPassing then begin
+      aPlayer.DefaultPassing := 6;
+      aPlayer.History_Passing := aPlayer.History_Passing + 1;
+    end
+    else if at = atShot then begin
+      aPlayer.DefaultShot := 6;
+      aPlayer.History_Shot := aPlayer.History_Shot + 1;
+    end
+    else if at = atHeading then begin
+      aPlayer.DefaultHeading := 6;
+      aPlayer.History_Heading := aPlayer.History_Heading + 1;
+    end
+  end;
+
+end;
+function can10 (  const at : TAttributeName; var aPlayer: TSoccerPlayer ): boolean;  // pvp
 var
   aRnd: Integer;
 begin

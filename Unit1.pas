@@ -24,6 +24,8 @@
   { TODO -ctodo prima del rilascio patreon :
 
 
+    FARE AIthinkdev E Animazioni per sviluppo attributo o talento.  SE_Develop
+      -->    fare pveTrylevelUpAttribute e talent
 
     bug e test sub e tactics
 
@@ -37,12 +39,6 @@
 
     face paint shop pro 9 blackpencil 80 30  ufficiale + molte faces + cognomi
 
-    FARE AIthinkdev E Animazioni per sviluppo attributo o talento.  SE_Develop
-        da server a utilities, e da usare anche in pve
-        function TrylevelUpAttribute  ( fm : Char; Guid, Attribute : integer; aValidPlayer: TValidPlayer ): TLevelUp;
-          function can6 (  const at : TAttributeName; var aPlayer: TSoccerPlayer ): boolean;
-          function can10 (  const at : TAttributeName; var aPlayer: TSoccerPlayer ): boolean;
-        function TrylevelUpTalent  ( fm : Char;Guid, Talent : integer; aValidPlayer: TValidPlayer ): TLevelUp;
 
 
     creare più formazioni , forse bug nella fatigue
@@ -12659,10 +12655,22 @@ begin
     PanelSell.Visible := False;
   end
   else if LeftStr(aSpriteClicked.Guid,7) = 'levelup' then begin
-    tcp.SendStr( 'levelupattribute,'+ IntToStr(SE_BackGround.tag) + ',' + aSpriteClicked.stag  + EndofLine);
+
+    if GameMode = pvp then
+      tcp.SendStr( 'levelupattribute,'+ IntToStr(SE_BackGround.tag) + ',' + aSpriteClicked.stag  + EndofLine)
+    else MyBrain.BrainInput ( IntToStr(MyGuidTeam)+ ',levelupattribute,'+ IntToStr(SE_BackGround.tag) + ',' + aSpriteClicked.stag );
+        //  pveTrylevelUpAttribute( fm : Char; Guid, Attribute : integer; GuidTeam: Integer;  dirSaves: string
+    // FARE function pveSetDBPlayer ( FileName, guid: string; MyBasePlayer :TBasePlayer ): boolean;
+  //--> pveloadteam if guid then set
+
   end
   else if LeftStr(aSpriteClicked.Guid,8) = 'talentup' then begin
-    tcp.SendStr( 'leveluptalent,'+ IntToStr(SE_BackGround.tag) + ',' + aSpriteClicked.stag + EndofLine);
+    if GameMode = pvp then
+      tcp.SendStr( 'leveluptalent,'+ IntToStr(SE_BackGround.tag) + ',' + aSpriteClicked.stag + EndofLine)
+    else MyBrain.BrainInput ( IntToStr(MyGuidTeam)+ ',leveluptalent,'+ IntToStr(SE_BackGround.tag) + ',' + aSpriteClicked.stag );
+//  pveTrylevelUpTalent ( fm :Char; Guid, Talent : integer; GuidTeam: Integer;  dirSaves: string ): TLevelUp;
+  // FARE function pveSetDBPlayer ( FileName, guid: string; MyBasePlayer :TBasePlayer ): boolean;
+  //--> pveloadteam if guid then set
   end;
 
 end;
