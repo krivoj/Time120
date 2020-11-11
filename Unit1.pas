@@ -13763,6 +13763,7 @@ end;
 procedure TForm1.ScreenTactics_SE_Field ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
 var
   bmp : SE_Bitmap;
+  aCell2: TPoint;
 begin
   if Button = MbRight then begin
     GameScreen := ScreenTactics ;
@@ -13783,28 +13784,14 @@ begin
   end
   else if MouseWaitFor = WaitForXY_TACTIC2 then begin
     // qui check se è il click è su una cella del proprio team libera
-     { FARE IN GREENCHECKCLICK RefreshTML_direct  ( MyBrain.TeamMovesLeft, MyBrain.TeamTurn, MyBrain.ShpFree ) ;
-      if IsOutSide( aCell2.X, aCell2.Y) then goto exitNOTACTICS;
-      aPlayer2 := MyBrain.GetSoccerPlayerDefault (aCell2.X, aCell2.Y); // mouseup su qualsiasi cella
-      if aPlayer2 <> nil then goto exitNOTACTICS; // aplayer2 !  esiste, metto via tutto, al contrario di Subs
-      if aPlayer.Ids = aPlayer2.Ids then goto exitNOTACTICS;
-      if (isGKcell ( aCell2.X, aCell2.Y )) then goto exitNOTACTICS;    // goalkeeper no tactics
-      if aPlayer.Team <>  MyBrain.TeamTurn  then goto exitNOTACTICS;;  // sposto solo i miei
-      if aPlayer.disqualified > 0 then goto exitNOTACTICS;;  // non squalificati
+      { TODO : fare gestione come sub select. }
+      aCell2:= FieldGuid2Cell( aSpriteClicked.Guid );
+      if IsOutSide( aCell2.X, aCell2.Y) then Exit;
+      if MyBrain.GetSoccerPlayerDefault (aCell2.X, aCell2.Y) <> nil then Exit;
+      if (isGKcell ( aCell2.X, aCell2.Y )) then Exit;    // goalkeeper no tactics
 
-      if GameMode = pvp then begin
-        tcp.SendStr( 'TACTIC,' + aPlayer.ids + ',' + IntToStr(aCell2.X) + ',' + IntToStr(aCell2.Y) + EndOfLine );// il server risponde con clientLoadbrain
-      end
-      else if GameMode = pve then begin
-        if MyBrain.Score.TeamGuid [ MyBrain.TeamTurn ] = MyGuidTeam then begin
-          MyBrain.BrainInput ( IntToStr(MyGuidTeam)+ ',TACTIC,' + aPlayer.ids + ',' + IntToStr(aCell2.X) + ',' + IntToStr(aCell2.Y)  );
-          // Anticipo il teammoveleft. l'animazione rimane in loop in onAppMessage. l'animazione si riavvia con BACK e rimette comunque tutto a posto
-          RefreshTML_direct  ( MyBrain.TeamMovesLeft, MyBrain.TeamTurn, MyBrain.ShpFree ) ;
-        end;
-      end; }
-
-  //  SendString := 'TACTIC,' + aPlayer.ids + ',' + IntToStr(aCell2.X) + ',' + IntToStr(aCell2.Y) ;// il server risponde con clientLoadbrain
-  //    ShowGreen ( CellX,CellY:Integer);
+      SendString := 'TACTIC,' + PlayerTactic.ids + ',' + IntToStr(aCell2.X) + ',' + IntToStr(aCell2.Y) ;// il server risponde con clientLoadbrain
+      ShowGreen (  aCell2.X, aCell2.Y );
   end;
 
 end;
