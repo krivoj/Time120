@@ -24,10 +24,7 @@
   { TODO -ctodo prima del rilascio patreon :
 
 
-   1- test nuova versione sub e tactics forse rifare le sub con click+click+greenmark waitforXY_SUB1 waitforXY_SUB2    green In red Out e
-      fare test RefreshTML_direct dopo il braininput se il cmd è sub o tactics
-      finire tactic2
-      inout deve sparire se waitforsub1
+   test nuova versione sub e tactics
 
       fare messaggio errore sostituzioni finite e scrivere il numero di subs rimaste
 
@@ -495,6 +492,7 @@ type
       procedure ScreenTacticsSubs_SE_TacticsSubs ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
       procedure ScreenSubs_SE_Players ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
       procedure ScreenTactics_SE_Field ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
+      procedure ScreenTactics_SE_Players ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
 
       procedure ScreenFreeKick_SE_Players ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
 
@@ -11647,7 +11645,7 @@ begin
   SE_Speaker.ProcessSprites(2000);
 
   bmp := SE_Bitmap.Create ( SE_Theater1.VisibleBitmap.Width, 40 );
-  bmp.Bitmap.Canvas.Brush.Color :=  clgreen;
+  bmp.Bitmap.Canvas.Brush.Color := $20430f;//$3a751d;
   bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
 
   aSprite := SE_Speaker.CreateSprite ( bmp.Bitmap,'skillname',1,1,1000,  SE_Theater1.VisibleBitmap.Width div 2 , BaseY , false,10 ) ;
@@ -13119,7 +13117,7 @@ begin
     end
     else if Gamemode = pve then begin
       MyBrain.BrainInput( IntTostr(MyGuidTeam) + ',' + SendString  );
-      if (ContainsStr( sendstring, ',SUB,' )) or (ContainsStr( sendstring, ',TACTIC,' )) then begin
+      if (ContainsStr( sendstring, 'SUB,' )) or (ContainsStr( sendstring, 'TACTIC,' )) then begin
         // in caso si dub o tactics Anticipo il teammoveleft. l'animazione rimane in loop in onAppMessage. l'animazione si riavvia con BACK e rimette comunque tutto a posto
         RefreshTML_direct  ( MyBrain.TeamMovesLeft, MyBrain.TeamTurn, MyBrain.ShpFree ) ;
         GameScreen := ScreenLive;
@@ -13771,23 +13769,24 @@ begin
   end;
 
   // mbleft
-  if MouseWaitFor = WaitForXY_TACTIC1 then begin
-
-    bmp := CreateSurnameSubSprite (PlayerTactic);
-    PlayerTactic.se_sprite.AddSubSprite(  bmp,'surname',0,28,false );
-    PlayerTactic.se_sprite.AddSubSprite(  dir_interface + 'selected.bmp' ,'select',0,0,false );
-    bmp.Free;
-    MouseWaitFor := WaitForXY_TACTIC2;
-    HHFP_Friendly ( PlayerTactic, 'f' ); // team e talent goalkeeper  , illumina celle di formazione libere
-    Exit;
-
-  end
+  if MouseWaitFor = WaitForXY_TACTIC1 then
+    exit
   else if MouseWaitFor = WaitForXY_TACTIC2 then begin
     // qui check se è il click è su una cella del proprio team libera
-      { TODO : fare gestione come sub select. }
+
       aCell2:= FieldGuid2Cell( aSpriteClicked.Guid );
       if IsOutSide( aCell2.X, aCell2.Y) then Exit;
-      if MyBrain.GetSoccerPlayerDefault (aCell2.X, aCell2.Y) <> nil then Exit;
+      if MyBrain.GetSoccerPlayerDefault (aCell2.X, aCell2.Y) <> nil then begin // ha cliccato sopra un player, anche se stesso
+        DeleteAllSubSpritesSubTactics( MyBrain.lstSoccerPlayer );
+        PlayerTactic := MyBrain.GetSoccerPlayerDefault (aCell2.X, aCell2.Y);
+        bmp := CreateSurnameSubSprite (PlayerTactic);
+        PlayerTactic.se_sprite.AddSubSprite(  bmp,'surname',0,28,false );
+        PlayerTactic.se_sprite.AddSubSprite(  dir_interface + 'selected.bmp' ,'select',0,0,true );
+        bmp.Free;
+        MouseWaitFor := WaitForXY_TACTIC2;
+        HHFP_Friendly ( PlayerTactic, 'f' ); // team e talent goalkeeper  , illumina celle di formazione libere
+        Exit;
+      end;
       if (isGKcell ( aCell2.X, aCell2.Y )) then Exit;    // goalkeeper no tactics
 
       SendString := 'TACTIC,' + PlayerTactic.ids + ',' + IntToStr(aCell2.X) + ',' + IntToStr(aCell2.Y) ;// il server risponde con clientLoadbrain
@@ -13864,6 +13863,24 @@ begin
   end;
 
 
+end;
+procedure TForm1.ScreenTactics_SE_Players ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
+var
+  bmp : SE_Bitmap;
+begin
+//  if MouseWaitFor = WaitForXY_TACTIC1 then begin
+    PlayerTactic := MyBrain.GetSoccerPlayerALL(aSpriteClicked.Guid );
+    DeleteAllSubSpritesSubTactics( MyBrain.lstSoccerPlayer );
+    bmp := CreateSurnameSubSprite (PlayerTactic);
+    PlayerTactic.se_sprite.AddSubSprite(  bmp,'surname',0,28,false );
+    PlayerTactic.se_sprite.AddSubSprite(  dir_interface + 'selected.bmp' ,'select',0,0,true );
+    bmp.Free;
+    MouseWaitFor := WaitForXY_TACTIC2;
+    HHFP_Friendly ( PlayerTactic, 'f' ); // team e talent goalkeeper  , illumina celle di formazione libere
+    SE_Green.Visible:= False;
+   // Exit;
+
+//  end
 end;
 procedure TForm1.ScreenTacticsSubs_SE_TacticsSubs ( aSpriteClicked: SE_Sprite; Button: TMouseButton  );
 var
@@ -14217,12 +14234,13 @@ begin
         ScreenTacticsSubs_SE_TacticsSubs ( lstSprite[i], Button );
         Exit;
       end
-      //else if  lstSprite[i].Engine = se_Players then begin
-      //  ScreenTacticsSubs_SE_Players ( lstSprite[i], Button );// click che seleziona se_dragGuid . segue mouseup
-     //   Exit;
-      //end;
+      else if  lstSprite[i].Engine = se_Players then begin
+        ScreenTactics_SE_Players ( lstSprite[i], Button );// click che seleziona se_dragGuid . segue mouseup
+        Exit;
+      end
       else if lstSprite[i].Engine = SE_FieldPoints then begin
         ScreenTactics_SE_Field ( lstSprite[i], Button ); // no exit. gli spritesClicked devono passare tutti da qui.
+        Exit;
       end;
     end
     else if GameScreen = ScreenSubs then begin
@@ -15996,7 +16014,7 @@ begin
 
     for I := 0 to MyBrain.lstSoccerPlayer.Count -1 do begin
       aPlayer := MyBrain.lstSoccerPlayer [i];
-      if aPlayer.GuidTeam <> MyGuidTeam then begin
+      if (aPlayer.GuidTeam <> MyGuidTeam) or (aPlayer.TalentId1 = TALENT_ID_GOALKEEPER) then begin
         aPlayer.se_sprite.Visible := False;
         Continue;    // espulsi o già sostituiti o  avversari
       end;
@@ -16005,6 +16023,7 @@ begin
       aPlayer.se_Sprite.Position := aFieldPointSpr.position  ;
       aPlayer.se_sprite.MoverData.Destination := aFieldPointSpr.Position;
       aPlayer.se_sprite.Visible := True;
+      aPlayer.se_sprite.Position := aFieldPointSpr.Position;
 
     end;
     for I := 0 to MyBrain.lstSoccerReserve.Count -1  do begin

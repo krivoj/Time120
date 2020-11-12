@@ -1,1 +1,1 @@
-La stamina e' la quantita' di energia di un calciatore. Ogni azione che un giocatore svolge ha un costo in Stamina. Quando la STamina scende sotto il 50%, il giocatore potrebbe vedere risotti i suoi risultati sensibilmente. Piu' la Stamina scende, maggiore sara' questa possibilita'.
+La Forza e' la quantita' di energia di un calciatore. Ogni azione che un giocatore svolge ha un costo in Forza. Quando la Forza scende sotto il 50%, il giocatore potrebbe vedere risotti i suoi risultati sensibilmente. Piu' la Forza scende, maggiore sara' questa possibilita'.
