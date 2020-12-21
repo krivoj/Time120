@@ -1,0 +1,3 @@
+Un giocatore infortunato ha tutti i suoi attributi a 1 fino a quando il numero di partite che e' costretto a saltare non decrementa. Un giocatore allenato tende a 
+infortunarsi meno di un giocatore che gioca poco. E' importante cercare di abbassare la probabilita' di infortunio facendolo rimanere alleato. C'e' la possibilita'
+che un giocatore che subisce un infortunio molto lungo possa anche perdere un punto di un attributo casuale.

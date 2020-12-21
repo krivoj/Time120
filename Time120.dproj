@@ -71,8 +71,8 @@
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
         <DCC_Define>EUREKALOG;EUREKALOG_VER7;$(DCC_Define)</DCC_Define>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
-        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.2839;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=;LastCompiledTime=2020/11/10 03:40:08</VerInfo_Keys>
-        <VerInfo_Build>2839</VerInfo_Build>
+        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.2863;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=;LastCompiledTime=2020/12/21 05:57:38</VerInfo_Keys>
+        <VerInfo_Build>2863</VerInfo_Build>
         <DCC_MapFile>3</DCC_MapFile>
         <DCC_ExeOutput>.\bin\client\</DCC_ExeOutput>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
@@ -88,11 +88,10 @@
         <DCC_DebugInformation>0</DCC_DebugInformation>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
-        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.20;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=;LastCompiledTime=2020/11/02 01:48:46</VerInfo_Keys>
-        <VerInfo_Build>20</VerInfo_Build>
+        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.24;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=;LastCompiledTime=2020/11/12 01:49:14</VerInfo_Keys>
+        <VerInfo_Build>24</VerInfo_Build>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <DCC_DebugInformation>2</DCC_DebugInformation>
-        <DCC_Define>EUREKALOG;EUREKALOG_VER7;$(DCC_Define)</DCC_Define>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <DCC_MapFile>3</DCC_MapFile>
         <DCC_ExeOutput>.\bin\client\</DCC_ExeOutput>

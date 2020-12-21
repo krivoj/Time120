@@ -19,14 +19,19 @@
     islastman da testare la nuova versione
     test gkxpr su molti campionati
     test dopo interrupt non funziona piu' AI auto. forse va in 2.0
+    test nuova versione sub e tactics
 
   }
   { TODO -ctodo prima del rilascio patreon :
 
 
-   test nuova versione sub e tactics
+     portare i livelli a 60 e 10 e riaddattare bonus, talenti, roll e creazione player.
 
-      fare messaggio errore sostituzioni finite e scrivere il numero di subs rimaste
+     bug:  c'è proprio un errore in scrittura sul market. 3616 è l'id di un altro giocatore spagnolo. errore in pvethinkmarket
+
+     auto deve rimanere visibile anche durante turno avversario. forse escludere dak hidden
+     fare messaggio errore sostituzioni finite e scrivere il numero di subs rimaste
+
 
 
    2- FARE AIthinkdev E Animazioni per sviluppo attributo o talento.  SE_Develop
@@ -412,6 +417,7 @@ type
     Button16: TButton;
     SE_Speaker: SE_Engine;
     Button3: TButton;
+    SE_Develop: SE_Engine;
 
 // General
     function ChangeResolution(XResolution, YResolution, Depth: DWORD): boolean;
@@ -441,8 +447,6 @@ type
     procedure Timer1Timer(Sender: TObject);
     procedure LoadAnimationScript; // tsScript arriva dal server e contiene l'animazione da realizzare qui sul client
     function GetAnimationEstimatedTime ( aScript: TstringList ): Integer;
-// Help
-    procedure ClientLoadHelp ( help : string );
 
 // Tools
     procedure CheckBoxAI0Click(Sender: TObject);
@@ -682,6 +686,7 @@ type
 
       procedure ClientLoadPreMatch;
       procedure ClientLoadMarket;
+      procedure ClientLoadHelp ( help : string );
 
       procedure pveClientLoadMarket; // riempe globale mmMarket, ssMarket, datastrmarket
       procedure pveRefreshMarket ( indexMarket: integer ); // attenzione al size del market del singolo player
@@ -696,6 +701,7 @@ type
     procedure CreateFieldPoints;
     procedure ShowMainStats( aPlayer: TSoccerPlayer );
     procedure ShowPlayerDetails ( aPlayer: TSoccerPlayer );
+    procedure ShowPlayerDevelop ( aPlayer: TSoccerPlayer );
     procedure HideStadiumAndPlayers;
     procedure ShowStadiumAndPlayers( Stadium : integer )  ;
 
@@ -3715,6 +3721,14 @@ begin
   end;
 
 end;
+procedure TForm1.ShowPlayerDevelop ( aPlayer: TSoccerPlayer );
+var
+  bmp: SE_Bitmap;
+begin
+  //
+ { TODO : fare DENTRO ShowPlayerdetails }
+
+end;
 procedure TForm1.ShowPlayerdetails ( aPlayer: TSoccerPlayer );
 var
   i: Integer;
@@ -4587,7 +4601,11 @@ begin
       If GameMode = pvp then begin
         aPlayer.onmarket := Boolean( onmarket);
         TotMarket := TotMarket + onmarket;
+      end
+      else if GameMode = pve then begin
+        aPlayer.OnMarket := pveOnMarket (MyActiveGender, aPlayer.ids , dir_saves);
       end;
+
 
       aPlayer.face := face;
       aPlayer.Fitness := fitness;
@@ -4680,12 +4698,19 @@ begin
         aPlayer.SE_Sprite.AddSubSprite  (dir_interface + 'injured.bmp','injured', 0,0,true);
         aSubSprite := aPlayer.SE_Sprite.FindSubSprite('injured');
         setupBMp (aSubSprite.lBmp.Bitmap , clBlack );
-        aSubSprite.lBmp.Bitmap.Canvas.TextOut(3,0, IntToStr(aPlayer.Injured));
+        aSubSprite.lBmp.Bitmap.Canvas.TextOut(1,0, IntToStr(aPlayer.Injured));
+      end;
+      if aPlayer.OnMarket  then begin
+        aPlayer.SE_Sprite.AddSubSprite  (dir_interface + 'onmarket.bmp','onmarket', 52,0,true);
+       // aSubSprite := aPlayer.SE_Sprite.FindSubSprite('onmarket');
+       // setupBMp (aSubSprite.lBmp.Bitmap , clBlack );
+       // aSubSprite.lBmp.Bitmap.Canvas.TextOut(1,0, IntToStr(aPlayer.Injured));
       end;
 
     end;
 
     UniformBitmap.Free;
+    UniformBitmapGK.Free;
 
     RefreshCheckFormationMemory;
 
@@ -11951,6 +11976,7 @@ var
   bmp: Se_bitmap;
   w: Integer;
 begin
+
   bmp:= Se_bitmap.Create ( aPlayer.se_sprite.BmpCurrentFrame.Width ,14);
   bmp.Bitmap.Canvas.Brush.color := clGray;
   bmp.FillRect(0,0,bmp.Width,bmp.Height,clGray);
@@ -12514,8 +12540,10 @@ var
 begin
   if aSpriteClicked.Guid = 'btnmenu_back' then begin
     GameScreen := ScreenFormation;
+    ClientLoadFormation;
     se_PlayerDetails.Visible := False;
     SE_MainInterface.Visible := True;
+
   end
   else if aSpriteClicked.Guid = 'btnmenu_sell' then begin
     aPlayer := findPlayerMyBrainFormation (IntToStr(SE_BackGround.tag));
@@ -14297,7 +14325,13 @@ procedure TForm1.AddFace ( aPlayer: TSoccerPlayer );
 var
   aSubSprite: SE_SubSprite;
   i: integer;
+  bmp: SE_Bitmap;
 begin
+  aPlayer.se_sprite.DeleteSubSprite('surname');
+  bmp := CreateSurnameSubSprite (aPlayer);
+  aPlayer.se_sprite.AddSubSprite(bmp,'surname',0,28,false);
+  exit;
+
   WaitForSingleObject ( MutexAnimation, INFINITE ); // il mousemove che genera questa procedura può avvenire durante il clear della lstsoccerplayer
   for I := se_Players.SpriteCount -1 downto 0 do begin  // rimuovo tutti i face e solo i face ( stay e cartellini rimangono)
     aSubSprite:= aPlayer.se_sprite.FindSubSprite('face');
@@ -14335,8 +14369,10 @@ begin
   aSubSprite.lBmp.Stretch (trunc (( aSubSprite.lBmp.Width * ScaleSpritesFace ) / 100), trunc (( aSubSprite.lBmp.Height * ScaleSpritesFace ) / 100)  );
   aSubSprite.lX := (aPlayer.se_sprite.BMPCurrentFrame.Width div 2) - (aSubSprite.lBmp.Width div 2);  // center
   aSubSprite.ly := 0;  // center
-//  aPlayer.se_sprite.Scale := ScaleSpritesShow;
- // ReleaseMutex(MutexAnimation);
+
+
+  //  aPlayer.se_sprite.Scale := ScaleSpritesShow;
+  ReleaseMutex(MutexAnimation);
 
   //aSprite.ChangeBitmap( IntTostr(aPlayer.face) +'.bmp',1,1,1000 );
 
@@ -15740,6 +15776,7 @@ procedure TForm1.HideAllEnginesExcept ( SE_Engine1,SE_Engine2,SE_Engine3,SE_Engi
 label skipC;
 begin
 
+  SE_Develop.Visible := False;
   SE_Speaker.Visible := False;
   SE_matchInfo.Visible := False;
   SE_InfoError.Visible := False;
@@ -16177,10 +16214,10 @@ begin
     Hide120;
     SE_Live.Visible := true;
 
-    {$IFnDEF  DEBUG}
-    aSprite := SE_LIVE.FindSprite('btnmenu_back');
-    aSprite.Visible := false;
-    {$EndIF  DEBUG}
+   // {$IFnDEF  DEBUG}
+   // aSprite := SE_LIVE.FindSprite('btnmenu_back');
+   // aSprite.Visible := false;
+  //  {$EndIF  DEBUG}
 
 
     LiveMatch := True;
@@ -18197,7 +18234,7 @@ begin
 
   Cur := 0;
 //  TotalTeams := MM.Size div 8;
-   SE_Loading.FindSprite('loading');
+  // SE_Loading.FindSprite('loading');
 
   while Cur < MM.Size do begin
 
@@ -18215,6 +18252,9 @@ begin
       if aTeamRecord.guid <> MyGuidTeam then begin // AllOther al mio team penso io
         pveThinkMarket ( fm, aTeamRecord.Division, IntToStr(aTeamRecord.guid) , dir_saves);
       end;
+    //  else begin
+    //    asm int 3; end;
+   //   end;
     end;
 
   end;

@@ -1,0 +1,1 @@
+Muovi sposta il proprio giocatore fino a un massimo del valore di velocita'. Se il giocatore e' in possesso di palla, si muove piu' lento. 

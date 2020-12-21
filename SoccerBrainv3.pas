@@ -8509,12 +8509,12 @@ GK:
 
           if ( aHeadingFriend.TalentId1 = TALENT_ID_HEADING ) or ( aHeadingFriend.TalentId2 = TALENT_ID_HEADING ) then begin
             if RndGenerate(100) <= 5 then begin
-              aHeadingFriend.tmp := aHeadingFriend.tmp +1;
+              aHeadingFriend.tmp := aHeadingFriend.tmp +1;  { TODO : convertire in costanti }
               ACT := IntTostr(TALENT_ID_HEADING);
             end;
           end;
 
-          Modifier := 1;
+          Modifier := 1; { TODO : convertire in costanti }
           preRoll3 := RndGenerate (BaseheadingFriend + aHeadingFriend.tmp + Modifier );
           Roll3 := AdjustFatigue (aHeadingFriend.Stamina , preRoll3);
           aRnd3 := Roll3.value + aHeadingFriend.tmp ;
@@ -17515,7 +17515,7 @@ begin
   if w_FreeKick3 then begin
     aPlayer.tmp := 0;
     if (aPlayer.TalentId1 = TALENT_ID_FREEKICKS) or (aPlayer.TalentId2 = TALENT_ID_FREEKICKS) then
-      aPlayer.tmp:= 1;
+      aPlayer.tmp:= 1;               { TODO : convertire in costanti }
 
     Result.Modifier :=  + 1 + aPlayer.tmp ; // punizione bonus +1 fisso
     result.value := aPlayer.Shot + Result.Modifier  ; // punizione bonus +1 fisso
@@ -17557,7 +17557,7 @@ begin
   // elaboro i talenti Challenge ma non advanced Challenge ( autotackle )
   Result.Modifier:=0;
   if (aPlayer.TalentId1 = TALENT_ID_CHALLENGE)  or (aPlayer.TalentId2 = TALENT_ID_CHALLENGE) then
-  Result.Modifier := 1;
+  Result.Modifier := 1; { TODO : convertire in costanti }
   //if aPlayer.TalentId2 = TALENT_ID_ADVANCED_CHALLENGE then
   //if RndGenerate(100) < 5 then aPlayer.tmp := aPlayer.tmp + 1;
 
@@ -17619,7 +17619,7 @@ function TSoccerBrain.CalculateBaseCrossing ( CellX, CellY: integer; aPlayer: TS
 begin
   Result.Modifier := 0;
   if (aPlayer.TalentId1 = TALENT_ID_CROSSING) or (aPlayer.TalentId2 = TALENT_ID_CROSSING) then
-    Result.Modifier:= 1;
+    Result.Modifier:= 1;                    { TODO : convertire in costanti }
 
   if aPlayer.TalentId2 = TALENT_ID_PRECISE_CROSSING then begin
     if (aPlayer.CellX = 1)  or (aPlayer.CellY = 10) then begin //cross dal fondo
@@ -17653,7 +17653,7 @@ begin
   if (aPlayer.TalentId1 = TALENT_ID_DRIBBLING) or (aPlayer.TalentId2 = TALENT_ID_DRIBBLING) then
     Result.Modifier := 1;
   if (aPlayer.TalentId2 = TALENT_ID_ADVANCED_DRIBBLING)  then
-    Result.Modifier := Result.Modifier + 1;
+    Result.Modifier := Result.Modifier + 1;          { TODO : convertire in costanti }
 
 //      if (aPlayer.TalentId2 = TALENT_ID_SUPER_DRIBBLING)  then begin
 //        if RndGenerate(100) <= 15 then begin

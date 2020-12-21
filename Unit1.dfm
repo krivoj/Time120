@@ -521,6 +521,8 @@ object Form1: TForm1
     OnTheaterMouseMove = SE_Theater1TheaterMouseMove
     OnTheaterMouseDown = SE_Theater1TheaterMouseDown
     OnTheaterMouseUp = SE_Theater1TheaterMouseUp
+    WrapHorizontal = False
+    WrapVertical = False
     VirtualWidth = 900
     Virtualheight = 1440
     OnMouseWheel = SE_Theater1MouseWheel
@@ -1348,5 +1350,14 @@ object Form1: TForm1
     Theater = SE_Theater1
     Left = 736
     Top = 808
+  end
+  object SE_Develop: SE_Engine
+    PixelCollision = False
+    HiddenSpritesMouseMove = False
+    IsoPriority = False
+    Priority = 2
+    Theater = SE_Theater1
+    Left = 856
+    Top = 888
   end
 end
