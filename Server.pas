@@ -263,7 +263,7 @@ var
   FormServer: TFormServer;
   BrainManager: TBrainManager;
   TsWorldCountries: TStringList;
-  TsWorldTeams: array [1..5] of TStringList; // le nazioni del DB world
+  TsWorldTeams: array [1..6] of TStringList; // le nazioni del DB world
 
   Queue: TObjectList<TWSocketThrdClient>;
   RandGen: TtdBasePRNG;
