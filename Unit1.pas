@@ -3,11 +3,8 @@
 //{$DEFINE SE_DEBUG}
 {$R-}
 
-  { TODO -cbug :
-
-    pvp controllare invio dati dal server corrotto dopo un tot di inattività. o è compressione o è ics o è il mm3 o il brain.
-  }
   { TODO -ctest :
+
 
     pvp = test sul server di AUTO --> AUTO mi deve essere passato dal server. in base al dato setto lo sprite, non lo faccio io direttamente come nel pve
     devA e devT partono uguali per tutti in pvp. dipendono dalla quantità di azioni giocate. es. +1% ogni 20 palle giocate
@@ -24,6 +21,8 @@
   }
   { TODO -ctodo prima del rilascio patreon :
 
+    da fare anche in soccerbrain: DATA è smallint. incmove smallint BEGINBRAIN ha 2 byte,non 1 da fare anche in time120  la gestione CMD
+    con NewData.
 
      portare i livelli a 60 e 10 e riaddattare bonus, talenti, roll e creazione player.
 
