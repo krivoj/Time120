@@ -975,6 +975,7 @@ object Form1: TForm1
   object SE_players: SE_Engine
     PixelCollision = False
     HiddenSpritesMouseMove = False
+    HiddenSpritesMouseClick = False
     IsoPriority = False
     Priority = 2
     Theater = SE_Theater1
@@ -985,6 +986,7 @@ object Form1: TForm1
     ClickSprites = False
     PixelCollision = False
     HiddenSpritesMouseMove = False
+    HiddenSpritesMouseClick = False
     IsoPriority = False
     Priority = 3
     Theater = SE_Theater1
@@ -997,6 +999,7 @@ object Form1: TForm1
     ClickSprites = False
     PixelCollision = False
     HiddenSpritesMouseMove = False
+    HiddenSpritesMouseClick = False
     IsoPriority = False
     Priority = 4
     Theater = SE_Theater1
@@ -1007,6 +1010,7 @@ object Form1: TForm1
     ClickSprites = False
     PixelCollision = False
     HiddenSpritesMouseMove = False
+    HiddenSpritesMouseClick = False
     IsoPriority = False
     Priority = 4
     Theater = SE_Theater1
@@ -1032,6 +1036,7 @@ object Form1: TForm1
   object SE_FieldPoints: SE_Engine
     PixelCollision = False
     HiddenSpritesMouseMove = True
+    HiddenSpritesMouseClick = False
     IsoPriority = False
     Priority = 1
     Theater = SE_Theater1
@@ -1042,6 +1047,7 @@ object Form1: TForm1
     ClickSprites = False
     PixelCollision = False
     HiddenSpritesMouseMove = False
+    HiddenSpritesMouseClick = False
     IsoPriority = False
     Priority = 0
     Theater = SE_Theater1
@@ -1051,6 +1057,7 @@ object Form1: TForm1
   object SE_FieldPointsReserve: SE_Engine
     PixelCollision = False
     HiddenSpritesMouseMove = True
+    HiddenSpritesMouseClick = False
     IsoPriority = False
     Priority = 1
     Theater = SE_Theater1
@@ -1060,6 +1067,7 @@ object Form1: TForm1
   object SE_ShotCells: SE_Engine
     PixelCollision = False
     HiddenSpritesMouseMove = False
+    HiddenSpritesMouseClick = False
     IsoPriority = False
     Priority = 1
     Theater = SE_Theater1
@@ -1069,6 +1077,7 @@ object Form1: TForm1
   object SE_FieldPointsSpecial: SE_Engine
     PixelCollision = False
     HiddenSpritesMouseMove = False
+    HiddenSpritesMouseClick = False
     IsoPriority = False
     Priority = 1
     Theater = SE_Theater1
@@ -1078,6 +1087,7 @@ object Form1: TForm1
   object SE_MainInterface: SE_Engine
     PixelCollision = False
     HiddenSpritesMouseMove = False
+    HiddenSpritesMouseClick = False
     IsoPriority = False
     Priority = 5
     Theater = SE_Theater1
@@ -1088,6 +1098,7 @@ object Form1: TForm1
   object SE_PlayerDetails: SE_Engine
     PixelCollision = False
     HiddenSpritesMouseMove = False
+    HiddenSpritesMouseClick = False
     IsoPriority = False
     Priority = 5
     Theater = SE_Theater1
@@ -1097,6 +1108,7 @@ object Form1: TForm1
   object SE_Aml: SE_Engine
     PixelCollision = False
     HiddenSpritesMouseMove = False
+    HiddenSpritesMouseClick = False
     IsoPriority = False
     Priority = 5
     Theater = SE_Theater1
@@ -1107,6 +1119,7 @@ object Form1: TForm1
   object SE_Market: SE_Engine
     PixelCollision = False
     HiddenSpritesMouseMove = False
+    HiddenSpritesMouseClick = False
     IsoPriority = False
     Priority = 5
     Theater = SE_Theater1
@@ -1117,6 +1130,7 @@ object Form1: TForm1
   object SE_Spectator: SE_Engine
     PixelCollision = False
     HiddenSpritesMouseMove = False
+    HiddenSpritesMouseClick = False
     IsoPriority = False
     Priority = 5
     Theater = SE_Theater1
@@ -1127,6 +1141,7 @@ object Form1: TForm1
   object SE_Score: SE_Engine
     PixelCollision = False
     HiddenSpritesMouseMove = False
+    HiddenSpritesMouseClick = False
     IsoPriority = False
     Priority = 5
     Theater = SE_Theater1
@@ -1137,6 +1152,7 @@ object Form1: TForm1
   object SE_Live: SE_Engine
     PixelCollision = False
     HiddenSpritesMouseMove = False
+    HiddenSpritesMouseClick = False
     IsoPriority = False
     Priority = 5
     Theater = SE_Theater1
@@ -1146,6 +1162,7 @@ object Form1: TForm1
   object SE_CountryTeam: SE_Engine
     PixelCollision = False
     HiddenSpritesMouseMove = False
+    HiddenSpritesMouseClick = False
     IsoPriority = False
     Priority = 5
     Theater = SE_Theater1
@@ -1157,6 +1174,7 @@ object Form1: TForm1
     ClickSprites = False
     PixelCollision = False
     HiddenSpritesMouseMove = False
+    HiddenSpritesMouseClick = False
     IsoPriority = False
     Priority = 5
     Theater = SE_Theater1
@@ -1167,6 +1185,7 @@ object Form1: TForm1
   object SE_Loading: SE_Engine
     PixelCollision = False
     HiddenSpritesMouseMove = False
+    HiddenSpritesMouseClick = False
     IsoPriority = False
     Priority = 10
     Theater = SE_Theater1
@@ -1177,6 +1196,7 @@ object Form1: TForm1
   object SE_Skills: SE_Engine
     PixelCollision = False
     HiddenSpritesMouseMove = False
+    HiddenSpritesMouseClick = False
     IsoPriority = False
     Priority = 6
     Theater = SE_Theater1
@@ -1186,6 +1206,7 @@ object Form1: TForm1
   object SE_Uniform: SE_Engine
     PixelCollision = False
     HiddenSpritesMouseMove = False
+    HiddenSpritesMouseClick = False
     IsoPriority = False
     Priority = 5
     Theater = SE_Theater1
@@ -1195,6 +1216,7 @@ object Form1: TForm1
   object SE_TacticsSubs: SE_Engine
     PixelCollision = False
     HiddenSpritesMouseMove = False
+    HiddenSpritesMouseClick = False
     IsoPriority = False
     Priority = 5
     Theater = SE_Theater1
@@ -1206,6 +1228,7 @@ object Form1: TForm1
     ClickSprites = False
     PixelCollision = False
     HiddenSpritesMouseMove = False
+    HiddenSpritesMouseClick = False
     IsoPriority = False
     Priority = 5
     Theater = SE_Theater1
@@ -1216,6 +1239,7 @@ object Form1: TForm1
   object SE_FieldPointsOut: SE_Engine
     PixelCollision = False
     HiddenSpritesMouseMove = False
+    HiddenSpritesMouseClick = False
     IsoPriority = False
     Priority = 1
     Theater = SE_Theater1
@@ -1225,6 +1249,7 @@ object Form1: TForm1
   object SE_Green: SE_Engine
     PixelCollision = False
     HiddenSpritesMouseMove = False
+    HiddenSpritesMouseClick = False
     IsoPriority = False
     Priority = 7
     Theater = SE_Theater1
@@ -1235,6 +1260,7 @@ object Form1: TForm1
     ClickSprites = False
     PixelCollision = False
     HiddenSpritesMouseMove = False
+    HiddenSpritesMouseClick = False
     IsoPriority = False
     Priority = 5
     Theater = SE_Theater1
@@ -1245,6 +1271,7 @@ object Form1: TForm1
   object SE_GameOver: SE_Engine
     PixelCollision = False
     HiddenSpritesMouseMove = False
+    HiddenSpritesMouseClick = False
     IsoPriority = False
     Priority = 11
     Theater = SE_Theater1
@@ -1255,6 +1282,7 @@ object Form1: TForm1
   object SE_Standings: SE_Engine
     PixelCollision = False
     HiddenSpritesMouseMove = False
+    HiddenSpritesMouseClick = False
     IsoPriority = False
     Priority = 5
     Theater = SE_Theater1
@@ -1265,6 +1293,7 @@ object Form1: TForm1
   object SE_YesNo: SE_Engine
     PixelCollision = False
     HiddenSpritesMouseMove = False
+    HiddenSpritesMouseClick = False
     IsoPriority = False
     Priority = 11
     Theater = SE_Theater1
@@ -1275,6 +1304,7 @@ object Form1: TForm1
   object SE_PreMatch: SE_Engine
     PixelCollision = False
     HiddenSpritesMouseMove = False
+    HiddenSpritesMouseClick = False
     IsoPriority = False
     Priority = 10
     Theater = SE_Theater1
@@ -1285,6 +1315,7 @@ object Form1: TForm1
   object SE_Help: SE_Engine
     PixelCollision = False
     HiddenSpritesMouseMove = False
+    HiddenSpritesMouseClick = False
     IsoPriority = False
     Priority = 10
     Theater = SE_Theater1
@@ -1297,6 +1328,7 @@ object Form1: TForm1
     ClickSprites = False
     PixelCollision = False
     HiddenSpritesMouseMove = False
+    HiddenSpritesMouseClick = False
     IsoPriority = False
     Priority = 10
     Theater = SE_Theater1
@@ -1307,6 +1339,7 @@ object Form1: TForm1
   object SE_InfoError: SE_Engine
     PixelCollision = False
     HiddenSpritesMouseMove = False
+    HiddenSpritesMouseClick = False
     IsoPriority = False
     Priority = 11
     Theater = SE_Theater1
@@ -1317,6 +1350,7 @@ object Form1: TForm1
   object SE_matchInfo: SE_Engine
     PixelCollision = False
     HiddenSpritesMouseMove = False
+    HiddenSpritesMouseClick = False
     IsoPriority = False
     Priority = 11
     Theater = SE_Theater1
@@ -1334,6 +1368,7 @@ object Form1: TForm1
     ClickSprites = False
     PixelCollision = False
     HiddenSpritesMouseMove = False
+    HiddenSpritesMouseClick = False
     IsoPriority = False
     Priority = 100
     Theater = SE_Theater1
@@ -1345,6 +1380,7 @@ object Form1: TForm1
     ClickSprites = False
     PixelCollision = False
     HiddenSpritesMouseMove = False
+    HiddenSpritesMouseClick = False
     IsoPriority = False
     Priority = 6
     Theater = SE_Theater1
@@ -1354,6 +1390,7 @@ object Form1: TForm1
   object SE_Develop: SE_Engine
     PixelCollision = False
     HiddenSpritesMouseMove = False
+    HiddenSpritesMouseClick = False
     IsoPriority = False
     Priority = 2
     Theater = SE_Theater1

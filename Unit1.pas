@@ -5,7 +5,7 @@
 
   { TODO -ctest :
 
-
+    RIFARE IN OPNEGL con SUBBUTEO il client. Solo rotate,move
     pvp = test sul server di AUTO --> AUTO mi deve essere passato dal server. in base al dato setto lo sprite, non lo faccio io direttamente come nel pve
     devA e devT partono uguali per tutti in pvp. dipendono dalla quantità di azioni giocate. es. +1% ogni 20 palle giocate
 
@@ -2133,7 +2133,7 @@ begin
     // qui bandiera sprite 0
 
     bmp := SE_Bitmap.Create ( 40,H ); // la bandiere sono stretchate 40 x 32
-    aSprite.AddSubSprite( bmp,'f0',XFlag0,0,false );
+    aSprite.AddSubSprite( bmp,'f0',XFlag0,0,false,1 );
     bmp.Free;
 
     aSpriteLabel := SE_SpriteLabel.create( XTeamName0,LY,'Calibri',clBlack,clBlack,FontSize,'',True , 1, dt_Xcenter ); // teamname 0
@@ -2144,7 +2144,7 @@ begin
     aSprite.Labels.Add(aSpriteLabel);
     // qui bandiera sprite 1
     bmp := SE_Bitmap.Create ( 40,H ); // la bandiere sono 30 x 22
-    aSprite.AddSubSprite(bmp,'f1',XFlag1,0,false);
+    aSprite.AddSubSprite(bmp,'f1',XFlag1,0,false,1);
     bmp.Free;
 
     aSpriteLabel := SE_SpriteLabel.create( XUsername1,LY,'Calibri',clBlack,clBlack,FontSize,'',True , 1, dt_Xcenter ); // username 1
@@ -2162,12 +2162,12 @@ begin
   aBtnSprite:=SE_AML.CreateSprite(bmp.Bitmap ,'btnmenu_back',1,1,1000,100,YMAINBUTTON,true,1200 );
   aBtnSprite.TransparentForced := true;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'back',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'back',90-40,56-40,true ,1);
 
   aBtnSprite:=SE_AML.CreateSprite(bmp.Bitmap ,'btnmenu_refresh',1,1,1000,720,YMAINBUTTON,true,1200 );
   aBtnSprite.TransparentForced := true;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'refresh.bmp', 'refresh',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'refresh.bmp', 'refresh',90-40,56-40,true,1 );
 
   bmp.Free;
 end;
@@ -2186,21 +2186,21 @@ begin
 //  aBtnSprite.Labels.Add( aSpriteLabel);
   aBtnSprite.TransparentForced := true;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'back',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'back',90-40,56-40,true ,1);
 
   aBtnSprite:=SE_Standings.CreateSprite(bmp.Bitmap ,'btnmenu_back1',1,1,1000,(180*2)+90,YMAINBUTTON,true,1200 );
 //  aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize, '<',true  );
 //  aBtnSprite.Labels.Add( aSpriteLabel);
   aBtnSprite.TransparentForced := true;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'backward1.bmp', 'back1',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'backward1.bmp', 'back1',90-40,56-40,true,1 );
 
   aBtnSprite:=SE_Standings.CreateSprite(bmp.Bitmap ,'btnmenu_forward1',1,1,1000,(180*3)+90,YMAINBUTTON,true,1200 );
 //  aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize, '>', true  );
 //  aBtnSprite.Labels.Add( aSpriteLabel);
   aBtnSprite.TransparentForced := true;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'forward1.bmp', 'forw1',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'forward1.bmp', 'forw1',90-40,56-40,true,1 );
 
   bmp.Free;
 
@@ -2320,34 +2320,34 @@ begin
   aBtnSprite:=SE_Market.CreateSprite(dir_interface + 'button.bmp' ,'btnmenu_back',1,1,1000,90,YMAINBUTTON,true,1200 );
   aBtnSprite.TransparentForced := true;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'back',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'back',90-40,56-40,true,1 );
 
   if GameMode = pvp then begin
     aBtnSprite:=SE_Market.CreateSprite(dir_interface + 'button.bmp' ,'btnmenu_refresh',1,1,1000,(180*2)+90,YMAINBUTTON,true,1200 );
     aBtnSprite.TransparentForced := true;
     aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-    aBtnSprite.AddSubSprite( dir_interface +'refresh.bmp', 'refresh',90-40,56-40,true );
+    aBtnSprite.AddSubSprite( dir_interface +'refresh.bmp', 'refresh',90-40,56-40,true,1 );
   end
   else if GameMode = pve then begin
     aBtnSprite:=SE_Market.CreateSprite(dir_interface + 'button.bmp' ,'btnmenu_back2',1,1,1000,(180)+90,YMAINBUTTON,true,1200 );
     aBtnSprite.TransparentForced := true;
     aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-    aBtnSprite.AddSubSprite(dir_interface +'backward2.bmp', 'back2',90-40,56-40,true );
+    aBtnSprite.AddSubSprite(dir_interface +'backward2.bmp', 'back2',90-40,56-40,true,1 );
 
     aBtnSprite:=SE_Market.CreateSprite(dir_interface + 'button.bmp','btnmenu_back1',1,1,1000,(180*2)+90,YMAINBUTTON,true,1200 );
     aBtnSprite.TransparentForced := true;
     aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-    aBtnSprite.AddSubSprite(dir_interface +'backward1.bmp', 'back1',90-40,56-40,true );
+    aBtnSprite.AddSubSprite(dir_interface +'backward1.bmp', 'back1',90-40,56-40,true,1 );
 
     aBtnSprite:=SE_Market.CreateSprite(dir_interface + 'button.bmp','btnmenu_forward1',1,1,1000,(180*3)+90,YMAINBUTTON,true,1200 );
     aBtnSprite.TransparentForced := true;
     aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-    aBtnSprite.AddSubSprite(dir_interface +'forward1.bmp', 'forw1',90-40,56-40,true );
+    aBtnSprite.AddSubSprite(dir_interface +'forward1.bmp', 'forw1',90-40,56-40,true,1 );
 
     aBtnSprite:=SE_Market.CreateSprite(dir_interface + 'button.bmp' ,'btnmenu_forward2',1,1,1000,(180*4)+90,YMAINBUTTON,true,1200 );
     aBtnSprite.TransparentForced := true;
     aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-    aBtnSprite.AddSubSprite(dir_interface +'forward2.bmp', 'forw2',90-40,56-40,true );
+    aBtnSprite.AddSubSprite(dir_interface +'forward2.bmp', 'forw2',90-40,56-40,true ,1);
   end;
 
   aSprite := SE_Market.CreateSprite(dir_interface + 'money.bmp','gold', 1,1,1000,1300,YMAINBUTTON,true,1200);
@@ -2446,7 +2446,7 @@ begin
   //aBtnSprite.Labels.Add( aSpriteLabel);
   aBtnSprite.TransparentForced := true;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'close',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'close',90-40,56-40,true,1 );
   bmp.Free;
 
 
@@ -2546,27 +2546,27 @@ begin
   aBtnSprite:=SE_CountryTeam.CreateSprite(bmp.Bitmap ,'btnmenu_back',1,1,1000,90,YMAINBUTTON,true,1200 );
   aBtnSprite.TransparentForced := true;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'back',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'back',90-40,56-40,true,1 );
 
   aBtnSprite:=SE_CountryTeam.CreateSprite(bmp.Bitmap ,'btnmenu_back2',1,1,1000,180+90,YMAINBUTTON,true,1200 );
   aBtnSprite.TransparentForced := true;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'backward2.bmp', 'back2',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'backward2.bmp', 'back2',90-40,56-40,true,1 );
 
   aBtnSprite:=SE_CountryTeam.CreateSprite(bmp.Bitmap ,'btnmenu_back1',1,1,1000,(180*2)+90,YMAINBUTTON,true,1200 );
   aBtnSprite.TransparentForced := true;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'backward1.bmp', 'back1',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'backward1.bmp', 'back1',90-40,56-40,true,1 );
 
   aBtnSprite:=SE_CountryTeam.CreateSprite(bmp.Bitmap ,'btnmenu_forward1',1,1,1000,(180*3)+90,YMAINBUTTON,true,1200 );
   aBtnSprite.TransparentForced := true;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'forward1.bmp', 'forw1',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'forward1.bmp', 'forw1',90-40,56-40,true,1 );
 
   aBtnSprite:=SE_CountryTeam.CreateSprite(bmp.Bitmap ,'btnmenu_forward2',1,1,1000,(180*4)+90,YMAINBUTTON,true,1200 );
   aBtnSprite.TransparentForced := true;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'forward2.bmp', 'forw2',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'forward2.bmp', 'forw2',90-40,56-40,true,1 );
 
   bmp.Free;
 
@@ -2771,12 +2771,12 @@ begin
   aBtnSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btnmenu_back',1,1,1000,90,YMAINBUTTON,true,1200 );
   aBtnSprite.TransparentForced := true;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'back',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'back',90-40,56-40,true,1 );
 
   aBtnSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btnmenu_sell',1,1,1000,180+90,YMAINBUTTON,true ,1200);
   aBtnSprite.TransparentForced := true;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'sell.bmp', 'sell',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'sell.bmp', 'sell',90-40,56-40,true,1 );
   SE_PlayerDetails.CreateSprite(bmpQuestion.Bitmap ,'btnhelp_sellcanceldismiss',1,1,1000,(180*4)+90+xBtnMenuHelp ,YMAINBUTTON,true,1201 );
 
   // Panel Sell e Dismiss
@@ -2786,12 +2786,12 @@ begin
   aBtnSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btnmenu_cancelsell',1,1,1000,(180*2)+90,YMAINBUTTON,true,1200 );
   aBtnSprite.TransparentForced := true;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'cancelsell.bmp', 'cancel',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'cancelsell.bmp', 'cancel',90-40,56-40,true,1 );
 
   aBtnSprite:=SE_PlayerDetails.CreateSprite(bmp.Bitmap ,'btnmenu_dismiss',1,1,1000,(180*3)+90,YMAINBUTTON,true ,1200);
   aBtnSprite.TransparentForced := true;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'dismiss.bmp', 'dismiss',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'dismiss.bmp', 'dismiss',90-40,56-40,true,1 );
 
   // Panel Sell e Dismiss
   PanelDismiss.left := aBtnSprite.Position.X + (aBtnSprite.BMPCurrentFrame.Width div 2);
@@ -3002,7 +3002,7 @@ begin
   aBtnSprite:=SE_TacticsSubs.CreateSprite(bmp.Bitmap ,'btnmenu_back',1,1,1000,90,YMAINBUTTON,true ,1200);
   aBtnSprite.TransparentForced := true;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'back',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'back',90-40,56-40,true,1 );
 //  aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON,'Calibri',clWhite,clBlack,FontSize, Translate('lbl_Back') ,true  );
 //  aBtnSprite.Labels.Add( aSpriteLabel);
   bmp.Free;
@@ -3037,7 +3037,7 @@ begin
   aBtnSprite:=SE_Help.CreateSprite(bmp.Bitmap ,'btnmenu_closehelp',1,1,1000,90,YMAINBUTTON,true,1200 );
   aBtnSprite.TransparentForced := True;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'back',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'back',90-40,56-40,true,1 );
   bmp.Free;
 
 end;
@@ -3077,33 +3077,33 @@ begin
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
   aSpriteLabel := SE_SpriteLabel.create( -1,YLBLMAINBUTTON-20,'Calibri',clWhite,clBlack,FontSize, UpperCase(Translate('lbl_Automatic'))  ,true ,1, dt_center );
   aBtnSprite.Labels.Add( aSpriteLabel);
-  aBtnSprite.AddSubSprite(dir_interface +'autooff.bmp', 'autooff',90-40,56-40,true );
-  aBtnSprite.AddSubSprite(dir_interface +'autoon.bmp', 'autoon',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'autooff.bmp', 'autooff',90-40,56-40,true,1 );
+  aBtnSprite.AddSubSprite(dir_interface +'autoon.bmp', 'autoon',90-40,56-40,true,1 );
   aSubSprite := aBtnSprite.FindSubSprite('autoon');
   aSubSprite.lVisible := False;
 
   aBtnSprite:=SE_Live.CreateSprite(bmp.Bitmap ,'btnmenu_tactics',1,1,1000,Xbtntactics,YMAINBUTTON,true,1200 );
   aBtnSprite.TransparentForced := True;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'tactics.bmp', 'tactics',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'tactics.bmp', 'tactics',90-40,56-40,true,1 );
 
 
   aBtnSprite:=SE_Live.CreateSprite(bmp.Bitmap ,'btnmenu_subs',1,1,1000,XbtnSubs,YMAINBUTTON,true,1200 );
   aBtnSprite.TransparentForced := True;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'subs.bmp', 'subs',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'subs.bmp', 'subs',90-40,56-40,true,1 );
 
   aBtnSprite:=SE_LIVE.CreateSprite(dir_interface + 'button.bmp' , 'btnmenu_skillpass',1,1,1000,XbtnPass,YMAINBUTTON,true,1200 );
   aBtnSprite.TransparentForced := True;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_skill +'pass.bmp', 'pass',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_skill +'pass.bmp', 'pass',90-40,56-40,true,1 );
 
   if GameMode = Pve then begin
 
     aBtnSprite:=SE_Live.CreateSprite(bmp.Bitmap ,'btnmenu_back',1,1,1000,XbtnExit,YMAINBUTTON,true,1200 );
     aBtnSprite.TransparentForced := True;
     aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-    aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'back',90-40,56-40,true );
+    aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'back',90-40,56-40,true,1 );
 
   end;
 
@@ -3112,10 +3112,10 @@ begin
   aBtnSprite.TransparentForced := True;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
   if FileExists( dir_tmp + 'color1.bmp') then begin
-    aBtnSprite.AddSubSprite(dir_tmp + 'color1.bmp','overridecolor',90-40,56-40,true  ); // all'inizio crea un dummy
+    aBtnSprite.AddSubSprite(dir_tmp + 'color1.bmp','overridecolor',90-40,56-40,true,1  ); // all'inizio crea un dummy
   end
   else begin
-    aBtnSprite.AddSubSprite(dir_interface + 'color1.bmp','overridecolor',90-40,56-40,true  ); // all'inizio crea un dummy
+    aBtnSprite.AddSubSprite(dir_interface + 'color1.bmp','overridecolor',90-40,56-40,true,1  ); // all'inizio crea un dummy
   end;
 
   bmp.free;
@@ -3133,17 +3133,17 @@ begin
   aBtnSprite:=SE_Spectator.CreateSprite(bmp.Bitmap ,'btnmenu_exit',1,1,1000,90,YMAINBUTTON,true ,1200);
   aBtnSprite.TransparentForced := true;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'exit',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'exit',90-40,56-40,true,1 );
 
   aBtnSprite:=SE_Spectator.CreateSprite(bmp.Bitmap ,'btnmenu_overridecolor',1,1,1000, (180*7)+90,YMAINBUTTON,true,1200 );
   aBtnSprite.TransparentForced := True;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
 
   if FileExists( dir_tmp + 'color1.bmp') then begin
-    aBtnSprite.AddSubSprite(dir_tmp + 'color1.bmp','overridecolor',90-40,56-40,true  ); // all'inizio crea un dummy
+    aBtnSprite.AddSubSprite(dir_tmp + 'color1.bmp','overridecolor',90-40,56-40,true ,1 ); // all'inizio crea un dummy
   end
   else begin
-    aBtnSprite.AddSubSprite(dir_interface + 'color1.bmp','overridecolor',90-40,56-40,true  ); // all'inizio crea un dummy
+    aBtnSprite.AddSubSprite(dir_interface + 'color1.bmp','overridecolor',90-40,56-40,true,1  ); // all'inizio crea un dummy
   end;
 
     bmp.free;
@@ -3243,7 +3243,7 @@ begin
   //aBtnSprite.Labels.Add( aSpriteLabel);
   aBtnSprite.TransparentForced := True;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'exit.bmp', 'exit',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'exit.bmp', 'exit',90-40,56-40,true,1 );
   bmp.Free;
 
   bmp := SE_Bitmap.Create ( dir_interface + 'button.bmp');
@@ -3256,7 +3256,7 @@ begin
   aBtnSprite:=SE_MainInterface.CreateSprite(bmp.Bitmap ,'btnmenu_reset',1,1,1000,(180*2)+90,YMAINBUTTON,true ,1200);
   aBtnSprite.TransparentForced := True;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite( dir_interface +'reset.bmp', 'reset',90-40,56-40,true );
+  aBtnSprite.AddSubSprite( dir_interface +'reset.bmp', 'reset',90-40,56-40,true,1 );
   SE_MainInterface.CreateSprite(bmpQuestion.Bitmap ,'btnhelp_reset',1,1,1000,(180*2)+90+xBtnMenuHelp ,YMAINBUTTON+yBtnMenuHelp,true,1201 );
 
 
@@ -3264,14 +3264,14 @@ begin
   aBtnSprite:=SE_MainInterface.CreateSprite(bmp.Bitmap ,'btnmenu_market',1,1,1000,(180*3)+90,YMAINBUTTON,true ,1200);
   aBtnSprite.TransparentForced := True;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite ( dir_interface +'market.bmp', 'market',90-40,56-40,true );
+  aBtnSprite.AddSubSprite ( dir_interface +'market.bmp', 'market',90-40,56-40,true,1 );
   SE_MainInterface.CreateSprite(bmpQuestion.Bitmap ,'btnhelp_market',1,1,1000,(180*3)+90+xBtnMenuHelp ,YMAINBUTTON+yBtnMenuHelp,true,1201 );
 
   if GameMode = pvp then begin
     aBtnSprite:=SE_MainInterface.CreateSprite(bmp.Bitmap ,'btnmenu_watchlive',1,1,1000,(180*4)+90,YMAINBUTTON,true,1200 );
     aBtnSprite.TransparentForced := True;
     aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-    aBtnSprite.AddSubSprite( dir_interface +'watchlive.bmp', 'watch',90-40,56-40,true );
+    aBtnSprite.AddSubSprite( dir_interface +'watchlive.bmp', 'watch',90-40,56-40,true,1 );
     SE_MainInterface.CreateSprite(bmpQuestion.Bitmap ,'btnhelp_watchlive',1,1,1000,(180*4)+90+xBtnMenuHelp ,YMAINBUTTON+yBtnMenuHelp,true,1201 );
   end;
 
@@ -3280,7 +3280,7 @@ begin
 //  aBtnSprite.Labels.Add( aSpriteLabel);
   aBtnSprite.TransparentForced := True;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'standings.bmp', 'standings',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'standings.bmp', 'standings',90-40,56-40,true,1 );
   SE_MainInterface.CreateSprite(bmpQuestion.Bitmap ,'btnhelp_standings',1,1,1000,(180*5)+90+xBtnMenuHelp ,YMAINBUTTON+yBtnMenuHelp,true,1201 );
 
 //  aBtnSprite:=SE_MainInterface.CreateSprite(bmp.Bitmap ,'btnmenu_info',1,1,1000,(180*6)+90,YMAINBUTTON,true,1200 );
@@ -3294,21 +3294,21 @@ begin
  // aBtnSprite.Labels.Add( aSpriteLabel);
   aBtnSprite.TransparentForced := True;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'play.bmp', 'play',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'play.bmp', 'play',90-40,56-40,true,1 );
   SE_MainInterface.CreateSprite(bmpQuestion.Bitmap ,'btnhelp_play',1,1,1000,(180*7)+90+xBtnMenuHelp ,YMAINBUTTON+yBtnMenuHelp,true,1201 );
 
 
   aBtnSprite:=SE_MainInterface.CreateSprite(bmp.Bitmap ,'btnmenu_confirmformation',1,1,1000,(180*7)+90,YMAINBUTTON,true,1200 );
   aBtnSprite.TransparentForced := True;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'GreenCheckMark.bmp', 'confirm',90-32,56-32,true );
+  aBtnSprite.AddSubSprite(dir_interface +'GreenCheckMark.bmp', 'confirm',90-32,56-32,true,1 );
   SE_MainInterface.CreateSprite(bmpQuestion.Bitmap ,'btnhelp_confirmformation',1,1,1000,(180*7)+90+xBtnMenuHelp ,YMAINBUTTON+yBtnMenuHelp,true,1201 );
 
 
   aBtnSprite:=SE_MainInterface.CreateSprite(bmp.Bitmap ,'btnmenu_newseason',1,1,1000,(180*7)+90,YMAINBUTTON,true,1200 );
   aBtnSprite.TransparentForced := True;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'newseason.bmp', 'newseason',90-32,56-32,true );
+  aBtnSprite.AddSubSprite(dir_interface +'newseason.bmp', 'newseason',90-32,56-32,true,1 );
   bmp.Free;
   aSpriteLabel := SE_SpriteLabel.create( 0,34,'Calibri',clRed,clBlack,40, '' ,true  , 1, dt_Center  );
   aSpriteLabel.lFontStyle := [fsbold];
@@ -3366,7 +3366,7 @@ begin
   aBtnSprite:=SE_PreMatch.CreateSprite(bmp.Bitmap ,'btnmenu_back',1,1,1000,90,YMAINBUTTON,true,1200 );
   aBtnSprite.TransparentForced := True;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'back',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'arrowl.bmp', 'back',90-40,56-40,true,1);
   bmp.Free;
 
 
@@ -3376,7 +3376,7 @@ begin
   aBtnSprite.Labels.Add( aSpriteLabel);
   aBtnSprite.TransparentForced := True;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite ( dir_interface +'simulate.bmp', 'simulate',90-40,56-40,true );
+  aBtnSprite.AddSubSprite ( dir_interface +'simulate.bmp', 'simulate',90-40,56-40,true,1 );
   bmp.Free;
 
 
@@ -3388,7 +3388,7 @@ begin
  // aBtnSprite.Labels.Add( aSpriteLabel);
   aBtnSprite.TransparentForced := True;
   aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-  aBtnSprite.AddSubSprite(dir_interface +'play.bmp', 'play',90-40,56-40,true );
+  aBtnSprite.AddSubSprite(dir_interface +'play.bmp', 'play',90-40,56-40,true,1 );
   bmp.Free;
 
 end;
@@ -3572,20 +3572,20 @@ begin
   if aPlayer.TalentId1 <> 0 then begin
     bmp := SE_Bitmap.Create ( dir_talent + IntToStr(aplayer.TalentId1) + '.bmp');
     //bmp.Stretch(32,32 );
-    MainStatsSpr.AddSubSprite( bmp, 'talent1',CoordsMainStatsTalent1Spr.X,CoordsMainStatsTalent1Spr.Y,true );
+    MainStatsSpr.AddSubSprite( bmp, 'talent1',CoordsMainStatsTalent1Spr.X,CoordsMainStatsTalent1Spr.Y,true,1 );
     bmp.Free;
   end;
   if aPlayer.TalentId2 <> 0 then begin
     bmp := SE_Bitmap.Create ( dir_talent + IntToStr(aplayer.TalentId2) + '.bmp');
     //bmp.Stretch(32,32 );
-    MainStatsSpr.AddSubSprite( bmp, 'talent1',CoordsMainStatsTalent2Spr.X,CoordsMainStatsTalent2Spr.Y,true );
+    MainStatsSpr.AddSubSprite( bmp, 'talent1',CoordsMainStatsTalent2Spr.X,CoordsMainStatsTalent2Spr.Y,true,1 );
     bmp.Free;
   end;
 
 
   bmp := SE_Bitmap.Create ( dir_player + '\' + MyActiveGender + '\'+IntTostr(aPlayer.Country) +'\'+IntTostr(aPlayer.face) +'.bmp');
   bmp.Stretch(32,32 );
-  MainStatsSpr.AddSubSprite( bmp, 'face',CoordsMainStatsFace.X,CoordsMainStatsFace.Y,true );
+  MainStatsSpr.AddSubSprite( bmp, 'face',CoordsMainStatsFace.X,CoordsMainStatsFace.Y,true,1 );
   bmp.Free;
 
   MainStatsSpr.BMP.Canvas.Font.Name := 'Calibri';
@@ -3637,7 +3637,7 @@ begin
 
   bmp := SE_Bitmap.Create ( dir_interface + 'stamina.bmp' );
   bmp.Stretch(28,28);
-  MainStatsSpr.AddSubSprite (bmp ,'staminaspr',CoordsMainStatsStaminaSpr.X,CoordsMainStatsStaminaSpr.Y,true );
+  MainStatsSpr.AddSubSprite (bmp ,'staminaspr',CoordsMainStatsStaminaSpr.X,CoordsMainStatsStaminaSpr.Y,true,1 );
 
   pbSprite := SE_SpriteProgressBar( SE_MainStats.FindSprite('staminabar'));
   pbSprite.Value := (aPlayer.Stamina * 100 ) div 120;
@@ -3681,38 +3681,38 @@ begin
       if aPlayer.BuffHome > 0 then begin
         bmp := SE_Bitmap.Create ( dir_interface + 'hearth.bmp');
         //bmp.Stretch(32,32 );
-        MainStatsSpr2.AddSubSprite( bmp, 'buffhome', 0,0 ,true );
+        MainStatsSpr2.AddSubSprite( bmp, 'buffhome', 0,0 ,true,1 );
         bmp.Free;
       end;
       if aPlayer.BuffMorale > 0 then begin
         bmp := SE_Bitmap.Create ( dir_interface + 'moraleup.bmp');
         //bmp.Stretch(32,32 );
-        MainStatsSpr2.AddSubSprite( bmp, 'buffmoraleup',0,32,true );
+        MainStatsSpr2.AddSubSprite( bmp, 'buffmoraleup',0,32,true,1 );
         bmp.Free;
       end
       else if aPlayer.BuffMorale < 0 then begin
         bmp := SE_Bitmap.Create ( dir_interface + 'moraledown.bmp');
         //bmp.Stretch(32,32 );
-        MainStatsSpr2.AddSubSprite( bmp, 'buffmoraledown',0,32,true );
+        MainStatsSpr2.AddSubSprite( bmp, 'buffmoraledown',0,32,true,1 );
         bmp.Free;
       end;
 
       if aPlayer.BonusbuffD > 0   then begin
         bmp := SE_Bitmap.Create ( dir_talent + '139.bmp');
         //bmp.Stretch(32,32 );
-        MainStatsSpr2.AddSubSprite( bmp, '139.bmp',0,64,true );
+        MainStatsSpr2.AddSubSprite( bmp, '139.bmp',0,64,true,1 );
         bmp.Free;
       end;
       if (aPlayer.BonusbuffM > 0 )  then begin
         bmp := SE_Bitmap.Create ( dir_talent + '140.bmp');
         //bmp.Stretch(32,32 );
-        MainStatsSpr2.AddSubSprite( bmp, '140.bmp',0,64,true );
+        MainStatsSpr2.AddSubSprite( bmp, '140.bmp',0,64,true,1 );
         bmp.Free;
       end;
       if (aPlayer.BonusbuffF > 0 )  then begin
         bmp := SE_Bitmap.Create ( dir_talent + '141.bmp');
         //bmp.Stretch(32,32 );
-        MainStatsSpr2.AddSubSprite( bmp, '141.bmp',0,64,true );
+        MainStatsSpr2.AddSubSprite( bmp, '141.bmp',0,64,true,1 );
         bmp.Free;
       end;
     end
@@ -4681,26 +4681,26 @@ begin
 
 
       if aPlayer.YellowCard > 0  then begin
-        aPlayer.SE_Sprite.AddSubSprite (dir_interface + 'yellow.bmp','yellow', 0,0,true);
+        aPlayer.SE_Sprite.AddSubSprite (dir_interface + 'yellow.bmp','yellow', 0,0,true,1);
         aSubSprite := aPlayer.SE_Sprite.FindSubSprite('yellow');
         setupBMp (aSubSprite.lBmp.Bitmap , clBlack );
         aSubSprite.lBmp.Bitmap.Canvas.TextOut(3,0, IntToStr(aPlayer.YellowCard));
         aPlayer.SE_Sprite.SubSprites.Add( aSubSprite ) ;
       end;
       if aPlayer.disqualified > 0 then begin
-        aPlayer.SE_Sprite.AddSubSprite ( dir_interface + 'disqualified.bmp','disqualified', 0,0,true);
+        aPlayer.SE_Sprite.AddSubSprite ( dir_interface + 'disqualified.bmp','disqualified', 0,0,true,1);
         aSubSprite := aPlayer.SE_Sprite.FindSubSprite('disqualified');
         setupBMp (aSubSprite.lBmp.Bitmap , clBlack );
         aSubSprite.lBmp.Bitmap.Canvas.TextOut(3,0, IntToStr(aPlayer.disqualified));
       end;
       if aPlayer.injured > 0  then begin
-        aPlayer.SE_Sprite.AddSubSprite  (dir_interface + 'injured.bmp','injured', 0,0,true);
+        aPlayer.SE_Sprite.AddSubSprite  (dir_interface + 'injured.bmp','injured', 0,0,true,1);
         aSubSprite := aPlayer.SE_Sprite.FindSubSprite('injured');
         setupBMp (aSubSprite.lBmp.Bitmap , clBlack );
         aSubSprite.lBmp.Bitmap.Canvas.TextOut(1,0, IntToStr(aPlayer.Injured));
       end;
       if aPlayer.OnMarket  then begin
-        aPlayer.SE_Sprite.AddSubSprite  (dir_interface + 'onmarket.bmp','onmarket', 52,0,true);
+        aPlayer.SE_Sprite.AddSubSprite  (dir_interface + 'onmarket.bmp','onmarket', 52,0,true,1);
        // aSubSprite := aPlayer.SE_Sprite.FindSubSprite('onmarket');
        // setupBMp (aSubSprite.lBmp.Bitmap , clBlack );
        // aSubSprite.lBmp.Bitmap.Canvas.TextOut(1,0, IntToStr(aPlayer.Injured));
@@ -4715,7 +4715,7 @@ begin
 
     // da qui in poi sol oparte grafica
     aSprite:=SE_MainInterface.FindSprite ('btnmenu_uniform' );
-    aSprite.AddSubSprite(dir_tmp + 'color0.bmp','uniform',90-32,56-32,true);   // sono 64x64, non 80x80
+    aSprite.AddSubSprite(dir_tmp + 'color0.bmp','uniform',90-32,56-32,true,1);   // sono 64x64, non 80x80
 
 
     // qui GuidTeam e rank. SE_Rank contiene solo questi 2 sprites e non è cliccabile. non ci sono mousedown o mousemove
@@ -4832,7 +4832,7 @@ begin
       aBtnSprite:=SE_Loading.CreateSprite(dir_interface + 'button.bmp' ,'btnmenu_cancelqueue',1,1,1000,720,YMAINBUTTON,true,1200 );
       aBtnSprite.TransparentForced := True;
       aBtnSprite.TransparentColor := aBtnSprite.BMP.Canvas.Pixels[5,5];
-      aBtnSprite.AddSubSprite( dir_interface +'arrowl.bmp', 'cancel',90-40,56-40,true );
+      aBtnSprite.AddSubSprite( dir_interface +'arrowl.bmp', 'cancel',90-40,56-40,true,1 );
     end;
   end;
   Cursor := crDefault;
@@ -7946,69 +7946,69 @@ begin
     aSprite.Labels.Add(aSpriteLabel);
 
     if tmp[1] = 'sub' then begin
-      aSprite.AddSubSprite(dir_interface + 'infoinout.bmp','infoinout'+IntToStr(y),Xbmp,BaseY+SubSpriteY,True );
+      aSprite.AddSubSprite(dir_interface + 'infoinout.bmp','infoinout'+IntToStr(y),Xbmp,BaseY+SubSpriteY,True,1 );
       aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite-1,clblack, 12, tmp[3] + '--->'+  tmp[5],true ,1, dt_left);
       aSprite.Labels.Add(aSpriteLabel);
     end
     else if ( pos ('gol', tmp[1], 1 ) <> 0) and  (  pos ('4', tmp[1], 1 )  = 0)  then begin // gol normali, prs,pos,prs3pos3,gol.volley,gol.crossing
-      aSprite.AddSubSprite(dir_interface + 'infogolball.bmp','infogolball'+IntToStr(y),Xbmp,BaseY+SubSpriteY,True );
+      aSprite.AddSubSprite(dir_interface + 'infogolball.bmp','infogolball'+IntToStr(y),Xbmp,BaseY+SubSpriteY,True ,1);
       aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite-1,clblack, 12, tmp[3],true,1, dt_left );
       aSprite.Labels.Add(aSpriteLabel);
     end
     else if ( pos ('gol', tmp[1], 1 ) <> 0) and  (  pos ('4', tmp[1], 1 ) <> 0)  then begin // gol su rigore
-      aSprite.AddSubSprite(dir_interface + 'infopenaltygol.bmp','infopenaltygol'+IntToStr(y),Xbmp,BaseY+SubSpriteY,True );
+      aSprite.AddSubSprite(dir_interface + 'infopenaltygol.bmp','infopenaltygol'+IntToStr(y),Xbmp,BaseY+SubSpriteY,True,1 );
       aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite-1,clblack, 12, tmp[3],true,1, dt_left );
       aSprite.Labels.Add(aSpriteLabel);
     end
     else if ( pos ('4fail', tmp[1], 1 ) <> 0) then begin // rigore fallito
-      aSprite.AddSubSprite(dir_interface + 'infopenaltyfail.bmp','infopenaltyfail'+IntToStr(y),Xbmp,BaseY+SubSpriteY,True );
+      aSprite.AddSubSprite(dir_interface + 'infopenaltyfail.bmp','infopenaltyfail'+IntToStr(y),Xbmp,BaseY+SubSpriteY,True,1 );
       aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite-1,clblack, 12, tmp[3],true,1, dt_left );
       aSprite.Labels.Add(aSpriteLabel);
     end
     else if ( pos ('yc', tmp[1], 1 ) <> 0) then begin
-      aSprite.AddSubSprite(dir_interface + 'infoyellow.bmp','infoyellow'+IntToStr(y),Xbmp,BaseY+SubSpriteY,True );
+      aSprite.AddSubSprite(dir_interface + 'infoyellow.bmp','infoyellow'+IntToStr(y),Xbmp,BaseY+SubSpriteY,True,1 );
       aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite-1,clblack, 12, tmp[3],true,1, dt_left );
       aSprite.Labels.Add(aSpriteLabel);
     end
     {$IFDEF  TOOLS}
     else if ( pos ('crossbar', tmp[1], 1 ) <> 0) then begin
-      aSprite.AddSubSprite(dir_interface + 'infocrossbar.bmp','infocrossbar'+IntToStr(y),Xbmp,BaseY,True);
+      aSprite.AddSubSprite(dir_interface + 'infocrossbar.bmp','infocrossbar'+IntToStr(y),Xbmp,BaseY,True,1);
       aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite-1,clblack, 12,'', true ,1, dt_left);
       aSprite.Labels.Add(aSpriteLabel);
     end
     else if ( pos ('corner', tmp[1], 1 ) <> 0) then begin
-      aSprite.AddSubSprite(dir_interface + 'infocorner.bmp','infocorner'+IntToStr(y),Xbmp,BaseY+SubSpriteY,True);
+      aSprite.AddSubSprite(dir_interface + 'infocorner.bmp','infocorner'+IntToStr(y),Xbmp,BaseY+SubSpriteY,True,1);
       aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite-1,clblack, 12,'', true,1, dt_left );
       aSprite.Labels.Add(aSpriteLabel);
     end
     else if ( pos ('freekick1', tmp[1], 1 ) <> 0) then begin
-      aSprite.AddSubSprite(dir_interface + 'infogeneric.bmp','infofreekick1'+IntToStr(y),Xbmp,BaseY+SubSpriteY,True);
+      aSprite.AddSubSprite(dir_interface + 'infogeneric.bmp','infofreekick1'+IntToStr(y),Xbmp,BaseY+SubSpriteY,True,1);
       aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite-1,clblack, 12, '' ,true,1, dt_left );
       aSprite.Labels.Add(aSpriteLabel);
     end
     else if ( pos ('freekick2', tmp[1], 1 ) <> 0) then begin
-      aSprite.AddSubSprite(dir_interface + 'infogeneric.bmp','infofreekick2'+IntToStr(y),Xbmp,BaseY+SubSpriteY,True);
+      aSprite.AddSubSprite(dir_interface + 'infogeneric.bmp','infofreekick2'+IntToStr(y),Xbmp,BaseY+SubSpriteY,True,1);
       aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite,clblack, 12, '' ,true,1, dt_left );
       aSprite.Labels.Add(aSpriteLabel);
     end
     else if ( pos ('freekick3', tmp[1], 1 ) <> 0) then begin
-      aSprite.AddSubSprite(dir_interface + 'infofreekick3.bmp','infofreekick3'+IntToStr(y),Xbmp,BaseY,True);
+      aSprite.AddSubSprite(dir_interface + 'infofreekick3.bmp','infofreekick3'+IntToStr(y),Xbmp,BaseY,True,1);
       aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite-1,clblack, 12, '' ,true,1, dt_left );
       aSprite.Labels.Add(aSpriteLabel);
     end
     else if ( pos ('freekick4', tmp[1], 1 ) <> 0) then begin
-      aSprite.AddSubSprite(dir_interface + 'infofreekick4.bmp','infofreekick4'+IntToStr(y),Xbmp,BaseY+SubSpriteY,True);
+      aSprite.AddSubSprite(dir_interface + 'infofreekick4.bmp','infofreekick4'+IntToStr(y),Xbmp,BaseY+SubSpriteY,True,1);
       aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite-1,clblack, 12, '' ,true ,1, dt_left);
       aSprite.Labels.Add(aSpriteLabel);
     end
     else if ( pos ('lastman', tmp[1], 1 ) <> 0) then begin
-      aSprite.AddSubSprite(dir_interface + 'infolastman.bmp','infolastman'+IntToStr(y),Xbmp,BaseY+SubSpriteY,True);
+      aSprite.AddSubSprite(dir_interface + 'infolastman.bmp','infolastman'+IntToStr(y),Xbmp,BaseY+SubSpriteY,True,1);
       aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite-1,clblack, 12, '',true,1, dt_left );
       aSprite.Labels.Add(aSpriteLabel);
     end
     {$ENDIF TOOLS}
     else if ( pos ('rc', tmp[1], 1 ) <> 0) then begin
-      aSprite.AddSubSprite(dir_interface + 'infored.bmp','infored'+IntToStr(y),Xbmp,BaseY+SubSpriteY,True);
+      aSprite.AddSubSprite(dir_interface + 'infored.bmp','infored'+IntToStr(y),Xbmp,BaseY+SubSpriteY,True,1);
       aSpriteLabel := SE_SpriteLabel.create(XDescr,BaseY,'Calibri',clWhite-1,clblack, 12, tmp[3],true,1, dt_left);
       aSprite.Labels.Add(aSpriteLabel);
     end;
@@ -9914,25 +9914,25 @@ begin
          or (aPlayer.BonusTackleTurn > 0) or (aPlayer.BonusLopBallControlTurn > 0)
          or (aPlayer.BonusProtectionTurn > 0) or(aPlayer.BonusFinishingTurn > 0)
          then begin
-            SeSprite := se_SubSprite.create ( dir_attributes + 'star.bmp','star', 0,0,true,true);
+            SeSprite := se_SubSprite.create ( dir_attributes + 'star.bmp','star', 0,0,true,true,1);
             aPlayer.SE_Sprite.SubSprites.Add(SeSprite);
          end
          else if (aPlayer.RedCard > 0) or (aPlayer.Yellowcard = 2)
          or (aPlayer.disqualified > 0)
          then begin
-            SeSprite := se_SubSprite.create ( dir_interface + 'disqualified.bmp','disqualified', 0,0,true,true);
+            SeSprite := se_SubSprite.create ( dir_interface + 'disqualified.bmp','disqualified', 0,0,true,true,1);
             aPlayer.SE_Sprite.SubSprites.Add(SeSprite);
          end
          else if (aPlayer.Injured  > 0)  then begin
-            SeSprite := se_SubSprite.create ( dir_interface + 'injured.bmp','injured', 0,0,true,true);
+            SeSprite := se_SubSprite.create ( dir_interface + 'injured.bmp','injured', 0,0,true,true,1);
             aPlayer.SE_Sprite.SubSprites.Add(SeSprite);
          end
          else if (aPlayer.YellowCard  > 0)  then begin
-            SeSprite := se_SubSprite.create ( dir_interface + 'yellow.bmp','yellow', 0,0,true,true);
+            SeSprite := se_SubSprite.create ( dir_interface + 'yellow.bmp','yellow', 0,0,true,true,1);
             aPlayer.SE_Sprite.SubSprites.Add(SeSprite);
          end
          else if (aPlayer.PlayerOut  )  then begin
-            SeSprite := se_SubSprite.create ( dir_interface + 'inout.bmp','inout', 0,0,true,true);
+            SeSprite := se_SubSprite.create ( dir_interface + 'inout.bmp','inout', 0,0,true,true,1);
             aPlayer.SE_Sprite.SubSprites.Add(SeSprite);
          end;
 
@@ -9969,15 +9969,15 @@ begin
        if (aPlayer.RedCard > 0) or (aPlayer.Yellowcard = 2)
        or (aPlayer.disqualified > 0)
        then begin
-          SeSprite := se_SubSprite.create ( dir_interface + 'disqualified.bmp','disqualified', 0,0,true,true);
+          SeSprite := se_SubSprite.create ( dir_interface + 'disqualified.bmp','disqualified', 0,0,true,true,1);
           aPlayer.SE_Sprite.SubSprites.Add(SeSprite);
        end
        else if (aPlayer.Injured  > 0)  then begin
-          SeSprite := se_SubSprite.create ( dir_interface + 'injured.bmp','injured', 0,0,true,true);
+          SeSprite := se_SubSprite.create ( dir_interface + 'injured.bmp','injured', 0,0,true,true,1);
           aPlayer.SE_Sprite.SubSprites.Add(SeSprite);
        end
        else if (aPlayer.PlayerOut )  then begin
-          SeSprite := se_SubSprite.create ( dir_interface + 'inout.bmp','inout', 0,0,true,true);
+          SeSprite := se_SubSprite.create ( dir_interface + 'inout.bmp','inout', 0,0,true,true,1);
           aPlayer.SE_Sprite.SubSprites.Add(SeSprite);
        end;
 
@@ -10004,15 +10004,15 @@ begin
        if (aPlayer.RedCard > 0) or (aPlayer.Yellowcard = 2)
        or (aPlayer.disqualified > 0)
        then begin
-          SeSprite := se_SubSprite.create ( dir_interface + 'disqualified.bmp','disqualified', 0,0,true,true);
+          SeSprite := se_SubSprite.create ( dir_interface + 'disqualified.bmp','disqualified', 0,0,true,true,1);
           aPlayer.SE_Sprite.SubSprites.Add(SeSprite);
        end
        else if (aPlayer.Injured  > 0)  then begin
-          SeSprite := se_SubSprite.create ( dir_interface + 'injured.bmp','injured', 0,0,true,true);
+          SeSprite := se_SubSprite.create ( dir_interface + 'injured.bmp','injured', 0,0,true,true,1);
           aPlayer.SE_Sprite.SubSprites.Add(SeSprite);
        end
        else if (aPlayer.PlayerOut )  then begin
-          SeSprite := se_SubSprite.create ( dir_interface + 'inout.bmp','inout', 0,0,true,true);
+          SeSprite := se_SubSprite.create ( dir_interface + 'inout.bmp','inout', 0,0,true,true,1);
           aPlayer.SE_Sprite.SubSprites.Add(SeSprite);
        end;
 
@@ -10104,21 +10104,21 @@ begin
 
 
     if aPlayer.Team = 1 then
-      aPlayer.se_sprite.AddSubSprite( bmp,'cl_showroll',32,20, True )
-      else aPlayer.se_sprite.AddSubSprite( bmp,'cl_showroll',0,20, True );
+      aPlayer.se_sprite.AddSubSprite( bmp,'cl_showroll',32,20, True,1 )
+      else aPlayer.se_sprite.AddSubSprite( bmp,'cl_showroll',0,20, True,1 );
 
     aSubSprite := aPlayer.se_sprite.FindSubSprite('cl_showroll');
     aSubSprite.LifeSpan := ShowRollLifeSpan ;
     bmp.Free;
 
     if flags[0] = 'F' then begin
-      aPlayer.se_sprite.AddSubSprite( dir_interface + 'fatigue.bmp'  ,'fatigue', 16, 16 , true ) ;
+      aPlayer.se_sprite.AddSubSprite( dir_interface + 'fatigue.bmp'  ,'fatigue', 16, 16 , true,1 ) ;
       aSubSprite := aPlayer.se_sprite.FindSubSprite('fatigue');
       aSubSprite.LifeSpan := ShowRollLifeSpan ;
 
     end;
     if flags[1] <> '0' then begin                       // si attiva il talento
-      aPlayer.se_sprite.AddSubSprite( dir_talent + flags[1]   +'.bmp'  ,'acl',16,32, true ) ;
+      aPlayer.se_sprite.AddSubSprite( dir_talent + flags[1]   +'.bmp'  ,'acl',16,32, true,1 ) ;
       aSubSprite := aPlayer.se_sprite.FindSubSprite('acl');
       aSubSprite.LifeSpan := ShowRollLifeSpan ;
     end;
@@ -10161,8 +10161,8 @@ begin
     end;
 
     if aPlayer.Team = 1 then
-      aPlayer.se_sprite.AddSubSprite( bmp,'cl_mtbshowroll',32,20, True )
-      else aPlayer.se_sprite.AddSubSprite( bmp,'cl_mtbshowroll',0,20, True );
+      aPlayer.se_sprite.AddSubSprite( bmp,'cl_mtbshowroll',32,20, True ,1)
+      else aPlayer.se_sprite.AddSubSprite( bmp,'cl_mtbshowroll',0,20, True,1 );
 
     aSubSprite := aPlayer.se_sprite.FindSubSprite('cl_mtbshowroll');
     aSubSprite.LifeSpan := ShowRollLifeSpan ;
@@ -10181,7 +10181,7 @@ begin
     // la skill usata è un subsprite che si muove con il player in caso di move o tackle
    // if aPlayer.Team = 1 then
     aPlayer.se_sprite.AddSubSprite( dir_skill + Ts[1]+'.bmp'  ,'mainskill',
-      (aPlayer.se_sprite.Bmp.Width div 2)-16 , (aPlayer.se_sprite.Bmp.Height div 2), true ) ;        // 16 è metà di subsprite. subsprite va 0 0 non al centro
+      (aPlayer.se_sprite.Bmp.Width div 2)-16 , (aPlayer.se_sprite.Bmp.Height div 2), true,1 ) ;        // 16 è metà di subsprite. subsprite va 0 0 non al centro
 
     ShowSpeaker ( Ts[1]) ;
     SE_Speaker.Visible := true;
@@ -11632,7 +11632,7 @@ begin
     aSprite.Labels.add (aSpriteLabel);
 
     // lo Sprite a sinistra è un SubSprite
-    aSprite.AddSubSprite ( dir_skill + SelectedPlayer.ActiveSkills.Names [i] + '.bmp','sprite', 0,6,true );
+    aSprite.AddSubSprite ( dir_skill + SelectedPlayer.ActiveSkills.Names [i] + '.bmp','sprite', 0,6,true,1 );
 
     // qui la concatenazione del nome contine la stringa in inglese così per l'help diventa es. btnhelp_short.passing.txt
     aSprite := SE_Skills.CreateSprite(bmpQuestion.Bitmap ,'btnhelp_' + SelectedPlayer.ActiveSkills.Names[i],1,1,1000,
@@ -11682,7 +11682,7 @@ begin
   aSprite.Labels.add (aSpriteLabel);
 
     // lo Sprite a sinistra è un SubSprite
-  aSprite.AddSubSprite ( dir_skill + aSkillName + '.bmp','sprite', 0,6,true );
+  aSprite.AddSubSprite ( dir_skill + aSkillName + '.bmp','sprite', 0,6,true,1 );
 
   // qui la concatenazione del nome contine la stringa in inglese così per l'help diventa es. btnhelp_short.passing.txt
 
@@ -11961,7 +11961,7 @@ begin
       HHFP_Friendly ( aPlayer, 'r' ); // illumina celle di riserva libere o occupate
 
       bmp := CreateSurnameSubSprite (aPlayer);
-      se_dragGuid.AddSubSprite(  bmp,'surname',0,28,false );
+      se_dragGuid.AddSubSprite(  bmp,'surname',0,28,false,1 );
       bmp.Free;
     end;
 //    else begin
@@ -13807,8 +13807,8 @@ begin
         DeleteAllSubSpritesSubTactics( MyBrain.lstSoccerPlayer );
         PlayerTactic := MyBrain.GetSoccerPlayerDefault (aCell2.X, aCell2.Y);
         bmp := CreateSurnameSubSprite (PlayerTactic);
-        PlayerTactic.se_sprite.AddSubSprite(  bmp,'surname',0,28,false );
-        PlayerTactic.se_sprite.AddSubSprite(  dir_interface + 'selected.bmp' ,'select',0,0,true );
+        PlayerTactic.se_sprite.AddSubSprite(  bmp,'surname',0,28,false,1 );
+        PlayerTactic.se_sprite.AddSubSprite(  dir_interface + 'selected.bmp' ,'select',0,0,true,1 );
         bmp.Free;
         MouseWaitFor := WaitForXY_TACTIC2;
         HHFP_Friendly ( PlayerTactic, 'f' ); // team e talent goalkeeper  , illumina celle di formazione libere
@@ -13849,8 +13849,8 @@ begin
       DeleteAllSubSpritesSubTactics ( MyBrain.lstSoccerReserve );
       DeleteAllSubSpritesSubTactics ( MyBrain.lstSoccerPlayer );
       bmp := CreateSurnameSubSprite (PlayerSub1);
-      PlayerSub1.se_sprite.AddSubSprite(  bmp,'surname',0,28,false );
-      PlayerSub1.se_sprite.AddSubSprite(  dir_interface + 'inout.bmp' ,'subin',0,0,false );
+      PlayerSub1.se_sprite.AddSubSprite(  bmp,'surname',0,28,false ,1);
+      PlayerSub1.se_sprite.AddSubSprite(  dir_interface + 'inout.bmp' ,'subin',0,0,false,1 );
       bmp.Free;
       MouseWaitFor := WaitForXY_SUB2;
       HHFP_Friendly ( PlayerSub1 , 's' ); // team e talent goalkeeper a distanza < 4 , illumina celle di formazione occupate da compagni
@@ -13870,8 +13870,8 @@ begin
 
         PlayerSub1 := PlayerSub2;
         bmp := CreateSurnameSubSprite (PlayerSub1);
-        PlayerSub1.se_sprite.AddSubSprite(  bmp,'surname',0,28,false );
-        PlayerSub1.se_sprite.AddSubSprite(  dir_interface + 'inout.bmp' ,'subin',0,0,false );
+        PlayerSub1.se_sprite.AddSubSprite(  bmp,'surname',0,28,false,1 );
+        PlayerSub1.se_sprite.AddSubSprite(  dir_interface + 'inout.bmp' ,'subin',0,0,false ,1);
         bmp.Free;
         MouseWaitFor := WaitForXY_SUB1;
 
@@ -13882,7 +13882,7 @@ begin
     if (PlayerSub1.TalentId1 = TALENT_ID_GOALKEEPER) and ( PlayerSub2.TalentId1 <> TALENT_ID_GOALKEEPER) then exit;
     if (PlayerSub2.TalentId1 = TALENT_ID_GOALKEEPER) and ( PlayerSub1.TalentId1 <> TALENT_ID_GOALKEEPER) then exit;
     if AbsDistance(PlayerSub2.CellX, PlayerSub2.CellY, MyBrain.Ball.CellX ,MyBrain.Ball.celly) < 4 then exit;
-    PlayerSub2.se_sprite.AddSubSprite(  dir_interface + 'inout.bmp' ,'subout',0,0,false );
+    PlayerSub2.se_sprite.AddSubSprite(  dir_interface + 'inout.bmp' ,'subout',0,0,false,1 );
 
     SendString := 'SUB,' + PlayerSub1.ids + ',' + PlayerSub2.ids;
     ShowGreen ( PlayerSub2.CellX,PlayerSub2.CellY);
@@ -13899,8 +13899,8 @@ begin
     PlayerTactic := MyBrain.GetSoccerPlayerALL(aSpriteClicked.Guid );
     DeleteAllSubSpritesSubTactics( MyBrain.lstSoccerPlayer );
     bmp := CreateSurnameSubSprite (PlayerTactic);
-    PlayerTactic.se_sprite.AddSubSprite(  bmp,'surname',0,28,false );
-    PlayerTactic.se_sprite.AddSubSprite(  dir_interface + 'selected.bmp' ,'select',0,0,true );
+    PlayerTactic.se_sprite.AddSubSprite(  bmp,'surname',0,28,false ,1);
+    PlayerTactic.se_sprite.AddSubSprite(  dir_interface + 'selected.bmp' ,'select',0,0,true,1 );
     bmp.Free;
     MouseWaitFor := WaitForXY_TACTIC2;
     HHFP_Friendly ( PlayerTactic, 'f' ); // team e talent goalkeeper  , illumina celle di formazione libere
@@ -14328,7 +14328,7 @@ var
 begin
   aPlayer.se_sprite.DeleteSubSprite('surname');
   bmp := CreateSurnameSubSprite (aPlayer);
-  aPlayer.se_sprite.AddSubSprite(bmp,'surname',0,28,false);
+  aPlayer.se_sprite.AddSubSprite(bmp,'surname',0,28,false,1);
   exit;
 
   WaitForSingleObject ( MutexAnimation, INFINITE ); // il mousemove che genera questa procedura può avvenire durante il clear della lstsoccerplayer
@@ -14338,7 +14338,7 @@ begin
        aPlayer.se_sprite.SubSprites.Remove(aSubSprite);
   end;
   // aggiungo la faccia come subsprite
-  aPlayer.se_sprite.AddSubSprite( dir_player + '\' + MyActiveGender + '\'+IntTostr(aPlayer.Country) +'\'+IntTostr(aPlayer.face) +'.bmp' , 'face', 0  ,0,  true );
+  aPlayer.se_sprite.AddSubSprite( dir_player + '\' + MyActiveGender + '\'+IntTostr(aPlayer.Country) +'\'+IntTostr(aPlayer.face) +'.bmp' , 'face', 0  ,0,  true ,1);
   aSubSprite := aPlayer.se_sprite.FindSubSprite('face' );
   aSubSprite.lBmp.Stretch (trunc (( aSubSprite.lBmp.Width * ScaleSpritesFace ) / 100), trunc (( aSubSprite.lBmp.Height * ScaleSpritesFace ) / 100)  );
   // qui non viene calcolato lo scale dello sprite.
@@ -14363,7 +14363,7 @@ begin
       Se_Players.Sprites[i].SubSprites.Remove(aSubSprite);
   end;
   // aggiungo la faccia come subsprite
-  aPlayer.se_sprite.AddSubSprite( dir_player + IntTostr(aPlayer.face) +'.bmp' , 'face', 0  ,0, true  );
+  aPlayer.se_sprite.AddSubSprite( dir_player + IntTostr(aPlayer.face) +'.bmp' , 'face', 0  ,0, true  ,1);
   aSubSprite :=aPlayer.se_sprite.FindSubSprite( 'face');
   aSubSprite.lBmp.Stretch (trunc (( aSubSprite.lBmp.Width * ScaleSpritesFace ) / 100), trunc (( aSubSprite.lBmp.Height * ScaleSpritesFace ) / 100)  );
   aSubSprite.lX := (aPlayer.se_sprite.BMPCurrentFrame.Width div 2) - (aSubSprite.lBmp.Width div 2);  // center
@@ -16694,7 +16694,7 @@ begin
       bmp := SE_Bitmap.Create ( 240, RowH * 4); // le 4 in champions o promosse
       bmp.Bitmap.Canvas.Brush.Color :=  clBlue;
       bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));   { TODO : questi valori con le coppe varieranno in base al n. di squadre}
-      aSprite.addSubSprite ( bmp ,'backchampions',0,Rowh,false);
+      aSprite.addSubSprite ( bmp ,'backchampions',0,Rowh,false,1);
       bmp.Free;
 
     if Division = 1 then begin
@@ -16702,7 +16702,7 @@ begin
       bmp := SE_Bitmap.Create ( 240, RowH * 3); // le 3 in uefa
       bmp.Bitmap.Canvas.Brush.Color :=  clGreen;
       bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
-      aSprite.addSubSprite ( bmp ,'backuefa',0,Rowh*5,false);
+      aSprite.addSubSprite ( bmp ,'backuefa',0,Rowh*5,false,1);
       bmp.Free;
     end;
 
@@ -16711,7 +16711,7 @@ begin
       bmp.Bitmap.Canvas.Brush.Color :=  $000080;
       bmp.Bitmap.Canvas.FillRect(Rect(0,0,bmp.Width,bmp.Height));
       RoundBorder (bmp.Bitmap);
-      aSprite.addSubSprite ( bmp ,'backretro',0,Rowh*17,true);
+      aSprite.addSubSprite ( bmp ,'backretro',0,Rowh*17,true,1);
       bmp.Free;
     end;
 
@@ -16921,10 +16921,10 @@ begin
     //aSprite.DeleteSubSprite('t1'); sopra c'è removeallsubsprites
     //aSprite.DeleteSubSprite('t2');
     if talentID1 <> 0 then begin    // i talenti li devo creare dinamicamente o rimangono a video
-      aSprite.AddSubSprite(dir_talent + IntToStr( talentID1 )+'.bmp','t1',870 ,0,true);
+      aSprite.AddSubSprite(dir_talent + IntToStr( talentID1 )+'.bmp','t1',870 ,0,true,1);
     end;
     if talentID2 <> 0 then begin
-      aSprite.AddSubSprite(dir_talent + IntToStr( talentID2 )+'.bmp','t2',870 + W + 12,0,true); //
+      aSprite.AddSubSprite(dir_talent + IntToStr( talentID2 )+'.bmp','t2',870 + W + 12,0,true,1); //
     end;
 
     if GameMode = pvp then begin
@@ -16953,17 +16953,17 @@ begin
 
     // country        sub   0
     bmp := SE_Bitmap.Create ( 40,H ); // flags bandiere sono stretchate 40 x 32
-    aSprite.AddSubSprite(bmp,'country',0 ,0,True);
+    aSprite.AddSubSprite(bmp,'country',0 ,0,True,1);
     bmp.free;
 
     // face           sub    1
     bmp := SE_Bitmap.Create ( W,H ); // face W x H
-    aSprite.AddSubSprite(bmp,'face',32,0,true); // 32 si sovrappone ma sopra alla bandiera. va bene
+    aSprite.AddSubSprite(bmp,'face',32,0,true,1); // 32 si sovrappone ma sopra alla bandiera. va bene
     bmp.free;
 
     // fitness        sub     2
     bmp := SE_Bitmap.Create ( W,H ); // face W x H
-    aSprite.AddSubSprite(bmp,'fitness',1100,0,true);
+    aSprite.AddSubSprite(bmp,'fitness',1100,0,true,1);
     bmp.free;
 
     cBitmap := SE_Bitmap.Create ( dir_player + '\' + MyActiveGender + '\'+IntTostr(Country) +'\'+IntTostr(face) +'.bmp');
@@ -17185,10 +17185,10 @@ begin
       //aSprite.DeleteSubSprite('t1'); sopra c'è removeallsubsprites
       //aSprite.DeleteSubSprite('t2');
       if lstPLayerMarket[IndexMarket + I].talentID1 <> 0 then begin    // i talenti li devo creare dinamicamente o rimangono a video
-        aSprite.AddSubSprite(dir_talent + IntToStr( lstPLayerMarket[IndexMarket + I].talentID1 )+'.bmp','t1',870 ,0,true);
+        aSprite.AddSubSprite(dir_talent + IntToStr( lstPLayerMarket[IndexMarket + I].talentID1 )+'.bmp','t1',870 ,0,true,1);
       end;
       if lstPLayerMarket[IndexMarket + I].talentID2 <> 0 then begin
-        aSprite.AddSubSprite(dir_talent + IntToStr( lstPLayerMarket[IndexMarket + I].talentID2 )+'.bmp','t2',870 + W + 12,0,true); //
+        aSprite.AddSubSprite(dir_talent + IntToStr( lstPLayerMarket[IndexMarket + I].talentID2 )+'.bmp','t2',870 + W + 12,0,true,1); //
       end;
 
       aSprite.Labels[1].lText   :=  FloatToStrF(lstPLayerMarket[IndexMarket + I].Price , ffCurrency, 10, 0);
@@ -17196,16 +17196,16 @@ begin
 
       // country        sub   0
       bmp := SE_Bitmap.Create ( 40,H ); // flags bandiere sono stretchate 40 x 32
-      aSprite.AddSubSprite(bmp,'country',0 ,0,True);
+      aSprite.AddSubSprite(bmp,'country',0 ,0,True,1);
       bmp.free;
       // face           sub    1
       bmp := SE_Bitmap.Create ( W,H ); // face W x H
-      aSprite.AddSubSprite(bmp,'face',32,0,true); // 32 si sovrappone ma sopra alla bandiera. va bene
+      aSprite.AddSubSprite(bmp,'face',32,0,true,1); // 32 si sovrappone ma sopra alla bandiera. va bene
       bmp.free;
 
       // fitness        sub     2
       bmp := SE_Bitmap.Create ( W,H ); // face W x H
-      aSprite.AddSubSprite(bmp,'fitness',1100,0,true);
+      aSprite.AddSubSprite(bmp,'fitness',1100,0,true,1);
       bmp.free;
 
 
