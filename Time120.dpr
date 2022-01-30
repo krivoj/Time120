@@ -16,7 +16,9 @@ uses
   Unit3 in 'Unit3.pas',
   utilities in 'utilities.pas',
   SoccerBrainv3 in 'SoccerBrainv3.pas',
-  pashelp in 'pashelp.pas';
+  pashelp in 'pashelp.pas',
+  SoccerAIv3 in 'SoccerAIv3.pas',
+  SoccerTypes in 'SoccerTypes.pas';
 
 {$R *.res}
 

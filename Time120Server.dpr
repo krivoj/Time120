@@ -14,7 +14,10 @@ uses
   Vcl.Forms,
   Server in 'Server.pas' {FormServer},
   SoccerBrainv3 in 'SoccerBrainv3.pas',
-  utilities in 'utilities.pas';
+  utilities in 'utilities.pas',
+  SoccerAIv3 in 'SoccerAIv3.pas',
+  SoccerTypes in 'SoccerTypes.pas',
+  validate in 'validate.pas';
 
 {$R *.res}
 

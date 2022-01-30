@@ -1,10 +1,112 @@
 unit utilities;
 {$R-}
 {$define tools}
+{$define Field12x7}
 interface
 uses Winapi.Windows, Math, Inifiles, forms,Strutils, System.Classes, System.SysUtils,generics.collections, generics.defaults,
      MyAccess, DBAccess, Data.DB,
-     SoccerBrainv3,dse_random,DSE_SearchFiles ,DSE_Misc, DSE_theater, dse_list ;
+     SoccerBrainv3,SoccerTypes, dse_random,DSE_SearchFiles ,DSE_Misc, DSE_theater, dse_list ;
+
+
+   const FIELD_WIDTH = {$IFDEF  Field12x7}12{$endif}{$IFDEF  Field18x11}18{$endif}  ;
+   const FIELD_HEIGHT = {$IFDEF  Field12x7}7{$endif}{$IFDEF  Field18x11}11{$endif}  ;
+   const FIELD_GKCELLY = {$IFDEF  Field12x7}3{$endif}{$IFDEF  Field18x11}5{$endif}  ;
+   const FIELD_AI_D = {$IFDEF  Field12x7}3{$endif}{$IFDEF  Field18x11}5{$endif}  ;
+   const FIELD_AI_M = {$IFDEF  Field12x7}6{$endif}{$IFDEF  Field18x11}5{$endif}  ;
+   const FIELD_AI_F = {$IFDEF  Field12x7}9{$endif}{$IFDEF  Field18x11}5{$endif}  ;
+
+   const CMD_TEAMINFO = 1;
+   const CMD_BRAIN = 2;
+   const CMD_AVG = 3;
+   const CMD_INFOANDBRAIN = 4;
+   const CMD_BRAINSPECTATOR = 5;
+   const CMD_WORLDTEAMS = 6;
+   const CMD_WORLDCOUNTRIES = 7;
+   const CMD_CLIENT_SELECTEDCOUNTRY = 8;
+   const CMD_CLIENT_SELECTEDTEAM = 9;
+
+   const CMD_CLIENT_AUTO = 10;
+
+   const CMD_ACTIVELIVEMATCHES = 11;
+   const CMD_CLOSEVIEWMATCHOK = 12;
+
+   const CMD_CLIENT_RECONNECT = 13;
+   const CMD_CLIENT_QUEUE = 14;
+   const CMD_CLIENT_LOGIN = 15;
+   const CMD_CLIENT_UNIFORM = 16;
+   const CMD_CLIENT_CANCELQUEUE = 17;
+   const CMD_CLIENT_CANCELSPECTATORQUEUE = 18;
+   const CMD_CLIENT_CLOSEVIEWMATCH = 19;
+   const CMD_CLIENT_LISTMATCHES = 20;
+   const CMD_CLIENT_VIEWMATCH = 21;
+
+
+   const CMD_CLIENT_SETBALL = 22;
+   const CMD_CLIENT_SETTURN = 23;
+   const CMD_CLIENT_RANDOMSTAMINA = 24;
+   const CMD_CLIENT_SETPLAYER = 25;
+   const CMD_CLIENT_BRAINPAUSE = 26;
+                                       // 27!
+   const CMD_CLIENT_SELLMARKET = 28;
+   const CMD_CLIENT_BUYMARKET = 29;
+
+   const CMD_ERRORLOGIN = 30;
+   const CMD_TEAMDETAILS = 31;
+   const CMD_MARKET = 32;
+   const CMD_LEVELUP = 33;
+   const CMD_TALENTUP = 34;
+   const CMD_CLIENT_SWITCH = 35;
+   const CMD_CLIENT_GETFORMATION = 36;
+   const CMD_CLIENT_SETFORMATION = 37;
+   const CMD_CLIENT_RESETFORMATION = 38;
+   const CMD_CLIENT_SETUNIFORM = 39;
+   const CMD_CLIENT_LEVELUP = 40;
+   const CMD_CLIENT_TALENTUP = 41;
+   const CMD_CLIENT_CANCELSELLMARKET = 42;
+   const CMD_CLIENT_LISTMARKET = 43;
+   const CMD_CLIENT_DISMISS = 44;
+
+   const CMD_PLAY_PLM = 45;
+   const CMD_PLAY_TACTIC = 46;
+   const CMD_PLAY_SUB = 47;
+   const CMD_PLAY_PASS = 48;
+   const CMD_PLAY_COR = 49;
+   const CMD_PLAY_CRO2 = 50;
+   const CMD_PLAY_PRS = 51;
+   const CMD_PLAY_PRO = 52;
+   const CMD_PLAY_POS = 53;
+   const CMD_PLAY_PRE = 54;
+   const CMD_PLAY_TAC = 55;
+   const CMD_PLAY_STAY = 56;
+   const CMD_PLAY_FREE = 57;
+   const CMD_PLAY_BUFFD = 58;
+   const CMD_PLAY_BUFFM = 59;
+   const CMD_PLAY_BUFFF = 60;
+   const CMD_PLAY_CRO = 61;
+   const CMD_PLAY_SHP = 62;
+   const CMD_PLAY_DRI = 63;
+   const CMD_PLAY_LOP = 64;
+   const CMD_PLAY_CORNER_ATTACK_SETUP = 65;
+   const CMD_PLAY_FREEKICK2_ATTACK_SETUP = 66;
+   const CMD_PLAY_CORNER_DEFENSE_SETUP = 67;
+   const CMD_PLAY_FREEKICK2_DEFENSE_SETUP = 68;
+   const CMD_PLAY_FREEKICK3_DEFENSE_SETUP = 69;
+   const CMD_PLAY_FREEKICK1_ATTACK_SETUP = 70;
+   const CMD_PLAY_FREEKICK3_ATTACK_SETUP = 71;
+   const CMD_PLAY_FREEKICK4_ATTACK_SETUP = 72;
+   const CMD_CLIENT_ALLBRAIN = 73;
+   const CMD_CLIENT_INFINITETIME = 74;
+   const CMD_ERRORFORMATION = 75;
+
+   const CMD_debug_AITEAM = 76;
+   const CMD_debug_tackle_failed = 77;
+   const CMD_debug_setfault = 78;
+   const CMD_debug_setred = 79;
+   const CMD_debug_setalwaysgol = 80;
+   const CMD_debug_debug_buff100 = 81;
+   const CMD_debug_setposcrosscorner = 82;
+   const CMD_debug_testcorner = 83;
+
 
 Type TeamStanding = class
   private
@@ -130,13 +232,13 @@ end;
         procedure CodeNamePlayerF ( var MyTeam: Array22) ;
       function CreateSurname ( fm :Char; idCountry: Integer; tsSurnames:TStringList ): string;
       procedure SaveTeamStream ( fm :Char; GuidTeam: string; var MyTeam : array22; dirSaves: string); overload; // HELP_MyTeam22
-      procedure SaveTeamStream ( fm :Char; GuidTeam: string; var lstPlayersDB : TObjectlist<TSoccerPlayer>; dirSaves: string); overload;
+      procedure SaveTeamStream ( fm :Char; GuidTeam: string; var PlayerssDB : TObjectlist<TPlayer>; dirSaves: string); overload;
   procedure WriteTeamFormation ( fm :Char; GuidTeam, dirSaves, aCommaText: string );
-  procedure pveLoadTeam ( Filename:string; fm : Char; Guidteam: integer;var lstPlayersDB : TObjectlist<TSoccerPlayer> );//uguale a ClientLoadFormation ma senza grafica
+  procedure pveLoadTeam ( Filename:string; fm : Char; Guidteam: integer;var PlayerssDB : TObjectlist<TPlayer> );//uguale a ClientLoadFormation ma senza grafica
 
   function GetTeamRecord ( fm :Char; GuidTeam, dirSaves: string  ): TTeam;
   procedure SaveTeamRecord ( fm :Char; NewTeamrecord: TTeam; dirSaves: string  );
-  procedure UpdateCalendar ( aBrain: TsoccerBrain; dirSaves: string );
+  procedure UpdateCalendar ( aBrain: TBrain; dirSaves: string );
 
   procedure pveThinkMarket ( fm :Char; Division: Byte; GuidTeam , dirSaves: string); // effettua pvetransfermarket , dismiss, sell,
   function BuyPlayerFromMarket ( fm :Char; Budget,GuidTeam: Integer;  dirSaves: string): Integer; overload; // ritorna guid del player comprato
@@ -149,7 +251,7 @@ end;
   procedure pveAddToTeam (fm: Char; guid, FromGuidTeam, ToGuidTeam: integer; dirSaves: string );
   procedure pveDeleteFromTeam ( fm:Char; guid, GuidTeam : Integer; dirSaves:string); // riscrive es. f16.120
 
-  procedure pveCreateRandomPlayer (fm: Char; idCountry , Age, nFacesM, nFacesF, SubTractLevel: integer; Gk: boolean; tsSurnames: TStringList; var aPlayer: TsoccerPlayer  );
+  procedure pveCreateRandomPlayer (fm: Char; idCountry , Age, nFacesM, nFacesF, SubTractLevel: integer; Gk: boolean; tsSurnames: TStringList; var aPlayer: TPlayer  );
 
   procedure CreateFormationsPreset;
   function pvpCreateFormationTeam ( DbServer:string; fm : Char; Guidteam: integer; formation : string = ''): string; // uguali, cambia la parte sopra ( per overflow)
@@ -158,12 +260,12 @@ end;
   function NextReserveSlot ( ReserveSlot: TTheArray ): Integer;
 
 
-  function Buff_or_Debuff_4 ( aPlayer: TSoccerPlayer; buff,Max_stat:Integer): Boolean;
+  function Buff_or_Debuff_4 ( aPlayer: TPlayer; buff,Max_stat:Integer): Boolean;
   function isReserveSlot (CellX, CellY: integer): boolean;
   function isReserveSlotFormation (CellX, CellY: integer): boolean;
 
 
-  procedure EmulationBrain ( aBrain: TSoccerBrain; dirSaves: string); // usa i file ad eliminazione es. mrC001D3.120
+  procedure EmulationBrain ( aBrain: TBrain; dirSaves: string); // usa i file ad eliminazione es. mrC001D3.120
     function DeleteFromresults ( Index : Integer; var lstByte:TList<Byte> ): TPoint; // un risultato
 
   //  procedure OverWriteMyTeam (  MyGuidTeam , MyGuidCountry, ActiveSeason,MyDivision: Integer; MyTeamName,dirData, dirSaves: string);
@@ -179,7 +281,14 @@ end;
   function pveGetTeamInfo (fm: Char; GuidTeam: integer; dirSaves: string  ): TTeam;
   procedure MakeDelay ( interval: integer);
 
-  procedure AllRainXp ( var aPlayer: TSoccerPlayer);
+  function IsOutSide ( CellX, CellY: integer ) : boolean;
+  function isValidFormationCell ( CellX, CellY: integer ) : boolean;
+  function IsOutSideAI ( CellX, CellY: integer ) : boolean;
+  function IsGKCell ( CellX, CellY: integer ) : boolean;
+  function TryDecimalStrToInt( const S: string; out Value: Integer): Boolean;
+
+
+  procedure AllRainXp ( var aPlayer: TPlayer);
 
 
   procedure CreateNewSeason ( NewSeason , Country : Integer; dirData, dirSaves:string );
@@ -188,8 +297,8 @@ end;
   function kfVersionInfo: String;
 
   function GetFitnessModifier ( fitness: integer ): integer;
-  procedure calc_injured_attribute_lost ( var aPlayer: TSoccerPlayer);
-  function GetSoccerPlayer (Guid : Integer; var lstPlayers: TObjectList<TSoccerPlayer>): TSoccerPlayer;
+  procedure calc_injured_attribute_lost ( var aPlayer: TPlayer);
+  function GeTPlayer (Guid : Integer; var Playerss: TObjectList<TPlayer>): TPlayer;
 
   procedure Calc_Standing ( fm :char; Season, Country, Division: integer; dirSaves : string; var lstTeam: TObjectList<TeamStanding>; var lstScorers: TobjectList<TopScorer>  );
 //  procedure CreateTableResults; // crea la base 38*10 e la base 30*8
@@ -201,9 +310,9 @@ end;
   function pvpTrylevelUpTalent  ( DbServer: string; fm : Char;Guid, Talent : integer; aValidPlayer: TValidPlayer ): TLevelUp;
     function can6 (  const at : TAttributeName; var aPlayer: TBasePlayer ): boolean;overload;//pve
     function can10 (  const at : TAttributeName; var aPlayer: TBasePlayer ): boolean; overload;//pve
-    function can6 (  const at : TAttributeName; var aPlayer: TSoccerPlayer ): boolean;overload;//pvp
-    function can10 (  const at : TAttributeName; var aPlayer: TSoccerPlayer ): boolean;overload;//pvp
-    function Player2BasePlayer ( aPlayer: TSoccerPlayer ) : TBasePlayer;
+    function can6 (  const at : TAttributeName; var aPlayer: TPlayer ): boolean;overload;//pvp
+    function can10 (  const at : TAttributeName; var aPlayer: TPlayer ): boolean;overload;//pvp
+    function Player2BasePlayer ( aPlayer: TPlayer ) : TBasePlayer;
   function CreateTalentLevel2 ( fm :Char; aBasePlayer: TBasePlayer ) : Byte;  // può tornare anche 0
 
 var
@@ -490,7 +599,7 @@ begin
 
 
 end;
-procedure pveCreateRandomPlayer (fm: Char; idCountry , Age, nFacesM, nFacesF, SubTractLevel: integer; Gk: boolean; tsSurnames: TStringList; var aPlayer:TsoccerPlayer  );
+procedure pveCreateRandomPlayer (fm: Char; idCountry , Age, nFacesM, nFacesF, SubTractLevel: integer; Gk: boolean; tsSurnames: TStringList; var aPlayer:TPlayer  );
 var
   MyTeam : Array22;
   I,pRnd, aRnd, chance ,aValue : Integer;
@@ -555,7 +664,7 @@ begin
     MyTeam [ pRnd ].DefaultShot := 1;
     MyTeam [ pRnd ].DefaultHeading := 1;
   end;
-  // Ora lo Converto in TsoccerPlayer
+  // Ora lo Converto in TPlayer
 
   //LastInsertId := LastInsertId + 1; qui non lo tratto perchè non è qui che lo salvo su file
 //  MyTeam[ pRnd ].Guid := LastInsertId;
@@ -1383,7 +1492,7 @@ dof:
 
 
 end;
-procedure UpdateCalendar ( aBrain: TsoccerBrain; dirSaves: string );
+procedure UpdateCalendar ( aBrain: TBrain; dirSaves: string );
 var
   ini : TIniFile;
   ts2 : Tstringlist;
@@ -1663,7 +1772,7 @@ begin
   MM.SaveToFile( dirSaves + fm + GuidTeam + '.120'  );
   MM.Free;
 end;
-procedure SaveTeamStream ( fm :Char; GuidTeam: string; var lstPlayersDB : TObjectlist<TSoccerPlayer>; dirSaves: string); overload; // come sopra
+procedure SaveTeamStream ( fm :Char; GuidTeam: string; var PlayerssDB : TObjectlist<TPlayer>; dirSaves: string); overload; // come sopra
 var
   i: Integer;
   MM : TMemoryStream;
@@ -1672,18 +1781,18 @@ var
   tmpb: Byte;
   Age,MatchCost,face,fitness,morale: integer;
   Country, dev,Xpdev: SmallInt;
-  aPlayer: TSoccerPlayer;
+  aPlayer: TPlayer;
 begin
 // Accede a Brain.LstSoccerAll e sovrascrivo tutto il file
 
   MM := TMemoryStream.Create;
   MM.Size:=0;
 
-  tmpb := lstPlayersDB.Count;
+  tmpb := PlayerssDB.Count;
   MM.Write( @tmpb, sizeof(byte) );
 
-  for I := 0 to lstPlayersDB.Count -1  do begin
-    aPlayer := lstPlayersDB[i];
+  for I := 0 to PlayerssDB.Count -1  do begin
+    aPlayer := PlayerssDB[i];
 
     tmpi:=  StrToInt(aPlayer.Ids) ;
     MM.Write( @tmpi, sizeof(integer) );
@@ -1791,8 +1900,8 @@ var
   Buf3 : TArray8192;
   LenHistory,LenXP: Integer;
   tsXP, tsHistory : TStringList;
-  aPlayer: TSoccerPlayer;
-  lstPlayersDB : TObjectlist<TSoccerPlayer>;
+  aPlayer: TPlayer;
+  PlayerssDB : TObjectlist<TPlayer>;
 begin
 // Carico in memoria il file .120 (TUTTO, quindi come saveteamstream ) in un MyTeam il file, cambio le celle, salvo di nuovo
 
@@ -1816,12 +1925,12 @@ begin
   SS.Free;
   Cur:= 0;
 
-  lstPlayersDB := TObjectlist<TSoccerPlayer>.Create(True);
+  PlayerssDB := TObjectlist<TPlayer>.Create(True);
       // uguale a ClientLoadFormation ma senza grafica
   count := ord (buf3 [ cur ]);   // quanti player
   Cur := Cur + 1; //
   for I := 0 to Count -1 do begin
-    aPlayer:= TSoccerPlayer.create(0, StrToInt(GuidTeam),0,'','','','',0,0);
+    aPlayer:= TPlayer.create(0, StrToInt(GuidTeam),0,'','','','',0,0);
 
 
     aPlayer.Ids :=  IntToStr(PDWORD(@buf3 [ cur ])^); // player identificativo globale
@@ -1941,17 +2050,17 @@ begin
     aPlayer.xpDevI:= PWORD(@buf3 [ cur ])^;
     Cur := Cur + 2;
 
-    lstPlayersDB.Add(aPlayer);
+    PlayerssDB.Add(aPlayer);
   end;
 
   tscells.Free;
   ts2.Free;
 
 
-  SaveTeamStream( fm , GuidTeam, lstPlayersDB , dirSaves );
+  SaveTeamStream( fm , GuidTeam, PlayerssDB , dirSaves );
   //MM.SaveToFile( filename );
   MM.Free;
-  lstPlayersDB.Free;
+  PlayerssDB.Free;
 
 end;
 
@@ -1962,7 +2071,7 @@ procedure TForm1.PveSavePlayers;    // come formato deve essere uguale a utiliti
 var
   tmpi,i,indexTal: Integer;
   MM: TMemoryStream;
-  aPlayer : TSoccerPlayer;
+  aPlayer : TPlayer;
   tmps: string[255];
   tmpb : Byte;
   Age : Integer;
@@ -1971,11 +2080,11 @@ var
 
 begin
   MM := TMemoryStream.Create;
-  tmpi:= MyBrainFormation.lstSoccerPlayerALL.count;
+  tmpi:= MyBrainFormation.PlayersALL.count;
   MM.Write( @tmpi , SizeOf(Byte) ) ;
 
-  for I := MyBrainFormation.lstSoccerPlayerALL.count -1 downto 0  do begin
-    aPlayer := MyBrainFormation.lstSoccerPlayerALL[i];
+  for I := MyBrainFormation.PlayersALL.count -1 downto 0  do begin
+    aPlayer := MyBrainFormation.PlayersALL[i];
     tmpi:= StrToInt( aPlayer.Ids );
     MM.Write( @tmpi, sizeof(integer) );
 
@@ -2591,10 +2700,10 @@ function pvpCreateFormationTeam ( DbServer: string; fm : Char; Guidteam: integer
 var
   i,T,ii, pcount,D,M,F: Integer;
   ini : TInifile;
-  aPlayer,aGK: TSoccerPlayer;
-  lstPlayers,lstPlayersDB: TObjectList<TSoccerPlayer>;
+  aPlayer,aGK: TPlayer;
+  Playerss,PlayerssDB: TObjectList<TPlayer>;
   FinalFormation : array[1..11] of TFinalFormation;
-  lstGK: TObjectList<TSoccerPlayer>;
+  lstGK: TObjectList<TPlayer>;
   AT: string;
   aF: TFormation;
   ts : TStringList;
@@ -2634,8 +2743,8 @@ begin
 
 
 
-    lstPlayers:= TObjectList<TSoccerPlayer>.Create(false); // lista locale
-    lstPlayersDB:= TObjectList<TSoccerPlayer>.Create(true); // lista locale  che elimina tutti gli oggetti
+    Playerss:= TObjectList<TPlayer>.Create(false); // lista locale
+    PlayerssDB:= TObjectList<TPlayer>.Create(true); // lista locale  che elimina tutti gli oggetti
     for I := 0 to qPlayers.RecordCount -1 do begin
 
   //    if qPlayers.FieldByName ( 'disqualified').AsInteger > 0 then goto NoFormation;
@@ -2646,7 +2755,7 @@ begin
               ',' + qPlayers.FieldByName('shot').Asstring + ',' + qPlayers.FieldByName('heading').Asstring;
 
 
-      aPlayer := TSoccerPlayer.create(0,0,0,qPlayers.FieldByName ( 'guid').AsString,'','',AT,
+      aPlayer := TPlayer.create(0,0,0,qPlayers.FieldByName ( 'guid').AsString,'','',AT,
                                      qPlayers.FieldByName('talentid1').AsInteger,qPlayers.FieldByName('talentid2').AsInteger);//0,0,0 non hanno importanza qui
       aPlayer.disqualified :=  qPlayers.FieldByName ( 'disqualified').AsInteger;
       aPlayer.Injured :=  qPlayers.FieldByName ( 'injured').AsInteger;
@@ -2663,8 +2772,8 @@ begin
 
 
 
-      lstPlayers.add ( aPlayer);
-      lstPlayersDB.add ( aPlayer);
+      Playerss.add ( aPlayer);
+      PlayerssDB.add ( aPlayer);
       aPlayer.AIFormationCellX :=  i;   // azzero tutto
       aPlayer.AIFormationCellY :=  -1;
 
@@ -2677,7 +2786,7 @@ begin
     Conngame.Free;
 
 
-  // lstPlayers contiene il db ma non squalificati o infortunati
+  // Playerss contiene il db ma non squalificati o infortunati
   // FinalFormation i dati finali da storare nel db
 
   // Metto il portiere. il portiere è sempre presente. non può essere venduto se solo 1. viene generato un giovane gk se manca dalla rosa perchè
@@ -2687,10 +2796,10 @@ begin
     ts := TStringList.Create;
     ts.Add('setformation');
 
-    lstGK:= TObjectList<TSoccerPlayer>.Create(false);
-    for I := 0 to lstPlayers.Count -1 do begin
-      if lstPlayers[i].TalentId1 = TALENT_ID_GOALKEEPER then begin
-        aGK:= lstPlayers[i];
+    lstGK:= TObjectList<TPlayer>.Create(false);
+    for I := 0 to Playerss.Count -1 do begin
+      if Playerss[i].TalentId1 = TALENT_ID_GOALKEEPER then begin
+        aGK:= Playerss[i];
         lstGk.Add (aGK);
       end;
     end;
@@ -2700,16 +2809,16 @@ begin
       goto MyExit;
     end;
 
-    lstGK.sort(TComparer<TSoccerPlayer>.Construct(
-    function (const L, R: TSoccerPlayer): integer
+    lstGK.sort(TComparer<TPlayer>.Construct(
+    function (const L, R: TPlayer): integer
     begin
       Result := R.defense - L.defense;
     end
     ));
 
     if lstGK[0].Stamina <= 60 then begin    // la stamin adel GK la gestisco subito
-      lstGK.sort(TComparer<TSoccerPlayer>.Construct(
-      function (const L, R: TSoccerPlayer): integer
+      lstGK.sort(TComparer<TPlayer>.Construct(
+      function (const L, R: TPlayer): integer
       begin
         Result := R.Stamina - L.Stamina;  // se c'è 1 GK in team è sempre lui, altrimenti è un altro
       end
@@ -2724,19 +2833,19 @@ begin
     Ts.Add(  FinalFormation [1].Guid  + '=3:11' );
 
     // a questo punto devo eliminare un giocatore goalkeeper tra i presenti.
-    for I := lstPlayers.Count -1 downto 0 do begin
+    for I := Playerss.Count -1 downto 0 do begin
     // gli altri GK sono per forza tutti panchinari
-      if (lstPlayers[i].TalentId1 = TALENT_ID_GOALKEEPER )  then begin
-        lstPlayers.Delete(i);  // elimino il gk regolare e anche gli altri GK. lstPlayerDB li rimette in panchina
+      if (Playerss[i].TalentId1 = TALENT_ID_GOALKEEPER )  then begin
+        Playerss.Delete(i);  // elimino il gk regolare e anche gli altri GK. PlayersDB li rimette in panchina
       end;
     end;
 
     lstGK.Free;
 
- //  elimino da lstPlayers i disqialified  , gli injured hanno stamina 0 . li elimino comunque qui
-    for I := lstPlayers.Count -1 downto 0 do begin
-      if (lstPlayers[i].disqualified > 0) or (lstPlayers[i].injured > 0) then begin
-        lstPlayers.Delete(i);
+ //  elimino da Playerss i disqialified  , gli injured hanno stamina 0 . li elimino comunque qui
+    for I := Playerss.Count -1 downto 0 do begin
+      if (Playerss[i].disqualified > 0) or (Playerss[i].injured > 0) then begin
+        Playerss.Delete(i);
       end;
     end;
 
@@ -2757,8 +2866,8 @@ begin
       end;
     end;
 
-    lstPlayers.sort(TComparer<TSoccerPlayer>.Construct(
-    function (const L, R: TSoccerPlayer): integer
+    Playerss.sort(TComparer<TPlayer>.Construct(
+    function (const L, R: TPlayer): integer
     begin
       Result := R.defense - L.defense;
     end
@@ -2766,10 +2875,10 @@ begin
 
 
     // ordino prima in base al talento buff, poi in base al best defense, passing,shot
-    for I :=  0 to lstPlayers.Count -1  do begin
-      if lstPlayers[I].TalentId2 = TALENT_ID_BUFF_DEFENSE then begin
+    for I :=  0 to Playerss.Count -1  do begin
+      if Playerss[I].TalentId2 = TALENT_ID_BUFF_DEFENSE then begin
         if i > 0 then begin
-          lstPlayers.Exchange( i, 0 );
+          Playerss.Exchange( i, 0 );
           Break;
         end;
       end;
@@ -2777,30 +2886,30 @@ begin
     end;
 
     for D := 1 to aF.D do begin
-      if lstPlayers.Count > 0 then begin
-        FinalFormation [pcount].Guid := lstPlayers[0].ids;
+      if Playerss.Count > 0 then begin
+        FinalFormation [pcount].Guid := Playerss[0].ids;
         FinalFormation [pcount].cells := Point ( aF.Cells[pcount].X , aF.Cells[pcount].Y );
-        FinalFormation [pcount].Stamina := lstPlayers[0].Stamina ;
+        FinalFormation [pcount].Stamina := Playerss[0].Stamina ;
         FinalFormation [pcount].role := 'D' ;
-        Ts.Add( lstPlayers[0].ids  + '=' + IntToStr(aF.Cells[pcount].X) + ':' + IntToStr(aF.Cells[pcount].Y ));
-        lstPlayers.Delete(0);  // elimino il Difensore D dalla lista
+        Ts.Add( Playerss[0].ids  + '=' + IntToStr(aF.Cells[pcount].X) + ':' + IntToStr(aF.Cells[pcount].Y ));
+        Playerss.Delete(0);  // elimino il Difensore D dalla lista
         Inc(pcount);
       end;
     end;
 
 
-    lstPlayers.sort(TComparer<TSoccerPlayer>.Construct(
-    function (const L, R: TSoccerPlayer): integer
+    Playerss.sort(TComparer<TPlayer>.Construct(
+    function (const L, R: TPlayer): integer
     begin
       Result := R.passing - L.passing;
     end
     ));
 
     // ordino prima in base al talento buff, poi in base al best defense, passing,shot
-    for I :=  0 to lstPlayers.Count -1  do begin
-      if lstPlayers[I].TalentId2 = TALENT_ID_BUFF_MIDDLE then begin
+    for I :=  0 to Playerss.Count -1  do begin
+      if Playerss[I].TalentId2 = TALENT_ID_BUFF_MIDDLE then begin
         if i > 0 then begin
-          lstPlayers.Exchange( i, 0 );
+          Playerss.Exchange( i, 0 );
           Break;
         end;
       end;
@@ -2808,19 +2917,19 @@ begin
     end;
 
     for M := 1 to aF.M do begin
-      if lstPlayers.Count > 0 then begin
-        FinalFormation [pcount].Guid := lstPlayers[0].ids;
+      if Playerss.Count > 0 then begin
+        FinalFormation [pcount].Guid := Playerss[0].ids;
         FinalFormation [pcount].cells := Point ( aF.Cells[pcount].X , aF.Cells[pcount].Y );
-        FinalFormation [pcount].Stamina := lstPlayers[0].Stamina ;
+        FinalFormation [pcount].Stamina := Playerss[0].Stamina ;
         FinalFormation [pcount].role := 'M' ;
-        Ts.Add( lstPlayers[0].ids  + '=' + IntToStr(aF.Cells[pcount].X) + ':' + IntToStr(aF.Cells[pcount].Y ));
-        lstPlayers.Delete(0);  // elimino il Centrocampista M dalla lista
+        Ts.Add( Playerss[0].ids  + '=' + IntToStr(aF.Cells[pcount].X) + ':' + IntToStr(aF.Cells[pcount].Y ));
+        Playerss.Delete(0);  // elimino il Centrocampista M dalla lista
         Inc(pcount);
       end;
     end;
 
-    lstPlayers.sort(TComparer<TSoccerPlayer>.Construct(
-    function (const L, R: TSoccerPlayer): integer
+    Playerss.sort(TComparer<TPlayer>.Construct(
+    function (const L, R: TPlayer): integer
     begin
       Result := R.shot - L.shot;
      // Result := R.heading - L.heading;
@@ -2828,10 +2937,10 @@ begin
     ));
 
     // ordino prima in base al talento buff, poi in base al best defense, passing,shot
-    for I :=  0 to lstPlayers.Count -1  do begin
-      if lstPlayers[I].TalentId2 = TALENT_ID_BUFF_FORWARD then begin
+    for I :=  0 to Playerss.Count -1  do begin
+      if Playerss[I].TalentId2 = TALENT_ID_BUFF_FORWARD then begin
         if i > 0 then begin
-          lstPlayers.Exchange( i, 0 );
+          Playerss.Exchange( i, 0 );
           Break;
         end;
       end;
@@ -2839,50 +2948,50 @@ begin
     end;
 
     for F := 1 to aF.F do begin
-      if lstPlayers.Count > 0 then begin
-        FinalFormation [pcount].Guid := lstPlayers[0].ids;
+      if Playerss.Count > 0 then begin
+        FinalFormation [pcount].Guid := Playerss[0].ids;
         FinalFormation [pcount].cells := Point ( aF.Cells[pcount].X , aF.Cells[pcount].Y );
-        FinalFormation [pcount].Stamina := lstPlayers[0].Stamina ;
+        FinalFormation [pcount].Stamina := Playerss[0].Stamina ;
         FinalFormation [pcount].role := 'F' ;
-        Ts.Add( lstPlayers[0].ids  + '=' + IntToStr(aF.Cells[pcount].X) + ':' + IntToStr(aF.Cells[pcount].Y ));
-        lstPlayers.Delete(0);  // elimino l'attccante F dalla lista
+        Ts.Add( Playerss[0].ids  + '=' + IntToStr(aF.Cells[pcount].X) + ':' + IntToStr(aF.Cells[pcount].Y ));
+        Playerss.Delete(0);  // elimino l'attccante F dalla lista
         Inc(pcount);
       end;
     end;
 
   // poi elimino quelli con stamina bassa 60. provo a sostituirli con stamina > 60.
-  // mi sono rimasti i player nella lstPlayers, li ordino in base al ruolo da ricoprire
+  // mi sono rimasti i player nella Playerss, li ordino in base al ruolo da ricoprire
 
   // elimino a priori dai possibili sostituti
-    for I := lstPlayers.Count -1 downto 0 do begin
-      if lstPlayers[i].Stamina <= 60 then
-        lstPlayers.Delete(i);
+    for I := Playerss.Count -1 downto 0 do begin
+      if Playerss[i].Stamina <= 60 then
+        Playerss.Delete(i);
     end;
 
 
     for I := 2 to 11 do begin
-      if lstPlayers.Count > 0 then begin
+      if Playerss.Count > 0 then begin
         if FinalFormation [i].Stamina <= 60 then begin
 
           if FinalFormation [i].Role = 'D' then begin
-            lstPlayers.sort(TComparer<TSoccerPlayer>.Construct(
-            function (const L, R: TSoccerPlayer): integer
+            Playerss.sort(TComparer<TPlayer>.Construct(
+            function (const L, R: TPlayer): integer
             begin
               Result := R.defense - L.defense;
             end
             ));
           end
           else if FinalFormation [i].Role = 'M' then begin
-            lstPlayers.sort(TComparer<TSoccerPlayer>.Construct(
-            function (const L, R: TSoccerPlayer): integer
+            Playerss.sort(TComparer<TPlayer>.Construct(
+            function (const L, R: TPlayer): integer
             begin
               Result := R.passing - L.passing;
             end
             ));
           end
           else if FinalFormation [i].Role = 'F' then begin
-            lstPlayers.sort(TComparer<TSoccerPlayer>.Construct(
-            function (const L, R: TSoccerPlayer): integer
+            Playerss.sort(TComparer<TPlayer>.Construct(
+            function (const L, R: TPlayer): integer
             begin
               Result := R.shot - L.shot;
              // Result := R.heading - L.heading;
@@ -2893,8 +3002,8 @@ begin
 
           // modifico la finalformation
           OldfinalFormation := FinalFormation [i].Guid;
-          FinalFormation [i].Guid := lstPlayers[0].ids;
-          FinalFormation [i].Stamina := lstPlayers[0].Stamina ;
+          FinalFormation [i].Guid := Playerss[0].ids;
+          FinalFormation [i].Stamina := Playerss[0].Stamina ;
           // modifico la TS
           for T := 0 to ts.Count -1 do begin
             if ts.Names[T] = OldfinalFormation then begin
@@ -2902,7 +3011,7 @@ begin
               Break;
             end;
           end;
-          lstPlayers.Delete(0);  // elimino il player dalla lista
+          Playerss.Delete(0);  // elimino il player dalla lista
 
         end;
 
@@ -2914,12 +3023,12 @@ begin
     // creo la TS con gli 11 titolari di finalformation
 
 
-    for I := lstPlayersDB.Count -1 downto 0 do begin  //  lstPlayersDB contiene tutti dal db
+    for I := PlayerssDB.Count -1 downto 0 do begin  //  PlayerssDB contiene tutti dal db
       // tutti gli ids che non sono presenti in FinalFormation vanno in panchina
       found := False;
 
       for ii := 1 to 11 do begin
-        if FinalFormation [ii].Guid = lstPlayersDB[i].Ids  then begin // è presente nei 11 titolari
+        if FinalFormation [ii].Guid = PlayerssDB[i].Ids  then begin // è presente nei 11 titolari
           found := True;
           Break;
         end;
@@ -2927,21 +3036,21 @@ begin
 
       if not found then begin   // se nopn è prsente nei 11 titolati lo metto in panchina e lo aggiungo in coda alla ts
         aReserveSlot := NextReserveSlot ( ReserveSlot );
-        ReserveSlot [aReserveSlot] :=  lstPlayersDB[i].Ids;
-        lstPlayersDB[i].AIFormationCellX := aReserveSlot;
-        lstPlayersDB[i].AIFormationCellY := -1; // fisso -1
+        ReserveSlot [aReserveSlot] :=  PlayerssDB[i].Ids;
+        PlayerssDB[i].AIFormationCellX := aReserveSlot;
+        PlayerssDB[i].AIFormationCellY := -1; // fisso -1
 
-        Ts.Add( lstPlayersDB[i].ids  + '=' +
-        IntToStr(lstPlayersDB[i].AIFormationCellX  ) + ':' +
-        IntToStr(lstPlayersDB[i].AIFormationCellY ));
+        Ts.Add( PlayerssDB[i].ids  + '=' +
+        IntToStr(PlayerssDB[i].AIFormationCellX  ) + ':' +
+        IntToStr(PlayerssDB[i].AIFormationCellY ));
       end;
 
     end;
 
     Result := Ts.CommaText ; // formazione + riserve
 Myexit:
-    lstPlayers.Free;
-    lstPlayersDB.Free;
+    Playerss.Free;
+    PlayerssDB.Free;
     ts.Free;
     { si può giocare anche in meno di 7 giocatori }
 end;
@@ -2949,10 +3058,10 @@ function pveCreateFormationTeam (filename: string; fm : Char; Guidteam: integer 
 var
   i,T,ii, pcount,D,M,F: Integer;
   ini : TInifile;
-  aPlayer,aGK: TSoccerPlayer;
-  lstPlayers,lstPlayersDB: TObjectList<TSoccerPlayer>;
+  aPlayer,aGK: TPlayer;
+  Playerss,PlayerssDB: TObjectList<TPlayer>;
   FinalFormation : array[1..11] of TFinalFormation;
-  lstGK: TObjectList<TSoccerPlayer>;
+  lstGK: TObjectList<TPlayer>;
   AT: string;
   aF: TFormation;
   ts : TStringList;
@@ -2995,13 +3104,13 @@ begin
   SS.Free;
   Cur:= 0;
 
-  lstPlayers:= TObjectList<TSoccerPlayer>.Create(false); // lista locale
-  lstPlayersDB:= TObjectList<TSoccerPlayer>.Create(true); // lista locale  che elimina tutti gli oggetti
+  Playerss:= TObjectList<TPlayer>.Create(false); // lista locale
+  PlayerssDB:= TObjectList<TPlayer>.Create(true); // lista locale  che elimina tutti gli oggetti
 // OutputDebugString(PChar(IntToStr(Guidteam)));
-  pveLoadTeam ( Filename, fm , Guidteam, lstPlayersDB );
+  pveLoadTeam ( Filename, fm , Guidteam, PlayerssDB );
 
-  for I := 0 to lstPlayersDB.Count -1 do begin
-    aPlayer :=  lstPlayersDB[i];
+  for I := 0 to PlayerssDB.Count -1 do begin
+    aPlayer :=  PlayerssDB[i];
     if aPlayer.Injured > 0 then  begin
       aPlayer.Stamina:=0;
       aPlayer.Speed:=1;
@@ -3012,13 +3121,13 @@ begin
       aPlayer.Heading:=1;
     end;
 
-    lstPlayers.add ( aPlayer);
+    Playerss.add ( aPlayer);
     aPlayer.AIFormationCellX :=  i;   // azzero tutto
     aPlayer.AIFormationCellY :=  -1;
 
   end;
 
-  // lstPlayers contiene il db ma non squalificati o infortunati. me li porto comunque dietro tutti perchè devo salvare tutti i giocatori
+  // Playerss contiene il db ma non squalificati o infortunati. me li porto comunque dietro tutti perchè devo salvare tutti i giocatori
   // FinalFormation i dati finali da storare nel db
 
   // Metto il portiere. il portiere è sempre presente. non può essere venduto se solo 1. viene generato un giovane gk se manca dalla rosa perchè
@@ -3028,10 +3137,10 @@ begin
     ts := TStringList.Create;
    // ts.Add('setformation');
 
-    lstGK:= TObjectList<TSoccerPlayer>.Create(false);
-    for I := 0 to lstPlayers.Count -1 do begin
-      if lstPlayers[i].TalentId1 = TALENT_ID_GOALKEEPER then begin
-        aGK:= lstPlayers[i];
+    lstGK:= TObjectList<TPlayer>.Create(false);
+    for I := 0 to Playerss.Count -1 do begin
+      if Playerss[i].TalentId1 = TALENT_ID_GOALKEEPER then begin
+        aGK:= Playerss[i];
         lstGk.Add (aGK);
       end;
     end;
@@ -3041,16 +3150,16 @@ begin
       goto MyExit;
     end;
 
-    lstGK.sort(TComparer<TSoccerPlayer>.Construct(
-    function (const L, R: TSoccerPlayer): integer
+    lstGK.sort(TComparer<TPlayer>.Construct(
+    function (const L, R: TPlayer): integer
     begin
       Result := R.defense - L.defense;
     end
     ));
 
     if lstGK[0].Stamina <= 60 then begin    // la stamin adel GK la gestisco subito
-      lstGK.sort(TComparer<TSoccerPlayer>.Construct(
-      function (const L, R: TSoccerPlayer): integer
+      lstGK.sort(TComparer<TPlayer>.Construct(
+      function (const L, R: TPlayer): integer
       begin
         Result := R.Stamina - L.Stamina;  // se c'è 1 GK in team è sempre lui, altrimenti è un altro
       end
@@ -3064,19 +3173,19 @@ begin
     Ts.Add(  FinalFormation [1].Guid  + '=3:11' );
 
     // a questo punto devo eliminare un giocatore goalkeeper tra i presenti.
-    for I := lstPlayers.Count -1 downto 0 do begin
+    for I := Playerss.Count -1 downto 0 do begin
     // gli altri GK sono per forza tutti panchinari
-      if (lstPlayers[i].TalentId1 = TALENT_ID_GOALKEEPER )  then begin
-        lstPlayers.Delete(i);  // elimino il gk regolare e anche gli altri GK. lstPlayerDB li rimette in panchina
+      if (Playerss[i].TalentId1 = TALENT_ID_GOALKEEPER )  then begin
+        Playerss.Delete(i);  // elimino il gk regolare e anche gli altri GK. PlayersDB li rimette in panchina
       end;
     end;
 
     lstGK.Free;
 
- //  elimino da lstPlayers i disqialified  , gli injured hanno stamina 0 . li elimino comunque qui
-    for I := lstPlayers.Count -1 downto 0 do begin
-      if (lstPlayers[i].disqualified > 0) or (lstPlayers[i].injured > 0) then begin
-        lstPlayers.Delete(i);
+ //  elimino da Playerss i disqialified  , gli injured hanno stamina 0 . li elimino comunque qui
+    for I := Playerss.Count -1 downto 0 do begin
+      if (Playerss[i].disqualified > 0) or (Playerss[i].injured > 0) then begin
+        Playerss.Delete(i);
       end;
     end;
 
@@ -3098,8 +3207,8 @@ begin
     end;
 
 
-    lstPlayers.sort(TComparer<TSoccerPlayer>.Construct(
-    function (const L, R: TSoccerPlayer): integer
+    Playerss.sort(TComparer<TPlayer>.Construct(
+    function (const L, R: TPlayer): integer
     begin
       Result := R.defense - L.defense;
     end
@@ -3107,10 +3216,10 @@ begin
 
 
     // ordino prima in base al talento buff, poi in base al best defense, passing,shot
-    for I :=  0 to lstPlayers.Count -1  do begin
-      if lstPlayers[I].TalentId2 = TALENT_ID_BUFF_DEFENSE then begin
+    for I :=  0 to Playerss.Count -1  do begin
+      if Playerss[I].TalentId2 = TALENT_ID_BUFF_DEFENSE then begin
         if i > 0 then begin
-          lstPlayers.Exchange( i, 0 );
+          Playerss.Exchange( i, 0 );
           Break;
         end;
       end;
@@ -3118,30 +3227,30 @@ begin
     end;
 
     for D := 1 to aF.D do begin
-      if lstPlayers.Count > 0 then begin
-        FinalFormation [pcount].Guid := lstPlayers[0].ids;
+      if Playerss.Count > 0 then begin
+        FinalFormation [pcount].Guid := Playerss[0].ids;
         FinalFormation [pcount].cells := Point ( aF.Cells[pcount].X , aF.Cells[pcount].Y );
-        FinalFormation [pcount].Stamina := lstPlayers[0].Stamina ;
+        FinalFormation [pcount].Stamina := Playerss[0].Stamina ;
         FinalFormation [pcount].role := 'D' ;
-        Ts.Add( lstPlayers[0].ids  + '=' + IntToStr(aF.Cells[pcount].X) + ':' + IntToStr(aF.Cells[pcount].Y ));
-        lstPlayers.Delete(0);  // elimino il Difensore D dalla lista
+        Ts.Add( Playerss[0].ids  + '=' + IntToStr(aF.Cells[pcount].X) + ':' + IntToStr(aF.Cells[pcount].Y ));
+        Playerss.Delete(0);  // elimino il Difensore D dalla lista
         Inc(pcount);
       end;
     end;
 
 
-    lstPlayers.sort(TComparer<TSoccerPlayer>.Construct(
-    function (const L, R: TSoccerPlayer): integer
+    Playerss.sort(TComparer<TPlayer>.Construct(
+    function (const L, R: TPlayer): integer
     begin
       Result := R.passing - L.passing;
     end
     ));
 
     // ordino prima in base al talento buff, poi in base al best defense, passing,shot
-    for I :=  0 to lstPlayers.Count -1  do begin
-      if lstPlayers[I].TalentId2 = TALENT_ID_BUFF_MIDDLE then begin
+    for I :=  0 to Playerss.Count -1  do begin
+      if Playerss[I].TalentId2 = TALENT_ID_BUFF_MIDDLE then begin
         if i > 0 then begin
-          lstPlayers.Exchange( i, 0 );
+          Playerss.Exchange( i, 0 );
           Break;
         end;
       end;
@@ -3149,19 +3258,19 @@ begin
     end;
 
     for M := 1 to aF.M do begin
-      if lstPlayers.Count > 0 then begin
-        FinalFormation [pcount].Guid := lstPlayers[0].ids;
+      if Playerss.Count > 0 then begin
+        FinalFormation [pcount].Guid := Playerss[0].ids;
         FinalFormation [pcount].cells := Point ( aF.Cells[pcount].X , aF.Cells[pcount].Y );
-        FinalFormation [pcount].Stamina := lstPlayers[0].Stamina ;
+        FinalFormation [pcount].Stamina := Playerss[0].Stamina ;
         FinalFormation [pcount].role := 'M' ;
-        Ts.Add( lstPlayers[0].ids  + '=' + IntToStr(aF.Cells[pcount].X) + ':' + IntToStr(aF.Cells[pcount].Y ));
-        lstPlayers.Delete(0);  // elimino il Centrocampista M dalla lista
+        Ts.Add( Playerss[0].ids  + '=' + IntToStr(aF.Cells[pcount].X) + ':' + IntToStr(aF.Cells[pcount].Y ));
+        Playerss.Delete(0);  // elimino il Centrocampista M dalla lista
         Inc(pcount);
       end;
     end;
 
-    lstPlayers.sort(TComparer<TSoccerPlayer>.Construct(
-    function (const L, R: TSoccerPlayer): integer
+    Playerss.sort(TComparer<TPlayer>.Construct(
+    function (const L, R: TPlayer): integer
     begin
       Result := R.shot - L.shot;
      // Result := R.heading - L.heading;
@@ -3169,10 +3278,10 @@ begin
     ));
 
     // ordino prima in base al talento buff, poi in base al best defense, passing,shot
-    for I :=  0 to lstPlayers.Count -1  do begin
-      if lstPlayers[I].TalentId2 = TALENT_ID_BUFF_FORWARD then begin
+    for I :=  0 to Playerss.Count -1  do begin
+      if Playerss[I].TalentId2 = TALENT_ID_BUFF_FORWARD then begin
         if i > 0 then begin
-          lstPlayers.Exchange( i, 0 );
+          Playerss.Exchange( i, 0 );
           Break;
         end;
       end;
@@ -3180,50 +3289,50 @@ begin
     end;
 
     for F := 1 to aF.F do begin
-      if lstPlayers.Count > 0 then begin
-        FinalFormation [pcount].Guid := lstPlayers[0].ids;
+      if Playerss.Count > 0 then begin
+        FinalFormation [pcount].Guid := Playerss[0].ids;
         FinalFormation [pcount].cells := Point ( aF.Cells[pcount].X , aF.Cells[pcount].Y );
-        FinalFormation [pcount].Stamina := lstPlayers[0].Stamina ;
+        FinalFormation [pcount].Stamina := Playerss[0].Stamina ;
         FinalFormation [pcount].role := 'F' ;
-        Ts.Add( lstPlayers[0].ids  + '=' + IntToStr(aF.Cells[pcount].X) + ':' + IntToStr(aF.Cells[pcount].Y ));
-        lstPlayers.Delete(0);  // elimino l'attccante F dalla lista
+        Ts.Add( Playerss[0].ids  + '=' + IntToStr(aF.Cells[pcount].X) + ':' + IntToStr(aF.Cells[pcount].Y ));
+        Playerss.Delete(0);  // elimino l'attccante F dalla lista
         Inc(pcount);
       end;
     end;
 
   // poi elimino quelli con stamina bassa 60. provo a sostituirli con stamina > 60.
-  // mi sono rimasti i player nella lstPlayers, li ordino in base al ruolo da ricoprire
+  // mi sono rimasti i player nella Playerss, li ordino in base al ruolo da ricoprire
 
   // elimino a priori dai possibili sostituti
-    for I := lstPlayers.Count -1 downto 0 do begin
-      if lstPlayers[i].Stamina <= 60 then
-        lstPlayers.Delete(i);
+    for I := Playerss.Count -1 downto 0 do begin
+      if Playerss[i].Stamina <= 60 then
+        Playerss.Delete(i);
     end;
 
 
     for I := 2 to 11 do begin
-      if lstPlayers.Count > 0 then begin
+      if Playerss.Count > 0 then begin
         if FinalFormation [i].Stamina <= 60 then begin
 
           if FinalFormation [i].Role = 'D' then begin
-            lstPlayers.sort(TComparer<TSoccerPlayer>.Construct(
-            function (const L, R: TSoccerPlayer): integer
+            Playerss.sort(TComparer<TPlayer>.Construct(
+            function (const L, R: TPlayer): integer
             begin
               Result := R.defense - L.defense;
             end
             ));
           end
           else if FinalFormation [i].Role = 'M' then begin
-            lstPlayers.sort(TComparer<TSoccerPlayer>.Construct(
-            function (const L, R: TSoccerPlayer): integer
+            Playerss.sort(TComparer<TPlayer>.Construct(
+            function (const L, R: TPlayer): integer
             begin
               Result := R.passing - L.passing;
             end
             ));
           end
           else if FinalFormation [i].Role = 'F' then begin
-            lstPlayers.sort(TComparer<TSoccerPlayer>.Construct(
-            function (const L, R: TSoccerPlayer): integer
+            Playerss.sort(TComparer<TPlayer>.Construct(
+            function (const L, R: TPlayer): integer
             begin
               Result := R.shot - L.shot;
              // Result := R.heading - L.heading;
@@ -3233,8 +3342,8 @@ begin
           // qui è quello ordinato in base a difesa, passaggio o tiro e quello che entra non può avere stamina bassa -60 (rimossi sopra)
 
           if ForceYoung then begin // forzo a far giocare i più giovani
-            lstPlayers.sort(TComparer<TSoccerPlayer>.Construct(
-            function (const L, R: TSoccerPlayer): integer
+            Playerss.sort(TComparer<TPlayer>.Construct(
+            function (const L, R: TPlayer): integer
             begin
               Result := L.Age - R.Age; // L e R invertite qui, mi servono i più giovani
              // Result := R.heading - L.heading;
@@ -3244,8 +3353,8 @@ begin
 
           // modifico la finalformation
           OldfinalFormation := FinalFormation [i].Guid;
-          FinalFormation [i].Guid := lstPlayers[0].ids;
-          FinalFormation [i].Stamina := lstPlayers[0].Stamina ;
+          FinalFormation [i].Guid := Playerss[0].ids;
+          FinalFormation [i].Stamina := Playerss[0].Stamina ;
           // modifico la TS
           for T := 0 to ts.Count -1 do begin
             if ts.Names[T] = OldfinalFormation then begin
@@ -3253,7 +3362,7 @@ begin
               Break;
             end;
           end;
-          lstPlayers.Delete(0);  // elimino il player dalla lista
+          Playerss.Delete(0);  // elimino il player dalla lista
 
         end;
 
@@ -3265,12 +3374,12 @@ begin
     // creo la TS con gli 11 titolari di finalformation
 
 
-    for I := lstPlayersDB.Count -1 downto 0 do begin  //  lstPlayersDB contiene tutti dal db
+    for I := PlayerssDB.Count -1 downto 0 do begin  //  PlayerssDB contiene tutti dal db
       // tutti gli ids che non sono presenti in FinalFormation vanno in panchina
       found := False;
 
       for ii := 1 to 11 do begin
-        if FinalFormation [ii].Guid = lstPlayersDB[i].Ids  then begin // è presente nei 11 titolari
+        if FinalFormation [ii].Guid = PlayerssDB[i].Ids  then begin // è presente nei 11 titolari
           found := True;
           Break;
         end;
@@ -3278,13 +3387,13 @@ begin
 
       if not found then begin   // se nopn è prsente nei 11 titolati lo metto in panchina e lo aggiungo in coda alla ts
         aReserveSlot := NextReserveSlot ( ReserveSlot );
-        ReserveSlot [aReserveSlot] :=  lstPlayersDB[i].Ids;
-        lstPlayersDB[i].AIFormationCellX := aReserveSlot;
-        lstPlayersDB[i].AIFormationCellY := -1; // fisso -1
+        ReserveSlot [aReserveSlot] :=  PlayerssDB[i].Ids;
+        PlayerssDB[i].AIFormationCellX := aReserveSlot;
+        PlayerssDB[i].AIFormationCellY := -1; // fisso -1
 
-        Ts.Add( lstPlayersDB[i].ids  + '=' +
-        IntToStr(lstPlayersDB[i].AIFormationCellX  ) + ':' +
-        IntToStr(lstPlayersDB[i].AIFormationCellY ));
+        Ts.Add( PlayerssDB[i].ids  + '=' +
+        IntToStr(PlayerssDB[i].AIFormationCellX  ) + ':' +
+        IntToStr(PlayerssDB[i].AIFormationCellY ));
       end;
 
     end;
@@ -3292,15 +3401,15 @@ begin
     Result := Ts.CommaText ; // formazione + riserve
 Myexit:
     MM.free;
-    lstPlayers.Free;
-    lstPlayersDB.Free;
+    Playerss.Free;
+    PlayerssDB.Free;
     ts.Free;
     { si può giocare anche in meno di 7 giocatori }
 end;
-procedure pveLoadTeam ( Filename:string; fm : Char; Guidteam: integer;var lstPlayersDB : TObjectlist<TSoccerPlayer> );
+procedure pveLoadTeam ( Filename:string; fm : Char; Guidteam: integer;var PlayerssDB : TObjectlist<TPlayer> );
 var
   i, pcount: Integer;
-  aPlayer: TSoccerPlayer;
+  aPlayer: TPlayer;
   ts : TStringList;
   Cur,IndexTal: Integer;
   dataStr: string;
@@ -3323,12 +3432,12 @@ begin
   SS.Free;
   Cur:= 0;
 
-  lstPlayersDB.clear;
+  PlayerssDB.clear;
   // uguale a ClientLoadFormation ma senza grafica
   count := ord (buf3 [ cur ]);   // quanti player
   Cur := Cur + 1; //
   for I := 0 to Count -1 do begin
-    aPlayer:= TSoccerPlayer.create(0, GuidTeam,0,'','','','',0,0);
+    aPlayer:= TPlayer.create(0, GuidTeam,0,'','','','',0,0);
 
     aPlayer.ids := IntToStr( PDWORD(@buf3 [ cur ])^); // player identificativo globale
     Cur := Cur + 4;
@@ -3440,7 +3549,7 @@ begin
     aPlayer.xpDevI:= PWORD(@buf3 [ cur ])^;
     Cur := Cur + 2;
 
-    lstPlayersDB.add ( aPlayer);
+    PlayerssDB.add ( aPlayer);
 
   end;
 
@@ -3466,7 +3575,7 @@ begin
       ReserveSlot [x] := '';
     end;
 end;
-function Buff_or_Debuff_4 ( aPlayer: TSoccerPlayer; buff,Max_stat:Integer): Boolean;
+function Buff_or_Debuff_4 ( aPlayer: TPlayer; buff,Max_stat:Integer): Boolean;
 var
   Ts:TStringList;
   aRnd,aValue:Integer;
@@ -3739,7 +3848,7 @@ var
   SS : TStringStream;
   datastr : string;
   stored: Boolean;
-  aPlayer: TSoccerPlayer;
+  aPlayer: TPlayer;
 begin
   Result := 0;
   FillMemory(@buf3,SizeOf(Buf3),0);
@@ -3823,7 +3932,7 @@ var
   MM : TMemoryStream;
   SS : TStringStream;
   datastr : string;
-  aPlayer: TSoccerPlayer;
+  aPlayer: TPlayer;
   tmpb : Byte;
   tmpi: Integer;
   myFile:TextFile;
@@ -4162,7 +4271,7 @@ var
   MM : TMemoryStream;
   SS : TStringStream;
   datastr : string;
-  aPlayer: TSoccerPlayer;
+  aPlayer: TPlayer;
   myFile: TextFile;
 begin
 
@@ -4418,18 +4527,18 @@ end;
 procedure pveAddToTeam (fm: Char; guid, FromGuidTeam, ToGuidTeam: integer; dirSaves: string  );
 var
   MyBasePlayer: TBasePlayer;
-  lstPlayersDB: TObjectList<TSoccerPlayer>;
-  aPlayer : TSoccerPlayer;
+  PlayerssDB: TObjectList<TPlayer>;
+  aPlayer : TPlayer;
   IndexTal: Integer;
 begin
-  lstPlayersDB:= TObjectList<TSoccerPlayer>.Create(true); // lista locale  che elimina tutti gli oggetti
+  PlayerssDB:= TObjectList<TPlayer>.Create(true); // lista locale  che elimina tutti gli oggetti
 
   pveGetDBPlayer ( dirSaves + fm + IntToStr(FromGuidTeam) + '.120', IntToStr(guid), MyBasePlayer ); // ottengo il giocatore
   makedelay (500);
-  pveLoadTeam ( dirSaves + fm + IntToStr(ToGuidTeam) + '.120', fm , ToGuidTeam, lstPlayersDB ); // ottengo la squadra di destinazione
+  pveLoadTeam ( dirSaves + fm + IntToStr(ToGuidTeam) + '.120', fm , ToGuidTeam, PlayerssDB ); // ottengo la squadra di destinazione
   // aggiungo il player e salvo la squadra intera
 
-  aPlayer:= TSoccerPlayer.create(0, ToGuidTeam,0,'','','','',0,0);
+  aPlayer:= TPlayer.create(0, ToGuidTeam,0,'','','','',0,0);
   aPlayer.Ids := IntToStr(MyBasePlayer.Guid);
   aPlayer.GuidTeam := ToGuidTeam; // comunque non lo salvo come dato
   aPlayer.Surname := MyBasePlayer.Surname;
@@ -4490,54 +4599,54 @@ begin
   aPlayer.xpDevI:= MyBasePlayer.xpdevI;
 
 //  Aggiungo e salvo
-  lstPlayersDB.add ( aPlayer);
-  SaveTeamStream( fm, IntToStr(ToGuidTeam),lstPlayersDB, dirSaves)  ;
-  lstPlayersDB.Free;
+  PlayerssDB.add ( aPlayer);
+  SaveTeamStream( fm, IntToStr(ToGuidTeam),PlayerssDB, dirSaves)  ;
+  PlayerssDB.Free;
 end;
 procedure pveDeleteFromTeam ( fm:Char; guid, GuidTeam : Integer; dirSaves:string); // riscrive es. f16.120
 var
-  lstPlayersDB: TObjectList<TSoccerPlayer>;
+  PlayerssDB: TObjectList<TPlayer>;
   i: Integer;
   myFile: TextFile;
 begin
-  lstPlayersDB:= TObjectList<TSoccerPlayer>.Create(true); // lista locale  che elimina tutti gli oggetti
+  PlayerssDB:= TObjectList<TPlayer>.Create(true); // lista locale  che elimina tutti gli oggetti
 
-  pveLoadTeam (dirSaves +  fm + IntToStr(GuidTeam) + '.120', fm , GuidTeam, lstPlayersDB ); // ottengo la squadra di destinazione
+  pveLoadTeam (dirSaves +  fm + IntToStr(GuidTeam) + '.120', fm , GuidTeam, PlayerssDB ); // ottengo la squadra di destinazione
   // elimino il player e salvo la squadra intera
 
-  for I := lstPlayersDB.count -1 downto 0 do begin
-    if lstPlayersDB[i].Ids = IntToStr(guid) then begin
+  for I := PlayerssDB.count -1 downto 0 do begin
+    if PlayerssDB[i].Ids = IntToStr(guid) then begin
       {$ifdef tools}
         AssignFile(myFile, dirsaves + fm + 'logmarket.txt');
         Append(myFile);
-        writeln(myFile, fm + ' ' + IntToStr(GuidTeam) + ' ha licenziato A=' + lstPlayersDB[i].Attributes +' age:' + IntToStr(lstPlayersDB[i].Age) + ' T:' + IntToStr(lstPlayersDB[i].TalentId1));
+        writeln(myFile, fm + ' ' + IntToStr(GuidTeam) + ' ha licenziato A=' + PlayerssDB[i].Attributes +' age:' + IntToStr(PlayerssDB[i].Age) + ' T:' + IntToStr(PlayerssDB[i].TalentId1));
         CloseFile(myFile);
       {$endif tools}
-      lstPlayersDB.Delete(i);
+      PlayerssDB.Delete(i);
       Break;
     end;
   end;
 
 //  Eliminato il player, salvo
-  SaveTeamStream( fm, IntToStr(GuidTeam),lstPlayersDB, dirSaves)  ;
-  lstPlayersDB.Free;
+  SaveTeamStream( fm, IntToStr(GuidTeam),PlayerssDB, dirSaves)  ;
+  PlayerssDB.Free;
 end;
 procedure pveSetDBPlayer (fm :char; FileName: string; GuidTeam: Integer; MyBasePlayer :TBasePlayer;  dirSaves: string  );
 var
 
-  lstPlayersDB: TObjectList<TSoccerPlayer>;
-  aPlayer : TSoccerPlayer;
+  PlayerssDB: TObjectList<TPlayer>;
+  aPlayer : TPlayer;
   i: Integer;
   IndexTal: Integer;
 begin
-  lstPlayersDB:= TObjectList<TSoccerPlayer>.Create(true); // lista locale  che elimina tutti gli oggetti
+  PlayerssDB:= TObjectList<TPlayer>.Create(true); // lista locale  che elimina tutti gli oggetti
 
-  pveLoadTeam (FileName , fm , GuidTeam, lstPlayersDB ); // ottengo la squadra di destinazione
+  pveLoadTeam (FileName , fm , GuidTeam, PlayerssDB ); // ottengo la squadra di destinazione
   // aggiungo il player e salvo la squadra intera
 
-  for I := 0 to lstPlayersDB.Count -1 do begin
-    if lstPlayersDB[i].Ids = IntToStr(MyBasePlayer.Guid ) then begin
-      aPlayer := lstPlayersDB[i];
+  for I := 0 to PlayerssDB.Count -1 do begin
+    if PlayerssDB[i].Ids = IntToStr(MyBasePlayer.Guid ) then begin
+      aPlayer := PlayerssDB[i];
     //  aPlayer.Ids := IntToStr(MyBasePlayer.Guid);
       aPlayer.GuidTeam := GuidTeam; // comunque non lo salvo come dato
       aPlayer.Surname := MyBasePlayer.Surname;
@@ -4603,15 +4712,15 @@ begin
   end;
 
 //   salvo
-  SaveTeamStream( fm, IntToStr(GuidTeam),lstPlayersDB, dirSaves)  ;
-  lstPlayersDB.Free;
+  SaveTeamStream( fm, IntToStr(GuidTeam),PlayerssDB, dirSaves)  ;
+  PlayerssDB.Free;
 end;
 procedure pveThinkMarket ( fm :Char; Division: Byte; GuidTeam, dirSaves: string); // effettua pvetransfermarket , dismiss, sell,
 var
-  lstPlayersDB,lstGK: TObjectList<TSoccerPlayer>;
+  PlayerssDB,lstGK: TObjectList<TPlayer>;
   aRecordTeam : TTeam;
   i, GenderN,Price,aRnd,Perc,Budget: Integer;
-  AHotPlayer: TSoccerPlayer;
+  AHotPlayer: TPlayer;
   myFile :TextFile;
   label NextEntry,NextEntryGK,skip,skipGK,FINDGK;
 begin
@@ -4620,7 +4729,7 @@ begin
   if fm='f' then GenderN :=1
     else GenderN :=2;
 
-  lstPlayersDB:= TObjectList<TSoccerPlayer>.Create(true); // lista locale  che elimina tutti gli oggetti
+  PlayerssDB:= TObjectList<TPlayer>.Create(true); // lista locale  che elimina tutti gli oggetti
   // Vedo quanti soldi ho
   aRecordTeam := pveGetTeamInfo (fm, StrToInt(GuidTeam), dirSaves  );
 //if (fm = 'm') and (GuidTeam ='18') then
@@ -4631,25 +4740,25 @@ begin
   // se ho più di 2 gk gli altri li vendo tutti
   // se ho 2 gk oltre 30 anni ne cerco uno
   // se ho 1 solo gk ne cerco un altro
-  lstGK:= TObjectList<TSoccerPlayer>.Create(false); // false non elimina gli oggetti. li elimino dopo quando ho finito. lsttplayersDb non tocca i file.
-  for I := lstPlayersDB.Count -1 downto 0 do begin
-    if lstPlayersDB[i].TalentId1 = TALENT_ID_GOALKEEPER then begin
-      lstGK.Add(lstPlayersDB[i]);
+  lstGK:= TObjectList<TPlayer>.Create(false); // false non elimina gli oggetti. li elimino dopo quando ho finito. lsttplayersDb non tocca i file.
+  for I := PlayerssDB.Count -1 downto 0 do begin
+    if PlayerssDB[i].TalentId1 = TALENT_ID_GOALKEEPER then begin
+      lstGK.Add(PlayerssDB[i]);
     end;
   end;
-  lstGK.sort(TComparer<TSoccerPlayer>.Construct(function (const L, R: TSoccerPlayer): integer begin Result := L.MarketValue - R.MarketValue; end  ));
+  lstGK.sort(TComparer<TPlayer>.Construct(function (const L, R: TPlayer): integer begin Result := L.MarketValue - R.MarketValue; end  ));
   if lstGK.Count > 2 then begin // provo a vendere i piu' deboli ,tutti quelli in eccesso a 2 oppure li licenzio
     for I := 0 to 1 do begin
-      pveLoadTeam( dirSaves + fm + GuidTeam + '.120', fm, StrToInt(GuidTeam),lstPlayersDB );
+      pveLoadTeam( dirSaves + fm + GuidTeam + '.120', fm, StrToInt(GuidTeam),PlayerssDB );
 
       AHotPlayer := lstGK[I];
-      case lstPlayersDB.Count of
+      case PlayerssDB.Count of
         21..22: begin           // se ho 21-22 player li licenzio
           // licenzio i 2 più devoli. li elimino, se presenti, dal mercato
     NextEntryGK:
             pveDeleteFromTeam(fm, StrToInt(AHotPlayer.ids), StrToInt(GuidTeam), DirSaves  );
             PveDeleteFromMarket (fm, AHotPlayer.ids, dirSaves );
-          //  pveLoadTeam( dirSaves + fm + GuidTeam + '.120', fm, StrToInt(GuidTeam),lstPlayersDB );//ricarico
+          //  pveLoadTeam( dirSaves + fm + GuidTeam + '.120', fm, StrToInt(GuidTeam),PlayerssDB );//ricarico
         end;
         0..20: begin // li metto sul mercato. se è già sul mercato ho il 15% di probabilità di eliminarlo dal mercato e lo licenzio
           if PveOnMarket( fm, AHotPlayer.ids, dirSaves  ) then  begin
@@ -4678,15 +4787,15 @@ skipGK:
   end
   else if lstGK.Count = 1 then begin  // se ho 1 solo gk ne cerco un altro
 FindGK:
-    if lstPlayersDB.Count = 22 then begin // se 22 player, vendo o licenzio comunque il più debole escludendo il GK
-      lstPlayersDB.sort(TComparer<TSoccerPlayer>.Construct(function (const L, R: TSoccerPlayer): integer begin Result := L.MarketValue - R.MarketValue; end  ));
+    if PlayerssDB.Count = 22 then begin // se 22 player, vendo o licenzio comunque il più debole escludendo il GK
+      PlayerssDB.sort(TComparer<TPlayer>.Construct(function (const L, R: TPlayer): integer begin Result := L.MarketValue - R.MarketValue; end  ));
 
-      for I := 0 to lstPlayersDB.Count -1 do begin  // lo licenzio direttamente, ho bisogno del GK
-        AHotPlayer:= lstPlayersDB[i];
+      for I := 0 to PlayerssDB.Count -1 do begin  // lo licenzio direttamente, ho bisogno del GK
+        AHotPlayer:= PlayerssDB[i];
         if AHotPlayer.TalentId1 <> TALENT_ID_GOALKEEPER then begin
           pveDeleteFromTeam(fm, StrToInt(AHotPlayer.ids), StrToInt(GuidTeam), DirSaves  );
           PveDeleteFromMarket (fm, AHotPlayer.ids, dirSaves );
-         // pveLoadTeam( dirSaves + fm + GuidTeam + '.120', fm, StrToInt(GuidTeam),lstPlayersDB );//ricarico
+         // pveLoadTeam( dirSaves + fm + GuidTeam + '.120', fm, StrToInt(GuidTeam),PlayerssDB );//ricarico
           Break;
         end;
 
@@ -4716,26 +4825,26 @@ FindGK:
   //
 
 
-//  OutputDebugString(PChar(IntToStr(lstPlayersDB[0].MarketValue)));
-//  OutputDebugString(PChar(IntToStr(lstPlayersDB[lstPlayersDB.Count-1].MarketValue)));
+//  OutputDebugString(PChar(IntToStr(PlayerssDB[0].MarketValue)));
+//  OutputDebugString(PChar(IntToStr(PlayerssDB[PlayerssDB.Count-1].MarketValue)));
 
   // vendo o licenzio i 2 più deboli se ha più di 21 anni e non è un GK e se non è sul mercato
   // se ne ho già 2 sul mercato, li licenzio direttamente
   // se è già sul mercato, lo licenzio
 
   for I := 0 to 1 do begin
-    pveLoadTeam( dirSaves + fm + GuidTeam + '.120', fm, StrToInt(GuidTeam),lstPlayersDB ); // ricarico il team dopo la gestione GK
-    lstPlayersDB.sort(TComparer<TSoccerPlayer>.Construct(function (const L, R: TSoccerPlayer): integer begin Result := L.MarketValue - R.MarketValue; end  ));
-    AHotPlayer := lstPlayersDB[I];
-    case lstPlayersDB.Count of
+    pveLoadTeam( dirSaves + fm + GuidTeam + '.120', fm, StrToInt(GuidTeam),PlayerssDB ); // ricarico il team dopo la gestione GK
+    PlayerssDB.sort(TComparer<TPlayer>.Construct(function (const L, R: TPlayer): integer begin Result := L.MarketValue - R.MarketValue; end  ));
+    AHotPlayer := PlayerssDB[I];
+    case PlayerssDB.Count of
       21..22: begin           // se ho 21-22 player li licenzio
         // licenzio i 2 più devoli. li elimino, se presenti, dal mercato
   NextEntry:
         if (AHotPlayer.TalentId1 <> TALENT_ID_GOALKEEPER) and (AHotPlayer.Age >=21) then begin
           pveDeleteFromTeam(fm, StrToInt(AHotPlayer.ids), StrToInt(GuidTeam), DirSaves  );
           PveDeleteFromMarket (fm, AHotPlayer.ids, dirSaves );
-          pveLoadTeam( dirSaves + fm + GuidTeam + '.120', fm, StrToInt(GuidTeam),lstPlayersDB );//ricarico lstPlayersDB.Count
-          lstPlayersDB.sort(TComparer<TSoccerPlayer>.Construct(function (const L, R: TSoccerPlayer): integer begin Result := L.MarketValue - R.MarketValue; end  ));
+          pveLoadTeam( dirSaves + fm + GuidTeam + '.120', fm, StrToInt(GuidTeam),PlayerssDB );//ricarico PlayerssDB.Count
+          PlayerssDB.sort(TComparer<TPlayer>.Construct(function (const L, R: TPlayer): integer begin Result := L.MarketValue - R.MarketValue; end  ));
         end;
       end;
       17..20: begin // li metto sul mercato. se è già sul mercato ho il 25% di probabilità di eliminarlo dal mercato e lo licenzio
@@ -4762,19 +4871,19 @@ FindGK:
 
       end;
       0..16: begin // non faccio nulla, mi concentro sul comprare
-        if lstPlayersDB.Count <= 14 then begin // divido per 2 il badget e compro 2 player
+        if PlayerssDB.Count <= 14 then begin // divido per 2 il badget e compro 2 player
           Budget := (aRecordTeam.money div 2)-1;
           BuyPlayerFromMarket  ( fm , Budget, StrToInt(GuidTeam), dirsaves  ) ;// potrebbe entrare anche un GK. nel caso avrò forse 3 gk. la gestione dei gk è sopra
-          //pveLoadTeam( dirSaves + fm + GuidTeam + '.120', fm, StrToInt(GuidTeam),lstPlayersDB );//ricarico
+          //pveLoadTeam( dirSaves + fm + GuidTeam + '.120', fm, StrToInt(GuidTeam),PlayerssDB );//ricarico
           BuyPlayerFromMarket  ( fm , Budget, StrToInt(GuidTeam),dirsaves  ) ;// potrebbe entrare anche un GK. nel caso avrò forse 3 gk. la gestione dei gk è sopra
-          pveLoadTeam( dirSaves + fm + GuidTeam + '.120', fm, StrToInt(GuidTeam),lstPlayersDB );//ricarico lstPlayersDB.Count
-          lstPlayersDB.sort(TComparer<TSoccerPlayer>.Construct(function (const L, R: TSoccerPlayer): integer begin Result := L.MarketValue - R.MarketValue; end  ));
+          pveLoadTeam( dirSaves + fm + GuidTeam + '.120', fm, StrToInt(GuidTeam),PlayerssDB );//ricarico PlayerssDB.Count
+          PlayerssDB.sort(TComparer<TPlayer>.Construct(function (const L, R: TPlayer): integer begin Result := L.MarketValue - R.MarketValue; end  ));
         end
         else begin   // compro 1 player al massimo del mio budget
           Budget := aRecordTeam.money;
           BuyPlayerFromMarket  ( fm , Budget, StrToInt(GuidTeam),dirsaves  );// potrebbe entrare anche un GK. nel caso avrò forse 3 gk. la gestione dei gk è sopra
-          pveLoadTeam( dirSaves + fm + GuidTeam + '.120', fm, StrToInt(GuidTeam),lstPlayersDB );//ricarico lo devo fare lstPlayersDB.Count
-          lstPlayersDB.sort(TComparer<TSoccerPlayer>.Construct(function (const L, R: TSoccerPlayer): integer begin Result := L.MarketValue - R.MarketValue; end  ));
+          pveLoadTeam( dirSaves + fm + GuidTeam + '.120', fm, StrToInt(GuidTeam),PlayerssDB );//ricarico lo devo fare PlayerssDB.Count
+          PlayerssDB.sort(TComparer<TPlayer>.Construct(function (const L, R: TPlayer): integer begin Result := L.MarketValue - R.MarketValue; end  ));
 
         end;
 
@@ -4783,7 +4892,7 @@ FindGK:
     end;
 
 skip:
-  //  pveLoadTeam( dirSaves + fm + GuidTeam + '.120', fm, StrToInt(GuidTeam),lstPlayersDB ); // ricarico il team . lstPlayersDB.Coun cambia
+  //  pveLoadTeam( dirSaves + fm + GuidTeam + '.120', fm, StrToInt(GuidTeam),PlayerssDB ); // ricarico il team . PlayerssDB.Coun cambia
 
   end;
 
@@ -4793,7 +4902,7 @@ function BuyPlayerFromMarket ( fm :Char; Budget,GuidTeam: Integer;  dirSaves: st
 var
   i,Cur : Integer;
   count,lenSurname,lenteamName: integer;
-  lstPLayerMarket: TList<TBasePlayer>;
+  PlayersMarket: TList<TBasePlayer>;
   aBasePlayer: TBasePlayer;
   Buf3 : TArray32768;
   MM : TMemoryStream;
@@ -4813,7 +4922,7 @@ begin
   SS.Free;
   Cur:= 0;
 
-  lstPLayerMarket:= TList<TBasePlayer>.Create;
+  PlayersMarket:= TList<TBasePlayer>.Create;
 
   count := PWORD(@buf3[0])^;  // quanti player . solo in questo caso è smallint
   Cur := Cur + 2; //
@@ -4870,33 +4979,33 @@ begin
     aBasePlayer.Price :=   PDWORD(@buf3[ cur ])^; // sellprice
     Cur := Cur + 4;
 
-    lstPLayerMarket.add (aBasePlayer);
+    PlayersMarket.add (aBasePlayer);
   end;
 
-  lstPLayerMarket.sort(TComparer<TBasePlayer>.Construct(
+  PlayersMarket.sort(TComparer<TBasePlayer>.Construct(
       function (const L, R: TBasePlayer): integer
       begin
         Result := (L.Price )- (R.price  );
       end
      ));
 
-  for I := lstPLayerMarket.Count -1 downto 0 do begin
-    if lstPLayerMarket[i].Price <= Budget then begin
-      pveTransferMarket(fm,  lstPLayerMarket[i].Guid, GuidTeam, dirSaves  ); // aggiorna anche money dei 2 team
-      Result := lstPLayerMarket[i].Guid;
-      lstPLayerMarket.Free;
+  for I := PlayersMarket.Count -1 downto 0 do begin
+    if PlayersMarket[i].Price <= Budget then begin
+      pveTransferMarket(fm,  PlayersMarket[i].Guid, GuidTeam, dirSaves  ); // aggiorna anche money dei 2 team
+      Result := PlayersMarket[i].Guid;
+      PlayersMarket.Free;
       Exit;
     end;
   end;
 
-  lstPLayerMarket.Free;
+  PlayersMarket.Free;
 
 end;
 function BuyPlayerFromMarket ( fm :Char; Budget,GuidTeam,TalentId: Integer;  dirSaves: string): Integer; // uguale a pveClientLoadMarket ma non lavora su globale
 var
   i,Cur : Integer;
   count,lenSurname,lenteamName: integer;
-  lstPLayerMarket: TList<TBasePlayer>;
+  PlayersMarket: TList<TBasePlayer>;
   aBasePlayer: TBasePlayer;
   Buf3 : TArray32768;
   MM : TMemoryStream;
@@ -4916,7 +5025,7 @@ begin
   SS.Free;
   Cur:= 0;
 
-  lstPLayerMarket:= TList<TBasePlayer>.Create;
+  PlayersMarket:= TList<TBasePlayer>.Create;
 
   count := PWORD(@buf3[0])^;  // quanti player . solo in questo caso è smallint
   Cur := Cur + 2; //
@@ -4974,33 +5083,33 @@ begin
     Cur := Cur + 4;
 
     if aBasePlayer.TalentId1 = TalentID then
-       lstPLayerMarket.add (aBasePlayer);
+       PlayersMarket.add (aBasePlayer);
   end;
 
-  lstPLayerMarket.sort(TComparer<TBasePlayer>.Construct(
+  PlayersMarket.sort(TComparer<TBasePlayer>.Construct(
       function (const L, R: TBasePlayer): integer
       begin
         Result := (L.Price )- (R.price  );
       end
      ));
 
-  for I := lstPLayerMarket.Count -1 downto 0 do begin
-    if lstPLayerMarket[i].Price <= Budget then begin
-      pveTransferMarket(fm,  lstPLayerMarket[i].Guid, GuidTeam, dirSaves  ); // aggiorna anche money dei 2 team
-      Result := lstPLayerMarket[i].Guid;
-      lstPLayerMarket.Free;
+  for I := PlayersMarket.Count -1 downto 0 do begin
+    if PlayersMarket[i].Price <= Budget then begin
+      pveTransferMarket(fm,  PlayersMarket[i].Guid, GuidTeam, dirSaves  ); // aggiorna anche money dei 2 team
+      Result := PlayersMarket[i].Guid;
+      PlayersMarket.Free;
       Exit;
     end;
   end;
 
-  lstPLayerMarket.Free;
+  PlayersMarket.Free;
 
 end;
 function pveGetTotalPlayersOnMarket ( fm :Char; GuidTeam: Integer; dirSaves: string ): Integer;
 var
   i,Cur : Integer;
   count,lenSurname,lenTeamName: integer;
-  lstPLayerMarket: TList<TBasePlayer>;
+  PlayersMarket: TList<TBasePlayer>;
   aBasePlayer: TBasePlayer;
   Buf3 : TArray32768;
   MM : TMemoryStream;
@@ -5020,7 +5129,7 @@ begin
   SS.Free;
   Cur:= 0;
 
-  lstPLayerMarket:= TList<TBasePlayer>.Create;
+  PlayersMarket:= TList<TBasePlayer>.Create;
 
   count := PWORD(@buf3[0])^;  // quanti player . solo in questo caso è smallint
   Cur := Cur + 2; //
@@ -5081,7 +5190,7 @@ begin
 
   end;
 
-  lstPLayerMarket.Free;
+  PlayersMarket.Free;
 
 end;
 procedure GetBuildInfo(var V1, V2, V3, V4: Word);
@@ -5129,7 +5238,7 @@ begin
       Result := +REGEN_STAMINA;
   end;
 end;
-procedure calc_injured_attribute_lost (var aPlayer: TSoccerPlayer);
+procedure calc_injured_attribute_lost (var aPlayer: TPlayer);
 var
   aRnd: Integer;
 begin
@@ -5179,14 +5288,14 @@ begin
 
 
 end;
-function GetSoccerPlayer ( Guid : Integer; var lstPlayers: TObjectList<TSoccerPlayer>): TSoccerPlayer;
+function GeTPlayer ( Guid : Integer; var Playerss: TObjectList<TPlayer>): TPlayer;
 var
   i: Integer;
 begin
   Result := nil;
-  for I := lstPlayers.Count -1 downto 0 do begin
-    if lstPlayers[i].Ids = IntToStr(Guid) then begin
-      Result := lstPlayers[i];
+  for I := Playerss.Count -1 downto 0 do begin
+    if Playerss[i].Ids = IntToStr(Guid) then begin
+      Result := Playerss[i];
       Exit;
     end;
 
@@ -5321,12 +5430,12 @@ done:
   ini.Free;
 
 end;
-procedure EmulationBrain ( aBrain: TSoccerBrain; dirSaves: string);
+procedure EmulationBrain ( aBrain: TBrain; dirSaves: string);
 var
   i,T,aRnd,YellowCount,RedCount,InjuredCount,Injured,absGap,subLeft,subDone: Integer;
   //TotMarketValue: array[0..1] of Integer;
   TotAttrTalValue: array[0..1] of Integer;
-  aPlayer,aPlayer2 : TSoccerPlayer;
+  aPlayer,aPlayer2 : TPlayer;
   mm_W,mm_N,mm_L : TMemoryStream;
   tmpb : Byte;
   g0:Byte;
@@ -5338,7 +5447,7 @@ var
   label retry,team2win,skipsub;
 begin
   // il brain è appena formato dalle createformation ma non è partito
-  // prendo i 22 titolari in lstsoccerplayer e aggiungo da lstsoccerReserve 6 player (se disponibile) a caso, anche il GK
+  // prendo i 22 titolari in Players e aggiungo da Reserves 6 player (se disponibile) a caso, anche il GK
   // calcolo il marketValue totale dei 2 team 22+6 vs 22+6 e ottengo un risultato base W N L
   // Pesco dalla lista relativa un risultato (se non disponibile lo pesco da un'altra lista, cambierà l'esito, ma siamo in fondo al campionato)
   // Assegno i gol, elimino il risultato dalla Tlist così non lo ripesco in futuro. Salvo la Tlist.
@@ -5347,7 +5456,7 @@ begin
   // Spargo yellow , red, injured secondo tabelle
   // Spargo xp , xptal, xpdev
   // non faccio altro, il brain verrà finalizzato e poi i team salvati
-//  aBrain.lstSoccerReserve[i].itag
+//  aBrain.Reserves[i].itag
   TotAttrTalValue[0]:=0;
   TotAttrTalValue[1]:=0;
 //  TotMarketValue[0] := 0;
@@ -5359,7 +5468,7 @@ begin
   for T := 0 to 1 do begin
 {$IFDEF  tools}
 //    OutputDebugString( PChar( string(aBrain.Score.Team[T])) );
-//    OutputDebugString( PChar( IntToStr(aBrain.lstSoccerReserve.Count) ) );
+//    OutputDebugString( PChar( IntToStr(aBrain.Reserves.Count) ) );
 {$endIF  tools}
 
     // faccio effettivamente la SUB come nel brain
@@ -5375,7 +5484,7 @@ begin
 
 
       aPlayer :=  aBrain.GetReservePlayerRandom ( T, true ); // anche GK. ci saranno 2 , è lo stesso, tanto la partita non si gioca
-      aPlayer2 := aBrain.GetSoccerPlayerRandom( T, true );
+      aPlayer2 := aBrain.GeTPlayerRandom( T, true );
 
       aBrain.AddSoccerPlayer(aPlayer);
       aBrain.RemoveSoccerReserve(aPlayer);
@@ -5389,11 +5498,11 @@ begin
   //  ----------MARKETVALUE E SET RAINXP --------------------------------
   //
 skipsub:
-    for I := 0 to aBrain.lstSoccerPlayer.Count -1 do begin // gli 11 titolari
-      if aBrain.lstSoccerPlayer[i].Team = T then begin
-        aPlayer:= aBrain.lstSoccerPlayer[i];
-       // TotMarketValue [T] := TotMarketValue [T] + aBrain.lstSoccerPlayer[i].MarketValue;
-        TotAttrTalValue [T] := TotAttrTalValue [T] + aBrain.lstSoccerPlayer[i].ActiveAttrTalValue;
+    for I := 0 to aBrain.Players.Count -1 do begin // gli 11 titolari
+      if aBrain.Players[i].Team = T then begin
+        aPlayer:= aBrain.Players[i];
+       // TotMarketValue [T] := TotMarketValue [T] + aBrain.Players[i].MarketValue;
+        TotAttrTalValue [T] := TotAttrTalValue [T] + aBrain.Players[i].ActiveAttrTalValue;
         AllRainXp (aPlayer); // xp attributes 12 sparsi, xp_talent valuto, xpDeva+xpdevT 12 sparsi, devi fisso -120 ai panchinari
         if aPlayer.TalentId1 = TALENT_ID_GOALKEEPER then
           aPlayer.Stamina := aPlayer.Stamina - RndGenerate(15)
@@ -5401,10 +5510,10 @@ skipsub:
       end;
     end;
    // qui sono in caso di totmarketvalue. se uso attrtal non calcolo i sostituti
-   { for I := 0 to aBrain.lstSoccerGameOver.Count -1 do begin // i 6  o meno sostiutiti sono in gameover
-      if aBrain.lstSoccerGameOver[i].Team = T then begin
-        aPlayer:= aBrain.lstSoccerGameOver[i];
-        TotMarketValue [T] := TotMarketValue [T] + aBrain.lstSoccerGameOver[i].ActiveAttrTalValue;
+   { for I := 0 to aBrain.Gameover.Count -1 do begin // i 6  o meno sostiutiti sono in gameover
+      if aBrain.Gameover[i].Team = T then begin
+        aPlayer:= aBrain.Gameover[i];
+        TotMarketValue [T] := TotMarketValue [T] + aBrain.Gameover[i].ActiveAttrTalValue;
         AllRainXp (aPlayer); // xp attributes 12 sparsi, xp_talent valuto, xpDeva+xpdevT 12 sparsi, devi fisso -120 ai panchinari
         if aPlayer.TalentId1 = TALENT_ID_GOALKEEPER then
           aPlayer.Stamina := aPlayer.Stamina - RndGenerate(15)
@@ -5414,8 +5523,8 @@ skipsub:
 
   end;
 
-  for I := 0 to aBrain.lstSoccerReserve.Count -1 do begin // i 6  o meno sostiutiti sono in gameover
-    aBrain.lstSoccerReserve[i].xpDevI := aBrain.lstSoccerReserve[i].xpDevI + 120;
+  for I := 0 to aBrain.Reserves.Count -1 do begin // i 6  o meno sostiutiti sono in gameover
+    aBrain.Reserves[i].xpDevI := aBrain.Reserves[i].xpDevI + 120;
   end;
 
   YellowCount := RndGenerate(72); // 4.4 media a partita
@@ -5426,7 +5535,7 @@ skipsub:
  //   OutputDebugString( PChar(aBrain.Score.Team[1] + IntToStr(aBrain.Score.TeamGuid[1]) ) );
 {$endIF  tools}
   //  if  aBrain.Score.Team[0] = 'Juventus' then asm int 3 ; end;
-    aPlayer := aBrain.GetSoccerPlayerRandom3; // uno qualsisai che ha giocato ma non il GK
+    aPlayer := aBrain.GeTPlayerRandom3; // uno qualsisai che ha giocato ma non il GK
 
     aPlayer.YellowCard := aPlayer.YellowCard +1;  // può accadere che un pplayer sia espulso più volte, è lo stesso. oppure che un sostituito sia ammonito o espulso
     if aPlayer.YellowCard = 2 then
@@ -5444,7 +5553,7 @@ skipsub:
 
 
   while RedCount > 0 do begin
-    aPlayer := aBrain.GetSoccerPlayerRandom3; // uno qualsisai che ha giocato ma non il GK
+    aPlayer := aBrain.GeTPlayerRandom3; // uno qualsisai che ha giocato ma non il GK
     aPlayer.RedCard := 1;  // può accadere che un pplayer sia espulso più volte, è lo stesso. oppure che un sostituito sia ammonito o espulso
     Dec(RedCount);
   end;
@@ -5460,7 +5569,7 @@ skipsub:
       InjuredCount :=2;
 
   while InjuredCount > 0 do begin
-    aPlayer := aBrain.GetSoccerPlayerRandom3; // uno qualsisai che ha giocato ma non il GK
+    aPlayer := aBrain.GeTPlayerRandom3; // uno qualsisai che ha giocato ma non il GK
     aRnd := RndGenerate(100); // copiata da finalizebrain
     case aRnd of
       1..70: injured := RndGenerateRange( 1,2 ) ;
@@ -5686,7 +5795,7 @@ begin
   lstByte.Delete(Index);
 
 end;
-procedure AllRainXp ( var aPlayer: TSoccerPlayer);
+procedure AllRainXp ( var aPlayer: TPlayer);
 var
   Xp_Attributes, xpTalents,aRndTalent: Integer;
 begin
@@ -5941,7 +6050,7 @@ end;
 function pvpTrylevelUpAttribute ( DbServer: string; fm : Char; Guid, Attribute : integer; aValidPlayer: TValidPlayer ): TLevelUp;
 var
   aRnd: Integer;
-  aPlayer: TSoccerPlayer;
+  aPlayer: TPlayer;
   tsXP,tsXPHistory: TStringList;
   ConnGame : TMyConnection;
   qPlayers: TMyQuery;
@@ -5971,7 +6080,7 @@ o o o o o o
 
 
   // creo un player virtuale
-  aPlayer:= TSoccerPlayer.create(0,0,0,IntToStr(Guid),'virtual','virtual','1,1,1,1,1,1',0,0 );
+  aPlayer:= TPlayer.create(0,0,0,IntToStr(Guid),'virtual','virtual','1,1,1,1,1,1',0,0 );
   aPlayer.DefaultSpeed := aValidPlayer.Speed;
   aPlayer.Defaultdefense := aValidPlayer.defense;
   aPlayer.DefaultPassing := aValidPlayer.passing;
@@ -6293,7 +6402,7 @@ end;
 function pvpTrylevelUpTalent ( DbServer: string;  fm :Char; Guid, Talent : integer; aValidPlayer: TValidPlayer ): TLevelUp;
 var
   i, aRnd: Integer;
-  aPlayer: TSoccerPlayer;
+  aPlayer: TPlayer;
   aBasePlayer: TBasePlayer;
   tsXP,tsXPHistory: TStringList;
   ConnGame : TMyConnection;
@@ -6308,7 +6417,7 @@ begin
   aRnd := RndGenerate( 100 );
 
   // creo un player virtuale
-  aPlayer:= TSoccerPlayer.create(0,0,0,IntToStr(Guid),'virtual','virtual','1,1,1,1,1,1',0,0 );
+  aPlayer:= TPlayer.create(0,0,0,IntToStr(Guid),'virtual','virtual','1,1,1,1,1,1',0,0 );
   aPlayer.DefaultSpeed := aValidPlayer.Speed;
   aPlayer.Defaultdefense := aValidPlayer.defense;
   aPlayer.DefaultPassing := aValidPlayer.passing;
@@ -6708,7 +6817,7 @@ MyExit:
 // guidteam e dirSaves mi indicano il file
 
 end;
-function Player2BasePlayer ( aPlayer: TSoccerPlayer ) : TBasePlayer;
+function Player2BasePlayer ( aPlayer: TPlayer ) : TBasePlayer;
 begin
   Result.devA :=   aPlayer.devA;
   Result.devT :=   aPlayer.devT;
@@ -6792,7 +6901,7 @@ begin
   end;
 
 end;
-function can6 (  const at : TAttributeName; var aPlayer: TSoccerPlayer ): boolean;  // pvp
+function can6 (  const at : TAttributeName; var aPlayer: TPlayer ): boolean;  // pvp
 var
   aRnd: Integer;
 begin
@@ -6825,7 +6934,7 @@ begin
   end;
 
 end;
-function can10 (  const at : TAttributeName; var aPlayer: TSoccerPlayer ): boolean;  // pvp
+function can10 (  const at : TAttributeName; var aPlayer: TPlayer ): boolean;  // pvp
 var
   aRnd: Integer;
 begin
@@ -7165,6 +7274,63 @@ begin
 
 
 end;
+Function IsOutSide ( CellX, CellY: integer ) : boolean;
+begin
+  Result:= False;
+  if (CellX < 0) or (CellX > FIELD_WIDTH-1) then begin
+    result := True;
+    Exit;
+  end;
+  if (CellY < 0) or (CellY > FIELD_HEIGHT-1) then begin
+    result := True;
+    Exit;
+  end;
+
+  if (CellX = 0) and (CellY  <> FIELD_GKCELLY) then begin
+    result := True;
+    Exit;
+  end;
+  if  (CellX = FIELD_WIDTH-1) and (CellY  <> FIELD_GKCELLY) then begin
+    Result := True;
+    Exit;
+  end;
+end;
+function isValidFormationCell ( CellX, CellY: integer ) : boolean;
+begin
+  Result:= ((CellX = FIELD_GKCELLY) and (CellY = FIELD_WIDTH-1))  or
+  ( (  (CellX > -1) and (CellX < FIELD_HEIGHT) ) and ( (CellY = FIELD_AI_D) or (CellY = FIELD_AI_M) or (CellY = FIELD_AI_F) )   );
+
+end;
+Function IsOutSideAI ( CellX, CellY: integer ) : boolean;
+begin
+  Result:= False;
+  if (CellX < 0) or (CellX > FIELD_HEIGHT-1) then begin
+    result := True;
+    Exit;
+  end;
+  if (CellY < 0) or (CellY > FIELD_WIDTH-1) then begin
+    result := True;
+    Exit;
+  end;
+
+  if (CellY  = 0) and (CellX <> FIELD_GKCELLY) then begin
+    result := True;
+    Exit;
+  end;
+  if (CellY = FIELD_WIDTH-1) and (CellX  <> FIELD_GKCELLY) then begin
+    Result := True;
+    Exit;
+  end;
+end;
+function IsGKCell ( CellX, CellY: integer ) : boolean;
+begin
+  result := ((CellX = 0) and (CellY  = FIELD_GKCELLY)) or ( (CellX = FIELD_WIDTH-1) and (CellY  = FIELD_GKCELLY) );
+end;
+function TryDecimalStrToInt( const S: string; out Value: Integer): Boolean;
+begin
+   result := ( pos( '$', S ) = 0 ) and TryStrToInt( S, Value );
+end;
+
 initialization
   RandGen := TtdCombinedPRNG.Create(0, 0);
   FormationsPreset := TList<TFormation>.Create;

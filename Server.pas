@@ -2,7 +2,7 @@ unit Server;
 // routine principali:
 // procedure TcpserverDataAvailable <-- tutti gli input del client passano da qui
 // procedure QueueThreadTimer <-- crea le partite(brain) in base agli utenti in coda di attesa
-// procedure MatchThreadTimer <-- in caso di bot o disconessione, esegue l'intelligenza artificiale TSoccerBrain.AI_think
+// procedure MatchThreadTimer <-- in caso di bot o disconessione, esegue l'intelligenza artificiale TBrain.AI_think
 // procedure CreateAndLoadMatch <-- crea una partita (brain)
 {$R-}
 
@@ -59,21 +59,21 @@ end;
 
 type TBrainManager = class
   public
-  lstBrain: TObjectList<TSoccerBrain>;
+  lstBrain: TObjectList<TBrain>;
 
   constructor Create( Server: TWSocketThrdServer );
   destructor Destroy;override;
-  procedure input (brain: TSoccerBrain; data: string );
-    function GetbrainStream ( brain: TSoccerBrain) : string;
-  procedure FinalizeBrain (brain: TSoccerBrain );
+  procedure input (brain: TBrain; data: string );
+    function GetbrainStream ( brain: TBrain) : string;
+  procedure FinalizeBrain (brain: TBrain );
     procedure DecodeBrainIds ( brainIds: string; var MyYear, MyMonth, MyDay, MyHour, MyMin, MySec: string );
       function RndGenerate( Upper: integer ): integer;
       function RndGenerate0( Upper: integer ): integer;
       function RndGenerateRange( Lower, Upper: integer ): integer;
 
-  function FindBrain ( ids: string  ): TSoccerbrain;  overload;
-  function FindBrain ( CliId: integer ): TSoccerbrain; overload;
-  procedure AddBrain ( brain: TSoccerbrain );
+  function FindBrain ( ids: string  ): TBrain;  overload;
+  function FindBrain ( CliId: integer ): TBrain; overload;
+  procedure AddBrain ( brain: TBrain );
   procedure RemoveBrain ( brainIds: string);
 end;
 type
@@ -168,37 +168,14 @@ type
     { Private declarations }
     procedure Display(Msg : String);
 
-    (* validazione input dal client di gioco*)
-    procedure validate_login ( const CommaText: string; Cli:TWSocketThrdClient );
+    (* validazione input dal client di gioco. vedi anche validate.pas  *)
       function LastIncMoveIni ( directory: string ): string;
-    procedure validate_getteamsbycountry ( const CommaText: string; Cli:TWSocketThrdClient );
-    procedure validate_clientcreateteam  ( const CommaText: string;  Cli:TWSocketThrdClient) ;
-    procedure validate_viewMatch  ( const CommaText: string;  Cli:TWSocketThrdClient) ;
     procedure validate_levelupAttribute ( const CommaText: string; Cli:TWSocketThrdClient );
     procedure validate_levelupTalent ( const CommaText: string; Cli:TWSocketThrdClient );
-    procedure validate_CMDlop ( const CommaText: string; Cli:TWSocketThrdClient );
-    procedure validate_CMD4 ( const CommaText: string; Cli:TWSocketThrdClient );
-    procedure validate_CMD3 ( const CommaText: string; Cli:TWSocketThrdClient );
-    procedure validate_CMD2 ( const CommaText: string; Cli:TWSocketThrdClient );
-    procedure validate_debug_CMD2 ( const CommaText: string; Cli:TWSocketThrdClient );
-
-    procedure validate_CMD1 ( const CommaText: string; Cli:TWSocketThrdClient );
-    procedure validate_CMD_coa ( const CommaText: string; Cli:TWSocketThrdClient );
-    procedure validate_CMD_cod ( const CommaText: string; Cli:TWSocketThrdClient );
-    procedure validate_CMD_bar ( const CommaText: string; Cli:TWSocketThrdClient );
-    procedure validate_CMD_subs ( const CommaText: string; Cli:TWSocketThrdClient );
-    procedure validate_aiteam ( const CommaText: string; Cli:TWSocketThrdClient );
-    procedure validate_setplayer ( const CommaText: string; Cli:TWSocketThrdClient );
-    procedure validate_pause ( const CommaText: string; Cli:TWSocketThrdClient );
 
     procedure validate_setformation ( CommaText: string; Cli:TWSocketThrdClient );
     procedure validate_setuniform ( CommaText: string; Cli:TWSocketThrdClient );
     function validate_player ( const guid: integer; Cli:TWSocketThrdClient): TValidPlayer;
-    procedure validate_sell ( commatext: string; Cli:TWSocketThrdClient  );
-    procedure validate_cancelsell ( commatext: string; Cli:TWSocketThrdClient  );
-    procedure validate_buy ( commatext: string; Cli:TWSocketThrdClient  );
-    procedure validate_market ( commatext: string; Cli:TWSocketThrdClient  );
-    procedure validate_dismiss ( commatext: string; Cli:TWSocketThrdClient  );
     procedure reset_formation ( Cli:TWSocketThrdClient ); overload;
     procedure reset_formation ( fm : Char;GuidTeam: integer ); overload;
 
@@ -225,11 +202,11 @@ type
     function inQueue(Cliid: integer ): Boolean;
     function inSpectator(Cliid: integer ): boolean;
     function inLiveMatchCliid(Cliid: integer ): Boolean;
-    function inLivematchGuidTeam(fm : char;GuidTeam: integer ): TSoccerBrain;
-    function inSpectatorGetBrain(Cliid: integer ): TSoccerBrain;
+    function inLivematchGuidTeam(fm : char;GuidTeam: integer ): TBrain;
+    function inSpectatorGetBrain(Cliid: integer ): TBrain;
     function RemoveFromSpectator(Cliid: integer ): boolean;
 
-    procedure CreateAndLoadMatch ( fm:Char; brain: TSoccerBrain; GuidTeam0, GuidTeam1: integer; Username0, UserName1: string  );
+    procedure CreateAndLoadMatch ( fm:Char; brain: TBrain; GuidTeam0, GuidTeam1: integer; Username0, UserName1: string  );
     procedure CreateMatchBOTvsBOT ( fm:Char;  GuidTeam0, GuidTeam1: integer; Username0, UserName1: string );
       function CreateRandomPlayer ( fm :Char; Country: integer; EnableTalent2: boolean ) : TBasePlayer;
       function CreatePresetPlayer ( fm :Char; Country, index: integer ) : TBasePlayer;
@@ -283,7 +260,7 @@ var
 
 
 implementation
-
+uses validate;
 {$R *.dfm}
 
 function RemoveEndOfLine(const Line : String) : String;
@@ -319,10 +296,6 @@ begin
     HashSHA := THashSHA1.Create;
     HashSHA.GetHashString(Str);
     result := HashSHA.GetHashString(Str);
-end;
-function TryDecimalStrToInt( const S: string; out Value: Integer): Boolean;
-begin
-   result := ( pos( '$', S ) = 0 ) and TryStrToInt( S, Value );
 end;
 procedure TFormServer.RadioButton1Click(Sender: TObject);
 begin
@@ -733,7 +706,7 @@ end;
 
 constructor TBrainManager.Create( Server: TWSocketThrdServer );
 begin
-  lstBrain:= TObjectList<TSoccerBrain>.Create(true);
+  lstBrain:= TObjectList<TBrain>.Create(true);
 {  ShotCells := CreateShotCells;
   AIField := createAIfield;
 	TVCrossingAreaCells:= TVCreateCrossingAreaCells;
@@ -752,7 +725,7 @@ begin
   inherited;
 end;
 
-procedure TBrainManager.input ( brain: TSoccerBrain; data: string );
+procedure TBrainManager.input ( brain: TBrain; data: string );
 var
   i,ii,SpectatorCliId: Integer;
   NewData: string;
@@ -789,13 +762,22 @@ begin
       try
         for I := 0 to FormServer.Tcpserver.ClientCount -1 do begin
           if FormServer.TcpServer.Client [i].CliId = brain.Score.CliId [0] then begin
-              NewData := 'BEGINBRAIN' + AnsiChar( StrToInt(data)  ) + GetBrainStream ( brain );
-              FormServer.TcpServer.Client [i].SendStr ( NewData + EndofLine);
+{              if brain.debug_Allbrain then begin
+                FormServer.TcpServer.Client [i].NewData := Format('%.*d',[2, CMD_BRAIN])  +  Format('%.*d',[4, StrToInt(data)]) + GetBrainStream ( brain,2 );
+                FormServer.TcpServer.Client [i].SendStr ( FormServer.TcpServer.Client [i].NewData + EndofLine);
+                Exit;
+              end; }
+
+
+              FormServer.TcpServer.Client [i].NewData := Format('%.*d',[2, CMD_BRAIN])  +  Format('%.*d',[4, StrToInt(data)]) + GetBrainStream ( brain );
+              FormServer.TcpServer.Client [i].SendStr ( FormServer.TcpServer.Client [i].NewData + EndofLine);
               FormServer.Memo1.Lines.Add( '> BEGINBRAIN ' +IntToStr(brain.incMove)  );
+
+
           end
           else if FormServer.TcpServer.Client [i].CliId = brain.Score.CliId [1] then begin
-              NewData := 'BEGINBRAIN' + AnsiChar( StrToInt(data)  ) + GetBrainStream ( brain );
-              FormServer.TcpServer.Client [i].SendStr ( NewData + EndofLine);
+              FormServer.TcpServer.Client [i].NewData := Format('%.*d',[2, CMD_BRAIN])  +  Format('%.*d',[4, StrToInt(data)]) + GetBrainStream ( brain );
+              FormServer.TcpServer.Client [i].SendStr ( FormServer.TcpServer.Client [i].NewData + EndofLine);
               FormServer.Memo1.Lines.Add( '> BEGINBRAIN ' +IntToStr(brain.incMove)  );
           end;
         end;
@@ -807,8 +789,8 @@ begin
             for ii := 0 to FormServer.Tcpserver.ClientCount -1 do begin
 
               if FormServer.TcpServer.Client [ii].CliId = SpectatorCliId then begin
-              NewData := 'BEGINBRAIN' + AnsiChar( StrToInt(data)  ) + GetBrainStream ( brain );
-                FormServer.TcpServer.Client [ii].SendStr ( NewData + EndofLine);
+                FormServer.TcpServer.Client [ii].NewData := Format('%.*d',[2, CMD_BRAIN])  +  Format('%.*d',[4, StrToInt(data)]) + GetBrainStream ( brain );
+                FormServer.TcpServer.Client [ii].SendStr ( FormServer.TcpServer.Client [ii].NewData + EndofLine);
               end;
 
             end;
@@ -836,7 +818,7 @@ begin
       end;
   end;
 end;
-function TBrainmanager.GetbrainStream ( brain: TSoccerBrain) : string;
+function TBrainmanager.GetbrainStream ( brain: TBrain) : string;
 var
   CompressedStream: TZCompressionStream;
   SS: TStringStream;
@@ -874,11 +856,11 @@ begin
   mySec := MidStr(  brainIds, 16, 2 ); // a 15 .
 
 end;
-procedure TBrainManager.FinalizeBrain ( brain: TSoccerBrain);
+procedure TBrainManager.FinalizeBrain ( brain: TBrain);
 var
   i,indexTal,T,P,aGuidTeam,matches_Played,matches_Left, disqualified, injured,TotYellowCard,aRnd,newStamina,FreeSlot,n,NewMorale: Integer;
   TextHistory,TextXP: string;
-  aPlayer: TSoccerPlayer;
+  aPlayer: TPlayer;
   tsXP, tsHistory: TStringList;
   MatchesplayedTeam,Points,Season,SeasonRound,Money,Rank,WorldTeam,Protect,Nextha: array [0..1] of Integer;
   myYear, myMonth, myDay, myHour, myMin, mySec, young : string;
@@ -977,7 +959,7 @@ begin
 
       NewMorale := 0;
       if qPlayers.FieldByName('talentid1').AsInteger <> 1 then begin // il morale non funziona sui GK
-        if brain.GetSoccerPlayer3(qPlayers.FieldByName('guid').AsString ) <> nil then begin // HA GIOCATO LA PARTITA
+        if brain.GeTPlayer3(qPlayers.FieldByName('guid').AsString ) <> nil then begin // HA GIOCATO LA PARTITA
           if RndGenerate(100) <= 25 then
             NewMorale := +1;
         end
@@ -988,11 +970,11 @@ begin
       end;
       // da qui in poi le variabili del brain possono modificare anche disqualified e injured ecc...
       // gestione cartellini       2 gialli 1 rosso. slo 1 rosso. se rosso 1,2,3 turni
-      // dopo disqualified e injured vengono aggiornati solo da chi ha giocato in lstSoccerPlayer
-      // lstSoccerPlayer contiene tutti i giocatori che hanno giocato (espulsi , infortunati, sostituiti ecc..) la lstReserve non mi serve
+      // dopo disqualified e injured vengono aggiornati solo da chi ha giocato in Players
+      // Players contiene tutti i giocatori che hanno giocato (espulsi , infortunati, sostituiti ecc..) la Reserves non mi serve
 
       TotYellowCard  :=  qPlayers.FieldByName('totyellowcard').asinteger;
-      aPlayer := brain.GetSoccerPlayerALL ( qPlayers.FieldByName('guid').asstring ); // tutti! ... player, reserve e gameover
+      aPlayer := brain.GeTPlayerALL ( qPlayers.FieldByName('guid').asstring ); // tutti! ... player, reserve e gameover
 
       TotYellowCard := TotYellowCard + aPlayer.YellowCard;
       if TotYellowCard >= YELLOW_DISQUALIFIED then begin
@@ -1403,7 +1385,7 @@ begin
   Result := Trunc(RandGen.AsLimitedDouble (Lower, Upper + 1));
 end;
 
-function TBrainManager.Findbrain ( ids: string ): TSoccerbrain;
+function TBrainManager.Findbrain ( ids: string ): TBrain;
 var
   i: Integer;
 begin
@@ -1419,7 +1401,7 @@ begin
   ReleaseMutex(Mutex);
 
 end;
-function TBrainManager.Findbrain ( CliId: integer ): TSoccerbrain;
+function TBrainManager.Findbrain ( CliId: integer ): TBrain;
 var
   i,s: Integer;
 begin
@@ -1437,7 +1419,7 @@ begin
   ReleaseMutex(Mutex);
 
 end;
-procedure TBrainManager.AddBrain ( brain: TSoccerbrain );
+procedure TBrainManager.AddBrain ( brain: TBrain );
 //var
 //  i: Integer;
 //  found: Boolean;
@@ -1725,7 +1707,7 @@ begin
   WaitForSingleObject(Mutex,INFINITE);
     if Client.Brain <> nil then begin
       for I := 0 to brainManager.lstBrain.Count -1 do begin
-        if brainManager.lstBrain[i].BrainIDS  = TSoccerBrain(Client.Brain).BrainIDS then begin
+        if brainManager.lstBrain[i].BrainIDS  = TBrain(Client.Brain).BrainIDS then begin
           if brainManager.lstBrain[i].Score.TeamGuid [0] = Client.GuidTeams[brainManager.lstBrain[i].gendern] then begin
             brainManager.lstBrain[i].Score.AI[0]:= true;
             brainManager.lstBrain[i].Score.CliId [0] := 0;
@@ -1753,7 +1735,7 @@ procedure TFormServer.TcpserverDataAvailable(Sender: TObject; ErrCode: Word);
 var
     Cli: TWSocketThrdClient;
     RcvdLine,NewData,history: string;
-    aBrain: TSoccerBrain;
+    aBrain: TBrain;
     oldGender: Char;
     ts: TStringList;
     i,aValue: Integer;
@@ -1763,15 +1745,24 @@ var
     alvlUp: TLevelUp;
     ConnGame,ConnAccount : TMyConnection;
     MyQueryCheat,MyQueryTeam:  TMyQuery;
+    CmdClient: Integer;
     label cheat;
 begin
   try
     Cli := Sender as TWSocketThrdClient;
     RcvdLine :=  RemoveEndOfLine  (Cli.ReceiveStr);
     Cli.Processing := True;
+
+    CmdClient :=  StrToIntDef( LeftStr( RcvdLine,2 ),-1 );
+    if (CmdClient < 0) or (CmdClient > 255) then begin
+      cli.sReason:= 'CMDCLIENT error ' + RcvdLine;
+      cli.sreason := LeftStr( cli.sreason , 255);
+      goto cheat;
+    end;
+
     ts:= TStringList.Create;
     ts.StrictDelimiter := True;
-    ts.CommaText := RcvdLine;
+    ts.CommaText := RightStr( RcvdLine, Length(RcvdLine ) - 2); // lascio solo i parametri nella ts. elimino il cmdClient
 
     if (( GetTickCount - Cli.lastTickCount ) < GLOBAL_COOLDOWN )   then begin
       cli.sReason:= 'GLOBAL COOLDOWN: ' + RcvdLine;
@@ -1788,146 +1779,154 @@ begin
     {$ENDIF  useMemo}
 
 
-
-
-
     if not IsStandardText ( RcvdLine ) then begin
       cli.sReason:= 'Not Standard Text';
       goto cheat;
     end;
 
-    if ts.Count < 1 then begin
-      cli.sReason:= 'Missing paramenter';
-      goto Cheat;
-    end;
-
 
 
       // quando la partita termina la lista degli spettatori viene eliminata nel destroy del brain
-    if ts[0] ='login' then begin
-      validate_login (ts.CommaText, cli);
-      if cli.sReason <> '' then goto cheat;
+    case CmdClient of
+      CMD_CLIENT_LOGIN: begin
+        validate_login (ts.CommaText, cli);
+        if cli.sReason <> '' then goto cheat;
 
-      anAuth := CheckAuth (ts[1],ts[2]);
-      case anAuth.AccountStatus  of
-        0: begin  // login incorrect
-          Cli.SendStr( 'info,errorlogin' + EndOfline);
+        anAuth := CheckAuth (ts[0],ts[1]);
+        case anAuth.AccountStatus  of
+          0: begin  // login incorrect
+            Cli.NewData := Format('%.*d',[2, CMD_ERRORLOGIN]);
+            Cli.SendStr ( Cli.NewData + EndofLine);
 
-        end;
-        1: begin  // ok login, but no team
-          (* Mando la pwdTicket *)
-          cli.GmLevel := anAuth.GmLevel;
-          Cli.CliId := anAuth.account;
-          Cli.sPassWord  := anAuth.password;
-          Cli.Username := anAuth.UserName;
-          Cli.Flags :=  anAuth.Flags;
-
-
-          // preparo world.countries.ini direttamente nell'FTP
-          Cli.SendStr ( 'BEGINWC,' + tsWorldCountries.commatext + EndofLine);  // diretto
-
-        end;
-        2: begin  // all ok
-          Cli.CliId := anAuth.account;
-          Cli.sPassWord  := anAuth.password;
-          Cli.Username := anAuth.UserName;
-          Cli.Flags :=  anAuth.Flags;
+          end;
+          1: begin  // ok login, but no team
+            (* Mando la pwdTicket *)
+            cli.GmLevel := anAuth.GmLevel;
+            Cli.CliId := anAuth.account;
+            Cli.sPassWord  := anAuth.password;
+            Cli.Username := anAuth.UserName;
+            Cli.Flags :=  anAuth.Flags;
 
 
-          cli.GmLevel := anAuth.GmLevel;
-          Cli.GuidTeams := anAuth.GuidTeams;
-          Cli.WorldTeam := anAuth.WorldTeam;
-          Cli.teamName  := anAuth.TeamName ;
-          Cli.nextHA := anAuth.nextha;
-          Cli.mi := anAuth.mi;
-          aBrain :=  inLiveMatchGuidTeam ( 'f', Cli.GuidTeams[1] );
-          if aBrain = nil then
-            aBrain :=  inLiveMatchGuidTeam ( 'm',Cli.GuidTeams[2] );
+            // preparo world.countries.ini direttamente nell'FTP
+            Cli.NewData := Format('%.*d',[2, CMD_WORLDCOUNTRIES]) + tsWorldCountries.commatext ;
+            Cli.SendStr ( Cli.NewData + EndofLine);
 
-          if aBrain = nil then begin
-            Cli.ActiveGender := 'm';
-            Cli.ActiveGenderN := 2;
-            Cli.SendStr( 'guid,' + Cli.ActiveGender + ','+ IntToStr(Cli.GuidTeams[2] ) + ',' + Cli.teamName  + ',' + intToStr(Cli.nextHA) +',' + intToStr(Cli.mi) + EndofLine);
-          end
-          else begin // reconnect
-           // if GetTickCount - aBrain.FinishedTime < 25000 then  begin // a 30 secondi lo cancello
-            if ( not aBrain.Finished ) or (  (aBrain.Finished ) and ((GetTickCount - aBrain.FinishedTime) < 10000 )) then begin  // 10 secondi
+          end;
+          2: begin  // all ok
+            Cli.CliId := anAuth.account;
+            Cli.sPassWord  := anAuth.password;
+            Cli.Username := anAuth.UserName;
+            Cli.Flags :=  anAuth.Flags;
 
-              if aBrain.Score.TeamGuid [0] = Cli.GuidTeams[1] then begin
-                aBrain.Score.CliId[0]:= Cli.CliId ;
-                aBrain.Score.AI [0] := False;                            // annulla la AI
-              end
-              else  if aBrain.Score.TeamGuid [1] = Cli.GuidTeams[1] then  begin
-                aBrain.Score.CliId[1]:= Cli.CliId ;
-                aBrain.Score.AI [1] := False;  // annulla la AI
-              end
-              else if aBrain.Score.TeamGuid [0] = Cli.GuidTeams[2] then begin
-                aBrain.Score.CliId[0]:= Cli.CliId ;
-                aBrain.Score.AI [0] := False;                            // annulla la AI
-              end
-              else  if aBrain.Score.TeamGuid [1] = Cli.GuidTeams[2] then  begin
-                aBrain.Score.CliId[1]:= Cli.CliId ;
-                aBrain.Score.AI [1] := False;  // annulla la AI
-              end;
-              cli.Brain := TObject(aBrain);
-              Cli.ActiveGender := TSoccerBrain( Cli.Brain).Gender;
-              Cli.ActiveGenderN :=  TSoccerBrain( Cli.Brain).GenderN;
 
-              Cli.SendStr( 'GUID,'+Cli.ActiveGender+',' + IntToStr(Cli.GuidTeams[2] ) + ',' + Cli.teamName  + ',' + intToStr(Cli.nextHA) +',' + intToStr(Cli.mi) + ',' +
-              'BEGINBRAIN' +  AnsiChar ( abrain.incMove )   +  brainManager.GetBrainStream ( abrain ) + EndofLine);
-            end
-            else begin  // spedisco la formazione
+            cli.GmLevel := anAuth.GmLevel;
+            Cli.GuidTeams := anAuth.GuidTeams;
+            Cli.WorldTeam := anAuth.WorldTeam;
+            Cli.teamName  := anAuth.TeamName ;
+            Cli.nextHA := anAuth.nextha;
+            Cli.mi := anAuth.mi;
+            aBrain :=  inLiveMatchGuidTeam ( 'f', Cli.GuidTeams[1] );
+            if aBrain = nil then
+              aBrain :=  inLiveMatchGuidTeam ( 'm',Cli.GuidTeams[2] );
+
+            if aBrain = nil then begin
               Cli.ActiveGender := 'm';
               Cli.ActiveGenderN := 2;
-              Cli.SendStr( 'guid,' + Cli.ActiveGender +',' +IntToStr(Cli.GuidTeams[2] ) + ',' + Cli.teamName  + ',' + intToStr(Cli.nextHA) +',' + intToStr(Cli.mi) + EndofLine);
+              Cli.NewData := Format('%.*d',[2, CMD_TEAMINFO]) + Cli.ActiveGender + ','+ IntToStr(Cli.GuidTeams[2] ) + ',' + Cli.teamName  + ',' + intToStr(Cli.nextHA) +',' + intToStr(Cli.mi);
+              Cli.SendStr ( Cli.NewData + EndofLine);
+            end
+            else begin // reconnect
+             // if GetTickCount - aBrain.FinishedTime < 25000 then  begin // a 30 secondi lo cancello
+              if ( not aBrain.Finished ) or (  (aBrain.Finished ) and ((GetTickCount - aBrain.FinishedTime) < 10000 )) then begin  // 10 secondi
+
+                if aBrain.Score.TeamGuid [0] = Cli.GuidTeams[1] then begin
+                  aBrain.Score.CliId[0]:= Cli.CliId ;
+                  aBrain.Score.AI [0] := False;                            // annulla la AI
+                end
+                else  if aBrain.Score.TeamGuid [1] = Cli.GuidTeams[1] then  begin
+                  aBrain.Score.CliId[1]:= Cli.CliId ;
+                  aBrain.Score.AI [1] := False;  // annulla la AI
+                end
+                else if aBrain.Score.TeamGuid [0] = Cli.GuidTeams[2] then begin
+                  aBrain.Score.CliId[0]:= Cli.CliId ;
+                  aBrain.Score.AI [0] := False;                            // annulla la AI
+                end
+                else  if aBrain.Score.TeamGuid [1] = Cli.GuidTeams[2] then  begin
+                  aBrain.Score.CliId[1]:= Cli.CliId ;
+                  aBrain.Score.AI [1] := False;  // annulla la AI
+                end;
+                cli.Brain := TObject(aBrain);
+                Cli.ActiveGender := TBrain( Cli.Brain).Gender;
+                Cli.ActiveGenderN :=  TBrain( Cli.Brain).GenderN;
+                //INFOANDBRAIN
+                FormServer.TcpServer.Client [i].NewData := Format('%.*d',[2, CMD_INFOANDBRAIN])  +
+                Cli.ActiveGender+',' + IntToStr(Cli.GuidTeams[2] ) + ',' + Cli.teamName  + ',' + intToStr(Cli.nextHA) +',' + intToStr(Cli.mi) + ',' +
+                Format('%.*d',[4, aBrain.incMove]) + brainManager.GetBrainStream ( abrain );
+
+                FormServer.TcpServer.Client [i].SendStr ( FormServer.TcpServer.Client [i].NewData + EndofLine);
+
+
+              end
+              else begin  // spedisco la formazione
+                Cli.ActiveGender := 'm';
+                Cli.ActiveGenderN := 2;
+                //INFO
+                FormServer.TcpServer.Client [i].NewData := Format('%.*d',[2, CMD_TEAMINFO]) + Cli.ActiveGender +',' +IntToStr(Cli.GuidTeams[2] ) + ',' + Cli.teamName  + ',' + intToStr(Cli.nextHA) +',' + intToStr(Cli.mi) ;
+                FormServer.TcpServer.Client [i].SendStr ( FormServer.TcpServer.Client [i].NewData + EndofLine);
+
+              end;
             end;
+
           end;
+        end;
+      end;
+      CMD_CLIENT_SWITCH: begin
+
+        oldGender := Cli.ActiveGender;
+        if Cli.ActiveGender = 'f' then begin
+          Cli.ActiveGender := 'm';
+          Cli.ActiveGenderN := 2;
+          if oldGender <> Cli.ActiveGender then
+            Cli.NewData := Format('%.*d',[2, CMD_TEAMINFO])+ Cli.ActiveGender +',' +IntToStr(Cli.GuidTeams[2] ) + ',' + Cli.teamName  + ',' + intToStr(Cli.nextHA) +',' + intToStr(Cli.mi);
+            Cli.SendStr ( Cli.NewData + EndofLine);
+        end
+        else if Cli.ActiveGender = 'm' then begin
+          Cli.ActiveGender := 'f';
+          Cli.ActiveGenderN := 1;
+          if oldGender <> Cli.ActiveGender then
+            Cli.NewData := Format('%.*d',[2, CMD_TEAMINFO])+ Cli.ActiveGender +',' +IntToStr(Cli.GuidTeams[1] ) + ',' + Cli.teamName  + ',' + intToStr(Cli.nextHA) +',' + intToStr(Cli.mi);
+            Cli.SendStr ( Cli.NewData + EndofLine);
 
         end;
       end;
-    end
-    else if  ts[0] ='switch' then begin
-      oldGender := Cli.ActiveGender;
-      if Cli.ActiveGender = 'f' then begin
-        Cli.ActiveGender := 'm';
-        Cli.ActiveGenderN := 2;
-        if oldGender <> Cli.ActiveGender then
-          Cli.SendStr( 'guid,' + Cli.ActiveGender +',' +IntToStr(Cli.GuidTeams[2] ) + ',' + Cli.teamName  + ',' + intToStr(Cli.nextHA) +',' + intToStr(Cli.mi) + EndofLine);
-      end
-      else if Cli.ActiveGender = 'm' then begin
-        Cli.ActiveGender := 'f';
-        Cli.ActiveGenderN := 1;
-        if oldGender <> Cli.ActiveGender then
-          Cli.SendStr( 'guid,' + Cli.ActiveGender +',' +IntToStr(Cli.GuidTeams[1] ) + ',' + Cli.teamName  + ',' + intToStr(Cli.nextHA) +',' + intToStr(Cli.mi) + EndofLine);
-      end;
-    end
-
-    else if ts[0] ='selectedteam' then begin
+      CMD_CLIENT_SELECTEDTEAM: begin
         validate_clientcreateteam (ts.CommaText , cli) ;
         if cli.sReason <> ''  then goto cheat;
       // Creo il team, creo i players, mando al client il team
         Cli.ActiveGender := 'f';
         Cli.ActiveGenderN := 1;
-        Cli.GuidTeams[1] := CreateGameTeam ( Cli.ActiveGender, Cli, ts[1]);  // ts[1] è guid world.teams, non la Guidteam
+        Cli.GuidTeams[1] := CreateGameTeam ( Cli.ActiveGender, Cli, ts[0]);  // ts[0] è guid world.teams, non la Guidteam
         if cli.sReason <> ''  then goto cheat;
         reset_formation (cli);
-        Cli.GuidTeams[2] := CreateGameTeam ( Cli.ActiveGender, Cli, ts[1]);  // ts[1] è guid world.teams, non la Guidteam
+        Cli.GuidTeams[2] := CreateGameTeam ( Cli.ActiveGender, Cli, ts[0]);  // ts[0] è guid world.teams, non la Guidteam
         if cli.sReason <> ''  then goto cheat;
         Cli.ActiveGender := 'm';
         Cli.ActiveGenderN := 2;
         reset_formation (cli);
-        Cli.SendStr ( 'BEGINTEAM' + GetTeamStream ( Cli.GuidTeams[ Cli.ActiveGenderN  ],Cli.ActiveGender ) + EndofLine);
-    end
-
-    else if ts[0]= 'getformation' then  begin
+        Cli.NewData := Format('%.*d',[2, CMD_TEAMDETAILS])+ GetTeamStream ( Cli.GuidTeams[ Cli.ActiveGenderN  ],Cli.ActiveGender );
+        Cli.SendStr ( Cli.NewData + EndofLine);
+      end;
+      CMD_CLIENT_GETFORMATION: begin
         if inQueue (Cli.Cliid) or inLiveMatchCliid(Cli.Cliid) or inSpectator(Cli.Cliid)  then begin
           cli.sReason := 'InQueue,InliveMatch,inSpectator: ' + ts.CommaText;
           if cli.sReason <> '' then  goto cheat;
         end;
 
-        Cli.SendStr ( 'BEGINTEAM' + GetTeamStream ( Cli.GuidTeams[Cli.ActiveGenderN],Cli.ActiveGender ) + EndofLine);
-    end
-    else if ts[0]= 'setformation' then  begin
+        Cli.NewData := Format('%.*d',[2, CMD_TEAMDETAILS])+  GetTeamStream ( Cli.GuidTeams[Cli.ActiveGenderN],Cli.ActiveGender );
+        Cli.SendStr ( Cli.NewData + EndofLine);
+      end;
+      CMD_CLIENT_SETFORMATION: begin
         if inQueue (Cli.Cliid) or inLiveMatchCliid(Cli.Cliid) or inSpectator(Cli.Cliid)  then begin
           cli.sReason := 'InQueue,InliveMatch,inSpectator: ' + ts.CommaText;
           if cli.sReason <> '' then  goto cheat;
@@ -1938,9 +1937,10 @@ begin
 
       // STORE nel DB della formation diretta della commatext
           store_formation (Cli.ActiveGender,ts.CommaText );
-          Cli.SendStr ( 'BEGINTEAM' + GetTeamStream ( Cli.GuidTeams[Cli.ActiveGenderN],Cli.ActiveGender ) + EndofLine);
-    end
-    else if ts[0]= 'resetformation' then  begin
+        Cli.NewData := Format('%.*d',[2, CMD_TEAMDETAILS])+  GetTeamStream ( Cli.GuidTeams[Cli.ActiveGenderN],Cli.ActiveGender );
+        Cli.SendStr ( Cli.NewData + EndofLine);
+      end;
+     CMD_CLIENT_RESETFORMATION: begin
         if inQueue (Cli.Cliid) or inLiveMatchCliid(Cli.Cliid) or inSpectator(Cli.Cliid)  then begin
           cli.sReason := 'InQueue,InliveMatch,inSpectator: ' + ts.CommaText;
           if cli.sReason <> '' then  goto cheat;
@@ -1949,9 +1949,10 @@ begin
         reset_formation (cli);
 //        if cli.sReason <> ''  then goto cheat;
 
-        Cli.SendStr ( 'BEGINTEAM' + GetTeamStream ( Cli.GuidTeams[Cli.ActiveGenderN],Cli.ActiveGender ) + EndofLine);
-    end
-    else if ts[0]= 'setuniform' then  begin
+        Cli.NewData := Format('%.*d',[2, CMD_TEAMDETAILS])+  GetTeamStream ( Cli.GuidTeams[Cli.ActiveGenderN],Cli.ActiveGender );
+        Cli.SendStr ( Cli.NewData + EndofLine);
+      end;
+     CMD_CLIENT_SETUNIFORM: begin
         if inQueue (Cli.Cliid) or inLiveMatchCliid(Cli.Cliid) or inSpectator(Cli.Cliid)  then begin
           cli.sReason := 'InQueue,InliveMatch,inSpectator: ' + ts.CommaText;
           if cli.sReason <> '' then  goto cheat;
@@ -1962,30 +1963,33 @@ begin
 
       // STORE nel DB delle uniform
           store_uniform (  Cli.GuidTeams[Cli.ActiveGenderN] , ts.CommaText );
-          Cli.SendStr ( 'BEGINTEAM' + GetTeamStream ( Cli.GuidTeams[Cli.ActiveGenderN],Cli.ActiveGender ) + EndofLine);
-    end
-    else if ts[0]= 'levelupattribute' then  begin  // guid attr
+        Cli.NewData := Format('%.*d',[2, CMD_TEAMDETAILS])+  GetTeamStream ( Cli.GuidTeams[Cli.ActiveGenderN],Cli.ActiveGender );
+        Cli.SendStr ( Cli.NewData + EndofLine);
+      end;
+      CMD_CLIENT_LEVELUP: begin
         if inQueue (Cli.Cliid) or inLiveMatchCliid(Cli.Cliid) or inSpectator(Cli.Cliid)  then begin
           cli.sReason := 'InQueue,InliveMatch,inSpectator: ' + ts.CommaText;
           if cli.sReason <> '' then  goto cheat;
         end;
         validate_levelupAttribute (ts.CommaText, Cli); // levelup, ids, attr or talentID  // qui controlla sql injection
         if cli.sReason <> '' then  goto cheat;
-        TryDecimalStrToInt( ts[1], aValue); // ids è numerico passato da validate_levelup
+        TryDecimalStrToInt( ts[0], aValue); // ids è numerico passato da validate_levelup
         aValidPlayer := validate_player(  aValue, cli ); // disqualified ora non ci interessa , mi interessa la chance in base all'età
 
-        alvlUp:=  pvpTrylevelUpAttribute (MySqlServerGame,Cli.ActiveGender,  StrToInt(ts[1]),  StrToInt( ts[2]), aValidPlayer ); // il client aggiorna in mybrainformation e resetta le infoxp
-        Cli.SendStr ( 'la,' + IntToStr(alvlup.Guid) + ',' + IntToStr(Integer(alvlup.value)) + ',' + alvlUp.xpString +  EndofLine);
-        //Cli.SendStr ( 'BEGINTEAM' + GetTeamStream ( Cli.GuidTeam ) + EndofLine);
-    end
-    else if ts[0]= 'leveluptalent' then  begin  // guid attr
+        alvlUp:=  pvpTrylevelUpAttribute (MySqlServerGame,Cli.ActiveGender,  StrToInt(ts[0]),  StrToInt( ts[1]), aValidPlayer ); // il client aggiorna in mybrainformation e resetta le infoxp
+        Cli.NewData := Format('%.*d',[2, CMD_LEVELUP])+  IntToStr(alvlup.Guid) + ',' + IntToStr(Integer(alvlup.value)) + ',' + alvlUp.xpString ;
+        Cli.SendStr ( Cli.NewData + EndofLine);
+//        Cli.NewData := Format('%.*d',[2, CMD_TEAMDETAILS])+  GetTeamStream ( Cli.GuidTeams[Cli.ActiveGenderN],Cli.ActiveGender );
+//        Cli.SendStr ( Cli.NewData + EndofLine);
+      end;
+      CMD_CLIENT_TALENTUP: begin
         if inQueue (Cli.Cliid) or inLiveMatchCliid(Cli.Cliid) or inSpectator(Cli.Cliid)  then begin
           cli.sReason := 'InQueue,InliveMatch,inSpectator: ' + ts.CommaText;
           if cli.sReason <> '' then  goto cheat;
         end;
         validate_levelupTalent (ts.CommaText, Cli); // levelup, ids, attr or talentID  // qui controlla sql injection
         if cli.sReason <> '' then  goto cheat;
-        TryDecimalStrToInt( ts[1], aValue); // ids è numerico passato da validate_levelup
+        TryDecimalStrToInt( ts[0], aValue); // ids è numerico passato da validate_levelup
         aValidPlayer:= validate_player(aValue, cli  ); // disqualified ora non ci interessa , mi interessa la chance in base all'età
         if cli.sReason <> '' then  goto cheat;
         if aValidPlayer.talentID1 <> 0 then begin
@@ -1994,12 +1998,17 @@ begin
         end;
 
         WaitForSingleObject(Mutex,INFINITE);
-        alvlUp:=  pvpTrylevelUpTalent (MySqlServerGame, Cli.ActiveGender, StrToInt(ts[1]),  StrToInt( ts[2]), aValidPlayer  ); // il client aggiorna in mybrainformation e resetta le infoxp
+        alvlUp:=  pvpTrylevelUpTalent (MySqlServerGame, Cli.ActiveGender, StrToInt(ts[0]),  StrToInt( ts[1]), aValidPlayer  ); // il client aggiorna in mybrainformation e resetta le infoxp
         ReleaseMutex(Mutex);
-//          Cli.SendStr ( 'BEGINTEAM' + GetTeamStream ( Cli.GuidTeam ) + EndofLine);
-        Cli.SendStr ( 'lt,' + IntToStr(alvlup.Guid) + ',' + IntToStr(Integer(alvlup.value)) + ',' + alvlUp.xpString + EndofLine);
-    end
-    else if ts[0]= 'sell' then  begin  // ids value
+
+        Cli.NewData := Format('%.*d',[2, CMD_LEVELUP]) + IntToStr(alvlup.Guid) + ',' + IntToStr(Integer(alvlup.value)) + ',' + alvlUp.xpString ;
+        Cli.SendStr ( Cli.NewData + EndofLine);
+//        Cli.NewData := Format('%.*d',[2, CMD_TEAMDETAILS])+  GetTeamStream ( Cli.GuidTeams[Cli.ActiveGenderN],Cli.ActiveGender );
+//        Cli.SendStr ( Cli.NewData + EndofLine);
+
+      end;
+      CMD_CLIENT_SELLMARKET: begin
+        { TODO :     pvp testare sell/buy sembra andare bene }
         if inQueue (Cli.Cliid) or inLiveMatchCliid(Cli.Cliid) or inSpectator(Cli.Cliid)  then begin
           cli.sReason := 'InQueue,InliveMatch,inSpectator: ' + ts.CommaText;
           if cli.sReason <> '' then  goto cheat;
@@ -2009,10 +2018,13 @@ begin
         if cli.sReason <> '' then  goto cheat;
         MarketSell (  Cli, ts.CommaText ); //<-- va sul db f_game.players ---> f_game.market  // deve essere un player di quel guidteam. faccio tutto qui per economia
         if cli.sReason <> '' then  goto cheat;
-        Cli.SendStr ( 'BEGINTEAM'  + GetTeamStream ( Cli.GuidTeams[Cli.ActiveGenderN],Cli.ActiveGender ) + EndofLine);  // aggiorna completamente il client
+        Cli.NewData := Format('%.*d',[2, CMD_TEAMDETAILS])+  GetTeamStream ( Cli.GuidTeams[Cli.ActiveGenderN],Cli.ActiveGender );
+        Cli.SendStr ( Cli.NewData + EndofLine);
 
-    end
-    else if ts[0]= 'cancelsell' then  begin  // ids value
+
+      end;
+      CMD_CLIENT_CANCELSELLMARKET : begin
+        { TODO :     pvp testare sell/buy sembra andare bene }
         if inQueue (Cli.Cliid) or inLiveMatchCliid(Cli.Cliid) or inSpectator(Cli.Cliid)  then begin
           cli.sReason := 'InQueue,InliveMatch,inSpectator: ' + ts.CommaText;
           if cli.sReason <> '' then  goto cheat;
@@ -2022,10 +2034,12 @@ begin
         if cli.sReason <> '' then  goto cheat;
         MarketCancelSell (  Cli, ts.CommaText ); //<-- va sul db f_game.players ---> f_game.market  // deve essere un player di quel guidteam. faccio tutto qui per economia
         if cli.sReason <> '' then  goto cheat;
-        Cli.SendStr ( 'BEGINTEAM'  + GetTeamStream (Cli.GuidTeams[Cli.ActiveGenderN] ,Cli.ActiveGender) + EndofLine);  // aggiorna completamente il client
+        Cli.NewData := Format('%.*d',[2, CMD_TEAMDETAILS])+  GetTeamStream ( Cli.GuidTeams[Cli.ActiveGenderN],Cli.ActiveGender );
+        Cli.SendStr ( Cli.NewData + EndofLine);
 
-    end
-    else if ts[0]= 'buy' then  begin  // ids
+      end;
+      CMD_CLIENT_BUYMARKET: begin
+        { TODO :     pvp testare sell/buy sembra andare bene }
         if inQueue (Cli.Cliid) or inLiveMatchCliid(Cli.Cliid) or inSpectator(Cli.Cliid)  then begin
           cli.sReason := 'InQueue,InliveMatch,inSpectator: ' + ts.CommaText;
           if cli.sReason <> '' then  goto cheat;
@@ -2041,10 +2055,11 @@ begin
           Exit;
         end
         else if cli.sReason <> '' then  goto cheat;
-        Cli.SendStr ( 'BEGINTEAM'  + GetTeamStream ( Cli.GuidTeams[Cli.ActiveGenderN],Cli.ActiveGender ) + EndofLine);  // aggiorna completamente il client
+        Cli.NewData := Format('%.*d',[2, CMD_TEAMDETAILS])+  GetTeamStream ( Cli.GuidTeams[Cli.ActiveGenderN],Cli.ActiveGender );
+        Cli.SendStr ( Cli.NewData + EndofLine);
 
-    end
-    else if ts[0]= 'market' then begin  // maxvalue
+      end;
+      CMD_CLIENT_LISTMARKET : begin
         if inQueue (Cli.Cliid) or inLiveMatchCliid(Cli.Cliid) or inSpectator(Cli.Cliid)  then begin
           cli.sReason := 'InQueue,InliveMatch,inSpectator: ' + ts.CommaText;
           if cli.sReason <> '' then  goto cheat;
@@ -2052,10 +2067,11 @@ begin
 
         validate_market (ts.CommaText, Cli);
         if cli.sReason <> '' then  goto cheat;
-        Cli.SendStr ( 'BEGINMARKET'  + GetMarketPlayers ( Cli.ActiveGender,Cli.GuidTeams[Cli.ActiveGenderN], StrToInt(ts[1]) ) + EndofLine);  // aggiorna completamente il client
+        Cli.NewData := Format('%.*d',[2, CMD_MARKET]) + GetMarketPlayers ( Cli.ActiveGender,Cli.GuidTeams[Cli.ActiveGenderN], StrToInt(ts[0]));
+        Cli.SendStr ( Cli.NewData + EndofLine);
 
-    end
-    else if ts[0]= 'dismiss' then  begin  // ids
+      end;
+      CMD_CLIENT_DISMISS: begin  // ids
         if inQueue (Cli.Cliid) or inLiveMatchCliid(Cli.Cliid) or inSpectator(Cli.Cliid)  then begin
           cli.sReason := 'InQueue,InliveMatch,inSpectator: ' + ts.CommaText;
           if cli.sReason <> '' then  goto cheat;
@@ -2065,47 +2081,53 @@ begin
         if cli.sReason <> '' then  goto cheat;
         DismissPlayer ( Cli, ts.CommaText );
         if cli.sReason <> '' then  goto cheat;
-        Cli.SendStr ( 'BEGINTEAM'  + GetTeamStream (Cli.GuidTeams[Cli.ActiveGenderN],Cli.ActiveGender ) + EndofLine);  // aggiorna completamente il client
+        Cli.NewData := Format('%.*d',[2, CMD_TEAMDETAILS])+  GetTeamStream ( Cli.GuidTeams[Cli.ActiveGenderN],Cli.ActiveGender );
+        Cli.SendStr ( Cli.NewData + EndofLine);
 
-    end
-    else if ts[0] ='cancelqueue' then begin
-      if not inLiveMatchCliid(Cli.cliId) then begin
-        RemoveFromQueue( Cli.cliId );
-        //Cli.SendStr ( 'cancelqueueok' + EndofLine );  // rispedisco la formazione
-        // rispedisco la formazione, ma potrebbe essere che la partita è stata creata. sta a team 0 e non riceve brain quindi il client si è perso
-        if not inLiveMatchCliid( Cli.CliId ) then
-          Cli.SendStr ( 'BEGINTEAM' + GetTeamStream ( Cli.GuidTeams[Cli.ActiveGenderN],Cli.ActiveGender ) + EndofLine);
-          // altriemtni aspetta il beginbrain
       end;
-    end
-    else if ts[0] ='cancelspectatorqueue' then begin
-      if not inSpectator(Cli.cliId) then begin
-        //RemoveFromSpectator ( Cli.cliId );
-//        Cli.SendStr ( 'cancelspectatorqueueok' + EndofLine );
-        Cli.SendStr ( 'BEGINTEAM' + GetTeamStream ( Cli.GuidTeams[Cli.ActiveGenderN],Cli.ActiveGender ) + EndofLine);
-      end
-      else begin
-        RemoveFromSpectator ( Cli.cliId );
-//        aBrain := BrainManager.FindBrain ( cli.CliId );// cerca in brainManager il cliId del client
-//        if aBrain <> nil then begin
-//          aBrain.RemoveSpectator (Cli.CliId); // rimuovo me stesso client al brain di un altro wSocket
+      CMD_CLIENT_CANCELQUEUE: begin
+        if not inLiveMatchCliid(Cli.cliId) then begin
+          RemoveFromQueue( Cli.cliId );
+          //Cli.SendStr ( 'cancelqueueok' + EndofLine );  // rispedisco la formazione
+          // rispedisco la formazione, ma potrebbe essere che la partita è stata creata. sta a team 0 e non riceve brain quindi il client si è perso
+          if not inLiveMatchCliid( Cli.CliId ) then begin
+            Cli.NewData := Format('%.*d',[2, CMD_TEAMDETAILS])+  GetTeamStream ( Cli.GuidTeams[Cli.ActiveGenderN],Cli.ActiveGender );
+            Cli.SendStr ( Cli.NewData + EndofLine);
+          end;
+            // altriemtni aspetta il beginbrain
+        end;
+      end;
+      CMD_CLIENT_CANCELSPECTATORQUEUE: begin
+        if not inSpectator(Cli.cliId) then begin
+          //RemoveFromSpectator ( Cli.cliId );
+  //        Cli.SendStr ( 'cancelspectatorqueueok' + EndofLine );
+            Cli.NewData := Format('%.*d',[2, CMD_TEAMDETAILS])+  GetTeamStream ( Cli.GuidTeams[Cli.ActiveGenderN],Cli.ActiveGender );
+            Cli.SendStr ( Cli.NewData + EndofLine);
+        end
+        else begin
+          RemoveFromSpectator ( Cli.cliId );
+  //        aBrain := BrainManager.FindBrain ( cli.CliId );// cerca in brainManager il cliId del client
+  //        if aBrain <> nil then begin
+  //          aBrain.RemoveSpectator (Cli.CliId); // rimuovo me stesso client al brain di un altro wSocket
+            Cli.Brain := Nil;
+            Cli.NewData := Format('%.*d',[2, CMD_CLOSEVIEWMATCHOK]) ;
+            Cli.SendStr ( Cli.NewData + EndofLine);
+  //        end;
+
+        end;
+      end;
+      CMD_CLIENT_CLOSEVIEWMATCH: begin
+          { smette di guardare la partita di un altro giocatore o della AI }
+          aBrain := BrainManager.FindBrain ( cli.CliId );// cerca in brainManager il cliId del client
+        if aBrain <> nil then begin
+          aBrain.RemoveSpectator (Cli.CliId); // rimuovo me stesso client al brain di un altro wSocket
           Cli.Brain := Nil;
-          Cli.SendStr ( 'closeviewmatchok' + EndofLine );
-//        end;
+        end;
+        Cli.NewData := Format('%.*d',[2, CMD_CLOSEVIEWMATCHOK]) ;
+        Cli.SendStr ( Cli.NewData + EndofLine);
 
       end;
-    end
-    else if  ts[0] ='closeviewmatch' then begin
-        { smette di guardare la partita di un altro giocatore o della AI }
-        aBrain := BrainManager.FindBrain ( cli.CliId );// cerca in brainManager il cliId del client
-      if aBrain <> nil then begin
-        aBrain.RemoveSpectator (Cli.CliId); // rimuovo me stesso client al brain di un altro wSocket
-        Cli.Brain := Nil;
-      end;
-      Cli.SendStr ( 'closeviewmatchok' + EndofLine );
-
-    end
-    else if ts[0] ='queue' then begin
+      CMD_CLIENT_QUEUE: begin
         if checkformation (cli) and not InQueue(Cli.CliId ) and not inLivematchCliId(Cli.CliId) and not inSpectator(Cli.CliId) then begin
           //Cli.MarketValueTeam := GetMarketValueTeam ( Cli.GuidTeam );
 
@@ -2131,281 +2153,286 @@ begin
           Conngame.free;
           Cli.TimeStartQueue := GetTickCount; // dopo di che parte il bot
           Queue.Add (Cli);
-          Cli.SendStr('avg' + EndOfline);
+          Cli.NewData := Format('%.*d',[2, CMD_AVG]) ;
+          Cli.SendStr ( Cli.NewData + EndofLine);
         end
         else begin
           cli.sreason := ' checkformation InQueue,InliveMatch,inSpectator: ';
           goto cheat;
 
         end
-      end
-      else if  ts[0] ='listmatch' then begin
+      end;
+      CMD_CLIENT_LISTMATCHES: begin
           { ottiene la lista di matches }
           // 0=listmatch
           newData :=  GetListActiveBrainStream ( Cli.ActiveGender ) ;
           if Length(NewData) > 0 then
             Cli.SendStr ( 'BEGINAML' + newData + EndofLine);  // diretto
 
-      end
-      else if  ts[0] ='viewmatch' then begin
+      end;
+      CMD_CLIENT_VIEWMATCH: begin
         validate_viewmatch (ts.CommaText, Cli);
         if cli.sReason <> '' then  goto cheat;
           // guarda la partita di un altro giocatore o della AI
           // 0viewmatch 1=idMatch   ( date,time e team)
           // trovare il turno corrente incMove
-          aBrain := BrainManager.FindBrain ( ts[1] );// cerca in brainManager il BrainIds di una partita
+          aBrain := BrainManager.FindBrain ( ts[0] );// cerca in brainManager il BrainIds di una partita
           if aBrain <> nil then begin
             if aBrain.GameStarted then begin
               aBrain.lstSpectator.Add(Cli.CliId); // aggiungo me stesso client al brain di un altro wSocket
               Cli.Brain := aBrain;
             end;
           end;
-      end
+      end;
 
   // in coda
     // cli.activegender e cli.activegenderN sono settate al login o con switch
     // il comando va direttamente al brain del client, quello su cui sta giocando.
-    // se desidero input da altri client devo assegnare il brain dell'altro client ( TSoccerBrain(Cli.Brain):= altrobrain
-      else if (ts[0] ='PLM')  or (ts[0] ='TACTIC')then begin
+    // se desidero input da altri client devo assegnare il brain dell'altro client ( TBrain(Cli.Brain):= altrobrain
+      CMD_PLAY_PLM, CMD_PLAY_TACTIC:  begin
+{ TODO :     test nuova versione sub e tactics }
           validate_CMD4 (ts.CommaText, Cli); // cli.pwd cli.guidteam, cli.brain cli.team, cli.brain.teamturn
           if cli.sReason <> '' then  goto cheat;
 
         // 0=PLM o TACTIC 1=ids 2=cellX 3=CellY
-         TSoccerBrain(Cli.Brain).BrainInput ( IntToStr(Cli.GuidTeams[Cli.ActiveGenderN]) +',' + ts[0]  + ',' + ts[1] + ',' + ts[2] +  ',' + ts[3]  );
-      end
-      else if (ts[0] ='SUB') then begin
+         TBrain(Cli.Brain).BrainInput ( IntToStr(Cli.GuidTeams[Cli.ActiveGenderN]) +',' + ts[0]  + ',' + ts[1] + ',' + ts[2] +  ',' + ts[3]  );
+      end;
+      CMD_PLAY_SUB: begin
+{ TODO :     test nuova versione sub e tactics }
           validate_CMD_subs (ts.CommaText, Cli); // cli.pwd cli.guidteam, cli.brain cli.team, cli.brain.teamturn
           if cli.sReason <> '' then  goto cheat;
         // 0=SUBS 1=ids 2=is
-         TSoccerBrain(Cli.Brain).BrainInput ( IntToStr(Cli.GuidTeams[Cli.ActiveGenderN]) + ',' + ts[0] + ',' + ts[1] + ',' + ts[2]   );
-      end
-      else if (ts[0] ='PASS') or (ts[0] ='COR')or (ts[0] ='CRO2')  then begin  // sul brain iscof batterà il corner
+         TBrain(Cli.Brain).BrainInput ( IntToStr(Cli.GuidTeams[Cli.ActiveGenderN]) + ',' + ts[0] + ',' + ts[1] + ',' + ts[2]   );
+      end;
+      CMD_PLAY_PASS, CMD_PLAY_COR,CMD_PLAY_CRO2: begin  // sul brain iscof batterà il corner
           validate_CMD1 (ts.CommaText,Cli);
           if cli.sReason <> '' then   goto cheat;
         // 0=PASS
-          TSoccerBrain(Cli.Brain).BrainInput ( IntToStr(Cli.GuidTeams[Cli.ActiveGenderN]) + ',' + ts[0] );
-      end
-      else if (ts[0] ='PRS') or (ts[0] ='POS') or (ts[0] ='PRO')  then begin
+          TBrain(Cli.Brain).BrainInput ( IntToStr(Cli.GuidTeams[Cli.ActiveGenderN]) + ',' + ts[0] );
+      end;
+      CMD_PLAY_PRS, CMD_PLAY_POS, CMD_PLAY_PRO: begin
           validate_CMD1 (ts.CommaText, Cli);
           if cli.sReason <> '' then   goto cheat;
         // 0=PRS...
-          TSoccerBrain(Cli.Brain).BrainInput ( IntToStr(Cli.GuidTeams[Cli.ActiveGenderN]) + ',' + ts[0]);
-      end
-      else if (ts[0] ='PRE') or (ts[0] ='TAC') or (ts[0] ='STAY') or (ts[0] ='FREE') then begin
+          TBrain(Cli.Brain).BrainInput ( IntToStr(Cli.GuidTeams[Cli.ActiveGenderN]) + ',' + ts[0]);
+      end;
+      CMD_PLAY_PRE, CMD_PLAY_TAC, CMD_PLAY_STAY, CMD_PLAY_FREE: begin
           validate_CMD2 (ts.CommaText, Cli);
           if cli.sReason <> '' then   goto cheat;
         // 0=BUFF DMF... 1=ids di chi fa il buff
-          TSoccerBrain(Cli.Brain).BrainInput ( IntToStr(Cli.GuidTeams[Cli.ActiveGenderN]) + ',' + ts[0] + ',' + ts[1] );
-      end
-      else if (ts[0] ='BUFFD') or (ts[0] ='BUFFM') or (ts[0] ='BUFFF') then begin
+          TBrain(Cli.Brain).BrainInput ( IntToStr(Cli.GuidTeams[Cli.ActiveGenderN]) + ',' + ts[0] + ',' + ts[1] );
+      end;
+      CMD_PLAY_BUFFD, CMD_PLAY_BUFFM, CMD_PLAY_BUFFF: begin
           validate_CMD2 (ts.CommaText, Cli);
           if cli.sReason <> '' then   goto cheat;
         // 0=PRE... 1=ids di chi fa il tackle o il pressing
-          TSoccerBrain(Cli.Brain).BrainInput ( IntToStr(Cli.GuidTeams[Cli.ActiveGenderN]) + ',' + ts[0] + ',' + ts[1] );
-      end
-      else if (ts[0] ='CRO') or (ts[0] ='SHP') or (ts[0] ='DRI')  then begin
+          TBrain(Cli.Brain).BrainInput ( IntToStr(Cli.GuidTeams[Cli.ActiveGenderN]) + ',' + ts[0] + ',' + ts[1] );
+      end;
+      CMD_PLAY_CRO, CMD_PLAY_SHP, CMD_PLAY_DRI: begin
           validate_CMD3 (ts.CommaText, cli);
           if cli.sReason <> '' then   goto cheat;
         // 0=CRO... 1=cellX 2=CellY
-          TSoccerBrain(Cli.Brain).BrainInput ( IntToStr(Cli.GuidTeams[Cli.ActiveGenderN]) + ',' + ts[0] + ',' + ts[1] + ',' + ts[2] );
-      end
-        else if ts[0] ='LOP' then begin
+          TBrain(Cli.Brain).BrainInput ( IntToStr(Cli.GuidTeams[Cli.ActiveGenderN]) + ',' + ts[0] + ',' + ts[1] + ',' + ts[2] );
+      end;
+      CMD_PLAY_LOP: begin
           validate_CMDlop (ts.CommaText, cli);
           if cli.sReason <> '' then   goto cheat;
         // 0=LOP... 1=cellX 2=CellY 3=N o GKLOP
-          TSoccerBrain(Cli.Brain).BrainInput ( IntToStr(Cli.GuidTeams[Cli.ActiveGenderN]) + ',' + ts[0] + ',' + ts[1] + ',' + ts[2] + ',' + ts[3] );
-      end
-      else if (ts[0] ='CORNER_ATTACK.SETUP') or (ts[0] ='FREEKICK2_ATTACK.SETUP') then begin
+          TBrain(Cli.Brain).BrainInput ( IntToStr(Cli.GuidTeams[Cli.ActiveGenderN]) + ',' + ts[0] + ',' + ts[1] + ',' + ts[2] + ',' + ts[3] );
+      end;
+      CMD_PLAY_CORNER_ATTACK_SETUP, CMD_PLAY_FREEKICK2_ATTACK_SETUP: begin
           validate_CMD_coa(ts.CommaText, cli);
           if cli.sReason <> '' then  goto cheat;
         // 0=CORNER_ATTACK.SETUP 1=cof 2=coa1 3=coa2 4=coa3
-          TSoccerBrain(Cli.Brain).BrainInput ( IntToStr(Cli.GuidTeams[Cli.ActiveGenderN]) + ',' + ts[0] + ',' + ts[1] + ',' + ts[2] + ',' + ts[3] + ',' + ts[4]);
-      end
-      else if (ts[0] ='CORNER_DEFENSE.SETUP') or (ts[0] ='FREEKICK2_DEFENSE.SETUP')  then begin
+          TBrain(Cli.Brain).BrainInput ( IntToStr(Cli.GuidTeams[Cli.ActiveGenderN]) + ',' + ts[0] + ',' + ts[1] + ',' + ts[2] + ',' + ts[3] + ',' + ts[4]);
+      end;
+      CMD_PLAY_CORNER_DEFENSE_SETUP, CMD_PLAY_FREEKICK2_DEFENSE_SETUP: begin
           validate_CMD_cod(ts.CommaText, Cli);
           if cli.sReason <> '' then  goto cheat;
         // 0=CORNER_DEFENSE.SETUP 1=cod1 2=cod2 3=cod3
-          TSoccerBrain(Cli.Brain).BrainInput (IntToStr(Cli.GuidTeams[Cli.ActiveGenderN])+ ',' + ts[0] + ',' + ts[1] + ',' + ts[2] + ',' + ts[3] );
-      end
-      else if ts[0] ='FREEKICK3_DEFENSE.SETUP' then begin
+          TBrain(Cli.Brain).BrainInput (IntToStr(Cli.GuidTeams[Cli.ActiveGenderN])+ ',' + ts[0] + ',' + ts[1] + ',' + ts[2] + ',' + ts[3] );
+      end;
+      CMD_PLAY_FREEKICK3_DEFENSE_SETUP: begin
           validate_CMD_bar(ts.CommaText, Cli);
           if cli.sReason <> '' then  goto cheat;
         // 0=FREEKICK3_DEFENSE.SETUP 1=bar1 2=bar2 3=bar3 4=bar4
-          TSoccerBrain(Cli.Brain).BrainInput ( IntToStr(Cli.GuidTeams[Cli.ActiveGenderN]) + ',' + ts[0] + ',' + ts[1] + ',' + ts[2] + ',' + ts[3]+ ',' + ts[4] );
-      end
-      else if (ts[0] ='FREEKICK1_ATTACK.SETUP') or (ts[0] ='FREEKICK3_ATTACK.SETUP') or (ts[0] ='FREEKICK4_ATTACK.SETUP')  then begin
+          TBrain(Cli.Brain).BrainInput ( IntToStr(Cli.GuidTeams[Cli.ActiveGenderN]) + ',' + ts[0] + ',' + ts[1] + ',' + ts[2] + ',' + ts[3]+ ',' + ts[4] );
+      end;
+      CMD_PLAY_FREEKICK1_ATTACK_SETUP, CMD_PLAY_FREEKICK3_ATTACK_SETUP, CMD_PLAY_FREEKICK4_ATTACK_SETUP: begin
           validate_CMD2(ts.CommaText, Cli);
           if cli.sReason <> '' then  goto cheat;
         // 0=FREEKICK1_ATTACK.SETUP 1=fkf1 o3o4
-          TSoccerBrain(Cli.Brain).BrainInput ( IntToStr(Cli.GuidTeams[Cli.ActiveGenderN]) + ',' + ts[0] +  ',' + ts[1]);
-      end
-      else if ts[0] ='AUTO'  then begin
+          TBrain(Cli.Brain).BrainInput ( IntToStr(Cli.GuidTeams[Cli.ActiveGenderN]) + ',' + ts[0] +  ',' + ts[1]);
+      end;
+      CMD_CLIENT_AUTO: begin
 //          validate_aiteam (ts.CommaText, cli);
 //          if cli.sReason <> '' then  goto cheat;
-        if TSoccerBrain(Cli.Brain).Score.TeamGuid[0] = Cli.GuidTeams[Cli.ActiveGenderN] then
-          TSoccerBrain(Cli.Brain).Score.AI[0]:= not TSoccerBrain(Cli.Brain).Score.AI[0]
-        else if TSoccerBrain(Cli.Brain).Score.TeamGuid[1] = Cli.GuidTeams[Cli.ActiveGenderN] then
-          TSoccerBrain(Cli.Brain).Score.AI[1]:= not TSoccerBrain(Cli.Brain).Score.AI[1];
+        if TBrain(Cli.Brain).Score.TeamGuid[0] = Cli.GuidTeams[Cli.ActiveGenderN] then
+          TBrain(Cli.Brain).Score.AI[0]:= not TBrain(Cli.Brain).Score.AI[0]
+        else if TBrain(Cli.Brain).Score.TeamGuid[1] = Cli.GuidTeams[Cli.ActiveGenderN] then
+          TBrain(Cli.Brain).Score.AI[1]:= not TBrain(Cli.Brain).Score.AI[1];
 
-      end
+      end;
 
 
 (* GM COMMANDS *)
 
-  else if ts[0] ='setball'  then begin
-        validate_CMD3 (ts.CommaText, cli);
+    CMD_CLIENT_SETBALL : begin
+      validate_CMD3 (ts.CommaText, cli);
+      if cli.sReason <> '' then  goto cheat;
+      if Cli.GmLevel > 0 then begin
+        TBrain(Cli.Brain).BrainInput ( IntToStr(Cli.GuidTeams[Cli.ActiveGenderN]) + ',' + ts[0] + ',' + ts[1] + ',' + ts[2]  );
+      end
+      else begin
+        cli.sReason := 'no GmLevel';
+        goto cheat;
+      end;
+    end;
+    CMD_CLIENT_INFINITETIME: begin
+      validate_CMD1 (ts.CommaText, cli);
+      if cli.sReason <> '' then  goto cheat;
+      if Cli.GmLevel > 0 then begin
+        TBrain(Cli.Brain).utime := True;
+      end
+      else begin
+        cli.sReason := 'no GmLevel';
+        goto cheat;
+      end;
+    end;
+    CMD_CLIENT_SETTURN: begin
+
+      validate_CMD2 (ts.CommaText, cli);
+      if cli.sReason <> '' then  goto cheat;
+      if Cli.GmLevel > 0 then begin
+        TBrain(Cli.Brain).Minute := StrToInt(ts[0]);
+        if StrToInt(ts[0]) < 120 then
+          TBrain(Cli.Brain).FlagEndGame := False;
+
+      end
+      else begin
+        cli.sReason := 'no GmLevel';
+        goto cheat;
+      end;
+    end;
+    CMD_debug_tackle_failed, CMD_debug_setfault,CMD_debug_setred,CMD_debug_setalwaysgol,CMD_debug_setposcrosscorner,CMD_debug_debug_buff100: begin
+
+      validate_debug_CMD2 (ts.CommaText, cli);
+      if cli.sReason <> '' then  goto cheat;
+      if Cli.GmLevel > 0 then begin
+        TBrain(Cli.Brain).BrainInput ( IntToStr(Cli.GuidTeams[Cli.ActiveGenderN]) + ',' +  IntToStr(CmdClient) + ',' + ts[0]  )
+      end
+      else begin
+        cli.sReason := 'no GmLevel';
+        goto cheat;
+      end;
+
+    end;
+    CMD_CLIENT_RANDOMSTAMINA: begin
+
+      if Cli.GmLevel > 0 then begin
+        TBrain(Cli.Brain).BrainInput ( IntToStr(Cli.GuidTeams[Cli.ActiveGenderN]) + ',' + IntToStr(CmdClient)   )
+      end
+      else begin
+        cli.sReason := 'no GmLevel';
+        goto cheat;
+      end;
+
+    end;
+    CMD_CLIENT_SETPLAYER: begin
+      if Cli.GmLevel > 0 then begin
+      validate_setplayer (ts.CommaText, cli);
+      if cli.sReason <> '' then  goto cheat;
+        TBrain(Cli.Brain).BrainInput ( IntToStr(Cli.GuidTeams[Cli.ActiveGenderN]) + ',' + IntToStr(CmdClient) + ',' + ts[1] + ',' + ts[2] + ',' + ts[3] )
+      end
+      else begin
+        cli.sReason := 'no GmLevel';
+        goto cheat;
+      end;
+    end;
+    CMD_debug_AITEAM: begin
+      if Cli.GmLevel > 0 then begin
+        validate_aiteam (ts.CommaText, cli);
         if cli.sReason <> '' then  goto cheat;
-        if Cli.GmLevel > 0 then begin
-          TSoccerBrain(Cli.Brain).BrainInput ( IntToStr(Cli.GuidTeams[Cli.ActiveGenderN]) + ',' + ts[0] + ',' + ts[1] + ',' + ts[2]  );
-        end
-        else begin
-          cli.sReason := 'no GmLevel';
-          goto cheat;
-        end;
-  end
-  else if ts[0] ='utime'   then begin
-        validate_CMD1 (ts.CommaText, cli);
+        TBrain(Cli.Brain).Score.AI[ StrToInt(ts[0])  ]:= StrToBool(ts[1]);
+      end
+      else begin
+        cli.sReason := 'no GmLevel';
+        goto cheat;
+      end;
+    end;
+    CMD_debug_testcorner: begin
+      validate_CMD2 (ts.CommaText, cli);
+      if cli.sReason <> '' then  goto cheat;
+      if Cli.GmLevel > 0 then begin
+        TBrain(Cli.Brain).BrainInput ( IntToStr(Cli.GuidTeams[Cli.ActiveGenderN]) + ',' + IntToStr(CmdClient) + ',' + ts[1]   )
+      end
+      else begin
+        cli.sReason := 'no GmLevel';
+        goto cheat;
+      end;
+    end;
+
+    CMD_CLIENT_BRAINPAUSE: begin
+      if Cli.GmLevel > 0 then begin
+        validate_pause (ts.CommaText, cli);
         if cli.sReason <> '' then  goto cheat;
-        if Cli.GmLevel > 0 then begin
-          TSoccerBrain(Cli.Brain).utime := True;
-        end
-        else begin
-          cli.sReason := 'no GmLevel';
-          goto cheat;
-        end;
-  end
-  else if ts[0] ='setturn'   then begin
-        validate_CMD2 (ts.CommaText, cli);
-        if cli.sReason <> '' then  goto cheat;
-        if Cli.GmLevel > 0 then begin
-          TSoccerBrain(Cli.Brain).Minute := StrToInt(ts[1]);
-          if StrToInt(ts[1]) < 120 then
-            TSoccerBrain(Cli.Brain).FlagEndGame := False;
+        TBrain(Cli.Brain).paused := StrToBool(ts[0]);
+      end
+      else begin
+        cli.sReason := 'no GmLevel';
+        goto cheat;
+      end;
+    end;
 
-        end
-        else begin
-          cli.sReason := 'no GmLevel';
-          goto cheat;
-        end;
-  end
-  else if (ts[0] ='debug_tackle_failed') or ( ts[0] = 'debug_setfault' ) or ( ts[0] = 'debug_setred' ) or
-          (ts[0] ='debug_setalwaysgol') or ( ts[0] = 'debug_setposcrosscorner' )  or ( ts[0] = 'debug_buff100' ) then begin
-        validate_debug_CMD2 (ts.CommaText, cli);
-        if cli.sReason <> '' then  goto cheat;
-        if Cli.GmLevel > 0 then begin
-          TSoccerBrain(Cli.Brain).BrainInput ( IntToStr(Cli.GuidTeams[Cli.ActiveGenderN]) + ',' + ts[0] + ',' + ts[1]   )
-        end
-        else begin
-          cli.sReason := 'no GmLevel';
-          goto cheat;
-        end;
-  end
-  else if ts[0] ='testcorner'  then begin
-     validate_CMD2 (ts.CommaText, cli);
-        if cli.sReason <> '' then  goto cheat;
-        if Cli.GmLevel > 0 then begin
-          TSoccerBrain(Cli.Brain).BrainInput ( IntToStr(Cli.GuidTeams[Cli.ActiveGenderN]) + ',' + ts[0] + ',' + ts[1]   )
-        end
-        else begin
-          cli.sReason := 'no GmLevel';
-          goto cheat;
-        end;
+     (* UNA VOLTA ALL'INIZIO DEL GAME *)
+    CMD_CLIENT_SELECTEDCOUNTRY: begin
 
-  end
-  else if ts[0] ='randomstamina'  then begin
-        if Cli.GmLevel > 0 then begin
-          TSoccerBrain(Cli.Brain).BrainInput ( IntToStr(Cli.GuidTeams[Cli.ActiveGenderN]) + ',' + ts[0]  )
-        end
-        else begin
-          cli.sReason := 'no GmLevel';
-          goto cheat;
-        end;
-
-  end
-  else if ts[0] ='setplayer'  then begin
-        if Cli.GmLevel > 0 then begin
-        validate_setplayer (ts.CommaText, cli);
-        if cli.sReason <> '' then  goto cheat;
-          TSoccerBrain(Cli.Brain).BrainInput ( IntToStr(Cli.GuidTeams[Cli.ActiveGenderN]) + ',' + ts[0] + ',' + ts[1] + ',' + ts[2] + ',' + ts[3] )
-        end
-        else begin
-          cli.sReason := 'no GmLevel';
-          goto cheat;
-        end;
-  end
-  else if ts[0] ='aiteam'  then begin
-        if Cli.GmLevel > 0 then begin
-          validate_aiteam (ts.CommaText, cli);
-          if cli.sReason <> '' then  goto cheat;
-          TSoccerBrain(Cli.Brain).Score.AI[ StrToInt(ts[1])  ]:= StrToBool(ts[2]);
-        end
-        else begin
-          cli.sReason := 'no GmLevel';
-          goto cheat;
-        end;
-  end
-  else if ts[0] ='pause'  then begin
-        if Cli.GmLevel > 0 then begin
-          validate_pause (ts.CommaText, cli);
-          if cli.sReason <> '' then  goto cheat;
-          TSoccerBrain(Cli.Brain).paused := StrToBool(ts[1]);
-        end
-        else begin
-          cli.sReason := 'no GmLevel';
-          goto cheat;
-        end;
-  end
-
-   (* UNA VOLTA ALL'INIZIO DEL GAME *)
-  else if ts[0] ='selectedcountry' then begin
-
-        validate_getteamsbycountry (ts.CommaText, Cli );
-        if cli.sReason <> ''  then goto cheat;
+          validate_getteamsbycountry (ts.CommaText, Cli );
+          if cli.sReason <> ''  then goto cheat;
 
 
 
-        tsNationTeam:= TStringList.Create;
-        PrepareNationTeams ( StrToIntDef(ts[1],1), tsNationTeam );
-        Cli.SendStr ( 'BEGINWT,' + tsNationTeam.commatext + EndofLine);  // diretto
-//            ShowMessage(  IntToStr( Length(tsNationTeam.CommaText) ) );
+          tsNationTeam:= TStringList.Create;
+          PrepareNationTeams ( StrToIntDef(ts[1],1), tsNationTeam );
+          Cli.SendStr ( 'BEGINWT,' + tsNationTeam.commatext + EndofLine);  // diretto
+  //            ShowMessage(  IntToStr( Length(tsNationTeam.CommaText) ) );
 
-//              SS := TStringStream.Create('');
-//              SS.CopyFrom(bMMworld.teams, 0);  // caricata all'avvio del server 1 volta
-//              NewData := SS.DataString;
-//              FormServer.TcpServer.Client [i].SendStr ( NewData + EndofLine);
-//              SS.Free;
-  end
-
-
-
-  else begin
-    // input non valido
-cheat:
-
-      ConnAccount := TMyConnection.Create(nil);
-      ConnAccount.Server := MySqlServerAccount;
-      ConnAccount.Username:='root';
-      ConnAccount.Password:='root';
-      ConnAccount.Database:='realmd';
-      ConnAccount.Connected := True;
+  //              SS := TStringStream.Create('');
+  //              SS.CopyFrom(bMMworld.teams, 0);  // caricata all'avvio del server 1 volta
+  //              NewData := SS.DataString;
+  //              FormServer.TcpServer.Client [i].SendStr ( NewData + EndofLine);
+  //              SS.Free;
+    end;
 
 
-      MyQueryCheat := TMyQuery.Create(nil);
+    else begin
+      // input non valido
+  cheat:
 
-      MyQueryCheat.Connection := ConnAccount;
-      cli.sReason  := cli.sReason + ': ' + ts.commatext;
-      cli.sreason := LeftStr( cli.sreason , 255);
-      Memo1.Lines.Add(cli.sReason + ':' + ts.commatext );
-      MyQueryCheat.SQL.Text := 'INSERT into cheat_detected (reason) values ("' + cli.sReason + '")';
-      MyQueryCheat.Execute ;
-      MyQueryCheat.Free;
-      ConnAccount.Connected := false;
-      ConnAccount.free;
+        ConnAccount := TMyConnection.Create(nil);
+        ConnAccount.Server := MySqlServerAccount;
+        ConnAccount.Username:='root';
+        ConnAccount.Password:='root';
+        ConnAccount.Database:='realmd';
+        ConnAccount.Connected := True;
 
-      Cli.sreason :='';
-      cli.Processing := False;
+
+        MyQueryCheat := TMyQuery.Create(nil);
+
+        MyQueryCheat.Connection := ConnAccount;
+        cli.sReason  := cli.sReason + ': ' + ts.commatext;
+        cli.sreason := LeftStr( cli.sreason , 255);
+        Memo1.Lines.Add(cli.sReason + ':' + ts.commatext );
+        MyQueryCheat.SQL.Text := 'INSERT into cheat_detected (reason) values ("' + cli.sReason + '")';
+        MyQueryCheat.Execute ;
+        MyQueryCheat.Free;
+        ConnAccount.Connected := false;
+        ConnAccount.free;
+
+        Cli.sreason :='';
+        cli.Processing := False;
+    end;
   end;
-
    // Application.ProcessMessages;
     cli.Processing := False;
     ts.free;
@@ -2627,13 +2654,13 @@ var
   SS: TStringStream;
   i: Integer;
   MM,MM2: TMemoryStream;
-  lstBrainTmp: TObjectList<TSoccerBrain>;
+  lstBrainTmp: TObjectList<TBrain>;
 begin
 
   WaitForSingleObject(Mutex,INFINITE);
   if BrainManager.lstbrain.count > 0 then begin
     // ne prendo 20 random
-    lstBrainTmp:= TObjectList<TSoccerBrain>.Create(False);
+    lstBrainTmp:= TObjectList<TBrain>.Create(False);
     for i := BrainManager.lstbrain.count -1 downto 0 do begin // ne faccio una copia in una tmp
       if BrainManager.lstBrain[i].Gender = fm then
       lstBrainTmp.Add(BrainManager.lstBrain[i]);
@@ -3088,7 +3115,7 @@ var
   i: Integer;
   CliOpponentGuidTeam : TWSocketThrdClient;
   ServerOpponent: array [0..1] of TServerOpponent;
-  aBrain: TSoccerBrain;
+  aBrain: TBrain;
   OpponentBOT: TServerOpponent;
   BrainIDS, aCommaText: string;
   cli :TWSocketClient;
@@ -3172,7 +3199,7 @@ vsBots:
     BrainIDS :=  GetBrainIds ( Queue[i].ActiveGender, IntToStr(ServerOpponent[0].GuidTeam ) , IntToStr(ServerOpponent[1].GuidTeam )) ;
 
     // creo un brain che lavori in una data cartella
-    aBrain := TSoccerBrain.create ( Brainids, Queue[i].ActiveGender, 0,0,0,0);
+    aBrain := TBrain.create ( Brainids, Queue[i].ActiveGender, 0,0,0,0);
     aBrain.GameMode := pvp;
     // se è un bot preparo la formazione direttamente sul db
     if ServerOpponent[0].bot then begin
@@ -3264,7 +3291,7 @@ begin
 end;
 procedure TFormServer.CreateMatchBOTvsBOT (  fm : Char; GuidTeam0, GuidTeam1: integer; Username0, UserName1: string );
 var
-  abrain: TSoccerBrain;
+  abrain: TBrain;
   BrainIDS,aCommaText: string;
 begin
     // creo e svuoto la dir_data.brainIds  e la relativa ftp
@@ -3274,7 +3301,7 @@ begin
     //    GuidTeam1:=33;
     BrainIDS := getBrainIds ( fm ,IntToStr(GuidTeam0 ) , IntToStr(GuidTeam1 )) ;
     // creo un brain che lavori in una data cartella
-    aBrain := TSoccerBrain.create ( Brainids, fm,0 ,0,0,0);
+    aBrain := TBrain.create ( Brainids, fm,0 ,0,0,0);
     aBrain.GameMode := pvp;
 
   //  aBrain.ShotCells := BrainManager.ShotCells; // Assegno le shotCells
@@ -3303,14 +3330,14 @@ begin
       aBrain.Score.AI[1]:= True;
 
 end;
-procedure TFormServer.CreateAndLoadMatch ( fm:Char;  brain: TSoccerBrain; GuidTeam0, GuidTeam1: integer; Username0, UserName1: string );
+procedure TFormServer.CreateAndLoadMatch ( fm:Char;  brain: TBrain; GuidTeam0, GuidTeam1: integer; Username0, UserName1: string );
 var
   TT: Integer;
   i,pcount,nMatchesplayed,nMatchesLeft,aTeam: integer;
   TvCell,TvReserveCell,aPoint: TPoint;
   GuidTeam: array[0..1] of Integer;
   UserName: array[0..1] of string;
-  aPlayer: TSoccerPlayer;
+  aPlayer: TPlayer;
   aName, aSurname, Attributes,aIds: string;
   ConnGame : TMyConnection;
   qTeams,qPlayers,MyQueryWT : TMyQuery;
@@ -3376,10 +3403,10 @@ begin
   Conngame.Database:= fm + '_game';
   Conngame.Connected := True;
 
-{  brain.lstSoccerGameOver.Clear;
-  brain.lstSoccerReserve.Clear;
-  brain.lstSoccerPlayer.Clear;
-  brain.lstSoccerPlayerALL.Clear; }
+{  brain.Gameover.Clear;
+  brain.Reserves.Clear;
+  brain.Players.Clear;
+  brain.PlayersALL.Clear; }
 
   for I := 0 to 1 do begin
 
@@ -3455,7 +3482,7 @@ begin
       // la formationcells determina il role
       aPoint.X := qPlayers.FieldByName('formation_x').AsInteger ;
       aPoint.Y := qPlayers.FieldByName('formation_y').AsInteger ;
-      aPlayer:= TSoccerPlayer.Create( aTeam,
+      aPlayer:= TPlayer.Create( aTeam,
                                  GuidTeam[TT] ,
                                  nMatchesplayed,
                                  aIds,
@@ -3529,7 +3556,7 @@ begin
       aPlayer.face := qPlayers.FieldByName('face').AsInteger;
       aPlayer.Country := qPlayers.FieldByName('country').AsInteger;
 
-      brain.lstSoccerPlayerALL.Add(aPlayer);
+      brain.PlayersALL.Add(aPlayer);
       if isReserveSlot( aPlayer.CellX, aPlayer.CellY ) then
         brain.AddSoccerReserve(aPlayer)    // <--- riempe reserveSlot
       else  brain.AddSoccerPlayer(aPlayer);
@@ -3540,14 +3567,14 @@ MyContinue:
   end;
  { buff casalingo e morale }
   for I := 0 to 3 do begin // buff casalingo ti ASSICURA 3 player con attributi incrementati  +1 sia per f che per m
-    aPlayer := brain.GetSoccerPlayerRandom (0,false); // non il gk
+    aPlayer := brain.GeTPlayerRandom (0,false); // non il gk
     if Buff_or_Debuff_4 ( aPlayer, 1, brain.MAX_STAT) then // potrebbe trovare un player già maximizzato
       aPlayer.BuffHome := 1;
   end;
 
   // morale  i GK sono esenti dal morale
-  for i := brain.lstSoccerPlayer.Count -1 downto 0 do begin
-    aPlayer := brain.lstSoccerPlayer[i];
+  for i := brain.Players.Count -1 downto 0 do begin
+    aPlayer := brain.Players[i];
     if aPlayer.TalentId1 <> 1 then begin // non GK
       if aPlayer.Team = 0 then begin // solo Home players
         if aPlayer.Morale = 2 then begin // su di morale   // se morale 2 20% ottenere +1
@@ -3584,7 +3611,7 @@ function TFormServer.CreateGameTeam ( fm :char;  cli: TWSocketThrdClient;  World
 //  cli.cliid=account: integer;
 var
   i: Integer;
-  aPlayer: TSoccerPlayer;
+  aPlayer: TPlayer;
   aBasePlayer: TBasePlayer;
   GuidGameTeam,Fitness0,Fitness: Integer;
   UniformA,UniformH,TeamName,Country,Morale: string;
@@ -3872,6 +3899,7 @@ begin
     Result.TalentId1 :=  PresetFT[index]
   else Result.TalentId1 :=  PresetMT[index];
 
+   { TODO : pvp:    devA e devT partono uguali per tutti in pvp. dipendono dalla quantità di azioni giocate. es. +1% ogni 20 palle giocate }
 
   Result.deva := 5;
   Result.devt := 5;
@@ -4008,74 +4036,7 @@ retrym:
 
 
 end;
-procedure TFormServer.validate_getteamsbycountry ( const CommaText: string; Cli:TWSocketThrdClient  );
-var
-  ts: TStringList;
-  value: Integer;
-begin
-  // 0=cmd 1=idcountry
 
-  cli.sReason:='';
-  ts:= TStringList.Create ;
-  ts.CommaText := CommaText;
-  if not TryDecimalStrToInt( ts[1], Value) then begin
-    cli.sReason:= 'id World.Country not numeric';
-    ts.Free;
-    Exit;
-  end;
-  ts.Free;
-
-end;
-procedure TFormServer.validate_clientcreateteam ( const CommaText: string; Cli:TWSocketThrdClient  ) ;
-var
-  ts: TStringList;
-  value: Integer;
-begin
-  // 0=cmd 1=idWorldTeam
-  cli.sReason:='';
-  ts:= TStringList.Create ;
-  ts.CommaText := CommaText;
-  if not TryDecimalStrToInt( ts[1], Value) then begin
-    cli.sReason:= 'id World.Teams not numeric';
-    ts.Free;
-    Exit;
-  end;
-  ts.Free;
-
-end;
-procedure TFormServer.validate_viewMatch ( const CommaText: string; Cli:TWSocketThrdClient  ) ;
-//var
-//  ts: TStringList;
-//  value: Integer;
-begin
-  // 0=cmd 1=id match
-  cli.sReason:='';
- // ts:= TStringList.Create ;
- // ts.CommaText := CommaText;
- // if not TryDecimalStrToInt( ts[1], Value) then begin
- //   cli.sReason:= 'id Match not numeric';
- //   ts.Free;
- //   Exit;
- // end;
- // ts.Free;
-
-end;
-
-procedure TFormServer.validate_login ( const CommaText: string; Cli:TWSocketThrdClient );
-begin
-  // 0=login 1=user 2=password
-  cli.sReason:='';
-
-  //check sql injection
-  if (Pos ( 'SELECT', UpperCase(CommaText),1 ) <> 0) or
-  (Pos ( 'UPDATE', UpperCase(CommaText),1 ) <> 0) or
-  (Pos ( 'DROP', UpperCase(CommaText),1 ) <> 0) or
-  (Pos ( 'ALTER', UpperCase(CommaText),1 ) <> 0) or
-  (Pos ( 'INSERT', UpperCase(CommaText),1 ) <> 0) then begin
-    cli.sReason:= 'SQL injection?';
-    Exit;
-  end;
-end;
 function TFormServer.LastIncMoveIni ( directory: string ): string;
 var
   sf : SE_SearchFiles;
@@ -4098,613 +4059,12 @@ begin
   sf.Free;
 
 end;
-procedure TFormServer.validate_aiteam ( const CommaText: string; Cli:TWSocketThrdClient  );
-var
-  ts: TStringList;
-  aValue: Integer;
-begin
-  // 0=aiteam 1=team 2=0 o -1
-  cli.sReason:='';
-  if Cli.Brain = nil then begin
-    cli.sReason:= 'no Active Brain';
-    Exit;
-  end;
-
-
-  ts:= TStringList.Create ;
-  ts.CommaText := CommaText;
-  if ts.Count <> 3 then begin
-    cli.sReason:= 'Parameter count mismatch';
-    ts.Free;
-    Exit;
-  end;
-
-
-  // team
-  if not TryDecimalStrToInt( ts[1], AValue) then begin
-    cli.sReason:= 'Team not numeric';
-    ts.Free;
-    Exit;
-  end;
-  if not TryDecimalStrToInt( ts[2], AValue) then begin
-    cli.sReason:= 'AI true/false not numeric';
-    ts.Free;
-    Exit;
-  end;
-
-
-  ts.Free;
-
-end;
-procedure TFormServer.validate_pause ( const CommaText: string; Cli:TWSocketThrdClient  );
-var
-  ts: TStringList;
-  aValue: Integer;
-begin
-  // 0=pause 1=0 o -1
-  cli.sReason:='';
-  if Cli.Brain = nil then begin
-    cli.sReason:= 'no Active Brain';
-    Exit;
-  end;
-
-
-  ts:= TStringList.Create ;
-  ts.CommaText := CommaText;
-  if ts.Count <> 2 then begin
-    cli.sReason:= 'Parameter count mismatch';
-    ts.Free;
-    Exit;
-  end;
-
-
-  // true or false
-  if not TryDecimalStrToInt( ts[1], AValue) then begin
-    cli.sReason:= 'Team not numeric';
-    ts.Free;
-    Exit;
-  end;
-
-
-  ts.Free;
-
-end;
-procedure TFormServer.validate_setplayer ( const CommaText: string; Cli:TWSocketThrdClient  );
-var
-  ts: TStringList;
-  aValue: Integer;
-begin
-  // 0=setplayer 1=guid/ids 2=cellx 3=celly
-  cli.sReason:='';
-  if Cli.Brain = nil then begin
-    cli.sReason:= 'no Active Brain';
-    Exit;
-  end;
-
-
-  ts:= TStringList.Create ;
-  ts.CommaText := CommaText;
-  if ts.Count <> 4 then begin
-    cli.sReason:= 'Parameter count mismatch';
-    ts.Free;
-    Exit;
-  end;
-
-
-  // player, cellx, celly
-  if not TryDecimalStrToInt( ts[1], AValue) then begin
-    cli.sReason:= 'Player not numeric';
-    ts.Free;
-    Exit;
-  end;
-  if not TryDecimalStrToInt( ts[2], AValue) then begin
-    cli.sReason:= 'Cellx not numeric';
-    ts.Free;
-    Exit;
-  end;
-  if not TryDecimalStrToInt( ts[3], AValue) then begin
-    cli.sReason:= 'CellY not numeric';
-    ts.Free;
-    Exit;
-  end;
-
-
-  ts.Free;
-
-end;
-
-procedure TFormServer.validate_CMD4 ( const CommaText: string; Cli:TWSocketThrdClient  );
-var
-  aPlayer: TSoccerPlayer;
-  ts: TStringList;
-  aValue: Integer;
-begin
-  // 0=PLM 1=ids 2=cellX 3=CellY
-  cli.sReason:='';
-  if Cli.Brain = nil then begin
-    cli.sReason:= 'no Active Brain';
-    Exit;
-  end;
-  if TSoccerBrain(Cli.brain).Score.CliId [TSoccerBrain(Cli.brain).TeamTurn] <> Cli.CliId then begin
-    cli.sReason:= 'Turn/CliId mismatch';
-    Exit;
-  end;
-
-  // coerenza guidTeam e teamTurn
-  if TSoccerBrain(Cli.brain).Score.TeamGuid  [TSoccerBrain(Cli.brain).TeamTurn] <> cli.GuidTeams[TSoccerBrain(Cli.brain).GenderN] then begin
-    cli.sReason:= 'GuidTeam Turn mismatch';
-    Exit;
-  end;
-
-  ts:= TStringList.Create ;
-  ts.CommaText := CommaText;
-  if ts.Count <> 4 then begin
-    cli.sReason:= 'Parameter count mismatch';
-    ts.Free;
-    Exit;
-  end;
-
-  // Coerenza Ids
-  aPlayer := TSoccerBrain(Cli.brain).GetSoccerPlayer  (ts[1])   ;
-  if aPlayer = nil then begin
-    cli.sReason:= 'Player not found';
-    ts.Free;
-    Exit;
-  end;
-  if aPlayer.GuidTeam <> Cli.GuidTeams[TSoccerBrain(Cli.brain).GenderN] then begin
-    cli.sReason:= 'Player GuidTeam mismatch';
-    ts.Free;
-    Exit;
-  end;
-
-  // cellx e Celly
-  if not TryDecimalStrToInt( ts[2], AValue) then begin
-    cli.sReason:= 'Cellx not numeric';
-    ts.Free;
-    Exit;
-  end;
-  if not TryDecimalStrToInt( ts[3], AValue) then begin
-    cli.sReason:= 'CellY not numeric';
-    ts.Free;
-    Exit;
-  end;
-
-  if (StrToInt( ts[2]) < 0) or (StrToInt( ts[2]) > 11) or (StrToInt( ts[3]) < 0) or (StrToInt( ts[3]) > 6) then begin
-    cli.sReason:= 'CellX or CellY outside field';
-    ts.Free;
-    Exit;
-  end;
-
-  ts.Free;
-
-end;
-Procedure TFormServer.validate_CMD3 ( const CommaText: string; Cli:TWSocketThrdClient  );
-var
-  ts: TStringList;
-  aValue: Integer;
-
-begin
-//    else if (ts[1] ='CRO') or (ts[1] ='SHP') or (ts[1] ='LOP') or (ts[1] ='DRI') then begin
-  // 0=CRO 1=cellX 2=CellY
-  cli.sReason:='';
-
-  if Cli.Brain = nil then begin
-    cli.sReason:= 'no Active Brain';
-    Exit;
-  end;
-
-  ts:= TStringList.Create ;
-  ts.CommaText := CommaText;
-  if ts.Count <> 3 then begin
-    cli.sReason:= 'Parameter count mismatch';
-    ts.Free;
-    Exit;
-  end;
-
-  if ts[0] <> 'setball' then begin
-
-    if TSoccerBrain(Cli.brain).Score.CliId [TSoccerBrain(Cli.brain).TeamTurn] <> Cli.CliId then begin
-      cli.sReason:= 'Turn/CliId mismatch';
-      ts.Free;
-      Exit;
-    end;
-
-    // coerenza guidTeam e teamTurn
-    if TSoccerBrain(Cli.brain).Score.TeamGuid  [TSoccerBrain(Cli.brain).TeamTurn] <> cli.GuidTeams[TSoccerBrain(Cli.brain).GenderN] then begin
-      cli.sReason:= 'GuidTeam Turn mismatch';
-      ts.Free;
-      Exit;
-    end;
-  end;
-  // cellx e Celly
-  if not TryDecimalStrToInt( ts[1],aValue) then begin
-    cli.sReason:= 'CellX not numeric';
-    ts.Free;
-    Exit;
-  end;
-  if not TryDecimalStrToInt( ts[2], aValue) then begin
-    cli.sReason:= 'CellY not numeric';
-    ts.Free;
-    Exit;
-  end;
-
-  if (StrToInt( ts[1]) < 0) or (StrToInt( ts[1]) > 11) or (StrToInt( ts[2]) < 0) or (StrToInt( ts[2]) > 6) then begin
-    cli.sReason:= 'CellX or CellY outside field';
-    ts.Free;
-    Exit;
-  end;
-  ts.Free;
-end;
-Procedure TFormServer.validate_CMDlop ( const CommaText: string; Cli:TWSocketThrdClient  );
-var
-  ts: TStringList;
-  aValue: Integer;
-
-begin
-  // 0=LOP 1=cellX 2=CellY 3=N or GKLOP
-  cli.sReason:='';
-
-  if Cli.Brain = nil then begin
-    cli.sReason:= 'no Active Brain';
-    Exit;
-  end;
-
-  ts:= TStringList.Create ;
-  ts.CommaText := CommaText;
-  if ts.Count <> 4 then begin
-    cli.sReason:= 'Parameter count mismatch';
-    ts.Free;
-    Exit;
-  end;
-
-  if TSoccerBrain(Cli.brain).Score.CliId [TSoccerBrain(Cli.brain).TeamTurn] <> Cli.CliId then begin
-    cli.sReason:= 'Turn/CliId mismatch';
-    ts.Free;
-    Exit;
-  end;
-
-  // coerenza guidTeam e teamTurn
-  if TSoccerBrain(Cli.brain).Score.TeamGuid  [TSoccerBrain(Cli.brain).TeamTurn] <> cli.GuidTeams[TSoccerBrain(Cli.brain).GenderN] then begin
-    cli.sReason:= 'GuidTeam Turn mismatch';
-    ts.Free;
-    Exit;
-  end;
-
-  // cellx e Celly
-  if not TryDecimalStrToInt( ts[1],aValue) then begin
-    cli.sReason:= 'CellX not numeric';
-    ts.Free;
-    Exit;
-  end;
-  if not TryDecimalStrToInt( ts[2], aValue) then begin
-    cli.sReason:= 'CellY not numeric';
-    ts.Free;
-    Exit;
-  end;
-
-  if (StrToInt( ts[1]) < 0) or (StrToInt( ts[1]) > 11) or (StrToInt( ts[2]) < 0) or (StrToInt( ts[2]) > 6) then begin
-    cli.sReason:= 'CellX or CellY outside field';
-    ts.Free;
-    Exit;
-  end;
-  ts.Free;
-end;
-procedure TFormServer.validate_CMD1 ( const CommaText: string; Cli:TWSocketThrdClient  );
-var
-  ts: TStringList;
-begin
-//    else if (ts[1] ='PRS') or (ts[1] ='POS') or (ts[1] ='PRO')  then begin
-//    else if (ts[1] ='PASS') or (ts[1] ='COR')  then begin  // sul brain iscof batterà il corner
-// PRE TAC
-  // 0=PRS
-  cli.sReason:='';
-
-  if Cli.Brain = nil then begin
-    cli.sReason:= 'no Active Brain';
-    Exit;
-  end;
-
-  ts:= TStringList.Create ;
-  ts.CommaText := CommaText;
-  if ts.Count <> 1 then begin
-    cli.sReason:= 'Parameter count mismatch';
-    ts.Free;
-    Exit;
-  end;
-
-  if TSoccerBrain(Cli.brain).Score.CliId [TSoccerBrain(Cli.brain).TeamTurn] <> Cli.CliId then begin
-    cli.sReason:= 'Turn/CliId mismatch';
-    ts.Free;
-    Exit;
-  end;
-  // coerenza guidTeam e teamTurn
-  if TSoccerBrain(Cli.brain).Score.TeamGuid  [TSoccerBrain(Cli.brain).TeamTurn] <> cli.GuidTeams[TSoccerBrain(Cli.brain).GenderN] then begin
-    cli.sReason:= 'GuidTeam Turn mismatch';
-    ts.Free;
-    Exit;
-  end;
-
-    ts.Free;
-
-end;
-procedure TFormServer.validate_debug_CMD2 ( const CommaText: string; Cli:TWSocketThrdClient  );
-var
-  ts: TStringList;
-  aValue: integer;
-begin
-  cli.sReason:='';
-
-  if Cli.Brain = nil then begin
-    cli.sReason:= 'no Active Brain';
-    Exit;
-  end;
-
-  ts:= TStringList.Create ;
-  ts.CommaText := CommaText;
-  if ts.Count <> 2 then begin
-    cli.sReason:= 'Parameter count mismatch';
-    ts.Free;
-    Exit;
-  end;
-
-  if not TryDecimalStrToInt( ts[1],aValue) then begin
-    cli.sReason:= CommaText + ' not numeric';
-    ts.Free;
-    Exit;
-  end;
-
-  ts.Free;
-
-end;
-procedure TFormServer.validate_CMD2 ( const CommaText: string; Cli:TWSocketThrdClient  );
-var
-  ts: TStringList;
-begin
-//    else if (ts[1] ='TAC') or (ts[1] ='PRE  then begin
-  // 0=PRE o TAC  1=ids
-  cli.sReason:='';
-
-  if Cli.Brain = nil then begin
-    cli.sReason:= 'no Active Brain';
-    Exit;
-  end;
-
-  ts:= TStringList.Create ;
-  ts.CommaText := CommaText;
-  if ts.Count <> 2 then begin
-    cli.sReason:= 'Parameter count mismatch';
-    ts.Free;
-    Exit;
-  end;
-
-  if TSoccerBrain(Cli.brain).Score.CliId [TSoccerBrain(Cli.brain).TeamTurn] <> Cli.CliId then begin
-    cli.sReason:= 'Turn/CliId mismatch';
-    ts.Free;
-    Exit;
-  end;
-
-  // coerenza guidTeam e teamTurn
-  if TSoccerBrain(Cli.brain).Score.TeamGuid  [TSoccerBrain(Cli.brain).TeamTurn] <> cli.GuidTeams[TSoccerBrain(Cli.brain).GenderN] then begin
-    cli.sReason:= 'GuidTeam Turn mismatch';
-    ts.Free;
-    Exit;
-  end;
-
-    ts.Free;
-
-end;
-
-procedure TFormServer.validate_CMD_coa ( const CommaText: string; Cli:TWSocketThrdClient  );
-var
-  aPlayer: TSoccerPlayer;
-  ts: TStringList;
-  i: Integer;
-begin
-  // 0=CORNER_ATTACK.SETUP 1=cop 2=coa 3=coa 4=coa
-  cli.sReason:='';
-
-  if Cli.Brain = nil then begin
-    cli.sReason:= 'no Active Brain';
-    Exit;
-  end;
-
-  ts:= TStringList.Create ;
-  ts.CommaText := CommaText;
-  if ts.Count <> 5 then begin
-    cli.sReason:= 'Parameter count mismatch';
-    ts.Free;
-    Exit;
-  end;
-
-  if TSoccerBrain(Cli.brain).Score.CliId [TSoccerBrain(Cli.brain).TeamTurn] <> Cli.CliId then begin
-    cli.sReason:= 'Turn/CliId mismatch';
-    ts.Free;
-    Exit;
-  end;
-  // coerenza guidTeam e teamTurn
-  if TSoccerBrain(Cli.brain).Score.TeamGuid  [TSoccerBrain(Cli.brain).TeamTurn] <> cli.GuidTeams[TSoccerBrain(Cli.brain).GenderN] then begin
-    cli.sReason:= 'GuidTeam Turn mismatch';
-    ts.Free;
-    Exit;
-  end;
-
-  // Coerenza Ids
-  for I := 1 to 4 do begin
-    aPlayer := TSoccerBrain(Cli.brain).GetSoccerPlayer(ts[i]);
-    if aPlayer = nil then begin
-      cli.sReason:= 'Player not found';
-      ts.Free;
-      Exit;
-    end;
-    if aPlayer.GuidTeam <> Cli.GuidTeams[TSoccerBrain(Cli.brain).GenderN]  then begin
-      cli.sReason:= 'Player GuidTeam mismatch';
-      ts.Free;
-      Exit;
-    end;
-  end;
-
-    ts.Free;
-
-end;
-procedure TFormServer.validate_CMD_cod ( const CommaText: string; Cli:TWSocketThrdClient  );
-var
-  aPlayer: TSoccerPlayer;
-  ts: TStringList;
-  i: Integer;
-begin
-  // 0='CORNER_DEFENSE.SETUP 1=cod 2=cod 3=cod
-  cli.sReason:='';
-
-  if Cli.Brain = nil then begin
-    cli.sReason:= 'no Active Brain';
-    Exit;
-  end;
-
-  ts:= TStringList.Create ;
-  ts.CommaText := CommaText;
-  if ts.Count <> 4 then begin
-    cli.sReason:= 'Parameter count mismatch';
-    ts.Free;
-    Exit;
-  end;
-
-  if TSoccerBrain(Cli.brain).Score.CliId [TSoccerBrain(Cli.brain).TeamTurn] <> Cli.CliId then begin
-    cli.sReason:= 'Turn/CliId mismatch';
-    ts.Free;
-    Exit;
-  end;
-  // coerenza guidTeam e teamTurn
-  if TSoccerBrain(Cli.brain).Score.TeamGuid  [TSoccerBrain(Cli.brain).TeamTurn] <> cli.GuidTeams[TSoccerBrain(Cli.brain).GenderN] then begin
-    cli.sReason:= 'GuidTeam Turn mismatch';
-    Exit;
-  end;
-
-  // Coerenza Ids
-  for I := 1 to 3 do begin
-    aPlayer := TSoccerBrain(Cli.brain).GetSoccerPlayer(ts[i]);
-    if aPlayer = nil then begin
-      cli.sReason:= 'Player not found';
-      ts.Free;
-      Exit;
-    end;
-    if aPlayer.GuidTeam <> Cli.GuidTeams[TSoccerBrain(Cli.brain).GenderN]  then begin
-      cli.sReason:= 'Player GuidTeam mismatch';
-      ts.Free;
-      Exit;
-    end;
-  end;
-
-    ts.Free;
-
-end;
-procedure TFormServer.validate_CMD_bar ( const CommaText: string; Cli:TWSocketThrdClient  );
-var
-  aPlayer: TSoccerPlayer;
-  ts: TStringList;
-  i: Integer;
-begin
-  // 0='CORNER_DEFENSE.SETUP 1=cod 2=cod 3=cod
-  cli.sReason:='';
-
-  if Cli.Brain = nil then begin
-    cli.sReason:= 'no Active Brain';
-    Exit;
-  end;
-
-  ts:= TStringList.Create ;
-  ts.CommaText := CommaText;
-  if ts.Count <> 5 then begin
-    cli.sReason:= 'Parameter count mismatch';
-    ts.Free;
-    Exit;
-  end;
-
-  if TSoccerBrain(Cli.brain).Score.CliId [TSoccerBrain(Cli.brain).TeamTurn] <> Cli.CliId then begin
-    cli.sReason:= 'Turn/CliId mismatch';
-    ts.Free;
-    Exit;
-  end;
-  // coerenza guidTeam e teamTurn
-  if TSoccerBrain(Cli.brain).Score.TeamGuid  [TSoccerBrain(Cli.brain).TeamTurn] <> cli.GuidTeams[TSoccerBrain(Cli.brain).GenderN] then begin
-    cli.sReason:= 'GuidTeam Turn mismatch';
-    Exit;
-  end;
-
-  // Coerenza Ids
-  for I := 1 to 4 do begin
-    aPlayer := TSoccerBrain(Cli.brain).GetSoccerPlayer(ts[i]);
-    if aPlayer = nil then begin
-      cli.sReason:= 'Player not found';
-      ts.Free;
-      Exit;
-    end;
-    if aPlayer.GuidTeam <> Cli.GuidTeams[TSoccerBrain(Cli.brain).GenderN]  then begin
-      cli.sReason:= 'Player GuidTeam mismatch';
-      ts.Free;
-      Exit;
-    end;
-  end;
-
-    ts.Free;
-
-end;
-procedure TFormServer.validate_CMD_subs ( const CommaText: string; Cli:TWSocketThrdClient  );
-var
-  aPlayer: TSoccerPlayer;
-  ts: TStringList;
-  i: Integer;
-begin
-  // 0='SUBS 1=ids 2=ids
-  cli.sReason:='';
-
-  if Cli.Brain = nil then begin
-    cli.sReason:= 'no Active Brain';
-    Exit;
-  end;
-
-  ts:= TStringList.Create ;
-  ts.CommaText := CommaText;
-  if ts.Count <> 3 then begin
-    cli.sReason:= 'Parameter count mismatch';
-    ts.Free;
-    Exit;
-  end;
-
-  if TSoccerBrain(Cli.brain).Score.CliId [TSoccerBrain(Cli.brain).TeamTurn] <> Cli.CliId then begin
-    cli.sReason:= 'Turn/CliId mismatch';
-    ts.Free;
-    Exit;
-  end;
-  // coerenza guidTeam e teamTurn
-  if TSoccerBrain(Cli.brain).Score.TeamGuid  [TSoccerBrain(Cli.brain).TeamTurn] <> cli.GuidTeams[TSoccerBrain(Cli.brain).GenderN] then begin
-    cli.sReason:= 'GuidTeam Turn mismatch';
-    Exit;
-  end;
-
-  // Coerenza Ids
-  for I := 1 to 2 do begin
-    aPlayer := TSoccerBrain(Cli.brain).GetSoccerPlayer2(ts[i]);
-    if aPlayer = nil then begin
-      cli.sReason:= 'Player not found';
-      ts.Free;
-      Exit;
-    end;
-    if aPlayer.GuidTeam <> Cli.GuidTeams[TSoccerBrain(Cli.brain).GenderN]  then begin
-      cli.sReason:= 'Player GuidTeam mismatch';
-      ts.Free;
-      Exit;
-    end;
-  end;
-
-    ts.Free;
-
-end;
 procedure TFormServer.validate_levelupAttribute ( const CommaText: string; Cli:TWSocketThrdClient  );
 var
-  ts: TStringList;
+  ts: TStringList;        { TODO : rifare con field_width }
   aValue: Integer;
 begin
-  // 0=levelup 1=Guid 2=attr
+  // 0=Guid 1=attr
   cli.sReason:='';
   //check sql injection
   if (Pos ( 'SELECT', UpperCase(CommaText),1 ) <> 0) or
@@ -4718,19 +4078,19 @@ begin
 
   ts:= TStringList.Create ;
   ts.CommaText := CommaText;
-  if ts.Count <> 3 then begin
+  if ts.Count <> 2 then begin
     cli.sReason:= 'Parameter count mismatch';
     ts.Free;
     Exit;
   end;
 
-  if not TryDecimalStrToInt( ts[1], aValue) then begin
+  if not TryDecimalStrToInt( ts[0], aValue) then begin
     cli.sReason:= 'guid Player not numeric';
     ts.Free;
     Exit;
   end;
 
-  if not TryDecimalStrToInt( ts[2], aValue) then begin
+  if not TryDecimalStrToInt( ts[1], aValue) then begin
     cli.sReason:= 'Attribute not numeric';
     ts.Free;
     Exit;
@@ -4751,7 +4111,7 @@ var
   ts: TStringList;
   aValue: Integer;
 begin
-  // 0=levelup 1=Guid 2=talentID
+  // 0=Guid 1=talentID
   cli.sReason:='';
   //check sql injection
   if (Pos ( 'SELECT', UpperCase(CommaText),1 ) <> 0) or
@@ -4765,19 +4125,19 @@ begin
 
   ts:= TStringList.Create ;
   ts.CommaText := CommaText;
-  if ts.Count <> 3 then begin
+  if ts.Count <> 2 then begin
     cli.sReason:= 'Parameter count mismatch';
     ts.Free;
     Exit;
   end;
 
-  if not TryDecimalStrToInt( ts[1], aValue) then begin
+  if not TryDecimalStrToInt( ts[0], aValue) then begin
     cli.sReason:= 'guid Player not numeric';
     ts.Free;
     Exit;
   end;
 
-  if not TryDecimalStrToInt( ts[2], aValue) then begin
+  if not TryDecimalStrToInt( ts[1], aValue) then begin
     cli.sReason:= 'TalentId not numeric';
     ts.Free;
     Exit;
@@ -4823,7 +4183,8 @@ begin
   qPlayers.Connection := ConnGame;   // game
   qMarket := TMyQuery.Create(nil);
   qMarket.Connection := ConnGame;   // game
-  qPlayers.SQL.text := 'SELECT count(guid) FROM '+Cli.ActiveGender+'_game.players where team=' + IntToStr(Cli.GuidTeams[Cli.ActiveGenderN]) + ' and young=0';
+  qPlayers.SQL.text := 'SELECT count(guid) FROM '+Cli.ActiveGender+'_game.players where team=' + IntToStr(Cli.GuidTeams[Cli.ActiveGenderN]) +
+                        ' and young=0';
   qPlayers.Execute ;
 
   if qPlayers.RecordCount >= 22 then  begin
@@ -4844,7 +4205,7 @@ begin
   qTeams.SQL.text := 'SELECT money FROM '+Cli.ActiveGender+'_game.teams where guid=' + IntToStr(Cli.GuidTeams [Cli.ActiveGenderN] );
   qTeams.Execute ;
                                                                                                              // non i suoi
-  qMarket.SQL.text := 'SELECT sellprice,guidteam FROM '+Cli.ActiveGender+'_game.market where guidplayer=' + ts[1] + ' and guidteam <> ' + IntToStr(Cli.GuidTeams [Cli.ActiveGenderN]);
+  qMarket.SQL.text := 'SELECT sellprice,guidteam FROM '+Cli.ActiveGender+'_game.market where guidplayer=' + ts[0] + ' and guidteam <> ' + IntToStr(Cli.GuidTeams [Cli.ActiveGenderN]);
   qMarket.Execute ;
 
   if qMarket.RecordCount = 0 then begin
@@ -4910,14 +4271,14 @@ begin
   // f_game.players mettere onmarket=0
   // update f_game.players onmarket e delete market con tutti i dati attuali e congelati qui
 
-  qMarket.SQL.text := 'DELETE FROM '+Cli.ActiveGender+'_game.market where guidplayer=' + ts[1];
+  qMarket.SQL.text := 'DELETE FROM '+Cli.ActiveGender+'_game.market where guidplayer=' + ts[0];
   qMarket.Execute ;
 
   qTransfers := TMyQuery.Create(nil);
   qTransfers.Connection := ConnGame;   // game
   qTransfers.SQL.text := 'INSERT INTO '+Cli.ActiveGender+'_game.transfers SET action="t", ' +  'seller=' +  IntToStr(GuidTeamSell) +
                                                                     ' , buyer=' + IntToStr(Cli.GuidTeams [Cli.ActiveGenderN]) +
-                                                                    ' , playerguid=' + ts[1] + ' , price=' + IntToStr(price);
+                                                                    ' , playerguid=' + ts[0] + ' , price=' + IntToStr(price);
   qTransfers.Execute;
   { testare anche qui, per il SELLER, fare tryaddyoung. non mi devo preoccupare per il gk }
   Tryaddyoung ( Cli.ActiveGender, GuidTeamSell);
@@ -4942,7 +4303,7 @@ begin
 
 
   qPlayers.SQL.text := 'UPDATE '+Cli.ActiveGender+'_game.players set onmarket=0,team='+IntToStr(Cli.GuidTeams [Cli.ActiveGenderN]) +  // cambio team
-                              ',formation_x=' + IntToStr(aReserveSlot) +',formation_y=-1 WHERE guid =' + ts[1];
+                              ',formation_x=' + IntToStr(aReserveSlot) +',formation_y=-1 WHERE guid =' + ts[0];
 
   qPlayers.Execute ;
 
@@ -5286,7 +4647,7 @@ var
 begin
   ts:= TStringList.Create ;
   ts.CommaText := CommaText;
-  ts.Delete(0); // SetUniform
+//  ts.Delete(0); // SetUniform
 
   UniformH:= TStringList.Create ;
   UniformA:= TStringList.Create ;
@@ -5340,7 +4701,7 @@ begin
 
   ts:= TStringList.Create ;
   ts.CommaText := CommaText;
-  ts.Delete(0); // SetFormation
+//  ts.Delete(0); // SetFormation
 
 
   ConnGame := TMyConnection.Create(nil);
@@ -5508,10 +4869,10 @@ begin
 
   ts:= TStringList.Create ;
   ts.CommaText := CommaText;
-  ts.Delete(0); //setformation
+ // ts.Delete(0); //setformation già cancellato prima
   lstCellPoint:= TList<TPoint>.Create;
 
-
+   { TODO : rifare con field_width }
   for I := 0 to ts.Count - 1 do begin
     Guid := StrToIntDef(  ts.Names [i] , 0  );
     // validate player. dal cli risale al guidteam (cli.guidteam)
@@ -5598,128 +4959,6 @@ begin
 
   ts.Free;
   lstCellPoint.Free;
-
-end;
-procedure TFormServer.validate_sell ( commatext: string; Cli:TWSocketThrdClient  );
-var
-  aValue: Integer;
-  ts: TStringList;
-begin
-  // sell,guidplayer,sellprice
-  cli.sReason:='';
-  ts:= TStringList.Create ;
-  ts.CommaText := CommaText;
-  if ts.Count <> 3 then begin
-    cli.sReason:= 'Parameter count mismatch';
-    ts.Free;
-    Exit;
-  end;
-
-  if not TryDecimalStrToInt( ts[1], AValue) then begin
-    cli.sReason:= 'validate_sell Player not numeric';
-    ts.Free;
-    Exit;
-  end;
-
-  if not TryDecimalStrToInt( ts[2], AValue) then begin
-    cli.sReason:= 'validate_sell sell price not numeric';
-    ts.Free;
-    Exit;
-  end;
-  ts.Free;
-
-end;
-procedure TFormServer.validate_cancelsell ( commatext: string; Cli:TWSocketThrdClient  );
-var
-  aValue: Integer;
-  ts: TStringList;
-begin
-  // sell,guidplayer
-  cli.sReason:='';
-  ts:= TStringList.Create ;
-  ts.CommaText := CommaText;
-  if ts.Count <> 2 then begin
-    cli.sReason:= 'Parameter count mismatch';
-    ts.Free;
-    Exit;
-  end;
-
-  if not TryDecimalStrToInt( ts[1], AValue) then begin
-    cli.sReason:= 'validate_sell Player not numeric';
-    ts.Free;
-    Exit;
-  end;
-  ts.Free;
-
-
-end;
-procedure TFormServer.validate_buy ( commatext: string; Cli:TWSocketThrdClient  );
-var
-  aValue: Integer;
-  ts: TStringList;
-begin
-  // sell,guidplayer
-  cli.sReason:='';
-  ts:= TStringList.Create ;
-  ts.CommaText := CommaText;
-  if ts.Count <> 2 then begin
-    cli.sReason:= 'validate_sell Parameter count mismatch';
-    ts.Free;
-    Exit;
-  end;
-
-  if not TryDecimalStrToInt( ts[1], AValue) then begin
-    cli.sReason:= 'validate_sell Player not numeric';
-    ts.Free;
-    Exit;
-  end;
-  ts.Free;
-
-end;
-procedure TFormServer.validate_dismiss ( commatext: string; Cli:TWSocketThrdClient  );
-var
-  aValue: Integer;
-  ts: TStringList;
-begin
-  // sell,guidplayer
-  cli.sReason:='';
-  ts:= TStringList.Create ;
-  ts.CommaText := CommaText;
-  if ts.Count <> 2 then begin
-    cli.sReason:= 'validate_dismiss Parameter count mismatch';
-    ts.Free;
-    Exit;
-  end;
-
-  if not TryDecimalStrToInt( ts[1], AValue) then begin
-    cli.sReason:= 'validate_dismiss Player not numeric';
-    ts.Free;
-    Exit;
-  end;
-  ts.Free;
-
-end;
-procedure TFormServer.validate_market ( commatext: string; Cli:TWSocketThrdClient  );
-var
-  aValue: Integer;
-  ts: TStringList;
-begin
-  // sell,guidplayer
-  cli.sReason:='';
-  ts:= TStringList.Create ;
-  ts.CommaText := CommaText;
-  if ts.Count <> 2 then begin
-    cli.sReason:= 'validate_market Parameter count mismatch';
-    ts.Free;
-    Exit;
-  end;
-
-  if not TryDecimalStrToInt( ts[1], AValue) then begin
-    cli.sReason:= 'validate_market Maxvalue not numeric';
-    ts.Free;
-    Exit;
-  end;
-  ts.Free;
 
 end;
 function TFormServer.validate_player ( const guid: integer; Cli:TWSocketThrdClient): TValidPlayer;
@@ -5918,7 +5157,7 @@ begin
   end;
   ReleaseMutex(Mutex);
 end;
-function TFormServer.inLivematchGuidTeam(fm : char; GuidTeam: integer ): TSoccerBrain;
+function TFormServer.inLivematchGuidTeam(fm : char; GuidTeam: integer ): TBrain;
 var
   i: Integer;
 begin
@@ -5954,7 +5193,7 @@ begin
   ReleaseMutex(Mutex);
 end;
 
-function TFormServer.inSpectatorGetBrain(Cliid: integer ): TSoccerBrain;
+function TFormServer.inSpectatorGetBrain(Cliid: integer ): TBrain;
 var
   i,y: Integer;
 begin
@@ -6013,9 +5252,9 @@ begin
 
       Stringgrid1.Cells[6,i+1]:= IntToStr(BrainManager.lstBrain [i].Minute );
       Stringgrid1.Cells[7,i+1]:= IntToStr(BrainManager.lstBrain [i].Score.Gol[0])+'-'+IntToStr(BrainManager.lstBrain [i].Score.Gol[1]) ;
-      Stringgrid1.Cells[8,i+1]:= IntToStr(BrainManager.lstBrain [i].lstSoccerPlayer.count)+'/'+
-                                                                    IntToStr(BrainManager.lstBrain [i].lstSoccerReserve.count) + '/' +
-                                                                    IntToStr(BrainManager.lstBrain [i].lstSoccerGameover.count);
+      Stringgrid1.Cells[8,i+1]:= IntToStr(BrainManager.lstBrain [i].Players.count)+'/'+
+                                                                    IntToStr(BrainManager.lstBrain [i].Reserves.count) + '/' +
+                                                                    IntToStr(BrainManager.lstBrain [i].Gameover.count);
       Stringgrid1.Cells[9,i+1]:= BrainManager.lstBrain [i].Gender ;
     end;
     if BrainManager.lstBrain [i].paused or BrainManager.lstBrain[i].Finished then Continue;
@@ -6027,7 +5266,7 @@ begin
        if (BrainManager.lstBrain [i].milliseconds <= 0) or (BrainManager.lstBrain [i].Score.AI [BrainManager.lstBrain [i].TeamTurn]) then Begin
           BrainManager.lstBrain [i].AI_GCD := BrainManager.lstBrain [i].AI_GCD - MatchThread.Interval  ;
         if BrainManager.lstBrain [i].AI_GCD <= 0 then begin
-          BrainManager.lstBrain [i].AI_Think(BrainManager.lstBrain [i].TeamTurn);
+          BrainManager.lstBrain [i].SoccerAI.AI_Think(BrainManager.lstBrain [i].TeamTurn);
           if BrainManager.lstBrain [i].milliseconds > 4000 then begin
             if RadioButton1.Checked then
               BrainManager.lstBrain [i].AI_GCD := StrToInt(Edit2.Text) // {8000} BrainManager.RndGenerateRange( 3000, 12000 )
@@ -6346,7 +5585,7 @@ var
   i,ii , aAge,aCellX,aCellY,aTeam,aGuidTeam,nMatchesPlayed,nMatchesLeft,pcount,rndY,aStamina: integer;
   DefaultCellX,DefaultCellY: ShortInt;
   TalentID1,TalentID2: Byte;
-  aPlayer: TSoccerPlayer;
+  aPlayer: TPlayer;
   FC: TFormationCell;
   aPoint : TPoint;
   aName, aSurname,  Attributes,aIds: string;
@@ -6357,7 +5596,7 @@ var
   DefaultSpeed, DefaultDefense , DefaultPassing, DefaultBallControl, DefaultShot, DefaultHeading: Byte;
   Speed, Defense , Passing, BallControl, Shot, Heading: ShortInt;
   sf :  SE_SearchFiles;
-  MyBrain: TSoccerBrain;
+  MyBrain: TBrain;
   Buf3 : array [0..8191] of AnsiChar;
   MM : TMemoryStream;
   ids :string;
@@ -6392,7 +5631,7 @@ begin
     Exit;
   end;
   ids := JustFileNameL (FolderDialog1.Directory);
-  MyBrain := TSoccerBrain.create (  ids, ids[1],0 ,0,0,0);
+  MyBrain := TBrain.create (  ids, ids[1],0 ,0,0,0);
   MM.LoadFromFile( FolderDialog1.Directory   + '\' + sf.ListFiles[sf.ListFiles.Count-1]);
   CopyMemory( @Buf3[0], MM.Memory, MM.size );
 
@@ -6577,7 +5816,7 @@ MyBrain.TeamCorner :=  Ord( buf3[ cur ]);
   // cursore posizionato sul primo player
   for I := 0 to totPlayer -1 do begin
 
-//    PlayerGuid := StrToInt(spManager.lstSoccerPlayer[i].Ids); // dipende dalla gestione players, se divido per nazioni?
+//    PlayerGuid := StrToInt(spManager.Players[i].Ids); // dipende dalla gestione players, se divido per nazioni?
     aIds := IntToStr( PDWORD(@buf3[ cur ])^);
     Cur := Cur + 4;
     aGuidTeam := PDWORD(@buf3[ cur ])^;
@@ -6617,7 +5856,7 @@ MyBrain.TeamCorner :=  Ord( buf3[ cur ]);
     Attributes:= IntTostr( DefaultSpeed) + ',' + IntTostr( DefaultDefense) + ',' + IntTostr( DefaultPassing) + ',' + IntTostr( DefaultBallControl) + ',' +
                  IntTostr( DefaultShot) + ',' + IntTostr( DefaultHeading) ;
 
-      aPlayer:= TSoccerPlayer.Create( aTeam,
+      aPlayer:= TPlayer.Create( aTeam,
                                  MyBrain.Score.TeamGuid [aTeam] ,
                                  nMatchesPlayed,
                                  aIds,
@@ -6733,7 +5972,7 @@ aPlayer.isCOF := Boolean( Ord( buf3[ cur ]));
   // cursore posizionato sul primo Reserve
   for I := 0 to totReserve -1 do begin
 
-//    PlayerGuid := StrToInt(aPlayerManager.lstSoccerPlayer[i].Ids); // dipende dalla gestione players, se divido per nazioni?
+//    PlayerGuid := StrToInt(aPlayerManager.Players[i].Ids); // dipende dalla gestione players, se divido per nazioni?
     aIds := IntToStr( PDWORD(@buf3[ cur ])^);
     Cur := Cur + 4;
     aGuidTeam := PDWORD(@buf3[ cur ])^;
@@ -6773,7 +6012,7 @@ aPlayer.isCOF := Boolean( Ord( buf3[ cur ]));
     Attributes:= IntTostr( DefaultSpeed) + ',' + IntTostr( DefaultDefense) + ',' + IntTostr( DefaultPassing) + ',' + IntTostr( DefaultBallControl) + ',' +
                  IntTostr( DefaultShot) + ',' + IntTostr( DefaultHeading) ;
 
-      aPlayer:= TSoccerPlayer.Create( aTeam,
+      aPlayer:= TPlayer.Create( aTeam,
                                  MyBrain.Score.TeamGuid [aTeam] ,
                                  nMatchesPlayed,
                                  aIds,

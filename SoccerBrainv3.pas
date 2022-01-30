@@ -7,7 +7,7 @@ unit SoccerBrainv3;
 interface
 uses DSE_theater, DSE_Random, DSE_PathPlanner,  DSE_MISC,
   generics.collections, generics.defaults, system.classes, ZLIBEX,
-  System.SysUtils, System.Types, strutils, Inifiles, IOUtils, winapi.windows , forms;
+  System.SysUtils, System.Types, strutils, Inifiles, IOUtils, winapi.windows , forms, SoccerAIv3, SoccerTypes ;
 
 
 const Schemas = 4;           // numero di schema delle uniformi
@@ -166,14 +166,10 @@ end;
 type TShortPoint = record
   X,Y: ShortInt;
 end;
-type TSubOUT = ( DefenderOUT,forwardOUT);
-type TBetterSolution = ( SubAbs4, subDone, SubCant, TacticDone, StayFreeDone, CleanRowDone,  None );
-type TSubType = ( PossiblysameRole, BestShot, bestDefense, bestPassing );
 type TTacticType = ( D4M, D4F, M4D, M4F, F4d,F4M );
 type TTackleDirection = ( TackleBack, TackleSide, TackleAhead );
 type TBottomPosition = ( NearCornerCell, BottomNoShot, BottomShot, BottomNone, BottomNoneCanCross);
 TYPE TNotifyFileData    = procedure (filename: string ) of object;
-type TAccelerationMode = ( AccBestDistance, AccSelfY, AccDoor );
 type TMoveModeX = ( LeftToRight, RightToLeft, Xnone);
 type TMoveModeY= ( UpToDown, DownToUp, Ynone);
 type TOneDir= ( TruncOneDir, AbortMultipleDirection, EveryDirection);
@@ -252,8 +248,8 @@ Type  TCornerMap = record
 end;
 
 Type
-  TSoccerBrain = class;
-  TSoccerPlayer = class ;
+  TBrain = class;
+  TPlayer = class ;
   TBall = Class;
 
 TBall = Class
@@ -262,8 +258,8 @@ TBall = Class
     procedure SetCells ( v: TPoint );
     procedure SetCellX ( v: ShortInt );
     procedure SetCellY ( v: ShortInt );
-    procedure SetPlayer ( v: TSoccerPlayer );
-    Function GetPlayer : TSoccerPlayer ;
+    procedure SetPlayer ( v: TPlayer );
+    Function GetPlayer : TPlayer ;
     Function GetZone : Byte ; // 0 2 1
   protected
   public
@@ -271,23 +267,23 @@ TBall = Class
     Cx : ShortInt;
     Cy : ShortInt;
     fZone: byte;
-    brain : TSoccerBrain;
+    brain : TBrain;
     PathBall: dse_pathplanner.TPath;
     Speed: Integer;
-    constructor create( aBrain: TSoccerBrain );
+    constructor create( aBrain: TBrain );
     destructor Destroy; override;
     Function BallIsOutSide : boolean;
     property CellX : ShortInt read cx write SetCellX;
     property CellY : ShortInt read cy write SetCellY;
     property Zone: Byte read GetZone;
-    Property Player: TSoccerPlayer read GetPlayer write SetPlayer ;
+    Property Player: TPlayer read GetPlayer write SetPlayer ;
     property Cells : Tpoint read GetCells write SetCells;
 
  end;
 
-TSoccerPlayer = class
+TPlayer = class
   private
-    brain: TSoccerBrain;
+    brain: TBrain;
     fAttributes: Shortstring;
     fDefaultAttributes: Shortstring;
     fGameOver: boolean;
@@ -478,19 +474,18 @@ TSoccerPlayer = class
     procedure resetPLM;
     procedure resetFIN;
 end;
-  pSoccerPlayer = ^TSoccerplayer;
+  pSoccerPlayer = ^TPlayer;
 
-  TAttributeName = ( atSpeed , atDefense, atBallControl, atPassing, atShot, atHeading);
 
 
   TInteractivePlayer = class // Player che puòpublic interagire durante il turno dell'avversario. ad esempio Intercept su Short.passing dell'avversario
-    Player : TSoccerPlayer;  // il player che interagisce
+    Player : TPlayer;  // il player che interagisce
     Cell: Tpoint;            // la cella su cui interagisce
     Attribute : TAttributeName;// TSoccerAttribute;  // con quale attributo interagisce. per esempio heading su lofted.pass
   end;
 
 
-  TSoccerBrain = class( TObject )   // l'oggetto principale del singolo match. contine tutta la partita in memoria
+  TBrain = class( TObject )   // l'oggetto principale del singolo match. contine tutta la partita in memoria
   private
 
     aStar: TAStarPathPlanner;
@@ -503,6 +498,7 @@ end;
 
   protected
     public
+      SoccerAI : TSoccerAI;
       GameMode : TGameMode;
       pvePostMessage: boolean;
 
@@ -583,10 +579,10 @@ end;
       COR_A1_MAX :Integer;
       COR_A0_MIN :Integer;
 
-      lstSoccerPlayerALL : TObjectList<TSoccerPlayer>;
-      lstSoccerPlayer : TObjectList<TSoccerPlayer>;
-      lstSoccerReserve : TObjectList<TSoccerPlayer>;
-      lstSoccerGameOver : TObjectList<TSoccerPlayer>;
+      PlayersALL : TObjectList<TPlayer>;
+      Players : TObjectList<TPlayer>;
+      Reserves : TObjectList<TPlayer>;
+      Gameover : TObjectList<TPlayer>;
 
      // AICrossingAreaCells: TList<TAICrossAreaCell>;
     //  TVCrossingAreaCells: TList<TTVCrossAreaCell>;
@@ -657,7 +653,7 @@ end;
       tsScript: array [0..255] of TstringList;   // la lista di ciò che accade sul server viene spedita al client
       TsErrorLog: TStringList;
 
-      ExceptPlayers: TObjectList<TSoccerPlayer>; // lista di player che non si muoveranno durante la Ai_moveAll
+      ExceptPlayers: TObjectList<TPlayer>; // lista di player che non si muoveranno durante la Ai_moveAll
       ShpBuff: Boolean;
       function findSpectator (Cliid: Integer): Boolean;
       function RemoveSpectator (Cliid: Integer): Boolean;
@@ -674,13 +670,13 @@ end;
       function RndGenerateRange( Lower, Upper: integer ): integer;
 
 
-      procedure CornerSetup ( const aPlayer: TSoccerPlayer );     // Corner
+      procedure CornerSetup ( const aPlayer: TPlayer );     // Corner
       procedure FreeKickSetup1 ( team : Integer );   // normale nella propria metacampo
       procedure FreeKickSetup2 ( team : Integer  );  // cross
 
       procedure FreeKickSetup3 ( team : Integer  );  // barriera
         function GetBarrierCell (Team: Integer; CellX,CellY: integer ): TPoint;
-        procedure DeflateBarrier ( aCell: Tpoint; ExceptPlayer: TSoccerPlayer );
+        procedure DeflateBarrier ( aCell: Tpoint; ExceptPlayer: TPlayer );
         function FindDefensiveCellFree ( team: integer ): Tpoint;
       procedure FreeKickSetup4 ( team : Integer  );  // rigore
         function GetPenaltyCell (Team: Integer ): TPoint;
@@ -691,36 +687,36 @@ end;
       procedure LoadDefaultTeamPos ( aTeam: integer);
       procedure BrainInput ( aCmd: string );
         procedure InputSecureExit ( DoAiMoveAll: Boolean; DoTeamMovesLeft: TDecMovesLeft);
-        function CheckInputShp (aPlayer: TsoccerPlayer; CellX, CellY: integer; tsCmd: Tstringlist): string;
-        function CheckInputLop (aPlayer: TsoccerPlayer; CellX, CellY: integer; tsCmd: Tstringlist): string;
-        function CheckInputCro (aPlayer: TsoccerPlayer; CellX, CellY: integer; tsCmd: Tstringlist): string;
-        function CheckInputDri (aPlayer: TsoccerPlayer; CellX, CellY: integer; tsCmd: Tstringlist): string;
-        function CheckInputPos (aPlayer: TsoccerPlayer; CellX, CellY: integer; tsCmd: Tstringlist): string;
-        function CheckInputPrs (aPlayer: TsoccerPlayer; CellX, CellY: integer; tsCmd: Tstringlist): string;
-        function CheckInputPre (aPlayer: TsoccerPlayer; tsCmd: Tstringlist): string;
-        function CheckInputPro (aPlayer: TsoccerPlayer; tsCmd: Tstringlist): string;
-        function CheckInputTac (aPlayer: TsoccerPlayer; tsCmd: Tstringlist): string;
-        function CheckInputPlm (aPlayer: TsoccerPlayer; CellX, CellY: integer; tsCmd: Tstringlist): string;
+        function CheckInputShp (aPlayer: TPlayer; CellX, CellY: integer; tsCmd: Tstringlist): string;
+        function CheckInputLop (aPlayer: TPlayer; CellX, CellY: integer; tsCmd: Tstringlist): string;
+        function CheckInputCro (aPlayer: TPlayer; CellX, CellY: integer; tsCmd: Tstringlist): string;
+        function CheckInputDri (aPlayer: TPlayer; CellX, CellY: integer; tsCmd: Tstringlist): string;
+        function CheckInputPos (aPlayer: TPlayer; CellX, CellY: integer; tsCmd: Tstringlist): string;
+        function CheckInputPrs (aPlayer: TPlayer; CellX, CellY: integer; tsCmd: Tstringlist): string;
+        function CheckInputPre (aPlayer: TPlayer; tsCmd: Tstringlist): string;
+        function CheckInputPro (aPlayer: TPlayer; tsCmd: Tstringlist): string;
+        function CheckInputTac (aPlayer: TPlayer; tsCmd: Tstringlist): string;
+        function CheckInputPlm (aPlayer: TPlayer; CellX, CellY: integer; tsCmd: Tstringlist): string;
 
-        function CheckInputStay (aPlayer: TsoccerPlayer; tsCmd: Tstringlist): string;
-        function CheckInputFree (aPlayer: TsoccerPlayer; tsCmd: Tstringlist): string;
+        function CheckInputStay (aPlayer: TPlayer; tsCmd: Tstringlist): string;
+        function CheckInputFree (aPlayer: TPlayer; tsCmd: Tstringlist): string;
 
-        function CheckInputTactic (aPlayer: TsoccerPlayer; CellX, CellY: integer; tsCmd: Tstringlist): string;
-        function CheckInputSub (aPlayer,aPlayer2: TsoccerPlayer; tsCmd: Tstringlist): string;
+        function CheckInputTactic (aPlayer: TPlayer; CellX, CellY: integer; tsCmd: Tstringlist): string;
+        function CheckInputSub (aPlayer,aPlayer2: TPlayer; tsCmd: Tstringlist): string;
 
-        function CheckOffside ( FromPlayer, aPossibleoffside: TSoccerPlayer ): boolean;
+        function CheckOffside ( FromPlayer, aPossibleoffside: TPlayer ): boolean;
 
-      function GetOpponentDoor (SelectedPlayer: TSoccerPlayer ): TPoint;
+      function GetOpponentDoor (SelectedPlayer: TPlayer ): TPoint;
       function GetCorner (Team: integer; Y: integer; CornerMode: TCornerMode ): TCornerMap;
 
       function IsCheatingBall ( TeamFault: Integer ) : boolean;
       function IsCheatingBallGK ( OldTeamTurn: Integer ) : boolean;
 
-      function GetOpponentStart (SelectedPlayer: TSoccerPlayer ): TPoint;
+      function GetOpponentStart (SelectedPlayer: TPlayer ): TPoint;
 
       property TeamMovesLeft : ShortInt read fTeamMovesLeft write SetTeamMovesLeft;
       property Minute : SmallInt read fMinute write SetMinute;
-      function FindSwapCOAD (   SwapPlayer: TSoccerPlayer; CornerMap: TCornerMap ): Tpoint;
+      function FindSwapCOAD (   SwapPlayer: TPlayer; CornerMap: TCornerMap ): Tpoint;
 
       function exec_tackle ( ids: string):integer;
       function exec_autotackle ( ids: string; LastPath: boolean ):boolean; // non c'è fallo
@@ -732,75 +728,34 @@ end;
       procedure Setmilliseconds ( value: integer);
       procedure SetGender ( fm: char);
 
-      function inExceptPlayers ( aPlayer: TSoccerPlayer ) : Boolean;
+      function inExceptPlayers ( aPlayer: TPlayer ) : Boolean;
       procedure AI_MoveAll ;   // !! movimento automatico dei player a fine turno
-        procedure AI_MovePlayer_DefaultX_minus_1 ( aPlayer: TSoccerPlayer  ) ;
-        procedure AI_MovePlayer_DefaultX_minus_2 ( aPlayer: TSoccerPlayer  ) ;
-        procedure AI_MovePlayer_DefaultX_plus_1 ( aPlayer: TSoccerPlayer  ) ;
-        procedure AI_MovePlayer_DefaultX_plus_2 ( aPlayer: TSoccerPlayer  ) ;
-        procedure AI_MovePlayer_DefaultX ( aPlayer: TSoccerPlayer  ) ;
-        procedure AI_MovePlayer_DefaultY ( aPlayer: TSoccerPlayer  ) ;
-        procedure AI_MovePlayer_Ball_equal ( aPlayer: TSoccerPlayer  ) ;
-        procedure AI_MovePlayer_Ball_plus_1 ( aPlayer: TSoccerPlayer  ) ;
-        procedure AI_MovePlayer_Ball_plus_2 ( aPlayer: TSoccerPlayer  ) ;
-        procedure AI_MovePlayer_Ball_minus_1 ( aPlayer: TSoccerPlayer  ) ;
-        procedure AI_MovePlayer_Ball_minus_2 ( aPlayer: TSoccerPlayer  ) ;
+        procedure AI_MovePlayer_DefaultX_minus_1 ( aPlayer: TPlayer  ) ;
+        procedure AI_MovePlayer_DefaultX_minus_2 ( aPlayer: TPlayer  ) ;
+        procedure AI_MovePlayer_DefaultX_plus_1 ( aPlayer: TPlayer  ) ;
+        procedure AI_MovePlayer_DefaultX_plus_2 ( aPlayer: TPlayer  ) ;
+        procedure AI_MovePlayer_DefaultX ( aPlayer: TPlayer  ) ;
+        procedure AI_MovePlayer_DefaultY ( aPlayer: TPlayer  ) ;
+        procedure AI_MovePlayer_Ball_equal ( aPlayer: TPlayer  ) ;
+        procedure AI_MovePlayer_Ball_plus_1 ( aPlayer: TPlayer  ) ;
+        procedure AI_MovePlayer_Ball_plus_2 ( aPlayer: TPlayer  ) ;
+        procedure AI_MovePlayer_Ball_minus_1 ( aPlayer: TPlayer  ) ;
+        procedure AI_MovePlayer_Ball_minus_2 ( aPlayer: TPlayer  ) ;
+          function Tv2AiField ( Team, tvX,tvY: integer ): TPoint;
+          function AiField2TV ( Team, aiX,aiY: integer ): TPoint;
 
 
       // AI battle
       function MirrorAIfield (  CellX,CellY: integer) : TPoint;
 
 
-      procedure AI_Think (Team: integer);   // !! AI intelligenza artificiale
-        function AI_Injured_sub_tactic_stay (Team: integer): TBetterSolution; // // ai pensa a sostituzioni/tattiche/muovere,non muovere certi player, spostare il loro defaultcell
-        function AI_Think_sub (Team: Integer;anOutPlayer:TSoccerPlayer; SubType: TSubType ): TBetterSolution; // ai pensa a sostituzioni
-        function AI_Think_Tactic (Team, cks:integer ): TBetterSolution;   // ai pensa a tattiche
-        function AI_Think_StayFree ( team, Cks:integer ): TbetterSolution;  // ai pensa a muovere,non muovere certi player
-        function AI_Think_CleanSomeRows (team:Integer): TBetterSolution;    // ai pensa di spostare qualche player
-        function AI_ForceRandomMove ( team : Integer ): Boolean;
-        function AI_TrySomeBuff ( team: integer ): Boolean;
-          function GetDummyTalentInRole ( team, TalentId: integer ): TSoccerPlayer;
+    function GetBestShotZone ( Team: integer; Zonerole:Char ): TPlayer;
+    function GetBestPassingZone ( Team: integer; Zonerole:Char ): TPlayer;
+    function GetWorstPassing ( Team: integer ): TPlayer;
+    function GetWorstDefense ( Team: integer ): TPlayer;
+    function GetWorstShot ( Team: integer ): TPlayer;
+    function GetWorstBallControlZone ( Team: integer; Zonerole:Char ): TPlayer;
 
-      procedure AI_Think_myball_iDefend ( Team: integer );
-      procedure AI_Think_myball_middle ( Team: integer  );
-      procedure AI_Think_myball_iAttack ( Team: integer );
-        function DummyAheadPass( Team: integer ): Boolean;
-          function GetDummyAheadPass( Team: integer ): TSoccerPlayer; // in PlayMaker
-          function DummyTryCross( Team: integer ): Boolean;
-          function DummyReachTheCrossinArea1Moves( aPlayer: TSoccerPlayer; bestAttribute:TAttributeName) : boolean;
-          function DummyReachTheCrossinArea2Moves( aPlayer: TSoccerPlayer; bestAttribute:TAttributeName) : boolean;
-          function GetDummyCrossFriend ( aPlayer: TSoccerPlayer ): TSoccerPlayer;
-          function GetDummyVolleyFriend ( aPlayer: TSoccerPlayer ): TSoccerPlayer;
-
-          procedure DummyFindaWay( Team: integer );
-          procedure PosOrPrs (  Team, PosChance: integer );
-        // Dummy AI
-        function GetDummyGoAheadCell : TPoint;  // il player con la palla cerca di avanzare
-        function GetDummyMaxAcceleration(AccelerationMode: TAccelerationMode): TPoint;
-        function GetDummyMaxAccelerationShotCells ( OnlyBuffed: boolean ): TPoint; // cerca di raggiungere una shotCell
-        function GetDummyMaxAccelerationBottom: TPoint; // cerca il fondo, l'ultima cella
-        function GetDummyShpCellXY : TPoint;
-          function DummyGetAnyFriendToBall (  dist, team: Integer; meIds:string; CellX, CellY: integer): TSoccerPlayer;
-        function GetDummyLopCellXY : Tpoint;
-        function GetDummyLopCellXYInfinite : Tpoint;
-        function GetDummyLopCellXYfriend : Tpoint; // utile per volley
-
-
-      procedure AI_Think_oppball_iDefend ( Team: integer  );
-      procedure AI_Think_oppball_middle ( Team: integer  );
-      procedure AI_Think_oppball_iAttack ( Team: integer  );
-          procedure AiDummyTakeTheBall ( Team: integer  );
-        function GetdummyTackle (team: Integer): TSoccerPlayer;
-        function GetdummyPressing (team: Integer): TSoccerPlayer;
-
-      procedure AI_Think_neutralball_iDefend ( Team: integer );
-      procedure AI_Think_neutralball_middle ( Team: integer  );
-      procedure AI_Think_neutralball_iAttack ( Team: integer );
-        function DummyReachTheBall (  team: Integer): TSoccerPlayer;
-
-          function Tv2AiField ( Team, tvX,tvY: integer ): TPoint;
-          function AiField2TV ( Team, aiX,aiY: integer ): TPoint;
-      
 
 
       procedure CalculateChance  ( A, B: integer; var chanceA, chanceB: integer);
@@ -808,22 +763,22 @@ end;
       procedure SaveData ( CurMove: Integer ); // !!  salva i dati in memoria da spedire al client
 
 
-      function GetCrossDefenseBonus (aPlayer: TsoccerPlayer; CellX, CellY: integer ): integer;
+      function GetCrossDefenseBonus (aPlayer: TPlayer; CellX, CellY: integer ): integer;
       function GetTeamBall: integer;
 
-      function NextReserveSlot ( aPlayer: TSoccerPlayer): Integer; overload;
+      function NextReserveSlot ( aPlayer: TPlayer): Integer; overload;
       function NextReserveSlot ( team: Integer): Integer; overload;
-      procedure PutInReserveSlot ( aPlayer: TSoccerPlayer ); overload;
-      procedure PutInReserveSlot ( aPlayer: TSoccerPlayer; ReserveCell: TPoint );overload;  // mette il player nella cella indicata
+      procedure PutInReserveSlot ( aPlayer: TPlayer ); overload;
+      procedure PutInReserveSlot ( aPlayer: TPlayer; ReserveCell: TPoint );overload;  // mette il player nella cella indicata
       procedure ClearReserveSlot;
       function isReserveSlot (CellX, CellY: integer): boolean;
       procedure CleanReserveSlot ( team: integer );
 
 
-      function NextGameOverSlot ( aPlayer: TSoccerPlayer): Integer; overload;
+      function NextGameOverSlot ( aPlayer: TPlayer): Integer; overload;
       function NextGameOverSlot ( team: Integer): Integer; overload;
-      procedure PutInGameOverSlot ( aPlayer: TSoccerPlayer ); overload;
-      procedure PutInGameOverSlot ( aPlayer: TSoccerPlayer; GameOverCell: TPoint );overload;  // mette il player nella cella indicata
+      procedure PutInGameOverSlot ( aPlayer: TPlayer ); overload;
+      procedure PutInGameOverSlot ( aPlayer: TPlayer; GameOverCell: TPoint );overload;  // mette il player nella cella indicata
       procedure ClearGameOverSlot;
       function isGameOverSlot (CellX, CellY: integer): boolean;
       procedure CleanGameOverSlot ( team: integer );
@@ -831,25 +786,25 @@ end;
       procedure UpdateDevi; // sia team 0 che 1
 
 
-    procedure AddSoccerPlayer (aSoccerPlayer: TSoccerPlayer );
-    procedure AddSoccerReserve (aSoccerPlayer: TSoccerPlayer );
-    procedure AddSoccerGameOver (aSoccerPlayer: TSoccerPlayer );
+    procedure AddSoccerPlayer (aSoccerPlayer: TPlayer );
+    procedure AddSoccerReserve (aSoccerPlayer: TPlayer );
+    procedure AddSoccerGameOver (aSoccerPlayer: TPlayer );
 
-    procedure RemoveSoccerPlayer (aSoccerPlayer: TSoccerPlayer );
-    procedure RemoveSoccerReserve (aSoccerPlayer: TSoccerPlayer );
-    procedure RemoveSoccerGameOver (aSoccerPlayer: TSoccerPlayer );
+    procedure RemoveSoccerPlayer (aSoccerPlayer: TPlayer );
+    procedure RemoveSoccerReserve (aSoccerPlayer: TPlayer );
+    procedure RemoveSoccerGameOver (aSoccerPlayer: TPlayer );
 
 
     procedure GetPath ( Team, X1, Y1, X2, Y2, Limit: integer; useFlank,FriendlyWall,OpponentWall,FinalWall: Boolean;OneDir: TOneDir; var aPath: dse_pathplanner.TPath );
     procedure GetPath1dir ( Team, X1, Y1, X2, Y2, Limit: integer; useFlank,FriendlyWall,OpponentWall,FinalWall,OneDir: boolean; var aPath: dse_pathplanner.TPath );
     procedure GetPathX ( Team, X1, Y1, X2, Y2, Limit: integer; useFlank,FriendlyWall,OpponentWall,FinalWall,OneDir: Boolean; var aPath: dse_pathplanner.TPath );
     procedure GetPathY ( Team, X1, Y1, X2, Y2, Limit: integer; useFlank,FriendlyWall,OpponentWall,FinalWall,OneDir: Boolean; var aPath: dse_pathplanner.TPath );
-    procedure GetNeighbournsOpponent ( X, Y, Team: integer; var aList : TObjectList<TSoccerPlayer> );
+    procedure GetNeighbournsOpponent ( X, Y, Team: integer; var aList : TObjectList<TPlayer> );
 
     function GetBounceCell ( StartX, StartY, ToX, ToY, Speed: integer; favourTeam: integer): TPoint;
 
 
-    function GetFriendAhead ( const aPlayer: TSoccerPlayer ) : TSoccerPlayer;
+    function GetFriendAhead ( const aPlayer: TPlayer ) : TPlayer;
     // SHP intercepts
     procedure CompileInterceptList (ShpTeam, MaxDistance: integer; aPath : dse_pathplanner.TPath; var lstIntercepts: TList<TInteractivePlayer> );
     // LOP heading
@@ -861,77 +816,56 @@ end;
     procedure CompileAutoTackleList (PlmTeam, MaxDistance: integer; aPath : dse_pathplanner.TPath; var lstAutoTackle: TList<TInteractivePlayer> );
 
     // per i taleni buff
-    procedure CompileRoleList (team: Integer; role: Char; var lstRole: TObjectList<TSoccerPlayer> );
-    procedure CompileBuffedList (team: Integer; buff: Char; var lstRole: TObjectList<TSoccerPlayer> );
+    procedure CompileRoleList (team: Integer; role: Char; var lstRole: TObjectList<TPlayer> );
+    procedure CompileBuffedList (team: Integer; buff: Char; var lstRole: TObjectList<TPlayer> );
 
     // CROSS
-    function GetFriendInCrossingArea ( const aPlayer: TSoccerPlayer ) : boolean;
-    function GetCrossOpponent ( aPlayer:TSoccerPlayer ): TSoccerPlayer;
+    function GetFriendInCrossingArea ( const aPlayer: TPlayer ) : boolean;
+    function GetCrossOpponent ( aPlayer:TPlayer ): TPlayer;
 
 
     function GetTotalReserve ( Team: integer; GK:boolean): integer;
-    function GetReservePlayerRandom ( Team: integer; GK:boolean): TSoccerPlayer;
-    function GetSoccerPlayerRandom ( Team: integer; GK:boolean): TSoccerPlayer;overload;
-    function GetSoccerPlayer (X,Y: integer): TSoccerPlayer;overload;
-    function GetSoccerPlayer (ids: string): TSoccerPlayer;overload;
-    function GetSoccerPlayer (ids: string; team: integer): TSoccerPlayer;overload;
-    function GetSoccerPlayer (X,Y, Team: integer): TSoccerPlayer;overload;
-    function GetSoccerPlayerOpponent (X,Y: Integer; Team: integer): TSoccerPlayer;overload;
-    function GetSoccerPlayerOpponent (ids: string; Team: integer): TSoccerPlayer;overload;
+    function GetReservePlayerRandom ( Team: integer; GK:boolean): TPlayer;
+    function GetPlayerRandom ( Team: integer; GK:boolean): TPlayer;overload;
+    function GetPlayer (X,Y: integer): TPlayer;overload;
+    function GetPlayer (ids: string): TPlayer;overload;
+    function GetPlayer (ids: string; team: integer): TPlayer;overload;
+    function GetPlayer (X,Y, Team: integer): TPlayer;overload;
+    function GetPlayerOpponent (X,Y: Integer; Team: integer): TPlayer;overload;
+    function GetPlayerOpponent (ids: string; Team: integer): TPlayer;overload;
 
-    function GetSoccerPlayerDefault (X,Y: integer): TSoccerPlayer;
-    function GetSoccerPlayerDefault2 (X,Y: integer): TSoccerPlayer;
+    function GetPlayerDefault (X,Y: integer): TPlayer;
+    function GetPlayerDefault2 (X,Y: integer): TPlayer;
 
-    function GetSoccerPlayerReserve (ids : string): TSoccerPlayer;
-    function GetSoccerPlayerRandom3 : TSoccerPlayer; // cerca chi ha giocato in una partita ma non un GK
+    function GetPlayerReserve (ids : string): TPlayer;
+    function GetPlayerRandom3 : TPlayer; // cerca chi ha giocato in una partita ma non un GK
 
-    function GetSoccerPlayer2 (X,Y: integer): TSoccerPlayer;overload;
-    function GetSoccerPlayer2 (ids: string): TSoccerPlayer;overload;
-    function GetSoccerPlayer2 (X,Y, Team: integer): TSoccerPlayer;overload;
-    function GetSoccerPlayer2 (ids: string;Team: integer): TSoccerPlayer;overload;
-    function GetSoccerPlayerALL (ids: string): TSoccerPlayer;overload;
-    function GetSoccerPlayerALL (X,Y: integer): TSoccerPlayer;overload;
-    function GetSoccerPlayer3 ( ids: string ): TSoccerPlayer; // cerca chi ha giocato in una partita
+    function GetPlayer2 (X,Y: integer): TPlayer;overload;
+    function GetPlayer2 (ids: string): TPlayer;overload;
+    function GetPlayer2 (X,Y, Team: integer): TPlayer;overload;
+    function GetPlayer2 (ids: string;Team: integer): TPlayer;overload;
+    function GetPlayerALL (ids: string): TPlayer;overload;
+    function GetPlayerALL (X,Y: integer): TPlayer;overload;
+    function GetPlayer3 ( ids: string ): TPlayer; // cerca chi ha giocato in una partita
 
-    function GetBestCrossing ( Team: integer ): string;
-    function GetBestHeading ( Team: integer; excludeIds: string ): string;
-    function GetBestPassing ( Team: integer ): string;
-    function GetBestShot ( Team: integer ): string;
-    function GetBestBarrier ( Team: integer ): string;
 
-    function GetBestPassingZone ( Team: integer; Zonerole:Char ): TSoccerPlayer;
-    function GetBestShotZone ( Team: integer; Zonerole:Char ): TSoccerPlayer;
-    function GetWorstBallControlZone ( Team: integer; Zonerole:Char ): TSoccerPlayer;
 
     procedure ResetPassiveSkills;
 
-    function GetBestGKReserve ( Team,MinStamina: integer ): string;
-    function GetBestDefenseReserve ( Team,MinStamina: integer  ): string;
-    function GetBestPassingReserve  ( Team,MinStamina: integer ): string;
-    function GetBestShotReserve  ( Team,MinStamina: integer ): string;
 
-    function GetWorstStamina ( Team: integer ): TSoccerPlayer;
-
-    function GetRandomDefaultMidFieldCellFree ( team:Integer ): TPoint;
-    function GetRandomDefaultDefenseCellFree ( team:Integer ): TPoint;
-    function GetRandomDefaultForwardCellFree ( team:Integer ): TPoint;
 
     function CheckScore ( team: Integer): integer;
-    function GetPlayerForOUT (team: Integer;  PlayerOUT: TSubOUT ):TSoccerPlayer;
-      function GetWorstPassing ( Team: integer ): TSoccerPlayer;
-      function GetWorstShot ( Team: integer ): TSoccerPlayer;
-      function GetWorstDefense ( Team: integer ): TSoccerPlayer;
     // crossing
 
     // intercept
     // respinte portiere
-    function GetGKBounceCell ( GoalKeeper: TsoccerPlayer; GKX, GKY, Speed: integer; AllowCorner: boolean ): Tpoint;
+    function GetGKBounceCell ( GoalKeeper: TPlayer; GKX, GKY, Speed: integer; AllowCorner: boolean ): Tpoint;
 
     Procedure CopyPath ( Path1, Path2 : dse_pathplanner.TPath );
 
-    procedure GetMarkingPath ( aPlayer: TSoccerPlayer );
-    procedure GetAggressionCellPath ( aSoccerPlayer: TSoccerPlayer;  X2, Y2: integer );
-    procedure GetFavourCellPath ( aSoccerPlayer: TSoccerPlayer; X2, Y2: integer );
+    procedure GetMarkingPath ( aPlayer: TPlayer );
+    procedure GetAggressionCellPath ( aSoccerPlayer: TPlayer;  X2, Y2: integer );
+    procedure GetFavourCellPath ( aSoccerPlayer: TPlayer; X2, Y2: integer );
     function GetRandomCell ( CellX, CellY, Speed: integer; noPlayer,noOutside: boolean ): Tpoint;
     function GetRandomCellNO06 ( CellX, CellY, Speed: integer  ): Tpoint;
     function GetRandomCellNOPlayer ( CellX, CellY, Speed: integer  ): Tpoint;
@@ -941,55 +875,55 @@ end;
     function GetTackleDirection ( Team, StartX, StartY, ToX, ToY: Integer): TTackleDirection;
     procedure GetNextDirectionCell ( StartX, StartY, ToX, ToY, Speed,Team: integer; FriendlyWall,OpponentWall: boolean;  var aPath: dse_pathplanner.TPath  );
 
-    procedure SwapPlayers (PlayerA, PlayerB: TsoccerPlayer);
-    procedure SwapDefaultPlayers (PlayerA, PlayerB: TsoccerPlayer);
-    procedure SwapformationPlayers (PlayerA, PlayerB: TsoccerPlayer);
+    procedure SwapPlayers (PlayerA, PlayerB: TPlayer);
+    procedure SwapDefaultPlayers (PlayerA, PlayerB: TPlayer);
+    procedure SwapformationPlayers (PlayerA, PlayerB: TPlayer);
 
-    function GetOpponentGK ( Team: integer): TSoccerPlayer;
-    function GetGK ( team: integer ): TSoccerPlayer;
-    function GetCof: TSoccerPlayer;
-    function GetFK1: TSoccerPlayer;
-    function GetFK2: TSoccerPlayer;
-    function GetFK3: TSoccerPlayer;
-    function GetFK4: TSoccerPlayer;
-    function GetInjuredPlayer( Team: integer ): TSoccerPlayer;
+    function GetOpponentGK ( Team: integer): TPlayer;
+    function GetGK ( team: integer ): TPlayer;
+    function GetCof: TPlayer;
+    function GetFK1: TPlayer;
+    function GetFK2: TPlayer;
+    function GetFK3: TPlayer;
+    function GetFK4: TPlayer;
+    function GetInjuredPlayer( Team: integer ): TPlayer;
 
-    function IsOffSide ( FromPlayer, ToPlayer : TSoccerPlayer ): Boolean;
-    function IsLastMan ( aPlayer, BallPlayer : TSoccerPlayer ): Boolean;
+    function IsOffSide ( FromPlayer, ToPlayer : TPlayer ): Boolean;
+    function IsLastMan ( aPlayer, BallPlayer : TPlayer ): Boolean;
 
     function AllowCount ( team: Integer ): Integer;
     function CurrentCount ( team: Integer ): Integer;
     function CanDoSub ( team: Integer ): boolean;
 
-    function CalculateBasePrecisionShot (  aPlayer: TSoccerPlayer ): Tchance;
-    function CalculateBasePowerShot (   aPlayer: TSoccerPlayer ): Tchance;
-    function CalculateBasePrecisionShotGK (  aPlayer: TSoccerPlayer ): Tchance;
-    function CalculateBasePowerShotGK (  aPlayer: TSoccerPlayer ): Tchance;
+    function CalculateBasePrecisionShot (  aPlayer: TPlayer ): Tchance;
+    function CalculateBasePowerShot (   aPlayer: TPlayer ): Tchance;
+    function CalculateBasePrecisionShotGK (  aPlayer: TPlayer ): Tchance;
+    function CalculateBasePowerShotGK (  aPlayer: TPlayer ): Tchance;
 
     // plm nove con autotackle
-    function CalculateBasePlmBallControl (  aPlayer: TSoccerPlayer ): Tchance;
-    function CalculateBasePlmBaseAutoTackle (  aPlayer: TSoccerPlayer ): Tchance;
+    function CalculateBasePlmBallControl (  aPlayer: TPlayer ): Tchance;
+    function CalculateBasePlmBaseAutoTackle (  aPlayer: TPlayer ): Tchance;
 
     // ShortPassing con Intercept e Stopped
-    function CalculateBaseShortPassing  (  aPlayer: TSoccerPlayer ): Tchance;
-    function CalculateBaseShortPassingStopped (  aPlayer: TSoccerPlayer ): Tchance;
-    function CalculateBaseShortPassingIntercept (  CellX, CellY: Integer; aPlayer: TSoccerPlayer ): Tchance;
+    function CalculateBaseShortPassing  (  aPlayer: TPlayer ): Tchance;
+    function CalculateBaseShortPassingStopped (  aPlayer: TPlayer ): Tchance;
+    function CalculateBaseShortPassingIntercept (  CellX, CellY: Integer; aPlayer: TPlayer ): Tchance;
 
     // LoftedPass
-    function CalculateBaseLoftedPass ( aPlayer: TSoccerPlayer ): Tchance;
-    function CalculateBaseLoftedPassBallControl ( aPlayer: TSoccerPlayer ): Tchance;
-    function CalculateBaseLoftedPassHeadingDefense (  CellX, CellY: Integer; aPlayer: TSoccerPlayer ): Tchance; // cellx e celly opzionali
-    function CalculateBaseLoftedPassEmptyPlmSpeed (  CellX, CellY: Integer; aPlayer: TSoccerPlayer ): Tchance; // cellx e celly opzionali
+    function CalculateBaseLoftedPass ( aPlayer: TPlayer ): Tchance;
+    function CalculateBaseLoftedPassBallControl ( aPlayer: TPlayer ): Tchance;
+    function CalculateBaseLoftedPassHeadingDefense (  CellX, CellY: Integer; aPlayer: TPlayer ): Tchance; // cellx e celly opzionali
+    function CalculateBaseLoftedPassEmptyPlmSpeed (  CellX, CellY: Integer; aPlayer: TPlayer ): Tchance; // cellx e celly opzionali
 
 
     // Crossing
-    function CalculateBaseCrossing ( CellX, CellY: integer; aPlayer: TSoccerPlayer ): Tchance;
-    function CalculateBaseCrossingHeadingDefense ( CellX, CellY: integer; aPlayer: TSoccerPlayer ): Tchance;
-    function CalculateBaseCrossingHeadingFriend ( CellX, CellY: integer; aPlayer: TSoccerPlayer ): Tchance;
+    function CalculateBaseCrossing ( CellX, CellY: integer; aPlayer: TPlayer ): Tchance;
+    function CalculateBaseCrossingHeadingDefense ( CellX, CellY: integer; aPlayer: TPlayer ): Tchance;
+    function CalculateBaseCrossingHeadingFriend ( CellX, CellY: integer; aPlayer: TPlayer ): Tchance;
 
     //Dribbling
-    function CalculateBaseDribblingChance ( CellX, CellY: integer; aPlayer: TSoccerPlayer ): Tchance;
-    function CalculatBaseDribblingDefense ( CellX, CellY: integer; anOpponent: TSoccerPlayer ): Tchance;
+    function CalculateBaseDribblingChance ( CellX, CellY: integer; aPlayer: TPlayer ): Tchance;
+    function CalculatBaseDribblingDefense ( CellX, CellY: integer; anOpponent: TPlayer ): Tchance;
 
 
     property milliseconds: Integer read fmilliseconds write setmilliseconds;
@@ -999,16 +933,6 @@ end;
     property W_SomeThing : Boolean read GetW_Something;
 
     end;
-
-
-
-  Function isValidFormationCell ( CellX, CellY: integer ) : boolean;
-  Function IsOutSide ( CellX, CellY: integer ) : boolean;
-  Function IsOutSideAI ( CellX, CellY: integer ) : boolean;
-  function inLinePath ( StartX, StartY, EndX, EndY, Cellx, CellY: integer): boolean;
-  procedure GetLinePoints(X1, Y1, X2, Y2 : Integer; var PathPoints : dse_pathplanner.TPath);
-  function ReversePointOrder(LinePointList : dse_pathplanner.TPath) : dse_pathplanner.TPath;
-  Function IsGKCell ( CellX, CellY: integer ) : boolean;
 
   procedure CreateShotCells;
   procedure TVCreateCrossingAreaCells ;
@@ -1023,7 +947,7 @@ var
  	AIField: TList<TFieldCell>;
 
 implementation
-uses Server;
+uses Server, utilities;
 //--------------------------------------------------------
 constructor TShotCell.Create;
 begin
@@ -1894,59 +1818,8 @@ end;
 
 //--------------------------------------------------------
 
-Function IsOutSide ( CellX, CellY: integer ) : boolean;
-begin
-  Result:= False;
-  if (CellX < 0) or (CellX > 11) then begin
-    result := True;
-    Exit;
-  end;
-  if (CellY < 0) or (CellY > 6) then begin
-    result := True;
-    Exit;
-  end;
 
-  if (CellX = 0) and (CellY  <> 3) then begin
-    result := True;
-    Exit;
-  end;
-  if  (CellX = 11) and (CellY  <> 3) then begin
-    Result := True;
-    Exit;
-  end;
-end;
-function isValidFormationCell ( CellX, CellY: integer ) : boolean;
-begin
-  Result:= ((CellX = 3) and (CellY = 11))  or ( (  (CellX > -1) and (CellX < 7) ) and ( (CellY = 3) or (CellY = 6) or (CellY = 9) )   );
-
-end;
-Function IsOutSideAI ( CellX, CellY: integer ) : boolean;
-begin
-  Result:= False;
-  if (CellX < 0) or (CellX > 6) then begin
-    result := True;
-    Exit;
-  end;
-  if (CellY < 0) or (CellY > 11) then begin
-    result := True;
-    Exit;
-  end;
-
-  if (CellY  = 0) and (CellX <> 3) then begin
-    result := True;
-    Exit;
-  end;
-  if (CellY = 11) and (CellX  <> 3) then begin
-    Result := True;
-    Exit;
-  end;
-end;
-Function IsGKCell ( CellX, CellY: integer ) : boolean;
-begin
-  result := ((CellX = 0) and (CellY  = 3)) or ( (CellX = 11) and (CellY  = 3) );
-end;
-
-function TSoccerBrain.AdjustFatigue ( const Stamina , Roll: integer ): TRoll;
+function TBrain.AdjustFatigue ( const Stamina , Roll: integer ): TRoll;
 begin
     // 20st -3      30st-2      45st -1    a ogni Roll   possibilità 50% fissa di avere malus in base ai punti stamina rimanenti.
   case Stamina of
@@ -1995,171 +1868,19 @@ begin
   if Result.value <= 0 then Result.value := 1;
 
 end;
-function TSoccerBrain.RndGenerate( Upper: integer ): integer;
+function TBrain.RndGenerate( Upper: integer ): integer;
 begin
   Result := Trunc(RandGen.AsLimitedDouble (1, Upper + 1));
 end;
-function TSoccerbrain.RndGenerate0( Upper: integer ): integer;
+function TBrain.RndGenerate0( Upper: integer ): integer;
 begin
   Result := Trunc(RandGen.AsLimitedDouble (0, Upper + 1));
 end;
-function TSoccerBrain.RndGenerateRange( Lower, Upper: integer ): integer;
+function TBrain.RndGenerateRange( Lower, Upper: integer ): integer;
 begin
   Result := Trunc(RandGen.AsLimitedDouble (Lower, Upper + 1));
 end;
 
-function DistanceSqr(const X1, Y1, X2, Y2: Integer): Integer;
-begin
-     result := Sqr( X2-X1 ) + Sqr( Y2-Y1 );
-end;
-function AbsDistance( const X1, Y1, X2, Y2: Integer ): Integer;
-var
-   d1, d2: Integer;
-begin
-     d1 := abs(x2-x1);
-     d2 := abs(y2-y1);
-     if d1 < d2 then
-        result := d2
-     else
-         result := d1;
-end;
-function inLinePath ( StartX, StartY, EndX, EndY, Cellx, CellY: integer): boolean;
-var
-  aPath: dse_pathplanner.TPath;
-  i: integer;
-begin
-  Result:= False;
-  aPath := dse_pathplanner.TPath.Create;
-  GetLinePoints ( StartX, StartY, EndX, EndY, aPath );
-  for I := 0 to aPath.Count -1 do begin
-    if (aPath[i].X = cellX) and (aPath[i].Y = cellY) then begin
-      Result := true;
-      aPath.Free;
-      exit;
-    end;
-  end;
-  aPath.Free;
-
-end;
-
-// ----------------------------------------------------------------------------
-// GetLinePoints
-// ----------------------------------------------------------------------------
-function ReversePointOrder(LinePointList : dse_pathplanner.TPath) : dse_pathplanner.TPath;
-var
-  NewPointList : dse_pathplanner.TPath;
-begin
-  NewPointList := dse_pathplanner.TPath.Create;
-  NewPointList:=LinePointList;
-  NewPointList.Reverse ;
-  Result := NewPointList;
-end;
-
-procedure GetLinePoints(X1, Y1, X2, Y2 : Integer; var PathPoints: dse_pathplanner.TPath);
-var
-ChangeInX, ChangeInY, i, MinX, MinY, MaxX, MaxY, LineLength : Integer;
-ChangingX : Boolean;
-Point : TPoint;
-//ReturnList, ReversedList : pathplanner.TPath;
-begin
-  PathPoints.Clear;
-//  ReturnList := pathplanner.TPath.Create;
- // ReversedList := pathplanner.TPath.Create;
-
-
-  if X1 > X2 then  begin
-    ChangeInX := X1 - X2;
-    MaxX := X1;
-    MinX := X2;
-  end
-  else begin
-    ChangeInX := X2 - X1;
-    MaxX := X2;
-    MinX := X1;
-  end;
-
-  // Get the change in the Y axis and the Max & Min Y values
-  if Y1 > Y2 then  begin
-    ChangeInY := Y1 - Y2;
-    MaxY := Y1;
-    MinY := Y2;
-  end
-  else  begin
-    ChangeInY := Y2 - Y1;
-    MaxY := Y2;
-    MinY := Y1;
-  end;
-
-  // Find out which axis has the greatest change
-  if ChangeInX > ChangeInY then  begin
-    LineLength := ChangeInX;
-    ChangingX := True;
-  end
-  else begin
-    LineLength := ChangeInY;
-    ChangingX := false;
-  end;
-
-
-  if X1 = X2 then  begin
-    for i := MinY to MaxY do begin
-      Point.X := X1;
-      Point.Y := i;
-      PathPoints.Add(Point.X,Point.y);
-    end;
-
-    if Y1 > Y2 then  begin
-  //  ReversedList := ReversePointOrder(ReturnList);  { ReturnList.reverse e basta }
-  // ReturnList := ReversedList;
-      PathPoints.reverse;
-    end;
-  end
-
-  else if Y1 = Y2 then  begin
-    for i := MinX to MaxX do begin
-      Point.X := i;
-      Point.Y := Y1;
-      PathPoints.Add(Point.x,Point.Y );
-    end;
-
-
-    if X1 > X2 then begin
-//      ReversedList := ReversePointOrder(ReturnList);
-//      ReturnList := ReversedList;
-      PathPoints.reverse;
-    end;
-  end
-  else begin
-    Point.X := X1;
-    Point.Y := Y1;
-    PathPoints.Add(Point.x,Point.y);
-
-    for i := 1 to (LineLength - 1) do  begin
-      if ChangingX then  begin
-        Point.y := Round((ChangeInY * i)/ChangeInX);
-        Point.x := i;
-      end
-
-      else  begin
-        Point.y := i;
-        Point.x := Round((ChangeInX * i)/ChangeInY);
-      end;
-
-      if Y1 < Y2 then  Point.y := Point.Y + Y1
-      else   Point.Y := Y1 - Point.Y;
-
-      if X1 < X2 then  Point.X := Point.X + X1
-      else   Point.X := X1 - Point.X;
-
-      PathPoints.Add(Point.X,Point.y);
-    end;
-  // Add the second point to the list.
-    Point.X := X2;
-    Point.Y := Y2;
-    PathPoints.Add(Point.X,Point.y);
-  end;
-//Result := ReturnList;
-end;
 
 
 
@@ -2173,7 +1894,7 @@ end;
 ██████╔╝██║  ██║███████╗███████╗
 ╚═════╝ ╚═╝  ╚═╝╚══════╝╚══════╝
 ---------------------------------------------------------------------------------------------------------------------------------------------------}
-constructor TBall.create ( abrain: TSoccerbrain );
+constructor TBall.create ( abrain: TBrain );
 begin
   brain := aBrain;
   PathBall:= dse_pathplanner.TPath.Create ;
@@ -2200,21 +1921,21 @@ end;
 
 procedure TBall.SetCellX ( v: ShortInt );
 var
-  aPlayer: TSoccerPlayer;
+  aPlayer: TPlayer;
 begin
   Cx:= v;
  {  pro o pre mettono aplayer.canskill:= false. shp bounce mi ritorna la palla canskill=false. non posso più muovere la palla. lo stesso per ogni bounce }
-  aPlayer := brain.GetSoccerPlayer ( Cx, Cy);
+  aPlayer := brain.GeTPlayer ( Cx, Cy);
   if aPlayer <> nil then
    aPlayer.CanSkill := True;
 end;
 procedure TBall.SetCellY ( v: ShortInt );
 var
-  aPlayer: TSoccerPlayer;
+  aPlayer: TPlayer;
 begin
   Cy:= v;
  {  pro o pre mettono aplayer.canskill:= false. shp bounce mi ritorna la palla canskill=false. non posso più muovere la palla. lo stesso per ogni bounce }
-  aPlayer := brain.GetSoccerPlayer ( Cx, Cy);
+  aPlayer := brain.GeTPlayer ( Cx, Cy);
   if aPlayer <> nil then
    aPlayer.CanSkill := True;
 end;
@@ -2225,21 +1946,21 @@ begin
          Result:=2
          else if Cx > 7 then Result:=1;
 end;
-procedure TBall.SetPlayer ( v: TSoccerPlayer );
+procedure TBall.SetPlayer ( v: TPlayer );
 begin
   if v <> nil then begin
     CellX := v.CellX ;
     CellY := v.CellY ;
   end;
 end;
-function TBall.GetPlayer : TSoccerPlayer;
+function TBall.GetPlayer : TPlayer;
 var
   i: integer;
 begin
   Result := nil;
-  for I := brain.lstSoccerPlayer.count -1 downto 0 do begin
-    if (brain.lstSoccerPlayer[i].cx = CellX) and (brain.lstSoccerPlayer[i].cy = CellY) then begin
-      Result := brain.lstSoccerPlayer[i];
+  for I := brain.Players.count -1 downto 0 do begin
+    if (brain.Players[i].cx = CellX) and (brain.Players[i].cy = CellY) then begin
+      Result := brain.Players[i];
       exit;
     end;
 
@@ -2259,7 +1980,7 @@ end;
 ██║     ███████╗██║  ██║   ██║   ███████╗██║  ██║
 ╚═╝     ╚══════╝╚═╝  ╚═╝   ╚═╝   ╚══════╝╚═╝  ╚═╝
 ---------------------------------------------------------------------------------------------------------------------------------------------------}
-constructor TSoccerPlayer.create ( const aTeam, aGuidTeam, aMatchesPlayed : integer; const aIds, aName, aSurname, AT: string; Talent1,Talent2: integer );
+constructor TPlayer.create ( const aTeam, aGuidTeam, aMatchesPlayed : integer; const aIds, aName, aSurname, AT: string; Talent1,Talent2: integer );
 begin
   Ids := aIds;
   Team := aTeam;
@@ -2297,21 +2018,21 @@ begin
 
 end;
 
-destructor TSoccerPlayer.Destroy;
+destructor TPlayer.Destroy;
 begin
   ActiveSkills.Free;
   MovePath.Free;
   inherited;
 end;
 
-function TSoccerPlayer.HasBall : boolean;
+function TPlayer.HasBall : boolean;
 begin
   if ( CellX = Brain.Ball.CellX ) and ( CellY = Brain.Ball.CellY )  then
     result := true
     else result := false;
 end;
 // deprecated
-function TSoccerPlayer.InCrossingCell : boolean;
+function TPlayer.InCrossingCell : boolean;
 begin
 Result := false;
   case Team of
@@ -2328,7 +2049,7 @@ Result := false;
   end;
 
 end;
-function TSoccerPlayer.InShotCell : boolean;
+function TPlayer.InShotCell : boolean;
 var
   i: integer;
 begin
@@ -2342,7 +2063,7 @@ begin
   end;
 
 end;
-function TSoccerPlayer.onBottom : TBottomPosition; // 1 NearCornerCell 2 BottomNoShot 3 BottomShot
+function TPlayer.onBottom : TBottomPosition; // 1 NearCornerCell 2 BottomNoShot 3 BottomShot
 begin
   Result := BottomNone;
   case Team of
@@ -2364,7 +2085,7 @@ begin
     end;
   end;
 end;
-function TSoccerPlayer.InCrossingArea : boolean;
+function TPlayer.InCrossingArea : boolean;
 begin
   Result := false;
   if Team = 0 then begin
@@ -2386,7 +2107,7 @@ begin
 
 end;
 
-function TSoccerPlayer.GetField : byte;
+function TPlayer.GetField : byte;
 begin
     if Team = 0 then begin
       if (CellX < 6) then
@@ -2400,7 +2121,7 @@ begin
     end;
 
 end;
-function TSoccerPlayer.GetZoneRole : char;
+function TPlayer.GetZoneRole : char;
 begin
   if Cx <=3 then begin
     if Team = 0 then
@@ -2418,20 +2139,20 @@ begin
     Result := 'N';
 
 end;
-function TSoccerPlayer.GetCells: Tpoint ;
+function TPlayer.GetCells: Tpoint ;
 begin
   Result := Point ( cx, cy );
 end;
-procedure TSoccerPlayer.SetCells ( v: Tpoint );
+procedure TPlayer.SetCells ( v: Tpoint );
 begin
   Cx := v.X;
   cy := v.Y;
 end;
-function TSoccerPlayer.GetDefaultCells: Tpoint ;
+function TPlayer.GetDefaultCells: Tpoint ;
 begin
   Result := Point ( DefaultCellX, DefaultCellY );
 end;
-procedure TSoccerPlayer.SetDefaultCells ( v: Tpoint );
+procedure TPlayer.SetDefaultCells ( v: Tpoint );
 begin
   DefaultCellX := v.X;
   DefaultCellY := v.Y;
@@ -2452,15 +2173,15 @@ begin
 
 
 end;
-procedure TSoccerPlayer.SetCellX ( v: ShortInt );
+procedure TPlayer.SetCellX ( v: ShortInt );
 begin
   Cx:= v;
 end;
-procedure TSoccerPlayer.SetCellY ( v: ShortInt );
+procedure TPlayer.SetCellY ( v: ShortInt );
 begin
   Cy:= v;
 end;
-function TSoccerPlayer.GetMarketValue: Integer;
+function TPlayer.GetMarketValue: Integer;
 var
   value: Integer;
 begin
@@ -2487,7 +2208,7 @@ begin
 
 end;
 
-function TSoccerPlayer.GetActiveAttrTalValue: Integer;
+function TPlayer.GetActiveAttrTalValue: Integer;
 var
   value: Integer;
 begin
@@ -2502,7 +2223,7 @@ begin
 
 
 end;
-procedure TSoccerPlayer.resetALL;
+procedure TPlayer.resetALL;
 begin
   BonusFinishing := 0;
   resetTAC;
@@ -2513,28 +2234,28 @@ begin
   resetPLM;
 //  resetSHPAREA;
 end;
-procedure TSoccerPlayer.resetFIN;
+procedure TPlayer.resetFIN;
 begin
   BonusFinishingTurn :=0;
   Shot      := DefaultShot;
 end;
-procedure TSoccerPlayer.resetTAC;
+procedure TPlayer.resetTAC;
 begin
   BonusTackleTurn :=0;
   Passing   := DefaultPassing;
   Shot      := DefaultShot;
 end;
-procedure TSoccerPlayer.resetLBC;
+procedure TPlayer.resetLBC;
 begin
   BonusLopBallControlTurn :=0;
   BallControl := DefaultBallControl;
 end;
-procedure TSoccerPlayer.resetPRO;
+procedure TPlayer.resetPRO;
 begin
   BonusProtectionTurn :=0;
   BallControl := DefaultBallControl;
 end;
-procedure TSoccerPlayer.resetPRE;
+procedure TPlayer.resetPRE;
 begin
   UnderPressureTurn := 0;
   if (injured = 0) and (Role <> 'G') then begin
@@ -2544,25 +2265,25 @@ begin
   BallControl := DefaultBallControl;
   Shot        := DefaultShot;
 end;
-procedure TSoccerPlayer.resetSHP;
+procedure TPlayer.resetSHP;
 begin
   BonusSHPturn :=0;
   Passing     := DefaultPassing;
   BallControl := DefaultBallControl;
   Shot        := DefaultShot;
 end;
-procedure TSoccerPlayer.resetSHPAREA;
+procedure TPlayer.resetSHPAREA;
 begin
   BonusSHPAREAturn :=0;
   Shot := DefaultShot;
 end;
-procedure TSoccerPlayer.resetPLM;
+procedure TPlayer.resetPLM;
 begin
   BonusPLMturn :=0;
   Shot    := DefaultShot;
   Passing := DefaultPassing;
 end;
-procedure TSoccerPlayer.LoadDefaultAttributes (  v: Shortstring );
+procedure TPlayer.LoadDefaultAttributes (  v: Shortstring );
 var
   Ts: TstringList;
 begin
@@ -2585,7 +2306,7 @@ begin
 
 
 end;
-procedure TSoccerPlayer.LoadAttributes (  v: ShortString );
+procedure TPlayer.LoadAttributes (  v: ShortString );
 var
   Ts: TstringList;
 begin
@@ -2607,114 +2328,114 @@ begin
   if (role = 'G')  or (TalentID1=1) then  CanMove:= false;
 
 end;
-procedure TSoccerPlayer.SetGameOver ( const value: Boolean);
+procedure TPlayer.SetGameOver ( const value: Boolean);
 begin
   fGameOver := value;
   if fGameOver then
      resetALL;
 end;
-procedure TSoccerPlayer.SetSpeed( v: ShortInt );
+procedure TPlayer.SetSpeed( v: ShortInt );
 begin
   fSpeed := v;
   if fSpeed <= 0 then fSpeed := 1;
 end;
-procedure TSoccerPlayer.SetStamina( v: SmallInt );
+procedure TPlayer.SetStamina( v: SmallInt );
 begin
   fStamina := v;
   if fStamina < 0 then fStamina := 0;
 end;
-procedure TSoccerPlayer.SetDefense( v: ShortInt );
+procedure TPlayer.SetDefense( v: ShortInt );
 begin
   fDefense := v;
   if fDefense < 0 then fDefense := 0;
 end;
-procedure TSoccerPlayer.SetBallControl( v: ShortInt );
+procedure TPlayer.SetBallControl( v: ShortInt );
 begin
   fBallControl := v;
   if fBallControl < 0 then fBallControl := 0;
 end;
-procedure TSoccerPlayer.SetPassing( v: ShortInt );
+procedure TPlayer.SetPassing( v: ShortInt );
 begin
   fPassing := v;
   if fPassing < 0 then fPassing := 0;
 end;
-procedure TSoccerPlayer.SetShot( v: ShortInt );
+procedure TPlayer.SetShot( v: ShortInt );
 begin
   fShot := v;
   if fShot < 0 then fShot := 0;
 
 end;
-procedure TSoccerPlayer.SetHeading( v: ShortInt );
+procedure TPlayer.SetHeading( v: ShortInt );
 begin
   fHeading := v;
   if fHeading < 0 then fHeading := 0;
 end;
 
-procedure TSoccerBrain.AddSoccerPlayer (aSoccerPlayer: TSoccerPlayer );
+procedure TBrain.AddSoccerPlayer (aSoccerPlayer: TPlayer );
 begin
   aSoccerPlayer.brain:=self;
-  lstSoccerPlayer.add ( aSoccerPlayer );
+  Players.add ( aSoccerPlayer );
 end;
-procedure TSoccerBrain.RemoveSoccerPlayer (aSoccerPlayer: TSoccerPlayer );
+procedure TBrain.RemoveSoccerPlayer (aSoccerPlayer: TPlayer );
 var
   i: Integer;
 begin
-  for I := lstSoccerPlayer.count -1 downto 0 do begin
-    if lstSoccerPlayer[i].ids = aSoccerPlayer.ids then begin
-      lstSoccerPlayer.Delete(i);
+  for I := Players.count -1 downto 0 do begin
+    if Players[i].ids = aSoccerPlayer.ids then begin
+      Players.Delete(i);
       Exit;
     end;
   end;
 
 end;
-procedure TSoccerBrain.AddSoccerReserve (aSoccerPlayer: TSoccerPlayer );
+procedure TBrain.AddSoccerReserve (aSoccerPlayer: TPlayer );
 begin
   aSoccerPlayer.brain:=self;
-  lstSoccerReserve.add ( aSoccerPlayer );
+  Reserves.add ( aSoccerPlayer );
   PutInReserveSlot( aSoccerPlayer );
 
 end;
-procedure TSoccerBrain.RemoveSoccerReserve (aSoccerPlayer: TSoccerPlayer );
+procedure TBrain.RemoveSoccerReserve (aSoccerPlayer: TPlayer );
 var
   i: Integer;
 begin
-  for I := lstSoccerReserve.count -1 downto 0 do begin
-    if lstSoccerReserve[i].ids = aSoccerPlayer.ids then begin
-      lstSoccerReserve.Delete(i);
+  for I := Reserves.count -1 downto 0 do begin
+    if Reserves[i].ids = aSoccerPlayer.ids then begin
+      Reserves.Delete(i);
       Exit;
     end;
   end;
 
 end;
-procedure TSoccerBrain.AddSoccerGameOver (aSoccerPlayer: TSoccerPlayer );
+procedure TBrain.AddSoccerGameOver (aSoccerPlayer: TPlayer );
 begin
   aSoccerPlayer.brain:=self;
   PutInGameOverSlot( aSoccerPlayer );
-  lstSoccerGameOver.add ( aSoccerPlayer );
+  Gameover.add ( aSoccerPlayer );
 
 end;
-procedure TSoccerBrain.RemoveSoccerGameOver (aSoccerPlayer: TSoccerPlayer );
+procedure TBrain.RemoveSoccerGameOver (aSoccerPlayer: TPlayer );
 var
   i: Integer;
 begin
-  for I := lstSoccerGameOver.count -1 downto 0 do begin
-    if lstSoccerGameOver[i].ids = aSoccerPlayer.ids then begin
-      lstSoccerGameOver.Delete(i);
+  for I := Gameover.count -1 downto 0 do begin
+    if Gameover[i].ids = aSoccerPlayer.ids then begin
+      Gameover.Delete(i);
       Exit;
     end;
   end;
 
 end;
 
-procedure TSoccerBrain.ResetPassiveSkills;
+procedure TBrain.ResetPassiveSkills;
 var
   t,p, OldPassing, OldBallControl, OldShot: integer;
-  aPlayer : TSoccerPlayer;
-  aList : TObjectList<TSoccerPlayer>;
+  aPlayer : TPlayer;
+  aList : TObjectList<TPlayer>;
 begin
 
-  for P := lstSoccerPlayer.Count -1  downto 0 do begin
-    aPlayer := lstSoccerPlayer[p];
+  for P := Players.Count -1  downto 0 do begin
+    aPlayer := Players[p];
 
     if IsOutSide( aPlayer.CellX,aPlayer.CellY)  then Continue; // espulsi, sostituiti , injured sono not canmove e stamina 0 per sempre ma sono ancora in campo
 
@@ -2813,7 +2534,7 @@ begin
       Score.BuffD[T]:= Score.BuffD[T] -1;
       if Score.BuffD[T] > 0 then begin    // metto il buff
         // cerco il reparto e buff
-        aList := TObjectList<TSoccerPlayer>.create(false);
+        aList := TObjectList<TPlayer>.create(false);
         CompileRoleList(T,'D', aList);
         for p := aList.Count -1 downto 0 do begin
           if aList[p].HasBall then continue;   // il portatore di palla non è stato resettato sopra
@@ -2831,7 +2552,7 @@ begin
       Score.BuffM[T]:= Score.BuffM[T] -1;
       if Score.BuffM[T] > 0 then begin
         // cerco il reparto e tolgo buff
-        aList := TObjectList<TSoccerPlayer>.create(false);
+        aList := TObjectList<TPlayer>.create(false);
         CompileRoleList(T,'M',aList);
         for p := aList.Count -1 downto 0 do begin
           if aList[p].HasBall then continue;   // il portatore di palla non è stato resettato sopra
@@ -2851,7 +2572,7 @@ begin
       Score.BuffF[T]:= Score.BuffF[T] -1;
       if Score.BuffF[T] > 0 then begin    // se è ancora maggiore di 0  // altrimenti evita il buff
         // cerco il reparto e tolgo buff
-        aList := TObjectList<TSoccerPlayer>.create(false);
+        aList := TObjectList<TPlayer>.create(false);
         CompileRoleList(T,'F',aList);
         for p := aList.Count -1 downto 0 do begin
           if aList[p].HasBall then continue;   // il portatore di palla non è stato resettato sopra
@@ -2868,10 +2589,10 @@ begin
   end;
 
 end;
-procedure TSoccerBrain.GetPath1dir ( Team, X1, Y1, X2, Y2, Limit: integer; useFlank,FriendlyWall,OpponentWall,FinalWall,OneDir: boolean; var aPath: dse_pathplanner.TPath );
+procedure TBrain.GetPath1dir ( Team, X1, Y1, X2, Y2, Limit: integer; useFlank,FriendlyWall,OpponentWall,FinalWall,OneDir: boolean; var aPath: dse_pathplanner.TPath );
 var
   i,last: integer;
-  aPlayer: TSoccerPlayer;
+  aPlayer: TPlayer;
   MoveModeX,MoveModeX2: TMoveModeX;
   MoveModeY,MoveModeY2: TMoveModeY;
   label Nextfinal1dir;
@@ -2914,7 +2635,7 @@ begin
 
         for I := 0 to aPath.Count - 1 do begin
           if aPath.Count-1=i then Continue;
-          
+
           if aPath[i].X < aPath[i+1].X then
             MoveModeX2 := LeftToRight
             else if aPath[i].X > aPath[i+1].X then
@@ -2949,7 +2670,7 @@ begin
   // check wall  in fondo qui
 //  last := aPath.Count;
   for i := 0 to aPath.Count -1 do begin
-    aPlayer := GetSoccerPlayer (aPath[i].X,aPath[i].Y);
+    aPlayer := GeTPlayer (aPath[i].X,aPath[i].Y);
     if aPlayer <> nil then begin
       if FriendlyWall then begin
         if aPlayer.Team = Team then begin
@@ -2979,7 +2700,7 @@ NextFinal1dir:
   if (FinalWall) and (aPath.Count > 0) then begin
 //    for I := aPath.Count-1 downto 0 do begin
 //     if Y1 <> aPath[i].Y then asm Int 3 end;
-      if GetSoccerPlayer (aPath[aPath.Count-1].X,aPath[aPath.Count-1].Y) <> nil then begin
+      if GeTPlayer (aPath[aPath.Count-1].X,aPath[aPath.Count-1].Y) <> nil then begin
         //aPath.Steps.Delete(i);
         aPath.RemoveLast ;
         goto NextFinal1dir;
@@ -2989,11 +2710,11 @@ NextFinal1dir:
 
 end;
 
-procedure TSoccerBrain.GetPathX ( Team, X1, Y1, X2, Y2, Limit: integer; useFlank,FriendlyWall,OpponentWall,FinalWall,OneDir: boolean; var aPath: dse_pathplanner.TPath );
+procedure TBrain.GetPathX ( Team, X1, Y1, X2, Y2, Limit: integer; useFlank,FriendlyWall,OpponentWall,FinalWall,OneDir: boolean; var aPath: dse_pathplanner.TPath );
 var
   x, Flank: integer;
   aStep: dse_pathplanner.TPathStep;
-  aPlayer: TSoccerPlayer;
+  aPlayer: TPlayer;
   label NextFinal;
 begin
  // y2 e onedir tenuta solo per compatibilità
@@ -3015,7 +2736,7 @@ begin
 
 
     for x:= X1+1 to X2 do begin
-      aPlayer := GetSoccerPlayer (x,Y1);
+      aPlayer := GeTPlayer (x,Y1);
       if aPlayer <> nil then begin
 
         if FriendlyWall then begin
@@ -3047,7 +2768,7 @@ begin
     end;
 
     for x:= X1-1 downto X2 do begin
-      aPlayer := GetSoccerPlayer (x,Y1);
+      aPlayer := GeTPlayer (x,Y1);
       if aPlayer <> nil then begin
 
         if FriendlyWall then begin
@@ -3077,7 +2798,7 @@ NextFinal:
   if (FinalWall) and (aPath.Count > 0) then begin
 //    for I := aPath.Count-1 downto 0 do begin
 //     if Y1 <> aPath[i].Y then asm Int 3 end;
-      if GetSoccerPlayer (aPath[aPath.Count-1].X,aPath[aPath.Count-1].Y) <> nil then begin
+      if GeTPlayer (aPath[aPath.Count-1].X,aPath[aPath.Count-1].Y) <> nil then begin
         //aPath.Steps.Delete(i);
         aPath.RemoveLast ;
         goto NextFinal;
@@ -3089,11 +2810,11 @@ NextFinal:
 
 
 end;
-procedure TSoccerBrain.GetPathY ( Team, X1, Y1, X2, Y2, Limit: integer; useFlank,FriendlyWall,OpponentWall,FinalWall,OneDir: boolean; var aPath: dse_pathplanner.TPath );
+procedure TBrain.GetPathY ( Team, X1, Y1, X2, Y2, Limit: integer; useFlank,FriendlyWall,OpponentWall,FinalWall,OneDir: boolean; var aPath: dse_pathplanner.TPath );
 var
   y, Flank: integer;
   aStep: dse_pathplanner.TPathStep;
-  aPlayer: TSoccerPlayer;
+  aPlayer: TPlayer;
   label NextFinal;
 begin
  // y2 e onedir tenuta solo per compatibilità
@@ -3115,7 +2836,7 @@ begin
 
 
     for y:= Y1+1 to Y2 do begin
-      aPlayer := GetSoccerPlayer (X1,y);
+      aPlayer := GeTPlayer (X1,y);
       if aPlayer <> nil then begin
 
         if FriendlyWall then begin
@@ -3147,7 +2868,7 @@ begin
     end;
 
     for y:= Y1-1 downto Y2 do begin
-      aPlayer := GetSoccerPlayer (X1,y);
+      aPlayer := GeTPlayer (X1,y);
       if aPlayer <> nil then begin
 
         if FriendlyWall then begin
@@ -3175,7 +2896,7 @@ begin
  // Elimino la FinalWall
 NextFinal:
   if (FinalWall) and (aPath.Count > 0) then begin
-      if GetSoccerPlayer (aPath[aPath.Count-1].X,aPath[aPath.Count-1].Y) <> nil then begin
+      if GeTPlayer (aPath[aPath.Count-1].X,aPath[aPath.Count-1].Y) <> nil then begin
         //aPath.Steps.Delete(i);
         aPath.RemoveLast ;
         goto NextFinal;
@@ -3186,7 +2907,7 @@ NextFinal:
 
 
 end;
-procedure TSoccerBrain.GetPath ( Team, X1, Y1, X2, Y2, Limit: integer; useFlank,FriendlyWall,OpponentWall,FinalWall: boolean;OneDir: TOneDir; var aPath: dse_pathplanner.TPath );
+procedure TBrain.GetPath ( Team, X1, Y1, X2, Y2, Limit: integer; useFlank,FriendlyWall,OpponentWall,FinalWall: boolean;OneDir: TOneDir; var aPath: dse_pathplanner.TPath );
 var
   aSearchMap : TSearchableMap;
   i,p,last,j,F0,F6, Flank: integer;
@@ -3214,21 +2935,21 @@ begin
         if (i= 0) or (i= 11) then aSearchMap[i,j].Terrain := 255;
      end;
   end;
-  for i := lstSoccerPlayer.Count -1  downto 0 do begin
-//    aSearchMap[lstSoccerPlayer[i].cellX ,lstSoccerPlayer[i].cellY].Terrain := 255  ;
-    if isOutSide (lstSoccerPlayer[i].CellX, lstSoccerPlayer[i].CellY ) then Continue;
+  for i := Players.Count -1  downto 0 do begin
+//    aSearchMap[Players[i].cellX ,Players[i].cellY].Terrain := 255  ;
+    if isOutSide (Players[i].CellX, Players[i].CellY ) then Continue;
 
     if FriendlyWall then begin
-      if lstSoccerPlayer[i].Team = Team then
-         aSearchMap[lstSoccerPlayer[i].cellX ,lstSoccerPlayer[i].cellY].Terrain := 255;
+      if Players[i].Team = Team then
+         aSearchMap[Players[i].cellX ,Players[i].cellY].Terrain := 255;
     end;
     if OpponentWall then begin
-      if lstSoccerPlayer[i].Team <> Team then
-         aSearchMap[lstSoccerPlayer[i].cellX ,lstSoccerPlayer[i].cellY].Terrain := 255;
+      if Players[i].Team <> Team then
+         aSearchMap[Players[i].cellX ,Players[i].cellY].Terrain := 255;
     end;
 //    if FinalWall then begin
-//    if (lstSoccerPlayer[i].CellX = X2) and (lstSoccerPlayer[i].CellY = Y2) then
- //        aSearchMap[lstSoccerPlayer[i].cellX ,lstSoccerPlayer[i].cellY].Terrain := 255;
+//    if (Players[i].CellX = X2) and (Players[i].CellY = Y2) then
+ //        aSearchMap[Players[i].cellX ,Players[i].cellY].Terrain := 255;
  //   end;
 
   end;
@@ -3243,7 +2964,7 @@ begin
   if j > 0 then begin
   // La cella finale non può mai essere un player
  //   if aSearchMap[aStar.Path[aStar.Path.Count-1].X  ,aStar.Path[aStar.Path.Count-1].Y].TerrainCost <> 255  then begin
-   // if GetSoccerPlayer (aStar.Path[aStar.Path.Count-1].X  ,aStar.Path[aStar.Path.Count-1].Y) = nil then begin
+   // if GeTPlayer (aStar.Path[aStar.Path.Count-1].X  ,aStar.Path[aStar.Path.Count-1].Y) = nil then begin
 
       // flank bonus
         Flank :=0;
@@ -3348,11 +3069,11 @@ begin
   NextPath:
           for I := AStar.Path.Count -1 downto 0 do begin
 
-              if getSoccerPlayer ( aStar.Path[i].X,aStar.Path[i].Y ) <> nil then begin
+              if geTPlayer ( aStar.Path[i].X,aStar.Path[i].Y ) <> nil then begin
 
-//              for p := 0 to lstSoccerPlayer.Count -1 do begin
-//              if (lstSoccerPlayer[p].CellX = aStar.Path[aStar.Path.Count-1].X ) and
-//                  (lstSoccerPlayer[p].CellY = aStar.Path[aStar.Path.Count-1].Y)  then begin
+//              for p := 0 to Players.Count -1 do begin
+//              if (Players[p].CellX = aStar.Path[aStar.Path.Count-1].X ) and
+//                  (Players[p].CellY = aStar.Path[aStar.Path.Count-1].Y)  then begin
                 AStar.Path.Steps.Delete (i);
              //   found := true;
                 goto NextPath;
@@ -3382,7 +3103,7 @@ ExitPath2:
 end;
 
 
-procedure TSoccerBrain.SwapPlayers (PlayerA, PlayerB: TsoccerPlayer);
+procedure TBrain.SwapPlayers (PlayerA, PlayerB: TPlayer);
 var
   tmp: TPoint;
   tmpCof,tmpFK1,tmpFK2,tmpFK3,tmpFK4: Boolean;
@@ -3416,7 +3137,7 @@ begin
   PlayerB.isFK4 := tmpFK4;
 
 end;
-procedure TSoccerBrain.SwapformationPlayers (PlayerA, PlayerB: TsoccerPlayer);
+procedure TBrain.SwapformationPlayers (PlayerA, PlayerB: TPlayer);
 var
   tmp,aPoint: TPoint;
 begin
@@ -3432,7 +3153,7 @@ begin
 
 
 end;
-procedure TSoccerBrain.SwapDefaultPlayers (PlayerA, PlayerB: TsoccerPlayer);
+procedure TBrain.SwapDefaultPlayers (PlayerA, PlayerB: TPlayer);
 var
   tmp: TPoint;
 begin
@@ -3452,664 +3173,40 @@ begin
 
 
 end;
-procedure TSoccerBrain.GetNeighbournsOpponent ( X, Y, Team: integer; var aList : TObjectList<TSoccerPlayer> );
+procedure TBrain.GetNeighbournsOpponent ( X, Y, Team: integer; var aList : TObjectList<TPlayer> );
 var
   i: integer;
 begin
-  for I := lstSoccerPlayer.Count -1 downto 0 do begin
-    if IsOutSide( lstSoccerPlayer[i].CellX ,lstSoccerPlayer[i].CellY ) then Continue;
+  for I := Players.Count -1 downto 0 do begin
+    if IsOutSide( Players[i].CellX ,Players[i].CellY ) then Continue;
 
-    if (lstSoccerPlayer[i].Team <> Team) and  // solo avversari
-    not (lstSoccerPlayer[i].Role='G' ) and    // non il portiere
-    (absDistance ( X , Y , lstSoccerPlayer[i].CellX, lstSoccerPlayer[i].CellY ) = 1) // a distanza 1
+    if (Players[i].Team <> Team) and  // solo avversari
+    not (Players[i].Role='G' ) and    // non il portiere
+    (absDistance ( X , Y , Players[i].CellX, Players[i].CellY ) = 1) // a distanza 1
     then begin
-      aList.add (lstSoccerPlayer[i] );
+      aList.add (Players[i] );
     end;
 
   end;
 
 end;
-function TSoccerBrain.GetBestPassingZone ( Team: integer; Zonerole:Char ): TSoccerPlayer;
-var
-  i,p,MaxPassing: Integer;
-  lstBestPassing: TObjectList<TSoccerPlayer>;
-begin
-    // il result può essere nil se in zona non c'è nessuno
-    lstBestPassing:= TObjectList<TSoccerPlayer>.Create(False);
 
-    for I := lstSoccerPlayer.Count -1 downto 0 do begin
-// nin cerca un ruolo, cerca quelli che in quella zona hanno il passing forte
-      if (lstSoccerPlayer[i].Team = Team ) and ( lstSoccerPlayer[i].ZoneRole = Zonerole ) then
-          lstBestPassing.Add(lstSoccerPlayer[i]);
-    end;
-
-    if lstBestPassing.count > 0 then begin
-
-      lstBestPassing.sort(TComparer<TSoccerPlayer>.Construct(
-      function (const L, R: TSoccerPlayer): integer
-      begin
-        Result := (R.Passing )- (L.Passing  );
-      end
-     ));
-      MaxPassing := lstBestPassing[0].Passing   ;
-
-      for P := lstBestPassing.Count -1 downto 0 do begin
-        if lstBestPassing[p].Passing  < MaxPassing then
-          lstBestPassing.Delete(p);
-      end;
-//      Result :=  lstBestPassing[ brain.RndGenerate0(lstBestPassing.Count-1)].Ids ;
-      // dato che questa lista scompare passo il puntatore al player originale
-      result := GetSoccerPlayer( lstBestPassing[ RndGenerate0(lstBestPassing.Count-1)].Ids ) ;
-    end
-    else Result := nil;
-    lstBestPassing.Free;
-end;
-function TSoccerBrain.GetBestShotZone ( Team: integer; Zonerole:Char ): TSoccerPlayer;
-var
-  i,p,MaxShot: Integer;
-  lstBestShot: TObjectList<TSoccerPlayer>;
-begin
-    // il result può essere nil se in zona non c'è nessuno
-    lstBestShot:= TObjectList<TSoccerPlayer>.Create(False);
-
-    for I := lstSoccerPlayer.Count -1 downto 0 do begin
-// nin cerca un ruolo, cerca quelli che in quella zona hanno il Shot forte
-      if (lstSoccerPlayer[i].Team = Team ) and ( lstSoccerPlayer[i].ZoneRole = Zonerole ) then
-          lstBestShot.Add(lstSoccerPlayer[i]);
-    end;
-
-    if lstBestShot.count > 0 then begin
-
-      lstBestShot.sort(TComparer<TSoccerPlayer>.Construct(
-      function (const L, R: TSoccerPlayer): integer
-      begin
-        Result := (R.Shot )- (L.Shot  );
-      end
-     ));
-      MaxShot := lstBestShot[0].Shot   ;
-
-      for P := lstBestShot.Count -1 downto 0 do begin
-        if lstBestShot[p].Shot  < MaxShot then
-          lstBestShot.Delete(p);
-      end;
-//      Result :=  lstBestShot[ brain.RndGenerate0(lstBestShot.Count-1)].Ids ;
-      // dato che questa lista scompare passo il puntatore al player originale
-      result := GetSoccerPlayer( lstBestShot[ RndGenerate0(lstBestShot.Count-1)].Ids) ;
-    end
-    else Result := nil;
-    lstBestShot.Free;
-end;
-function TSoccerBrain.GetWorstBallControlZone ( Team: integer; Zonerole:Char ): TSoccerPlayer;
-var
-  i,p,MinBallControl: Integer;
-  lstBestBallControl: TObjectList<TSoccerPlayer>;
-begin
-    // il result può essere nil se in zona non c'è nessuno
-    lstBestBallControl:= TObjectList<TSoccerPlayer>.Create(False);
-
-    for I := lstSoccerPlayer.Count -1 downto 0 do begin
-// nin cerca un ruolo, cerca quelli che in quella zona hanno il BallControl forte
-      if (lstSoccerPlayer[i].Team = Team ) and ( lstSoccerPlayer[i].ZoneRole = Zonerole ) then
-          lstBestBallControl.Add(lstSoccerPlayer[i]);
-    end;
-
-    if lstBestBallControl.count > 0 then begin
-
-      lstBestBallControl.sort(TComparer<TSoccerPlayer>.Construct(
-      function (const L, R: TSoccerPlayer): integer
-      begin
-        Result := (L.BallControl )- (R.BallControl  );     // <--- il più basso
-      end
-     ));
-      MinBallControl := lstBestBallControl[0].BallControl   ;
-
-      for P := lstBestBallControl.Count -1 downto 0 do begin
-        if lstBestBallControl[p].BallControl  > MinBallControl then     // il più basso
-          lstBestBallControl.Delete(p);
-      end;
-//      Result :=  lstBestBallControl[ brain.RndGenerate0(lstBestBallControl.Count-1)].Ids ;
-      // dato che questa lista scompare passo il puntatore al player originale
-      result := GetSoccerPlayer( lstBestBallControl[ RndGenerate0(lstBestBallControl.Count-1)].Ids) ;
-    end
-    else Result := nil;
-    lstBestBallControl.Free;
-end;
-function TSoccerBrain.GetWorstStamina ( Team: integer ): TSoccerPlayer;
-var
-  i,p,MinStamina: Integer;
-  lstWorstStamina: TObjectList<TSoccerPlayer>;
-begin
-    // il result può essere nil se in zona non c'è nessuno
-    lstWorstStamina:= TObjectList<TSoccerPlayer>.Create(False);
-
-    for I := lstSoccerPlayer.Count -1 downto 0 do begin
-// nin cerca un ruolo, cerca quelli che in quella zona hanno il BallControl forte
-      if lstSoccerPlayer[i].Team = Team then
-          lstWorstStamina.Add(lstSoccerPlayer[i]);
-    end;
-
-    if lstWorstStamina.count > 0 then begin
-
-      lstWorstStamina.sort(TComparer<TSoccerPlayer>.Construct(
-      function (const L, R: TSoccerPlayer): integer
-      begin
-        Result := (L.Stamina )- (R.Stamina  );     // <--- il più basso
-      end
-     ));
-      MinStamina := lstWorstStamina[0].Stamina   ;
-
-      for P := lstWorstStamina.Count -1 downto 0 do begin
-        if lstWorstStamina[p].Stamina  > MinStamina then     // il più basso
-          lstWorstStamina.Delete(p);
-      end;
-//      Result :=  lstWorstBallControl[ brain.RndGenerate0(lstWorstBallControl.Count-1)].Ids ;
-      // dato che questa lista scompare passo il puntatore al player originale
-      result := GetSoccerPlayer( lstWorstStamina[ RndGenerate0(lstWorstStamina.Count-1)].Ids) ;
-    end
-    else Result := nil;
-    lstWorstStamina.Free;
-end;
-function TSoccerBrain.GetWorstShot ( Team: integer ): TSoccerPlayer;
-var
-  i,p,MinShot: Integer;
-  lstWorstShot: TObjectList<TSoccerPlayer>;
-begin
-    // il result può essere nil se in zona non c'è nessuno
-    lstWorstShot:= TObjectList<TSoccerPlayer>.Create(False);
-
-    for I := lstSoccerPlayer.Count -1 downto 0 do begin
-// nin cerca un ruolo, cerca quelli che in quella zona hanno il BallControl forte
-
-      if (lstSoccerPlayer[i].Team = Team ) and ( lstSoccerPlayer[i].TalentId1 <> TALENT_ID_GOALKEEPER) then
-          lstWorstShot.Add(lstSoccerPlayer[i]);
-    end;
-
-    if lstWorstShot.count > 0 then begin
-
-      lstWorstShot.sort(TComparer<TSoccerPlayer>.Construct(
-      function (const L, R: TSoccerPlayer): integer
-      begin
-        Result := (L.Shot )- (R.Shot  );     // <--- il più basso
-      end
-     ));
-      MinShot := lstWorstShot[0].Shot   ;
-
-      for P := lstWorstShot.Count -1 downto 0 do begin
-        if lstWorstShot[p].Shot  > MinShot then     // il più basso
-          lstWorstShot.Delete(p);
-      end;
-//      Result :=  lstWorstBallControl[ brain.RndGenerate0(lstWorstBallControl.Count-1)].Ids ;
-      // dato che questa lista scompare passo il puntatore al player originale
-      result := GetSoccerPlayer( lstWorstShot[ RndGenerate0(lstWorstShot.Count-1)].Ids) ;
-    end
-    else Result := nil;
-    lstWorstShot.Free;
-end;
-function TSoccerBrain.GetWorstDefense ( Team: integer ): TSoccerPlayer;
-var
-  i,p,MinDefense: Integer;
-  lstWorstDefense: TObjectList<TSoccerPlayer>;
-begin
-    // il result può essere nil se in zona non c'è nessuno
-    lstWorstDefense:= TObjectList<TSoccerPlayer>.Create(False);
-
-    for I := lstSoccerPlayer.Count -1 downto 0 do begin
-// nin cerca un ruolo, cerca quelli che in quella zona hanno il BallControl forte
-      if (lstSoccerPlayer[i].Team = Team )  and ( lstSoccerPlayer[i].TalentId1 <> TALENT_ID_GOALKEEPER) then
-          lstWorstDefense.Add(lstSoccerPlayer[i]);
-    end;
-
-    if lstWorstDefense.count > 0 then begin
-
-      lstWorstDefense.sort(TComparer<TSoccerPlayer>.Construct(
-      function (const L, R: TSoccerPlayer): integer
-      begin
-        Result := (L.Defense )- (R.Defense  );     // <--- il più basso
-      end
-     ));
-      MinDefense := lstWorstDefense[0].Defense   ;
-
-      for P := lstWorstDefense.Count -1 downto 0 do begin
-        if lstWorstDefense[p].Defense  > MinDefense then     // il più basso
-          lstWorstDefense.Delete(p);
-      end;
-//      Result :=  lstWorstBallControl[ brain.RndGenerate0(lstWorstBallControl.Count-1)].Ids ;
-      // dato che questa lista scompare passo il puntatore al player originale
-      result := GetSoccerPlayer( lstWorstDefense[ RndGenerate0(lstWorstDefense.Count-1)].Ids) ;
-    end
-    else Result := nil;
-    lstWorstDefense.Free;
-end;
-function TSoccerBrain.GetWorstPassing ( Team: integer ): TSoccerPlayer;
-var
-  i,p,MinPassing: Integer;
-  lstWorstPassing: TObjectList<TSoccerPlayer>;
-begin
-    // il result può essere nil se in zona non c'è nessuno
-    lstWorstPassing:= TObjectList<TSoccerPlayer>.Create(False);
-
-    for I := lstSoccerPlayer.Count -1 downto 0 do begin
-// nin cerca un ruolo, cerca quelli che in quella zona hanno il BallControl forte
-      if (lstSoccerPlayer[i].Team = Team )  and ( lstSoccerPlayer[i].TalentId1 <> TALENT_ID_GOALKEEPER) then
-          lstWorstPassing.Add(lstSoccerPlayer[i]);
-    end;
-
-    if lstWorstPassing.count > 0 then begin
-
-      lstWorstPassing.sort(TComparer<TSoccerPlayer>.Construct(
-      function (const L, R: TSoccerPlayer): integer
-      begin
-        Result := (L.Passing )- (R.Passing  );     // <--- il più basso
-      end
-     ));
-      MinPassing := lstWorstPassing[0].Passing   ;
-
-      for P := lstWorstPassing.Count -1 downto 0 do begin
-        if lstWorstPassing[p].Passing  > MinPassing then     // il più basso
-          lstWorstPassing.Delete(p);
-      end;
-//      Result :=  lstWorstBallControl[ brain.RndGenerate0(lstWorstBallControl.Count-1)].Ids ;
-      // dato che questa lista scompare passo il puntatore al player originale
-      result := GetSoccerPlayer( lstWorstPassing[ RndGenerate0(lstWorstPassing.Count-1)].Ids) ;
-    end
-    else Result := nil;
-    lstWorstPassing.Free;
-end;
-function TSoccerBrain.GetPlayerForOUT (team: Integer; PlayerOUT: TSubOUT ):TSoccerPlayer;//type TSubINOUT = (DefenderOUT,forwardOUT);
-var
-  i,D,M,F: integer;
-begin
-  // Può tornare una alternativa, non proprio il ruolo richiesto ma quello vicino
-  // calcolo formazione base
-  Result := nil;
-  D:=0; M:=0; F:=0;
-  if team = 0 then begin
-    for i := 0 to lstSoccerPlayer.Count -1 do begin
-      if (lstSoccerPlayer[i].Team <> Team )  or ( lstSoccerPlayer[i].TalentId1 = TALENT_ID_GOALKEEPER)  then
-        Continue;
-
-      if (lstSoccerPlayer[i].DefaultCellX = 2) then
-        inc (D)
-      else if (lstSoccerPlayer[i].DefaultCellX = 5) then
-        inc (M)
-      else if (lstSoccerPlayer[i].DefaultCellX = 8) then
-        inc (F);
-    end;
-  end
-  else begin
-    for i := 0 to lstSoccerPlayer.Count -1 do begin
-      if (lstSoccerPlayer[i].Team <> Team ) or ( lstSoccerPlayer[i].TalentId1 = TALENT_ID_GOALKEEPER) then
-        Continue;
-      if (lstSoccerPlayer[i].DefaultCellX = 9) then
-        inc (D)
-      else if (lstSoccerPlayer[i].DefaultCellX = 6) then
-        inc (M)
-      else if (lstSoccerPlayer[i].DefaultCellX = 3) then
-        inc (F);
-    end;
-  end;
-
-  // ho la fomrazione 4-3-3 5-4-1 ecc...
-  if PlayerOUT = DefenderOut then begin    // entra un attaccante o un centrocampista
-    if D >= 4 then begin// se almeno 4 difensori ne esce 1
-    //esce il peggior difensore
-      Result := GetWorstDefense(team);
-    end
-    else if M >= 3 then begin// se almeno 3 midfield ne esce 1
-    //esce il peggior centrocapista
-      Result := GetWorstPassing(team);
-    end;
-  end
-  else if PlayerOUT = ForwardOut then begin   // entra un difensore o un centrocampista
-    if F >= 2 then begin// se almeno 2 Attaccanti ne esce 1
-    //esce il peggior attaccante
-      Result := GetWorstShot(team);
-    end
-    else if M >= 3 then begin// se almeno 3 midfield ne esce 1
-    //esce il peggior centrocapista
-      Result := GetWorstPassing(team);
-    end;
-
-  end;
-
-  // result può essere nil in caso di molti espulsi
-end;
-
-function TSoccerBrain.GetCrossOpponent ( aPlayer:TSoccerPlayer ): TSoccerPlayer;
+function TBrain.GetCrossOpponent ( aPlayer:TPlayer ): TPlayer;
 begin
 // ritorna il player che si oppone al cross
 Result := nil;
     case aPlayer.cellY of
       0..1: begin
-              Result := GetSoccerPlayerOpponent ( aPlayer.cellX, aPlayer.CellY+1, aPlayer.team );
+              Result := GeTPlayerOpponent ( aPlayer.cellX, aPlayer.CellY+1, aPlayer.team );
 
             end;
       5..6: begin
-              Result := GetSoccerPlayerOpponent ( aPlayer.cellX, aPlayer.CellY-1, aPlayer.team );
+              Result := GeTPlayerOpponent ( aPlayer.cellX, aPlayer.CellY-1, aPlayer.team );
             end;
     end;
 
 end;
-function TSoccerBrain.GetBestCrossing ( Team: integer  ): string;
-var
-  i,p,MaxCrossing: Integer;
-  lstBestCross: TObjectList<TSoccerPlayer>;
-begin
-    lstBestCross:= TObjectList<TSoccerPlayer>.Create(False);
-
-   (* COF, FKF2 *)
-
-    for I := lstSoccerPlayer.Count -1 downto 0  do begin
-
-      if lstSoccerPlayer[i].Team = Team then begin
-        if lstSoccerPlayer[i].Role <> 'G'  then begin
-          lstBestCross.Add(lstSoccerPlayer[i]);
-        end;
-      end;
-    end;
-
-    lstBestCross.sort(TComparer<TSoccerPlayer>.Construct(
-    function (const L, R: TSoccerPlayer): integer
-    begin
-      R.tmp := R.Passing;
-      L.tmp := L.Passing;
-      if R.TalentId1 = TALENT_ID_CROSSING then
-        R.tmp := R.tmp + 1;
-      if L.TalentId1 = TALENT_ID_CROSSING then
-        L.tmp := L.tmp + 1;
-      Result := (R.tmp )- (L.tmp );
-    end
-   ));
-    MaxCrossing := lstBestCross[0].tmp ;
-
-    for P := lstBestCross.Count -1 downto 0 do begin
-      if (lstBestCross[p].tmp ) < MaxCrossing then
-        lstBestCross.Delete(p);
-    end;
-
-    Result :=  lstBestCross[ RndGenerate0(lstBestCross.Count-1)].Ids ;
-    lstBestCross.Free;
-
-end;
-function TSoccerBrain.GetBestHeading ( Team: integer; excludeIds: string  ): string;
-var
-  i,p,MaxHeading: Integer;
-  lstBestHeading: TObjectList<TSoccerPlayer>;
-begin
-    lstBestHeading:= TObjectList<TSoccerPlayer>.Create(False);
-   (* COA1 COA2 COA3, COD1, COD2, COD3 *)
-    for I := lstSoccerPlayer.Count -1 downto 0 do begin
-
-      if lstSoccerPlayer[i].Team = Team then begin
-        if (lstSoccerPlayer[i].talentid1 <> TALENT_ID_GOALKEEPER ) and (lstSoccerPlayer[i].ids <> excludeIds)  then begin  // iscof feve essere ancora settato
-          lstBestHeading.Add(lstSoccerPlayer[i]);
-        end;
-      end;
-    end;
-
-    lstBestHeading.sort(TComparer<TSoccerPlayer>.Construct(
-    function (const L, R: TSoccerPlayer): integer
-    begin
-      Result := (R.heading  )- (L.Heading );
-    end
-   ));
-    MaxHeading := lstBestHeading[0].heading  ;
-
-    for P := lstBestHeading.Count -1 downto 0 do begin
-      if lstBestHeading.Count = 3 then Break; // minimo 3 saltatori
-
-      if lstBestHeading[p].heading < MaxHeading then
-        lstBestHeading.Delete(p);
-    end;
-    Result := lstBestHeading[0].Ids + ',' + lstBestHeading[1].Ids + ',' + lstBestHeading[2].Ids ;
-    lstBestHeading.Free;
-
-end;
-function TSoccerBrain.GetBestPassing ( Team: integer  ): string;
-var
-  i,p,MaxPassing: Integer;
-  lstBestPassing: TObjectList<TSoccerPlayer>;
-begin
-    lstBestPassing:= TObjectList<TSoccerPlayer>.Create(False);
-
-   (*  FKF1 *)
-
-    for I := lstSoccerPlayer.Count -1 downto 0 do begin
-      if lstSoccerPlayer[i].Team = Team then begin
-        if lstSoccerPlayer[i].TalentId1 <> TALENT_ID_GOALKEEPER  then begin
-          lstBestPassing.Add(lstSoccerPlayer[i]);
-        end;
-      end;
-    end;
-
-    lstBestPassing.sort(TComparer<TSoccerPlayer>.Construct(
-    function (const L, R: TSoccerPlayer): integer
-    begin
-      Result := (R.Passing )- (L.Passing  );
-    end
-   ));
-    MaxPassing := lstBestPassing[0].Passing   ;
-
-    for P := lstBestPassing.Count -1 downto 0 do begin
-      if lstBestPassing[p].Passing  < MaxPassing then
-        lstBestPassing.Delete(p);
-    end;
-
-    Result :=  lstBestPassing[ RndGenerate0(lstBestPassing.Count-1)].Ids ;
-    lstBestPassing.Free;
-
-end;
-function TSoccerBrain.GetBestShot ( Team: integer  ): string;
-var
-  i,p,MaxShot: Integer;
-  lstBestShot: TObjectList<TSoccerPlayer>;
-begin
-    lstBestShot:= TObjectList<TSoccerPlayer>.Create(False);
-
-   (*  FKF3, FKF4 *)
-
-    for I := lstSoccerPlayer.Count -1 downto 0 do begin
-      if IsOutSide( lstSoccerPlayer[i].CellX ,lstSoccerPlayer[i].CellY ) then Continue;
-      if lstSoccerPlayer[i].Team = Team then begin
-        if lstSoccerPlayer[i].TalentId1 <> TALENT_ID_GOALKEEPER  then begin
-          lstBestShot.Add(lstSoccerPlayer[i]);
-        end;
-      end;
-    end;
-
-    lstBestShot.sort(TComparer<TSoccerPlayer>.Construct(
-    function (const L, R: TSoccerPlayer): integer
-    begin
-      Result := (R.Shot )- (L.Shot  );
-    end
-   ));
-    MaxShot := lstBestShot[0].Shot   ;
-
-    for P := lstBestShot.Count -1 downto 0 do begin
-      if lstBestShot[p].Shot  < MaxShot then
-        lstBestShot.Delete(p);
-    end;
-
-    Result :=  lstBestShot[ RndGenerate0(lstBestShot.Count-1)].Ids ;
-    lstBestShot.Free;
-
-end;
-function TSoccerBrain.GetBestBarrier ( Team: integer  ): string;
-var
-  i,p,MaxDefense: Integer;
-  lstBestDefense: TObjectList<TSoccerPlayer>;
-begin
-    lstBestDefense:= TObjectList<TSoccerPlayer>.Create(False);
-
-   (*  FKD3 *)
-
-    for I := lstSoccerPlayer.Count -1 downto 0 do begin
-      if IsOutSide( lstSoccerPlayer[i].CellX ,lstSoccerPlayer[i].CellY ) then Continue;
-      if lstSoccerPlayer[i].Team = Team then begin
-        if lstSoccerPlayer[i].TalentId1 <> TALENT_ID_GOALKEEPER  then begin
-          lstBestDefense.Add(lstSoccerPlayer[i]);
-        end;
-      end;
-    end;
-
-    lstBestDefense.sort(TComparer<TSoccerPlayer>.Construct(
-    function (const L, R: TSoccerPlayer): integer
-    begin
-      Result := (R.Defense )- (L.Defense  );
-    end
-   ));
-    MaxDefense := lstBestDefense[0].Defense   ;
-
-    for P := lstBestDefense.Count -1 downto 0 do begin
-      if lstBestDefense.Count = 4 then Break; // minimo 4 in barriera
-      if lstBestDefense[p].Defense  < MaxDefense then
-        lstBestDefense.Delete(p);
-    end;
-
-    Result := lstBestDefense[0].Ids + ',' + lstBestDefense[1].Ids + ',' + lstBestDefense[2].Ids + ',' + lstBestDefense[3].Ids;
-    lstBestDefense.Free;
-
-end;
-function TSoccerBrain.GetBestDefenseReserve ( Team,MinStamina: integer ): string;
-var
-  i,p,MaxDefense: Integer;
-  lstBestDefense: TObjectList<TSoccerPlayer>;
-begin
-// talentId <> 1 non .rol <> 'G' in quanto il role è N in panchina
-    lstBestDefense:= TObjectList<TSoccerPlayer>.Create(False);
-
-    for I := lstSoccerReserve.Count -1 downto 0 do begin
-      if lstSoccerReserve[i].Team = Team then begin
-        if (lstSoccerReserve[i].talentid1 <> TALENT_ID_GOALKEEPER) and (lstSoccerReserve[i].Stamina >= MinStamina)  then begin
-          lstBestDefense.Add(lstSoccerReserve[i]);
-        end;
-      end;
-    end;
-
-    lstBestDefense.sort(TComparer<TSoccerPlayer>.Construct(
-    function (const L, R: TSoccerPlayer): integer
-    begin
-      Result := (R.Defense )- (L.Defense  );
-    end
-   ));
-    MaxDefense := lstBestDefense[0].Defense   ;
-
-    for P := lstBestDefense.Count -1 downto 0 do begin
-      if lstBestDefense[p].Defense  < MaxDefense then
-        lstBestDefense.Delete(p);
-    end;
-
-    Result :=  lstBestDefense[ RndGenerate0(lstBestDefense.Count-1)].Ids ;
-    lstBestDefense.Free;
-
-end;
-function TSoccerBrain.GetBestGKReserve ( Team,MinStamina: integer ): string;
-var
-  i,p,MaxDefense: Integer;
-  lstBestDefense: TObjectList<TSoccerPlayer>;
-begin
-// talentId <> 1 non .rol <> 'G' in quanto il role è N in panchina
-    lstBestDefense:= TObjectList<TSoccerPlayer>.Create(False);
-
-    for I := lstSoccerReserve.Count -1 downto 0 do begin
-      if (lstSoccerReserve[i].Team = Team) and (lstSoccerReserve[i].talentid1 = TALENT_ID_GOALKEEPER) then begin
-        if (lstSoccerReserve[i].Stamina >= MinStamina)  then begin
-          lstBestDefense.Add(lstSoccerReserve[i]);   // es. potrebbe avere 4 portieri
-        end;
-      end;
-    end;
-
-
-    if lstBestDefense.Count = 0 then begin                                   // es. non ha Gk di rriserva
-      Result :=  '0';
-      lstBestDefense.Free;
-      exit;
-    end;
-
-    lstBestDefense.sort(TComparer<TSoccerPlayer>.Construct(
-    function (const L, R: TSoccerPlayer): integer
-    begin
-      Result := (R.Defense )- (L.Defense  );
-    end
-   ));
-    MaxDefense := lstBestDefense[0].Defense   ;
-
-    for P := lstBestDefense.Count -1 downto 0 do begin
-      if lstBestDefense[p].Defense  < MaxDefense then
-        lstBestDefense.Delete(p);
-    end;
-
-    Result :=  lstBestDefense[ RndGenerate0(lstBestDefense.Count-1)].Ids ;
-    lstBestDefense.Free;
-
-end;
-function TSoccerBrain.GetBestPassingReserve ( Team,MinStamina: integer  ): string;
-var
-  i,p,MaxPassing: Integer;
-  lstBestPassing: TObjectList<TSoccerPlayer>;
-begin
-// talentId <> 1 non .rol <> 'G' in quanto il role è N in panchina
-    lstBestPassing:= TObjectList<TSoccerPlayer>.Create(False);
-
-    for I := lstSoccerReserve.Count -1 downto 0 do begin
-      if lstSoccerReserve[i].Team = Team then begin
-        if (lstSoccerReserve[i].TalentId1 <> TALENT_ID_GOALKEEPER) and (lstSoccerReserve[i].Stamina >= MinStamina) then begin
-          lstBestPassing.Add(lstSoccerReserve[i]);
-        end;
-      end;
-    end;
-
-    lstBestPassing.sort(TComparer<TSoccerPlayer>.Construct(
-    function (const L, R: TSoccerPlayer): integer
-    begin
-      Result := (R.Passing )- (L.Passing  );
-    end
-   ));
-    MaxPassing := lstBestPassing[0].Passing   ;
-
-    for P := lstBestPassing.Count -1 downto 0 do begin
-      if lstBestPassing[p].Passing  < MaxPassing then
-        lstBestPassing.Delete(p);
-    end;
-
-    Result :=  lstBestPassing[ RndGenerate0(lstBestPassing.Count-1)].Ids ;
-    lstBestPassing.Free;
-
-end;
-function TSoccerBrain.GetBestShotReserve ( Team,MinStamina: integer   ): string;
-var
-  i,p,MaxShot: Integer;
-  lstBestShot: TObjectList<TSoccerPlayer>;
-begin
-// talentId <> 1 non .rol <> 'G' in quanto il role è N in panchina
-    lstBestShot:= TObjectList<TSoccerPlayer>.Create(False);
-
-    for I := lstSoccerReserve.Count -1 downto 0 do begin
-      if lstSoccerReserve[i].Team = Team then begin
-        if (lstSoccerReserve[i].TalentId1 <> TALENT_ID_GOALKEEPER) and (lstSoccerReserve[i].Stamina >= MinStamina)  then begin
-          lstBestShot.Add(lstSoccerReserve[i]);
-        end;
-      end;
-    end;
-
-    lstBestShot.sort(TComparer<TSoccerPlayer>.Construct(
-    function (const L, R: TSoccerPlayer): integer
-    begin
-      Result := (R.Shot )- (L.Shot  );
-    end
-   ));
-    MaxShot := lstBestShot[0].Shot   ;
-
-    for P := lstBestShot.Count -1 downto 0 do begin
-      if lstBestShot[p].Shot  < MaxShot then
-        lstBestShot.Delete(p);
-    end;
-
-    Result :=  lstBestShot[ RndGenerate0(lstBestShot.Count-1)].Ids ;
-    lstBestShot.Free;
-
-end;
-function TSoccerBrain.CheckScore ( team: Integer): integer;
+function TBrain.CheckScore ( team: Integer): integer;
 var
   adv : byte;
 begin
@@ -4119,207 +3216,117 @@ begin
   Result := Score.gol[team] -  Score.gol[adv];
 
 end;
-function TSoccerBrain.GetRandomDefaultMidFieldCellFree ( team:Integer ): TPoint;
-var
-  y: Integer;
-  lstCellY : Tlist<Integer>;
-begin
-  Result.X := -1;
-  lstCellY := Tlist<Integer>.create;
 
-  if team = 0 then begin
-    for y := 0 to 6 do begin
-      if GetSoccerPlayerDefault(5,y) = nil then
-        lstCellY.Add(y);
-    end;
-  end
-  else begin
-    for y := 0 to 6 do begin
-      if GetSoccerPlayerDefault(6,y) = nil then
-        lstCellY.Add(y);
-    end;
-  end;
-
-  if lstCellY.Count > 0 then begin
-    if team = 0 then
-      Result := Point (5, lstCellY[ RndGenerate0(lstCellY.Count-1)])
-      else Result := Point (6, lstCellY[ RndGenerate0(lstCellY.Count-1)]);
-  end;
-
-  lstCellY.Free;
-
-end;
-function TSoccerBrain.GetRandomDefaultDefenseCellFree ( team:Integer ): TPoint;
-var
-  y: Integer;
-  lstCellY : Tlist<Integer>;
-begin
-  Result.X := -1;
-  lstCellY := Tlist<Integer>.create;
-
-  if team = 0 then begin
-    for y := 0 to 6 do begin
-      if GetSoccerPlayerDefault(2,y) = nil then
-        lstCellY.Add(y);
-    end;
-  end
-  else begin
-    for y := 0 to 6 do begin
-      if GetSoccerPlayerDefault(9,y) = nil then
-        lstCellY.Add(y);
-    end;
-  end;
-
-  if lstCellY.Count > 0 then begin
-    if team = 0 then
-      Result := Point (2, lstCellY[ RndGenerate0(lstCellY.Count-1)])
-      else Result := Point (9, lstCellY[ RndGenerate0(lstCellY.Count-1)]);
-  end;
-
-  lstCellY.Free;
-
-end;
-function TSoccerBrain.GetRandomDefaultForwardCellFree ( team:Integer ): TPoint;
-var
-  y: Integer;
-  lstCellY : Tlist<Integer>;
-begin
-  Result.X := -1;
-  lstCellY := Tlist<Integer>.create;
-
-  if team = 0 then begin
-    for y := 0 to 6 do begin
-      if GetSoccerPlayerDefault(8,y) = nil then
-        lstCellY.Add(y);
-    end;
-  end
-  else begin
-    for y := 0 to 6 do begin
-      if GetSoccerPlayerDefault(3,y) = nil then
-        lstCellY.Add(y);
-    end;
-  end;
-
-  if lstCellY.Count > 0 then begin
-    if team = 0 then
-      Result := Point (8, lstCellY[ RndGenerate0(lstCellY.Count-1)])
-      else Result := Point (3, lstCellY[ RndGenerate0(lstCellY.Count-1)]);
-  end;
-
-  lstCellY.Free;
-
-end;
-
-function TSoccerBrain.GetSoccerPlayer ( X, Y, Team : integer): TSoccerPlayer;
+function TBrain.GeTPlayer ( X, Y, Team : integer): TPlayer;
 var
   i: integer;
 begin
   Result := nil;
-  for I := lstSoccerPlayer.Count -1 downto 0 do begin
-    if (lstSoccerPlayer[i].cx = X) and (lstSoccerPlayer[i].cy = Y) and (lstSoccerPlayer[i].team = Team)  then begin
-      Result := lstSoccerPlayer[i];
+  for I := Players.Count -1 downto 0 do begin
+    if (Players[i].cx = X) and (Players[i].cy = Y) and (Players[i].team = Team)  then begin
+      Result := Players[i];
       exit;
     end;
 
   end;
 end;
-function TSoccerBrain.GetSoccerPlayer2 ( X, Y, Team : integer): TSoccerPlayer;
+function TBrain.GeTPlayer2 ( X, Y, Team : integer): TPlayer;
 var
   i: integer;
 begin
   Result := nil;
-  for I := lstSoccerPlayer.Count -1 downto 0 do begin
-    if (lstSoccerPlayer[i].cx = X) and (lstSoccerPlayer[i].cy = Y) and  (lstSoccerPlayer[i].team = Team)  then begin
-      Result := lstSoccerPlayer[i];
+  for I := Players.Count -1 downto 0 do begin
+    if (Players[i].cx = X) and (Players[i].cy = Y) and  (Players[i].team = Team)  then begin
+      Result := Players[i];
       exit;
     end;
 
   end;
-  for I := lstSoccerReserve.Count -1 downto 0 do begin
-    if (lstSoccerReserve[i].CellX = X) and (lstSoccerReserve[i].CellY = Y) and  (lstSoccerReserve[i].team = Team)  then begin
-      Result := lstSoccerReserve[i];
+  for I := Reserves.Count -1 downto 0 do begin
+    if (Reserves[i].CellX = X) and (Reserves[i].CellY = Y) and  (Reserves[i].team = Team)  then begin
+      Result := Reserves[i];
       exit;
     end;
   end;
 
 end;
-function TSoccerBrain.GetSoccerPlayerOpponent (X,Y: Integer; Team: integer): TSoccerPlayer;
+function TBrain.GeTPlayerOpponent (X,Y: Integer; Team: integer): TPlayer;
 var
   i: integer;
 begin
   Result := nil;
-  for I := lstSoccerPlayer.Count -1 downto 0 do begin
-    if (lstSoccerPlayer[i].cx = X) and (lstSoccerPlayer[i].cy = Y) and (lstSoccerPlayer[i].team <> Team)  then begin
-      Result := lstSoccerPlayer[i];
+  for I := Players.Count -1 downto 0 do begin
+    if (Players[i].cx = X) and (Players[i].cy = Y) and (Players[i].team <> Team)  then begin
+      Result := Players[i];
       exit;
     end;
 
   end;
 end;
-function TSoccerBrain.GetSoccerPlayerOpponent (ids: string; Team: integer): TSoccerPlayer;
+function TBrain.GeTPlayerOpponent (ids: string; Team: integer): TPlayer;
 var
   i: integer;
 begin
   Result := nil;
-  for I := lstSoccerPlayer.Count -1 downto 0 do begin
-    if (lstSoccerPlayer[i].ids = ids) and (lstSoccerPlayer[i].team <> Team)  then begin
-      Result := lstSoccerPlayer[i];
+  for I := Players.Count -1 downto 0 do begin
+    if (Players[i].ids = ids) and (Players[i].team <> Team)  then begin
+      Result := Players[i];
       exit;
     end;
 
   end;
 end;
 
-function TSoccerBrain.GetSoccerPlayer ( X, Y : integer): TSoccerPlayer;
+function TBrain.GeTPlayer ( X, Y : integer): TPlayer;
 var
   i: integer;
 begin
   Result := nil;
-  for I := lstSoccerPlayer.Count -1 downto 0 do begin
-    if (lstSoccerPlayer[i].cx = X) and (lstSoccerPlayer[i].cy = Y) then begin
-      Result := lstSoccerPlayer[i];
+  for I := Players.Count -1 downto 0 do begin
+    if (Players[i].cx = X) and (Players[i].cy = Y) then begin
+      Result := Players[i];
       exit;
     end;
 
   end;
 end;
-function TSoccerBrain.GetSoccerPlayerRandom ( Team: integer; GK:boolean): TSoccerPlayer;
+function TBrain.GeTPlayerRandom ( Team: integer; GK:boolean): TPlayer;
 var
-  aPlayer : TSoccerPlayer;
+  aPlayer : TPlayer;
   arnd :Integer;
   label retry;
 begin
 retry:
-  arnd := RndGenerate (lstSoccerPlayer.Count -1 );
-  aPlayer := lstSoccerPlayer[aRnd];
+  arnd := RndGenerate (Players.Count -1 );
+  aPlayer := Players[aRnd];
   if ((aPlayer.TalentId1 = TALENT_ID_GOALKEEPER) and (GK = False))  or ( aPlayer.Team <> Team) then
     goto retry;
   Result := aPlayer;
 end;
-function TSoccerBrain.GetReservePlayerRandom ( Team: integer; GK:boolean): TSoccerPlayer;
+function TBrain.GetReservePlayerRandom ( Team: integer; GK:boolean): TPlayer;
 var
-  aPlayer : TSoccerPlayer;
+  aPlayer : TPlayer;
   arnd :Integer;
   label retry;
 begin
 retry:
-  arnd := RndGenerate0 (lstSoccerReserve.Count -1 );
-  aPlayer := lstSoccerReserve[aRnd];
+  arnd := RndGenerate0 (Reserves.Count -1 );
+  aPlayer := Reserves[aRnd];
   if ((aPlayer.TalentId1 = TALENT_ID_GOALKEEPER) and (GK = False))  or ( aPlayer.Team <> Team) then
     goto retry;
   Result := aPlayer;
 end;
-function TSoccerBrain.GetTotalReserve ( Team: integer; GK:boolean): integer;
+function TBrain.GetTotalReserve ( Team: integer; GK:boolean): integer;
 var
-  aPlayer : TSoccerPlayer;
+  aPlayer : TPlayer;
   i: Integer;
 begin
   Result := 0;
-  if lstSoccerReserve.Count = 0 then
+  if Reserves.Count = 0 then
     Exit;
 
-  for I := 0 to lstSoccerReserve.Count -1 do begin
-    aPlayer := lstSoccerReserve[i];
+  for I := 0 to Reserves.Count -1 do begin
+    aPlayer := Reserves[i];
     if aPlayer.Team = Team Then begin
       Result := Result + 1;
       if ((aPlayer.TalentId1 = TALENT_ID_GOALKEEPER) and (GK = False)) then
@@ -4328,116 +3335,116 @@ begin
   end;
 
 end;
-function TSoccerBrain.GetSoccerPlayer2 ( X, Y : integer): TSoccerPlayer;
+function TBrain.GeTPlayer2 ( X, Y : integer): TPlayer;
 var
   i: integer;
 begin
   Result := nil;
-  for I := lstSoccerPlayer.Count -1 downto 0 do begin
-    if (lstSoccerPlayer[i].cx = X) and (lstSoccerPlayer[i].cy = Y) then begin
-      Result := lstSoccerPlayer[i];
+  for I := Players.Count -1 downto 0 do begin
+    if (Players[i].cx = X) and (Players[i].cy = Y) then begin
+      Result := Players[i];
       exit;
     end;
   end;
-  for I := lstSoccerReserve.Count -1 downto 0 do begin
-    if (lstSoccerReserve[i].cx = X) and (lstSoccerReserve[i].cx = Y) then begin
-      Result := lstSoccerReserve[i];
-      exit;
-    end;
-  end;
-end;
-function TSoccerBrain.GetSoccerPlayerReserve( ids : string ): TSoccerPlayer;
-var
-  i: integer;
-begin
-  Result := nil;
-  for I := lstSoccerReserve.Count -1 downto 0 do begin
-    if (lstSoccerReserve[i].ids = ids) then begin
-      Result := lstSoccerReserve[i];
+  for I := Reserves.Count -1 downto 0 do begin
+    if (Reserves[i].cx = X) and (Reserves[i].cx = Y) then begin
+      Result := Reserves[i];
       exit;
     end;
   end;
 end;
-function TSoccerBrain.GetSoccerPlayerDefault ( X, Y : integer): TSoccerPlayer;
+function TBrain.GeTPlayerReserve( ids : string ): TPlayer;
 var
   i: integer;
 begin
   Result := nil;
-  for I := lstSoccerPlayer.Count -1 downto 0 do begin
-    if (lstSoccerPlayer[i].defaultCellX = X) and (lstSoccerPlayer[i].defaultCellY = Y) then begin
-      Result := lstSoccerPlayer[i];
+  for I := Reserves.Count -1 downto 0 do begin
+    if (Reserves[i].ids = ids) then begin
+      Result := Reserves[i];
+      exit;
+    end;
+  end;
+end;
+function TBrain.GeTPlayerDefault ( X, Y : integer): TPlayer;
+var
+  i: integer;
+begin
+  Result := nil;
+  for I := Players.Count -1 downto 0 do begin
+    if (Players[i].defaultCellX = X) and (Players[i].defaultCellY = Y) then begin
+      Result := Players[i];
       exit;
     end;
 
   end;
 end;
-function TSoccerBrain.GetSoccerPlayerDefault2 ( X, Y : integer): TSoccerPlayer;
+function TBrain.GeTPlayerDefault2 ( X, Y : integer): TPlayer;
 var
   i: integer;
 begin
   Result := nil;
-  for I := lstSoccerPlayer.Count -1 downto 0 do begin
-    if (lstSoccerPlayer[i].defaultCellX = X) and (lstSoccerPlayer[i].defaultCellY = Y) then begin
-      Result := lstSoccerPlayer[i];
+  for I := Players.Count -1 downto 0 do begin
+    if (Players[i].defaultCellX = X) and (Players[i].defaultCellY = Y) then begin
+      Result := Players[i];
       exit;
     end;
   end;
-  for I := lstSoccerReserve.Count -1 downto 0 do begin
-    if (lstSoccerReserve[i].defaultCellX = X) and (lstSoccerReserve[i].defaultCellY = Y) then begin
-      Result := lstSoccerReserve[i];
+  for I := Reserves.Count -1 downto 0 do begin
+    if (Reserves[i].defaultCellX = X) and (Reserves[i].defaultCellY = Y) then begin
+      Result := Reserves[i];
       exit;
     end;
   end;
 end;
-function TSoccerBrain.GetSoccerPlayer ( ids: string ): TSoccerPlayer;
+function TBrain.GeTPlayer ( ids: string ): TPlayer;
 var
   i: integer;
 begin
   Result := nil;
-  for I := lstSoccerPlayer.Count -1 downto 0 do begin
-    if lstSoccerPlayer[i].Ids = ids then begin
-      Result := lstSoccerPlayer[i];
+  for I := Players.Count -1 downto 0 do begin
+    if Players[i].Ids = ids then begin
+      Result := Players[i];
       exit;
     end;
   end;
 end;
-function TSoccerBrain.GetSoccerPlayer2 ( ids: string ): TSoccerPlayer; // cerca anche in reserve
+function TBrain.GeTPlayer2 ( ids: string ): TPlayer; // cerca anche in reserve
 var
   i: integer;
 begin
   Result := nil;
-  for I := lstSoccerPlayer.Count -1 downto 0 do begin
-    if lstSoccerPlayer[i].Ids = ids then begin
-      Result := lstSoccerPlayer[i];
+  for I := Players.Count -1 downto 0 do begin
+    if Players[i].Ids = ids then begin
+      Result := Players[i];
       exit;
     end;
   end;
-  for I := lstSoccerReserve.Count -1 downto 0 do begin
-    if lstSoccerReserve[i].Ids = ids then begin
-      Result := lstSoccerReserve[i];
+  for I := Reserves.Count -1 downto 0 do begin
+    if Reserves[i].Ids = ids then begin
+      Result := Reserves[i];
       exit;
     end;
   end;
 end;
-function TSoccerBrain.GetSoccerPlayer3 ( ids: string ): TSoccerPlayer; // cerca chi ha giocato in una partita
+function TBrain.GeTPlayer3 ( ids: string ): TPlayer; // cerca chi ha giocato in una partita
 var
   i: integer;
 begin
   Result := nil;
-  for I := lstSoccerPlayer.Count -1 downto 0 do begin
-    if lstSoccerPlayer[i].Ids = ids then begin
-      Result := lstSoccerPlayer[i];
+  for I := Players.Count -1 downto 0 do begin
+    if Players[i].Ids = ids then begin
+      Result := Players[i];
       exit;
     end;
   end;
-  for I := lstSoccerGameover.Count -1 downto 0 do begin
-    if lstSoccerGameover[i].Ids = ids then begin
-      Result := lstSoccerGameover[i];
+  for I := Gameover.Count -1 downto 0 do begin
+    if Gameover[i].Ids = ids then begin
+      Result := Gameover[i];
       exit;
     end;
   end;
 end;
-function TSoccerBrain.GetSoccerPlayerRandom3 : TSoccerPlayer; // cerca chi ha giocato in una partita ma non un GK
+function TBrain.GeTPlayerRandom3 : TPlayer; // cerca chi ha giocato in una partita ma non un GK
 var
   arnd :Integer;
   label retry,JustAplayer;
@@ -4447,211 +3454,211 @@ retry:
   arnd := RndGenerate (100 );
   if arnd <= 50 then begin
 JustaPlayer:
-    arnd := RndGenerate0 (lstSoccerPlayer.Count -1 );
-    Result := lstSoccerPlayer[aRnd];
+    arnd := RndGenerate0 (Players.Count -1 );
+    Result := Players[aRnd];
   end
   else  begin
-    if lstSoccerGameover.Count <= 0 then
+    if Gameover.Count <= 0 then
       goto JustaPlayer;
-    arnd := RndGenerate0 (lstSoccerGameover.Count -1 );
-    Result := lstSoccerGameover[aRnd];
+    arnd := RndGenerate0 (Gameover.Count -1 );
+    Result := Gameover[aRnd];
   end;
   if (Result.TalentId1 = TALENT_ID_GOALKEEPER) then
     goto retry;
 
 end;
 
-function TSoccerBrain.GetSoccerPlayerALL ( ids: string ): TSoccerPlayer; // cerca anche in reserve e gameOver
+function TBrain.GeTPlayerALL ( ids: string ): TPlayer; // cerca anche in reserve e gameOver
 var
   i: integer;
 begin
   Result := nil;
-  for I := lstSoccerPlayer.Count -1 downto 0 do begin
-    if lstSoccerPlayer[i].Ids = ids then begin
-      Result := lstSoccerPlayer[i];
+  for I := Players.Count -1 downto 0 do begin
+    if Players[i].Ids = ids then begin
+      Result := Players[i];
       exit;
     end;
   end;
-  for I := lstSoccerReserve.Count -1 downto 0 do begin
-    if lstSoccerReserve[i].Ids = ids then begin
-      Result := lstSoccerReserve[i];
+  for I := Reserves.Count -1 downto 0 do begin
+    if Reserves[i].Ids = ids then begin
+      Result := Reserves[i];
       exit;
     end;
   end;
-  for I := lstSoccerGameOver.Count -1 downto 0 do begin
-    if lstSoccerGameOver[i].Ids = ids then begin
-      Result := lstSoccerGameOver[i];
+  for I := Gameover.Count -1 downto 0 do begin
+    if Gameover[i].Ids = ids then begin
+      Result := Gameover[i];
       exit;
     end;
   end;
 end;
-function TSoccerBrain.GetSoccerPlayerALL ( X, Y : Integer ): TSoccerPlayer; // cerca anche in reserve e gameOver
+function TBrain.GeTPlayerALL ( X, Y : Integer ): TPlayer; // cerca anche in reserve e gameOver
 var
   i: integer;
 begin
   Result := nil;
-  for I := lstSoccerPlayer.Count -1 downto 0 do begin
-    if (lstSoccerPlayer[i].cx = X) and (lstSoccerPlayer[i].cy = Y)   then begin
-      Result := lstSoccerPlayer[i];
+  for I := Players.Count -1 downto 0 do begin
+    if (Players[i].cx = X) and (Players[i].cy = Y)   then begin
+      Result := Players[i];
       exit;
     end;
   end;
-  for I := lstSoccerReserve.Count -1 downto 0 do begin
-    if (lstSoccerReserve[i].cx = X) and (lstSoccerReserve[i].cy = Y)   then begin
-      Result := lstSoccerReserve[i];
+  for I := Reserves.Count -1 downto 0 do begin
+    if (Reserves[i].cx = X) and (Reserves[i].cy = Y)   then begin
+      Result := Reserves[i];
       exit;
     end;
   end;
-  for I := lstSoccerGameOver.Count -1 downto 0 do begin
-    if (lstSoccerGameOver[i].cx = X) and (lstSoccerGameOver[i].cy = Y)   then begin
-      Result := lstSoccerGameOver[i];
+  for I := Gameover.Count -1 downto 0 do begin
+    if (Gameover[i].cx = X) and (Gameover[i].cy = Y)   then begin
+      Result := Gameover[i];
       exit;
     end;
   end;
 end;
-function TSoccerBrain.GetSoccerPlayer ( ids: string; team:integer ): TSoccerPlayer;
+function TBrain.GeTPlayer ( ids: string; team:integer ): TPlayer;
 var
   i: integer;
 begin
   Result := nil;
-  for I := lstSoccerPlayer.Count -1 downto 0 do begin
-    if (lstSoccerPlayer[i].Ids = ids) and (lstSoccerPlayer[i].Team  = team)   then begin
-      Result := lstSoccerPlayer[i];
+  for I := Players.Count -1 downto 0 do begin
+    if (Players[i].Ids = ids) and (Players[i].Team  = team)   then begin
+      Result := Players[i];
       exit;
     end;
   end;
 end;
-function TSoccerBrain.GetSoccerPlayer2 ( ids: string; team:integer ): TSoccerPlayer; // cerca anche in reserve
+function TBrain.GeTPlayer2 ( ids: string; team:integer ): TPlayer; // cerca anche in reserve
 var
   i: integer;
 begin
   Result := nil;
-  for I := lstSoccerPlayer.Count -1 downto 0 do begin
-    if (lstSoccerPlayer[i].Ids = ids) and (lstSoccerPlayer[i].Team  = team)   then begin
-      Result := lstSoccerPlayer[i];
+  for I := Players.Count -1 downto 0 do begin
+    if (Players[i].Ids = ids) and (Players[i].Team  = team)   then begin
+      Result := Players[i];
       exit;
     end;
   end;
-  for I := lstSoccerReserve.Count -1 downto 0 do begin
-    if (lstSoccerReserve[i].Ids = ids) and (lstSoccerReserve[i].team = team) then begin
-      Result := lstSoccerReserve[i];
-      exit;
-    end;
-  end;
-end;
-function TSoccerBrain.GetGK ( team: integer ): TSoccerPlayer;
-var
-  i: integer;
-begin
-  Result := nil;
-  for I := lstSoccerPlayer.Count -1 downto 0 do begin
-  
-    if (lstSoccerPlayer[i].role ='G') and ( lstSoccerPlayer[i].team = team ) then begin
-      Result := lstSoccerPlayer[i];
+  for I := Reserves.Count -1 downto 0 do begin
+    if (Reserves[i].Ids = ids) and (Reserves[i].team = team) then begin
+      Result := Reserves[i];
       exit;
     end;
   end;
 end;
-function TSoccerBrain.GetOpponentGK ( team: integer ): TSoccerPlayer;
+function TBrain.GetGK ( team: integer ): TPlayer;
 var
   i: integer;
 begin
   Result := nil;
-  for I := lstSoccerPlayer.Count -1 downto 0 do begin
-    if IsOutSide( lstSoccerPlayer[i].CellX ,lstSoccerPlayer[i].CellY ) then Continue;
+  for I := Players.Count -1 downto 0 do begin
 
-    if (lstSoccerPlayer[i].role ='G') and ( lstSoccerPlayer[i].team <> team ) then begin
-      Result := lstSoccerPlayer[i];
+    if (Players[i].role ='G') and ( Players[i].team = team ) then begin
+      Result := Players[i];
       exit;
     end;
   end;
 end;
-function TSoccerBrain.GetCof: TSoccerPlayer;
+function TBrain.GetOpponentGK ( team: integer ): TPlayer;
 var
   i: integer;
 begin
   Result := nil;
-  for I := lstSoccerPlayer.Count -1 downto 0 do begin
-    if lstSoccerPlayer[i].isCOF then begin
-      Result := lstSoccerPlayer[i];
+  for I := Players.Count -1 downto 0 do begin
+    if IsOutSide( Players[i].CellX ,Players[i].CellY ) then Continue;
+
+    if (Players[i].role ='G') and ( Players[i].team <> team ) then begin
+      Result := Players[i];
       exit;
     end;
   end;
 end;
-function TSoccerBrain.GetFK1: TSoccerPlayer;
+function TBrain.GetCof: TPlayer;
 var
   i: integer;
 begin
   Result := nil;
-  for I := lstSoccerPlayer.Count -1 downto 0 do begin
-    if lstSoccerPlayer[i].isFK1 then begin
-      Result := lstSoccerPlayer[i];
+  for I := Players.Count -1 downto 0 do begin
+    if Players[i].isCOF then begin
+      Result := Players[i];
       exit;
     end;
   end;
 end;
-function TSoccerBrain.GetFK2: TSoccerPlayer;
+function TBrain.GetFK1: TPlayer;
 var
   i: integer;
 begin
   Result := nil;
-  for I := lstSoccerPlayer.Count -1 downto 0 do begin
-    if lstSoccerPlayer[i].isFK2 then begin
-      Result := lstSoccerPlayer[i];
+  for I := Players.Count -1 downto 0 do begin
+    if Players[i].isFK1 then begin
+      Result := Players[i];
       exit;
     end;
   end;
 end;
-function TSoccerBrain.GetFK3: TSoccerPlayer;
+function TBrain.GetFK2: TPlayer;
 var
   i: integer;
 begin
   Result := nil;
-  for I := lstSoccerPlayer.Count -1 downto 0 do begin
-    if lstSoccerPlayer[i].isFK3 then begin
-      Result := lstSoccerPlayer[i];
+  for I := Players.Count -1 downto 0 do begin
+    if Players[i].isFK2 then begin
+      Result := Players[i];
       exit;
     end;
   end;
 end;
-function TSoccerBrain.GetFK4: TSoccerPlayer;
+function TBrain.GetFK3: TPlayer;
 var
   i: integer;
 begin
   Result := nil;
-  for I := lstSoccerPlayer.Count -1 downto 0 do begin
-    if lstSoccerPlayer[i].isFK4 then begin
-      Result := lstSoccerPlayer[i];
+  for I := Players.Count -1 downto 0 do begin
+    if Players[i].isFK3 then begin
+      Result := Players[i];
       exit;
     end;
   end;
 end;
-function TSoccerBrain.GetInjuredPlayer ( Team: integer ): TSoccerPlayer;
+function TBrain.GetFK4: TPlayer;
+var
+  i: integer;
+begin
+  Result := nil;
+  for I := Players.Count -1 downto 0 do begin
+    if Players[i].isFK4 then begin
+      Result := Players[i];
+      exit;
+    end;
+  end;
+end;
+function TBrain.GetInjuredPlayer ( Team: integer ): TPlayer;
 var
   i: Integer;
 begin
   Result := nil;
-  for I := lstSoccerPlayer.Count -1 downto 0  do begin
-    if (lstSoccerPlayer[i].Team = Team) and (lstSoccerPlayer[i].Injured > 0) then begin
-      Result := lstSoccerPlayer[i];
+  for I := Players.Count -1 downto 0  do begin
+    if (Players[i].Team = Team) and (Players[i].Injured > 0) then begin
+      Result := Players[i];
       exit;
     end;
   end;
 
 end;
 
-function TSoccerBrain.GetFriendInCrossingArea ( const aPlayer: TSoccerPlayer ) : boolean;
+function TBrain.GetFriendInCrossingArea ( const aPlayer: TPlayer ) : boolean;
 var
   p: integer;
-  aFriend: TSoccerPlayer;
+  aFriend: TPlayer;
   tmp: Integer;
 begin
   Result := false;
   tmp := CrossingRangeMax;
   if (aPlayer.TalentId1 = TALENT_ID_LONGPASS) or (aPlayer.TalentId2 = TALENT_ID_LONGPASS) then
     tmp := tmp +1;
-  for P := lstSoccerPlayer.Count -1 downto 0 do begin
-    aFriend := lstSoccerPlayer[p];
+  for P := Players.Count -1 downto 0 do begin
+    aFriend := Players[p];
     if IsOutSide( aFriend.CellX ,aFriend.CellY ) then Continue;
 
     if (absDistance( aPlayer.CellX ,aPlayer.CellY,  aFriend.CellX, aFriend.CellY ) > ( tmp ))
@@ -4670,23 +3677,23 @@ begin
 
   end;
 end;
-function TSoccerBrain.GetFriendAhead ( const aPlayer: TSoccerPlayer ) : TSoccerPlayer;
+function TBrain.GetFriendAhead ( const aPlayer: TPlayer ) : TPlayer;
 var
   p: integer;
-  aFriend: TSoccerPlayer;
+  aFriend: TPlayer;
   tmp: Integer;
-  lstFriendAhead: TObjectList<TSoccerPlayer>;
+  lstFriendAhead: TObjectList<TPlayer>;
 begin
   Result := nil;
-  lstFriendAhead:= TObjectList<TSoccerPlayer>.Create(False);
+  lstFriendAhead:= TObjectList<TPlayer>.Create(False);
 
   tmp := ShortPassRange;
   if (aPlayer.TalentId1 = TALENT_ID_LONGPASS) or (aPlayer.TalentId2 = TALENT_ID_LONGPASS) then
     tmp := tmp +1;
   // riempe una lista di friend a cui passare il pallone
 
-  for P := lstSoccerPlayer.Count -1 downto 0 do begin
-    aFriend := lstSoccerPlayer[p];
+  for P := Players.Count -1 downto 0 do begin
+    aFriend := Players[p];
     if IsOutSide( aFriend.CellX, aFriend.CellY) then continue;
 
     if (absDistance( aPlayer.CellX ,aPlayer.CellY,  aFriend.CellX, aFriend.CellY ) > ( tmp )) then begin
@@ -4715,27 +3722,27 @@ begin
 
   // in alcuni casi passo una string ( getbestcrossing eccc...) . verificare leperformance. qui uso il player
   if lstFriendAhead.count > 0 then
-    result := GetSoccerPlayer( lstFriendAhead[ RndGenerate0(lstFriendAhead.Count-1)].Ids ) ;
+    result := GeTPlayer( lstFriendAhead[ RndGenerate0(lstFriendAhead.Count-1)].Ids ) ;
 
   lstFriendAhead.Free;
 end;
-procedure TSoccerBrain.CompileInterceptList (ShpTeam, MaxDistance: integer; aPath : dse_pathplanner.TPath; var lstIntercepts: TList<TInteractivePlayer> );
+procedure TBrain.CompileInterceptList (ShpTeam, MaxDistance: integer; aPath : dse_pathplanner.TPath; var lstIntercepts: TList<TInteractivePlayer> );
 var
   i,p: integer;
-  anIntercept: TSoccerPlayer;
+  anIntercept: TPlayer;
   aInteractivePlayer: TInteractivePlayer;
 begin
   lstIntercepts.Clear;
-  for P := lstSoccerPlayer.Count -1 downto 0 do begin
-    lstSoccerPlayer[p].grouped := false;
+  for P := Players.Count -1 downto 0 do begin
+    Players[p].grouped := false;
   end;
   for i := aPath.Count -1 downto 0 do begin
-    for P := lstSoccerPlayer.Count -1 downto 0 do begin
-      anIntercept := lstSoccerPlayer[p];
+    for P := Players.Count -1 downto 0 do begin
+      anIntercept := Players[p];
 
       if  ( anIntercept.Team <> ShpTeam ) and (anIntercept.Role <> 'G' )
       and ( AbsDistance ( anIntercept.CellX , anIntercept.cellY, aPath[i].X, aPath[i].Y ) <= MaxDistance)
-      and ( GetSoccerPlayer ( aPath[i].X, aPath[i].Y ) = nil ) // non occupata da player
+      and ( GeTPlayer ( aPath[i].X, aPath[i].Y ) = nil ) // non occupata da player
       and (Not inLinePath ( aPath[0].X, aPath[0].Y, aPath[aPath.count-1].X, aPath[aPath.count-1].Y,  // non fa parte del normale defense
                             anIntercept.cellX, anIntercept.CellY  )) then begin
         if not anIntercept.grouped then begin
@@ -4752,21 +3759,21 @@ begin
     end;
   end;
 end;
-procedure TSoccerBrain.CompileMovingList (MaxDistance, CellX,CellY: integer; var lstMoving: TList<TInteractivePlayer> );
+procedure TBrain.CompileMovingList (MaxDistance, CellX,CellY: integer; var lstMoving: TList<TInteractivePlayer> );
 var
   p: integer;
-  aPlayer : TSoccerPlayer;
-  aList: TObjectList<TSoccerPlayer>;
+  aPlayer : TPlayer;
+  aList: TObjectList<TPlayer>;
   aInteractivePlayer: TInteractivePlayer;
-//  aList: TList<TSoccerPlayer>;
+//  aList: TList<TPlayer>;
 
 begin
     lstMoving.Clear;
   // a distanza 1 un giocatore random prende la palla
-    aList:= TObjectList<TSoccerPlayer>.create(false);
-//    aList:= TList<TSoccerPlayer>.create;
-    for P := lstSoccerPlayer.Count -1 downto 0 do begin
-      aPlayer := lstSoccerPlayer[p];
+    aList:= TObjectList<TPlayer>.create(false);
+//    aList:= TList<TPlayer>.create;
+    for P := Players.Count -1 downto 0 do begin
+      aPlayer := Players[p];
 //      if  inExceptPlayers ( aPlayer ) then  continue;
 //      aPlayer.grouped := false;
       if (not aPlayer.CanMove) or (aPlayer.Role='G') then continue;
@@ -4776,8 +3783,8 @@ begin
 
     {   i più veloci (speed) }
 {    if aList.Count > 0 then begin
-      aList.sort(TComparer<TSoccerPlayer>.Construct(
-      function (const L, R: TSoccerPlayer): integer
+      aList.sort(TComparer<TPlayer>.Construct(
+      function (const L, R: TPlayer): integer
       begin
         Result := R.speed - L.speed;
       end
@@ -4802,24 +3809,24 @@ begin
 
 end;
 
-procedure TSoccerBrain.CompileHeadingList (LopTeam, MaxDistance, CellX,CellY: integer; var lstHeading: TList<TInteractivePlayer> );
+procedure TBrain.CompileHeadingList (LopTeam, MaxDistance, CellX,CellY: integer; var lstHeading: TList<TInteractivePlayer> );
 var
   p: integer;
-  aHeading: TSoccerPlayer;
+  aHeading: TPlayer;
   aInteractivePlayer: TInteractivePlayer;
 begin
 //  CompileHeadingList è molto diversa da CompileinterceptList
   lstHeading.Clear;
-  for P := lstSoccerPlayer.Count -1 downto 0 do begin
-    lstSoccerPlayer[p].grouped := false;
+  for P := Players.Count -1 downto 0 do begin
+    Players[p].grouped := false;
   end;
 
-  for P := lstSoccerPlayer.Count -1 downto 0 do begin
-    aHeading := lstSoccerPlayer[p];
+  for P := Players.Count -1 downto 0 do begin
+    aHeading := Players[p];
 
     if  ( aHeading.Team <> LopTeam ) and (aHeading.Role <> 'G' )
     and ( AbsDistance ( aHeading.CellX , aHeading.cellY, CellX, CellY ) <= MaxDistance) then begin
-    //and ( GetSoccerPlayer ( CellX, CellY ) = nil )  then begin // non occupata da player
+    //and ( GeTPlayer ( CellX, CellY ) = nil )  then begin // non occupata da player
 
       if not aHeading.grouped then begin
         aHeading.grouped := true;
@@ -4842,15 +3849,15 @@ begin
      ));
 
 end;
-procedure TSoccerBrain.CompileAutoTackleList (PlmTeam, MaxDistance: integer; aPath : dse_pathplanner.TPath; var lstAutoTackle: TList<TInteractivePlayer> );
+procedure TBrain.CompileAutoTackleList (PlmTeam, MaxDistance: integer; aPath : dse_pathplanner.TPath; var lstAutoTackle: TList<TInteractivePlayer> );
 var
   i,p,FromPath: integer;
-  anAutoTackle: TSoccerPlayer;
+  anAutoTackle: TPlayer;
   aInteractivePlayer: TInteractivePlayer;
 begin
   lstAutoTackle.Clear ;
-  for P := lstSoccerPlayer.Count -1 downto 0 do begin
-    lstSoccerPlayer[p].grouped := false;
+  for P := Players.Count -1 downto 0 do begin
+    Players[p].grouped := false;
   end;
 
   if aPath.Count = 1 then
@@ -4860,11 +3867,11 @@ begin
 
  // for i := aPath.Count - 1 downto 0 do begin //  cella finale nel caso si sposti di 1
   for i := FromPath downto 0 do begin // non cella finale nel caso si sposti di 2 o più
-    for P := lstSoccerPlayer.Count -1 downto 0 do begin
-      anAutoTackle := lstSoccerPlayer[p];
+    for P := Players.Count -1 downto 0 do begin
+      anAutoTackle := Players[p];
       if  ( anAutoTackle.Team <> PlmTeam ) and (anAutoTackle.Role <> 'G' )
       and ( AbsDistance ( anAutoTackle.CellX , anAutoTackle.cellY, aPath[i].X, aPath[i].Y ) <= MaxDistance)
-      and ( GetSoccerPlayer ( aPath[i].X, aPath[i].Y ) = nil )  then begin // non occupata da player
+      and ( GeTPlayer ( aPath[i].X, aPath[i].Y ) = nil )  then begin // non occupata da player
         if not anAutoTackle.grouped then begin
           anAutoTackle.grouped := true;
 
@@ -4880,47 +3887,47 @@ begin
 
 
 end;
-procedure TSoccerBrain.CompileRoleList (team: Integer; role: Char; var lstRole: TObjectList<TSoccerPlayer> );
+procedure TBrain.CompileRoleList (team: Integer; role: Char; var lstRole: TObjectList<TPlayer> );
 var
   p: integer;
-  aPlayer : TSoccerPlayer;
-//  aList: TList<TSoccerPlayer>;
+  aPlayer : TPlayer;
+//  aList: TList<TPlayer>;
 
 begin
     lstRole.Clear;
-    for P := lstSoccerPlayer.Count -1 downto 0 do begin
-      aPlayer := lstSoccerPlayer[p];
+    for P := Players.Count -1 downto 0 do begin
+      aPlayer := Players[p];
       if (aPlayer.Team = team) and (aPlayer.Role = role ) then
       lstRole.add (aPlayer);
     end;
 
 end;
-procedure TSoccerBrain.CompileBuffedList (team: Integer; buff: Char; var lstRole: TObjectList<TSoccerPlayer> );
+procedure TBrain.CompileBuffedList (team: Integer; buff: Char; var lstRole: TObjectList<TPlayer> );
 var
   p: integer;
-  aPlayer : TSoccerPlayer;
-  aList: TObjectList<TSoccerPlayer>;
+  aPlayer : TPlayer;
+  aList: TObjectList<TPlayer>;
   aInteractivePlayer: TInteractivePlayer;
-//  aList: TList<TSoccerPlayer>;
+//  aList: TList<TPlayer>;
 
 begin
     lstRole.Clear;
-    for P := lstSoccerPlayer.Count -1 downto 0 do begin
-      aPlayer := lstSoccerPlayer[p];
+    for P := Players.Count -1 downto 0 do begin
+      aPlayer := Players[p];
       if buff ='D' then begin
         if (aPlayer.Team = team) and (aPlayer.BonusBuffD > 0 ) then
         lstRole.add (aPlayer);
       end;
     end;
-    for P := lstSoccerPlayer.Count -1 downto 0 do begin
-      aPlayer := lstSoccerPlayer[p];
+    for P := Players.Count -1 downto 0 do begin
+      aPlayer := Players[p];
       if buff ='M' then begin
         if (aPlayer.Team = team) and (aPlayer.BonusBuffM > 0 ) then
         lstRole.add (aPlayer);
       end;
     end;
-    for P := lstSoccerPlayer.Count -1 downto 0 do begin
-      aPlayer := lstSoccerPlayer[p];
+    for P := Players.Count -1 downto 0 do begin
+      aPlayer := Players[p];
       if buff ='F' then begin
         if (aPlayer.Team = team) and (aPlayer.BonusBuffF > 0 ) then
         lstRole.add (aPlayer);
@@ -4928,7 +3935,7 @@ begin
     end;
 
 end;
-function TSoccerBrain.IsOffSide ( FromPlayer, ToPlayer : TSoccerPlayer ): Boolean;
+function TBrain.IsOffSide ( FromPlayer, ToPlayer : TPlayer ): Boolean;
 var
   i: integer;
 begin
@@ -4961,18 +3968,18 @@ begin
 
 
   // Cerco un avversario oltre la linea che non sia il GK
-  for I := lstSoccerPlayer.Count -1 downto 0 do begin
-    if IsOutSide( lstSoccerPlayer[i].CellX ,lstSoccerPlayer[i].CellY ) or (lstSoccerPlayer[i].Team  = ToPlayer.Team) then Continue;
+  for I := Players.Count -1 downto 0 do begin
+    if IsOutSide( Players[i].CellX ,Players[i].CellY ) or (Players[i].Team  = ToPlayer.Team) then Continue;
 
     case ToPlayer.team of
       0: begin // qui ciclano team 1
-        if (lstSoccerPlayer[i].Role  <> 'G') and (lstSoccerPlayer[i].CellX >= ToPlayer.cellX) then begin
+        if (Players[i].Role  <> 'G') and (Players[i].CellX >= ToPlayer.cellX) then begin
           Result:= false;
           Exit;
         end;
       end;
       1: begin  // qui ciclano team 0
-        if (lstSoccerPlayer[i].Role  <> 'G') and (lstSoccerPlayer[i].CellX <= ToPlayer.cellX)  then begin
+        if (Players[i].Role  <> 'G') and (Players[i].CellX <= ToPlayer.cellX)  then begin
           Result:= false;
           Exit;
         end;
@@ -4980,17 +3987,18 @@ begin
     end;
   end;
 end;
-function TSoccerBrain.IsLastMan ( aPlayer, BallPlayer : TSoccerPlayer ): Boolean;
+function TBrain.IsLastMan ( aPlayer, BallPlayer : TPlayer ): Boolean;
 var
-  AnotherPlayer : TSoccerPlayer;
+  AnotherPlayer : TPlayer;
   i: integer;
 begin
+  { TODO :     islastman da testare la nuova versione }
   // l'ultimo uomo è sempre oltre tutti a parte il portiere. anche in compagnia ma è l'ultima linea
   Result := True;
 
     if aPlayer.CellX = BallPlayer.CellX then begin // se il fallo è SIDE
-      for I := lstSoccerPlayer.Count -1 downto 0 do begin
-        AnotherPlayer:= lstSoccerPlayer[i];
+      for I := Players.Count -1 downto 0 do begin
+        AnotherPlayer:= Players[i];
         if (AnotherPlayer.ids = aPlayer.ids) or (AnotherPlayer.Team <> aPlayer.team ) and (AnotherPlayer.Role = 'G') then continue; // non calcolo chi fa il fallo e il team avversario
           case aPlayer.team of
             // in pratica: il fallo è di lato. Se ne trovo un altro di fianco o più arretrato non è ultimo uomo
@@ -5018,8 +4026,8 @@ begin
       case aPlayer.team of
         0: begin // qui ciclano team 0, il fallo è sel team 0
           if aPlayer.CellX < Ball.Player.cellX then begin // fallo da davanti
-            for I := lstSoccerPlayer.Count -1 downto 0 do begin
-              AnotherPlayer:= lstSoccerPlayer[i];
+            for I := Players.Count -1 downto 0 do begin
+              AnotherPlayer:= Players[i];
               if (AnotherPlayer.ids = aPlayer.ids) or (AnotherPlayer.Team <> aPlayer.team ) and (AnotherPlayer.Role = 'G') then continue; // non calcolo chi fa il fallo e il team avversario
                 if (AnotherPlayer.CellX <= aPlayer.cellX) or (AnotherPlayer.CellX = BallPlayer.cellX) then begin
                   Result:= false;
@@ -5028,8 +4036,8 @@ begin
             end;
           end
           else if aPlayer.CellX > Ball.Player.cellX then begin // fallo da dietro
-            for I := lstSoccerPlayer.Count -1 downto 0 do begin
-              AnotherPlayer:= lstSoccerPlayer[i];
+            for I := Players.Count -1 downto 0 do begin
+              AnotherPlayer:= Players[i];
               if (AnotherPlayer.ids = aPlayer.ids) or (AnotherPlayer.Team <> aPlayer.team ) and (AnotherPlayer.Role = 'G') then continue; // non calcolo chi fa il fallo e il team avversario
                 if (AnotherPlayer.CellX <= BallPlayer.cellX) then begin
                   Result:= false;
@@ -5041,8 +4049,8 @@ begin
         end;
         1: begin  // qui ciclano team 1, il fallo è sel team 1
           if aPlayer.CellX > Ball.Player.cellX then begin // fallo da davanti
-            for I := lstSoccerPlayer.Count -1 downto 0 do begin
-              AnotherPlayer:= lstSoccerPlayer[i];
+            for I := Players.Count -1 downto 0 do begin
+              AnotherPlayer:= Players[i];
               if (AnotherPlayer.ids = aPlayer.ids) or (AnotherPlayer.Team <> aPlayer.team ) and (AnotherPlayer.Role = 'G') then continue; // non calcolo chi fa il fallo e il team avversario
                 if (AnotherPlayer.CellX >= aPlayer.cellX) or (AnotherPlayer.CellX = BallPlayer.cellX) then begin
                   Result:= false;
@@ -5051,8 +4059,8 @@ begin
             end;
           end
           else if aPlayer.CellX < Ball.Player.cellX then begin // fallo da dietro
-            for I := lstSoccerPlayer.Count -1 downto 0 do begin
-              AnotherPlayer:= lstSoccerPlayer[i];
+            for I := Players.Count -1 downto 0 do begin
+              AnotherPlayer:= Players[i];
               if (AnotherPlayer.ids = aPlayer.ids) or (AnotherPlayer.Team <> aPlayer.team ) and (AnotherPlayer.Role = 'G') then continue; // non calcolo chi fa il fallo e il team avversario
                 if (AnotherPlayer.CellX >= BallPlayer.cellX) then begin
                   Result:= false;
@@ -5066,41 +4074,41 @@ begin
     end;
 
 end;
-function TSoccerBrain.AllowCount ( team: Integer ): Integer;
+function TBrain.AllowCount ( team: Integer ): Integer;
 var
   i: Integer;
   redcard: Integer;
 begin
   redcard:=0;
-  for I := lstSoccerPlayer.Count -1 downto 0 do begin
-    if (lstSoccerPlayer[i].RedCard > 0 ) and  (lstSoccerPlayer[i].Team = team) then
+  for I := Players.Count -1 downto 0 do begin
+    if (Players[i].RedCard > 0 ) and  (Players[i].Team = team) then
       redcard := redcard +1;
   end;
   Result := 11 - redcard;
 
 end;
-function TSoccerBrain.CurrentCount ( team: Integer ): Integer;
+function TBrain.CurrentCount ( team: Integer ): Integer;
 var
   i: Integer;
   count: Integer;
 begin
   count:=0;
-  for I := lstSoccerPlayer.Count -1 downto 0 do begin
-    if not IsOutSide( lstSoccerPlayer[i].cellx,lstSoccerPlayer[i].celly  ) and  (lstSoccerPlayer[i].Team = team) then
+  for I := Players.Count -1 downto 0 do begin
+    if not IsOutSide( Players[i].cellx,Players[i].celly  ) and  (Players[i].Team = team) then
       count := count +1;
   end;
   Result := count;
 
 end;
-function TSoccerBrain.CanDoSub ( team: Integer ): boolean;
+function TBrain.CanDoSub ( team: Integer ): boolean;
 var
   i: Integer;
 begin
   Result := false;
   if Score.TeamSubs[team] < 3 then begin
-    for I := lstSoccerReserve.Count -1 downto 0 do begin
-      if (lstSoccerReserve[i].Team = team) and ( lstSoccerReserve[i].disqualified = 0) and ( lstSoccerReserve[i].injured = 0)
-      and (lstSoccerReserve[i].TalentId1 <> TALENT_ID_GOALKEEPER) and (lstSoccerReserve[i].Stamina > 60) then begin
+    for I := Reserves.Count -1 downto 0 do begin
+      if (Reserves[i].Team = team) and ( Reserves[i].disqualified = 0) and ( Reserves[i].injured = 0)
+      and (Reserves[i].TalentId1 <> TALENT_ID_GOALKEEPER) and (Reserves[i].Stamina > 60) then begin
         Result:= True;
         exit;
       end;
@@ -5108,7 +4116,7 @@ begin
   end;
 end;
 
-function TSoccerBrain.GetTackleDirection ( Team, StartX, StartY, ToX, ToY: Integer): TTackleDirection;
+function TBrain.GetTackleDirection ( Team, StartX, StartY, ToX, ToY: Integer): TTackleDirection;
 begin
   case Team of
     0: begin
@@ -5129,13 +4137,13 @@ begin
     end;
   end;
 end;
-procedure TSoccerBrain.GetNextDirectionCell ( StartX, StartY, ToX, ToY, Speed,Team: integer; FriendlyWall,OpponentWall: boolean;  var aPath: dse_pathplanner.TPath  );
+procedure TBrain.GetNextDirectionCell ( StartX, StartY, ToX, ToY, Speed,Team: integer; FriendlyWall,OpponentWall: boolean;  var aPath: dse_pathplanner.TPath  );
 var
   MoveModeX: TMoveModeX;
   MoveModeY: TMoveModeY;
   aStep: dse_pathplanner.TPathStep;
   i: integer;
-  aPlayer: TSoccerPlayer;
+  aPlayer: TPlayer;
 begin
   aPath.Clear ;
   MoveModeX := xNone;
@@ -5212,7 +4220,7 @@ begin
         continue;
     end;
 
-    aPlayer := getSoccerPlayer ( aPath[i].X, aPath[i].Y);
+    aPlayer := geTPlayer ( aPath[i].X, aPath[i].Y);
     if  aPlayer <> nil then begin
 
       if FriendlyWall then begin
@@ -5232,7 +4240,7 @@ begin
   end;
 
 end;
-function TSoccerBrain.GetGKBounceCell ( GoalKeeper: TsoccerPlayer; GKX, GKY, Speed: integer; AllowCorner: boolean ): Tpoint;
+function TBrain.GetGKBounceCell ( GoalKeeper: TPlayer; GKX, GKY, Speed: integer; AllowCorner: boolean ): Tpoint;
 var
   acellList: Tlist<TPoint>;
   aPoint: Tpoint;
@@ -5332,7 +4340,7 @@ NoCorner1:
       end;
   end;
 end;
-function TSoccerBrain.GetBounceCell ( StartX, StartY, ToX, ToY, Speed: integer; favourTeam : integer): TPoint;
+function TBrain.GetBounceCell ( StartX, StartY, ToX, ToY, Speed: integer; favourTeam : integer): TPoint;
 var
   MoveModeX: TMoveModeX;
   MoveModeY: TMoveModeY;
@@ -5379,7 +4387,7 @@ begin
 
 
 end;
-function TSoccerBrain.GetZone ( Team, CellX, CellY: integer ): String;
+function TBrain.GetZone ( Team, CellX, CellY: integer ): String;
 begin
   case CellX of
     0: begin
@@ -5400,7 +4408,7 @@ begin
   end;
 
 end;
-procedure TSoccerBrain.GetNeighbournsCells ( CellX, CellY, Speed: integer; NoPlayer,noOutSide,noGK: boolean; var aCellList:Tlist<TPoint> );
+procedure TBrain.GetNeighbournsCells ( CellX, CellY, Speed: integer; NoPlayer,noOutSide,noGK: boolean; var aCellList:Tlist<TPoint> );
 var
   aPoint: Tpoint;
   i: integer;
@@ -5421,7 +4429,7 @@ begin
     For I := aCellList.Count -1 downto 0 do begin
       // 1 w 10, la linea 0-11 è quella della porta
       if NoPlayer then begin   // elimino i player
-      if getSoccerPlayer ( aCellList[i].X, aCellList[i].Y) <> nil then
+      if geTPlayer ( aCellList[i].X, aCellList[i].Y) <> nil then
         begin
           aCellList.Delete(i);
           continue;
@@ -5452,7 +4460,7 @@ begin
   end
 
 end;
-function TSoccerBrain.GetRandomCell ( CellX, CellY, Speed: integer; NoPlayer, NoOutSide: boolean ): Tpoint;
+function TBrain.GetRandomCell ( CellX, CellY, Speed: integer; NoPlayer, NoOutSide: boolean ): Tpoint;
 var
   acellList: Tlist<TPoint>;
   aPoint: Tpoint;
@@ -5479,7 +4487,7 @@ begin
 
 
       if NoPlayer then begin   // elimino i player
-      if getSoccerPlayer ( aCellList[i].X, aCellList[i].Y) <> nil then
+      if geTPlayer ( aCellList[i].X, aCellList[i].Y) <> nil then
         begin
           aCellList.Delete(i);
           continue;
@@ -5509,7 +4517,7 @@ begin
 
   aCellList.Free;
 end;
-function TSoccerBrain.GetRandomCellNO06 ( CellX, CellY, Speed: integer  ): Tpoint;
+function TBrain.GetRandomCellNO06 ( CellX, CellY, Speed: integer  ): Tpoint;
 var
   acellList: Tlist<TPoint>;
   aPoint: Tpoint;
@@ -5524,7 +4532,7 @@ begin
     for y := 1 to 5 do begin  // 0 6
       if (CellX = X) and (CellY=Y) then continue; // non sè stessa
 
-      if (AbsDistance(CellX,CellY,X,Y) <= Speed) and (getSoccerPlayer(x,y)=nil) then begin
+      if (AbsDistance(CellX,CellY,X,Y) <= Speed) and (geTPlayer(x,y)=nil) then begin
         aPoint.X := x; aPoint.Y:= y;
         AcellList.Add(aPoint);
       end;
@@ -5540,7 +4548,7 @@ begin
 
   aCellList.Free;
 end;
-function TSoccerBrain.GetRandomCellNOPlayer ( CellX, CellY, Speed: integer  ): Tpoint;
+function TBrain.GetRandomCellNOPlayer ( CellX, CellY, Speed: integer  ): Tpoint;
 var
   acellList: Tlist<TPoint>;
   aPoint: Tpoint;
@@ -5555,7 +4563,7 @@ begin
     for y := 0 to 6 do begin  // tutte
       if (CellX = X) and (CellY=Y) then continue; // non sè stessa
 
-      if (AbsDistance(CellX,CellY,X,Y) <= Speed) and (getSoccerPlayer(x,y)=nil) then begin
+      if (AbsDistance(CellX,CellY,X,Y) <= Speed) and (geTPlayer(x,y)=nil) then begin
         aPoint.X := x; aPoint.Y:= y;
         AcellList.Add(aPoint);
       end;
@@ -5571,9 +4579,9 @@ begin
 
   aCellList.Free;
 end;
-procedure TSoccerBrain.GetMarkingPath ( aPlayer: TSoccerPlayer );
+procedure TBrain.GetMarkingPath ( aPlayer: TPlayer );
 var
-  aMagnete: TSoccerPlayer;
+  aMagnete: TPlayer;
 begin
    { talento  MARKING MAGNETE  trova uno tra questi nella sua ZONE : se non ci è già vicino a 1 D=shot pià alto M=Passing+alto F=Defense+bassa
       getaggressionCell del best nella zone. spendono pià a correre speed
@@ -5603,7 +4611,7 @@ begin
       GetAggressionCellPath( aPlayer, aMagnete.CellX, aMagnete.CellY ); // cerco la cella di aggression
   end;
 end;
-procedure TSoccerBrain.GetAggressionCellPath ( aSoccerPlayer: TSoccerPlayer; X2, Y2: integer );
+procedure TBrain.GetAggressionCellPath ( aSoccerPlayer: TPlayer; X2, Y2: integer );
 var
   acellList: Tlist<TPoint>;
   aPoint: Tpoint;
@@ -5615,43 +4623,43 @@ begin
   // non aggiungo i fuoricampo
   acellList:= Tlist<TPoint>.Create;
   aPoint.X := X2-1; aPoint.Y:= Y2-1;
-  if (aPoint.X > 0) and (aPoint.X <=10) and (GetSoccerPlayer (aPoint.X, aPoint.Y ) = nil )
+  if (aPoint.X > 0) and (aPoint.X <=10) and (GeTPlayer (aPoint.X, aPoint.Y ) = nil )
   and (aPoint.Y >= 0) and (aPoint.y <=6)
   then AcellList.Add(aPoint);
 
   aPoint.X := X2;   aPoint.Y:= Y2-1;
-  if (aPoint.X > 0) and (aPoint.X <=10) and (GetSoccerPlayer (aPoint.X, aPoint.Y ) = nil )
+  if (aPoint.X > 0) and (aPoint.X <=10) and (GeTPlayer (aPoint.X, aPoint.Y ) = nil )
   and (aPoint.Y >= 0) and (aPoint.y <=6)
   then AcellList.Add(aPoint);
 
   aPoint.X := X2+1; aPoint.Y:= Y2-1;
-  if (aPoint.X > 0) and (aPoint.X <=10) and (GetSoccerPlayer (aPoint.X, aPoint.Y ) = nil )
+  if (aPoint.X > 0) and (aPoint.X <=10) and (GeTPlayer (aPoint.X, aPoint.Y ) = nil )
   and (aPoint.Y >= 0) and (aPoint.y <=6)
   then AcellList.Add(aPoint);
 
   aPoint.X := X2-1; aPoint.Y:= Y2;
-  if (aPoint.X > 0) and (aPoint.X <=10) and (GetSoccerPlayer (aPoint.X, aPoint.Y ) = nil )
+  if (aPoint.X > 0) and (aPoint.X <=10) and (GeTPlayer (aPoint.X, aPoint.Y ) = nil )
   and (aPoint.Y >= 0) and (aPoint.y <=6)
   then AcellList.Add(aPoint);
   //aPoint.X := X2;   aPoint.Y:= Y2;
   //AcellList.Add(aPoint);
   aPoint.X := X2+1; aPoint.Y:= Y2;
-  if (aPoint.X > 0) and (aPoint.X <=10) and (GetSoccerPlayer (aPoint.X, aPoint.Y ) = nil )
+  if (aPoint.X > 0) and (aPoint.X <=10) and (GeTPlayer (aPoint.X, aPoint.Y ) = nil )
   and (aPoint.Y >= 0) and (aPoint.y <=6)
   then AcellList.Add(aPoint);
 
   aPoint.X := X2-1; aPoint.Y:= Y2+1;
-  if (aPoint.X > 0) and (aPoint.X <=10) and (GetSoccerPlayer (aPoint.X, aPoint.Y ) = nil )
+  if (aPoint.X > 0) and (aPoint.X <=10) and (GeTPlayer (aPoint.X, aPoint.Y ) = nil )
   and (aPoint.Y >= 0) and (aPoint.y <=6)
   then AcellList.Add(aPoint);
 
   aPoint.X := X2;   aPoint.Y:= Y2+1;
-  if (aPoint.X > 0) and (aPoint.X <=10) and (GetSoccerPlayer (aPoint.X, aPoint.Y ) = nil )
+  if (aPoint.X > 0) and (aPoint.X <=10) and (GeTPlayer (aPoint.X, aPoint.Y ) = nil )
   and (aPoint.Y >= 0) and (aPoint.y <=6)
   then AcellList.Add(aPoint);
 
   aPoint.X := X2+1; aPoint.Y:= Y2+1;
-  if (aPoint.X > 0) and (aPoint.X <=10) and (GetSoccerPlayer (aPoint.X, aPoint.Y ) = nil )
+  if (aPoint.X > 0) and (aPoint.X <=10) and (GeTPlayer (aPoint.X, aPoint.Y ) = nil )
   and (aPoint.Y >= 0) and (aPoint.y <=6)
   then AcellList.Add(aPoint);
 
@@ -5684,7 +4692,7 @@ begin
 
 
 end;
-procedure TSoccerBrain.GetFavourCellPath ( aSoccerPlayer: TSoccerPlayer; X2, Y2: integer );
+procedure TBrain.GetFavourCellPath ( aSoccerPlayer: TPlayer; X2, Y2: integer );
 var
   acellList: Tlist<TPoint>;
   aPoint: Tpoint;
@@ -5696,43 +4704,43 @@ begin
   // non aggiungo i fuoricampo
   acellList:= Tlist<TPoint>.Create;
   aPoint.X := X2-1; aPoint.Y:= Y2-1;
-  if (aPoint.X > 0) and (aPoint.X <=10) and (GetSoccerPlayer (aPoint.X, aPoint.Y ) = nil )
+  if (aPoint.X > 0) and (aPoint.X <=10) and (GeTPlayer (aPoint.X, aPoint.Y ) = nil )
   and (aPoint.Y >= 0) and (aPoint.y <=6)
   then AcellList.Add(aPoint);
 
   aPoint.X := X2;   aPoint.Y:= Y2-1;
-  if (aPoint.X > 0) and (aPoint.X <=10) and (GetSoccerPlayer (aPoint.X, aPoint.Y ) = nil )
+  if (aPoint.X > 0) and (aPoint.X <=10) and (GeTPlayer (aPoint.X, aPoint.Y ) = nil )
   and (aPoint.Y >= 0) and (aPoint.y <=6)
   then AcellList.Add(aPoint);
 
   aPoint.X := X2+1; aPoint.Y:= Y2-1;
-  if (aPoint.X > 0) and (aPoint.X <=10) and (GetSoccerPlayer (aPoint.X, aPoint.Y ) = nil )
+  if (aPoint.X > 0) and (aPoint.X <=10) and (GeTPlayer (aPoint.X, aPoint.Y ) = nil )
   and (aPoint.Y >= 0) and (aPoint.y <=6)
   then AcellList.Add(aPoint);
 
   aPoint.X := X2-1; aPoint.Y:= Y2;
-  if (aPoint.X > 0) and (aPoint.X <=10) and (GetSoccerPlayer (aPoint.X, aPoint.Y ) = nil )
+  if (aPoint.X > 0) and (aPoint.X <=10) and (GeTPlayer (aPoint.X, aPoint.Y ) = nil )
   and (aPoint.Y >= 0) and (aPoint.y <=6)
   then AcellList.Add(aPoint);
   //aPoint.X := X2;   aPoint.Y:= Y2;
   //AcellList.Add(aPoint);
   aPoint.X := X2+1; aPoint.Y:= Y2;
-  if (aPoint.X > 0) and (aPoint.X <=10) and (GetSoccerPlayer (aPoint.X, aPoint.Y ) = nil )
+  if (aPoint.X > 0) and (aPoint.X <=10) and (GeTPlayer (aPoint.X, aPoint.Y ) = nil )
   and (aPoint.Y >= 0) and (aPoint.y <=6)
   then AcellList.Add(aPoint);
 
   aPoint.X := X2-1; aPoint.Y:= Y2+1;
-  if (aPoint.X > 0) and (aPoint.X <=10) and (GetSoccerPlayer (aPoint.X, aPoint.Y ) = nil )
+  if (aPoint.X > 0) and (aPoint.X <=10) and (GeTPlayer (aPoint.X, aPoint.Y ) = nil )
   and (aPoint.Y >= 0) and (aPoint.y <=6)
   then AcellList.Add(aPoint);
 
   aPoint.X := X2;   aPoint.Y:= Y2+1;
-  if (aPoint.X > 0) and (aPoint.X <=10) and (GetSoccerPlayer (aPoint.X, aPoint.Y ) = nil )
+  if (aPoint.X > 0) and (aPoint.X <=10) and (GeTPlayer (aPoint.X, aPoint.Y ) = nil )
   and (aPoint.Y >= 0) and (aPoint.y <=6)
   then AcellList.Add(aPoint);
 
   aPoint.X := X2+1; aPoint.Y:= Y2+1;
-  if (aPoint.X > 0) and (aPoint.X <=10) and (GetSoccerPlayer (aPoint.X, aPoint.Y ) = nil )
+  if (aPoint.X > 0) and (aPoint.X <=10) and (GeTPlayer (aPoint.X, aPoint.Y ) = nil )
   and (aPoint.Y >= 0) and (aPoint.y <=6)
   then AcellList.Add(aPoint);
 
@@ -5766,7 +4774,7 @@ begin
 
 end;
 
-procedure TSoccerbrain.CopyPath ( Path1, Path2 : dse_pathplanner.TPath );
+procedure TBrain.CopyPath ( Path1, Path2 : dse_pathplanner.TPath );
 var
   i: Integer;
   aStep : dse_pathplanner.TPathStep;
@@ -5780,7 +4788,7 @@ begin
 end;
 
 
-constructor TSoccerbrain.Create ( ids : string; AGender: Char; aSeason, aCountry, aDivision, aRound: integer);
+constructor TBrain.Create ( ids : string; AGender: Char; aSeason, aCountry, aDivision, aRound: integer);
 var
   i: Integer;
 begin
@@ -5800,10 +4808,10 @@ begin
   Country := aCountry;
   Round := aRound;
 
-  lstSoccerPlayerALL := TObjectList<TSoccerPlayer>.create(True);
-  lstSoccerPlayer := TObjectList<TSoccerPlayer>.create(false);
-  lstSoccerReserve:= TObjectList<TSoccerPlayer>.create(false);
-  lstSoccerGameOver:= TObjectList<TSoccerPlayer>.create(false);
+  PlayersALL := TObjectList<TPlayer>.create(True);
+  Players := TObjectList<TPlayer>.create(false);
+  Reserves:= TObjectList<TPlayer>.create(false);
+  Gameover:= TObjectList<TPlayer>.create(false);
   Finished:= false;
   FinishedTime:=0;
   RandGen := TtdCombinedPRNG.Create(0, 0);
@@ -5819,7 +4827,7 @@ begin
   MMbraindata:= TMemoryStream.Create;
   MMbraindataZIP:= TMemoryStream.Create ;
 //  MMbraindata.SetSize(300);
-  ExceptPlayers:= TObjectList<TSoccerPlayer>.Create(false);
+  ExceptPlayers:= TObjectList<TPlayer>.Create(false);
   ShpFree:=1;
   Minute:= 1;
   TeamTurn:=0;
@@ -5836,10 +4844,11 @@ begin
     end;
     TeamMovesLeft := TurnMovesStart;
 
+  SoccerAI := TSoccerAI.create(self);
 
   inherited Create;
 end;
-destructor TSoccerbrain.destroy;
+destructor TBrain.destroy;
 var
       i: integer;
 begin
@@ -5859,20 +4868,20 @@ begin
     MMbraindata.Free;
     MMbraindataZIP.Free;
     MatchInfo.Free;
-    lstSoccerGameOver.Free;
-    lstSoccerPlayer.Free;
-    lstSoccerReserve.Free;
-    lstSoccerPlayerALL.Free;
-
+    Gameover.Free;
+    Players.Free;
+    Reserves.Free;
+    PlayersALL.Free;
+    SoccerAI.Free;
   inherited ;
 end;
-procedure TSoccerbrain.SetDirLog ( value: string );
+procedure TBrain.SetDirLog ( value: string );
 begin
   fDir_Log := value;
   //FileCreate( dir_log +  brainIds + '.ERR' );
 
 end;
-procedure TSoccerbrain.Start;
+procedure TBrain.Start;
 var
   i: integer;
 begin
@@ -5891,16 +4900,16 @@ begin
   Finished:= false;
   FinishedTime:=0;
 end;
-procedure TSoccerbrain.LoadDefaultTeamPos ( aTeam: integer);
+procedure TBrain.LoadDefaultTeamPos ( aTeam: integer);
 var
   i: integer;
 begin
   // Dopo un gol annullo anche tutti gli stay/free
 
-  for I := lstSoccerPlayer.Count -1 downto 0 do begin
-    lstSoccerPlayer[i].CellX := lstSoccerPlayer[i].DefaultCellX ;
-    lstSoccerPlayer[i].CellY := lstSoccerPlayer[i].DefaultCellY ;
-    lstSoccerPlayer[i].stay := False;
+  for I := Players.Count -1 downto 0 do begin
+    Players[i].CellX := Players[i].DefaultCellX ;
+    Players[i].CellY := Players[i].DefaultCellY ;
+    Players[i].stay := False;
   end;
    case aTeam of
     0: begin
@@ -5916,7 +4925,7 @@ begin
 end;
 
 
-procedure TSoccerbrain.CornerSetup ( const aPlayer: TSoccerPlayer );
+procedure TBrain.CornerSetup ( const aPlayer: TPlayer );
 var
   CornerMap: TCornerMap;
 begin
@@ -5949,20 +4958,20 @@ begin
   w_coa :=true;
   w_cod :=false;
 end;
-procedure TSoccerbrain.FreeKickSetup1 ( team : Integer  );
+procedure TBrain.FreeKickSetup1 ( team : Integer  );
 var
   aCellList: TList<TPoint>;
   i,p,MinDist,aRnd: Integer;
-  anOpponent: TSoccerPlayer;
+  anOpponent: TPlayer;
 begin
   w_FreeKickSetup1 := True;
   // allontano di 2 celle gli avversari
   ResetPassiveSkills;
   // prendo tutti i player avversari a distanza < 2 dalla palla, quindi quelli che devono spostarsi
 
-  for p := lstSoccerPlayer.Count -1 downto 0 do begin
+  for p := Players.Count -1 downto 0 do begin
   // per ogni calciatore avversario che si trovano a distanza < 2 dalla palla, prendo tutte le celle libere in cui può andare
-    anOpponent := lstSoccerPlayer[p] ;
+    anOpponent := Players[p] ;
     if (anOpponent.Team = team ) or (anOpponent.Role='G') then Continue;
 
     if AbsDistance(anOpponent.CellX, anOpponent.CellY, ball.CellX, ball.CellY ) < 2 then begin
@@ -6030,7 +5039,7 @@ begin
   w_FreeKickSetup1:= true;
   w_Fka1 :=true;
 end;
-procedure TSoccerbrain.FreeKickSetup2 ( team : Integer  );
+procedure TBrain.FreeKickSetup2 ( team : Integer  );
 begin
 
   ResetPassiveSkills;
@@ -6049,7 +5058,7 @@ begin
   w_Fka2 :=true;
   w_Fkd2 :=false;
 end;
-procedure TSoccerbrain.FreeKickSetup3 ( team : Integer  );
+procedure TBrain.FreeKickSetup3 ( team : Integer  );
 begin
   // il prs o pos che seguirà mantiene le shotcell. il malus è minore. il difensore può mettere fino a 4 in barriera. esiste una cella
   // specifica di barriera per ogni shotCell. l'animazione prevede che dopo il pos o prs con flag freekick3 veda gli uomini in barriera
@@ -6070,7 +5079,7 @@ begin
   w_Fka3 :=true;
   w_Fkd3 :=false;
 end;
-procedure TSoccerbrain.FreeKickSetup4 ( team : Integer  );
+procedure TBrain.FreeKickSetup4 ( team : Integer  );
 begin
   { devo mettere tutti fuori dall'area e dietro la palla }
   ResetPassiveSkills;
@@ -6089,7 +5098,7 @@ begin
   w_FreeKickSetup4:= true;
   w_Fka4 :=true;
 end;
-function TSoccerbrain.GetW_SomeThing: boolean;
+function TBrain.GetW_SomeThing: boolean;
 begin
 
   Result := w_CornerSetup or w_Coa or w_cod or w_CornerKick or w_Fka1 or w_Fka2 or w_FreeKickSetup2 or w_Fka2 or w_Fkd2 or w_FreeKick2
@@ -6097,11 +5106,11 @@ begin
 
 end;
 
-procedure TSoccerbrain.SetTeamMovesLeft ( const Value: ShortInt );
+procedure TBrain.SetTeamMovesLeft ( const Value: ShortInt );
 var
   P,T: integer;
-  aList: TObjectList<TSoccerPlayer>;
-  aPlayer: TSoccerPlayer;
+  aList: TObjectList<TPlayer>;
+  aPlayer: TPlayer;
   label noCheckCheat;
 begin
    UpdateDevi;
@@ -6124,8 +5133,8 @@ begin
    end;
 
    // solo se non ha la palla
-   for P := lstSoccerPlayer.Count -1 downto 0 do begin
-     aPlayer := lstSoccerPlayer[P];
+   for P := Players.Count -1 downto 0 do begin
+     aPlayer := Players[P];
      if IsOutSide( aPlayer.CellX ,aPlayer.CellY )  then Continue;
      if not aPlayer.HasBall  then begin
       aPlayer.resetAll;
@@ -6154,7 +5163,7 @@ begin
     // a differenza di quelli del morale, questi buff vanno oltre MAX_STAT
     if Score.BuffD[T] > 0 then begin
         // cerco il reparto e buff
-        aList := TObjectList<TSoccerPlayer>.create(false);
+        aList := TObjectList<TPlayer>.create(false);
         CompileRoleList(T,'D', aList);
         for p := aList.Count -1 downto 0 do begin
           if aList[p].HasBall then continue;   // il portatore di palla non è stato resettato sopra
@@ -6169,7 +5178,7 @@ begin
    //  TALENT_ID_BUFF_MIDDLE = 140 prereq almeno 3 passing, 1 talento qualsiasi --> skill 2x buff reparto (5% chance) cen  20 turni + speed max 4,ballcontrol,passing, shot +1
     if Score.BuffM[T] > 0 then begin
         // cerco il reparto e tolgo buff
-        aList := TObjectList<TSoccerPlayer>.create(false);
+        aList := TObjectList<TPlayer>.create(false);
         CompileRoleList(T,'M',aList);
         for p := aList.Count -1 downto 0 do begin
           if aList[p].HasBall then continue;   // il portatore di palla non è stato resettato sopra
@@ -6186,7 +5195,7 @@ begin
    //  TALENT_ID_BUFF_FORWARD = 141 prereq almeno 3 Shot , 1 talento qualsiasi --> skill 2x buff reparto (5% chance) att 20 turni + ballcontrol,passing, shot +1
     if Score.BuffF[T] > 0 then begin
         // cerco il reparto e tolgo buff
-        aList := TObjectList<TSoccerPlayer>.create(false);
+        aList := TObjectList<TPlayer>.create(false);
         CompileRoleList(T,'F',aList);
         for p := aList.Count -1 downto 0 do begin
           if aList[p].HasBall then continue;   // il portatore di palla non è stato resettato sopra
@@ -6203,7 +5212,7 @@ begin
 
 
 end;
-procedure TSoccerbrain.SetMinute ( const Value: SmallInt );
+procedure TBrain.SetMinute ( const Value: SmallInt );
 begin
 
    FMinute := value;
@@ -6212,7 +5221,7 @@ begin
 //   end;
 
 end;
-procedure TSoccerbrain.TurnChange ( MovesLeft: integer);
+procedure TBrain.TurnChange ( MovesLeft: integer);
 var
   p,i,TeamFaultFavour,Isfault: Integer;
 begin
@@ -6297,13 +5306,13 @@ begin
         Score.TeamMI [1] := Score.TeamMI [1] + 1;
         Score.points[0] := 1;
         Score.points[1] := 1;
-        for I := lstSoccerPlayer.Count -1 downto 0 do begin
-          lstSoccerPlayer[i].xp_Speed := lstSoccerPlayer[i].xp_Speed + 1;
-          lstSoccerPlayer[i].xp_Defense := lstSoccerPlayer[i].xp_Defense + 1;
-          lstSoccerPlayer[i].xp_Passing:= lstSoccerPlayer[i].xp_Passing + 1;
-          lstSoccerPlayer[i].xp_BallControl := lstSoccerPlayer[i].xp_BallControl + 1;
-          lstSoccerPlayer[i].xp_Shot := lstSoccerPlayer[i].xp_Shot + 1;
-          lstSoccerPlayer[i].xp_Heading := lstSoccerPlayer[i].xp_Heading + 1;
+        for I := Players.Count -1 downto 0 do begin
+          Players[i].xp_Speed := Players[i].xp_Speed + 1;
+          Players[i].xp_Defense := Players[i].xp_Defense + 1;
+          Players[i].xp_Passing:= Players[i].xp_Passing + 1;
+          Players[i].xp_BallControl := Players[i].xp_BallControl + 1;
+          Players[i].xp_Shot := Players[i].xp_Shot + 1;
+          Players[i].xp_Heading := Players[i].xp_Heading + 1;
         end;
       end
       else if Score.gol[0] > Score.gol[1] then begin
@@ -6314,14 +5323,14 @@ begin
          Score.TeamMI[1]:= 0;
         Score.points[0] := 3;
         Score.points[1] := 0;
-        for I := lstSoccerPlayer.Count -1 downto 0 do begin
-          if lstSoccerPlayer[i].Team = 0 then begin
-            lstSoccerPlayer[i].xp_Speed := lstSoccerPlayer[i].xp_Speed + 3;
-            lstSoccerPlayer[i].xp_Defense := lstSoccerPlayer[i].xp_Defense + 3;
-            lstSoccerPlayer[i].xp_Passing:= lstSoccerPlayer[i].xp_Passing + 3;
-            lstSoccerPlayer[i].xp_BallControl := lstSoccerPlayer[i].xp_BallControl + 3;
-            lstSoccerPlayer[i].xp_Shot := lstSoccerPlayer[i].xp_Shot + 3;
-            lstSoccerPlayer[i].xp_Heading := lstSoccerPlayer[i].xp_Heading + 3;
+        for I := Players.Count -1 downto 0 do begin
+          if Players[i].Team = 0 then begin
+            Players[i].xp_Speed := Players[i].xp_Speed + 3;
+            Players[i].xp_Defense := Players[i].xp_Defense + 3;
+            Players[i].xp_Passing:= Players[i].xp_Passing + 3;
+            Players[i].xp_BallControl := Players[i].xp_BallControl + 3;
+            Players[i].xp_Shot := Players[i].xp_Shot + 3;
+            Players[i].xp_Heading := Players[i].xp_Heading + 3;
           end;
         end;
       end
@@ -6334,14 +5343,14 @@ begin
         Score.TeamMI [1] := Score.TeamMI [1] + 3;
         Score.points[0] := 0;
         Score.points[1] := 3;
-        for I := lstSoccerPlayer.Count -1 downto 0 do begin
-          if lstSoccerPlayer[i].Team = 1 then begin
-            lstSoccerPlayer[i].xp_Speed := lstSoccerPlayer[i].xp_Speed + 3;
-            lstSoccerPlayer[i].xp_Defense := lstSoccerPlayer[i].xp_Defense + 3;
-            lstSoccerPlayer[i].xp_Passing:= lstSoccerPlayer[i].xp_Passing + 3;
-            lstSoccerPlayer[i].xp_BallControl := lstSoccerPlayer[i].xp_BallControl + 3;
-            lstSoccerPlayer[i].xp_Shot := lstSoccerPlayer[i].xp_Shot + 3;
-            lstSoccerPlayer[i].xp_Heading := lstSoccerPlayer[i].xp_Heading + 3;
+        for I := Players.Count -1 downto 0 do begin
+          if Players[i].Team = 1 then begin
+            Players[i].xp_Speed := Players[i].xp_Speed + 3;
+            Players[i].xp_Defense := Players[i].xp_Defense + 3;
+            Players[i].xp_Passing:= Players[i].xp_Passing + 3;
+            Players[i].xp_BallControl := Players[i].xp_BallControl + 3;
+            Players[i].xp_Shot := Players[i].xp_Shot + 3;
+            Players[i].xp_Heading := Players[i].xp_Heading + 3;
           end;
         end;
       end;
@@ -6355,7 +5364,7 @@ begin
     end;
 
 end;
-procedure TSoccerbrain.SetGender ( fm: char);
+procedure TBrain.SetGender ( fm: char);
 begin
   fGender := fm;
   If Gender = 'f' then
@@ -6537,7 +5546,7 @@ begin
   end;
 
 end;
-procedure TSoccerbrain.Setmilliseconds ( value: Integer);
+procedure TBrain.Setmilliseconds ( value: Integer);
 begin
   { in caso di wcod o simili subentra la AI automaticamente, altrimenti cambia turno da solo ma deve inviare un PASS }
 
@@ -6545,7 +5554,7 @@ begin
   if fmilliseconds < 0 then begin
 //    if  w_Coa or w_Cod or w_CornerKick or w_Fka1 or w_FreeKick1 or w_Fka2 or w_Fkd2  or w_FreeKick2 or w_Fka3 or w_Fkd3 or w_FreeKick3 or
 //     w_Fka4 or w_FreeKick4 then
-      AI_Think( teamTurn );
+      SoccerAI.AI_Think( teamTurn );
 //    else
 
       //BrainInput ( IntTostr(score.TeamGuid [teamTurn]) + ',' + 'PASS'  ) ;  // PASS oltre 120+ non è permesso
@@ -6555,7 +5564,7 @@ begin
 ////      inc (incMove);
   end;
 end;
-function TSoccerbrain.findSpectator (Cliid: Integer): Boolean;
+function TBrain.findSpectator (Cliid: Integer): Boolean;
 var
   i: Integer;
 begin
@@ -6569,7 +5578,7 @@ begin
   end;
   ReleaseMutex(Mutex);
 end;
-function TSoccerbrain.RemoveSpectator (Cliid: Integer): Boolean;
+function TBrain.RemoveSpectator (Cliid: Integer): Boolean;
 var
   i: Integer;
 begin
@@ -6584,7 +5593,7 @@ begin
   end;
   ReleaseMutex(Mutex);
 end;
-procedure TSoccerbrain.InputSecureExit ( DoAiMoveAll: Boolean; DoTeamMovesLeft: TDecMovesLeft);
+procedure TBrain.InputSecureExit ( DoAiMoveAll: Boolean; DoTeamMovesLeft: TDecMovesLeft);
 begin
 
   if DoAiMoveAll  then
@@ -6599,7 +5608,7 @@ begin
   if TeamMovesLeft <= 0 then TurnChange  (TurnMoves);
   TsScript[incMove].add ('E');
 end;
-function TSoccerbrain.CheckOffside ( FromPlayer, aPossibleoffside: TSoccerPlayer ): boolean;
+function TBrain.CheckOffside ( FromPlayer, aPossibleoffside: TPlayer ): boolean;
 begin
   Result := False;
   if aPossibleoffside <> nil then begin
@@ -6618,7 +5627,7 @@ begin
 
 end;
 
-function TSoccerbrain.CheckInputShp (aPlayer: TsoccerPlayer; CellX, CellY: integer; tsCmd: Tstringlist ): string;
+function TBrain.CheckInputShp (aPlayer: TPlayer; CellX, CellY: integer; tsCmd: Tstringlist ): string;
 begin
   Result := '';
   if aPlayer = nil then begin
@@ -6650,9 +5659,9 @@ begin
   end;   // freekick1 concesso
 
 end;
-function TSoccerbrain.CheckInputLop (aPlayer: TsoccerPlayer; CellX, CellY: integer; tsCmd: Tstringlist ): string;
+function TBrain.CheckInputLop (aPlayer: TPlayer; CellX, CellY: integer; tsCmd: Tstringlist ): string;
 var
-  aFriend: TSoccerPlayer;
+  aFriend: TPlayer;
 begin
   Result := '';
   if aPlayer = nil then begin
@@ -6682,7 +5691,7 @@ begin
     end;
   end;
 
-  aFriend := GetSoccerPlayer ( CellX, CellY, aPlayer.Team );
+  aFriend := GeTPlayer ( CellX, CellY, aPlayer.Team );
   if aFriend <> nil then Begin
     if aFriend.Team <> aPlayer.team then begin
     Result := 'LOP,Destination Player unfriendly Ts:' +tsCmd.CommaText ;
@@ -6696,9 +5705,9 @@ begin
 
 
 end;
-function TSoccerbrain.CheckInputCro (aPlayer: TsoccerPlayer; CellX, CellY: integer; tsCmd: Tstringlist ): string;
+function TBrain.CheckInputCro (aPlayer: TPlayer; CellX, CellY: integer; tsCmd: Tstringlist ): string;
 var
-  aHeadingFriend: TSoccerPlayer;
+  aHeadingFriend: TPlayer;
 begin
   Result := '';
   if w_SomeThing  then begin
@@ -6726,16 +5735,16 @@ begin
     Exit;
   end;
 
-  aHeadingFriend := GetSoccerPlayer ( CellX, CellY,aPlayer.Team );
+  aHeadingFriend := GeTPlayer ( CellX, CellY,aPlayer.Team );
 
   if aHeadingFriend = nil then begin
     Result := 'CRO,Destination Player unfriendly or nil Ts:'+ tsCmd.CommaText;
     Exit;
   end;
 end;
-function TSoccerbrain.CheckInputDri (aPlayer: TsoccerPlayer; CellX, CellY: integer; tsCmd: Tstringlist ): string;
+function TBrain.CheckInputDri (aPlayer: TPlayer; CellX, CellY: integer; tsCmd: Tstringlist ): string;
 var
-  anOpponent: TSoccerPlayer;
+  anOpponent: TPlayer;
 begin
   Result := '';
   if w_SomeThing  then begin
@@ -6761,7 +5770,7 @@ begin
     Exit;
   end;
 
-  anOpponent := GetSoccerPlayerOpponent ( CellX, CellY, aPlayer.team );
+  anOpponent := GeTPlayerOpponent ( CellX, CellY, aPlayer.team );
   if anOpponent = nil then begin
     Result := 'DRI,Destination Player missing Ts:'+ tsCmd.CommaText;
     Exit;
@@ -6773,7 +5782,7 @@ begin
   End;
 
 end;
-function TSoccerbrain.CheckInputPos (aPlayer: TsoccerPlayer; CellX, CellY: integer; tsCmd: Tstringlist ): string;
+function TBrain.CheckInputPos (aPlayer: TPlayer; CellX, CellY: integer; tsCmd: Tstringlist ): string;
 begin
   Result := '';
   if w_CornerSetup or w_Coa or w_cod or w_CornerKick or w_FreeKickSetup1 or w_Fka1 or w_Fka2 or w_FreeKick1 or w_FreeKickSetup2 or w_Fka2 or w_Fkd2 or w_FreeKick2
@@ -6801,7 +5810,7 @@ begin
   end;
 
 end;
-function TSoccerbrain.CheckInputPrs (aPlayer: TsoccerPlayer; CellX, CellY: integer; tsCmd: Tstringlist ): string;
+function TBrain.CheckInputPrs (aPlayer: TPlayer; CellX, CellY: integer; tsCmd: Tstringlist ): string;
 begin
   Result := '';
   if w_CornerSetup or w_Coa or w_cod or w_CornerKick or w_FreeKickSetup1 or w_FreeKick1 or  w_Fka1 or w_Fka2 or w_FreeKickSetup2 or w_Fka2 or w_Fkd2 or w_FreeKick2
@@ -6830,7 +5839,7 @@ begin
   end;
 
 end;
-function TSoccerbrain.CheckInputPre (aPlayer: TsoccerPlayer; tsCmd: Tstringlist): string;
+function TBrain.CheckInputPre (aPlayer: TPlayer; tsCmd: Tstringlist): string;
 begin
   Result := '';
   if w_SomeThing  then begin
@@ -6860,7 +5869,7 @@ begin
   end;
 
 end;
-function TSoccerbrain.CheckInputPro (aPlayer: TsoccerPlayer; tsCmd: Tstringlist): string;
+function TBrain.CheckInputPro (aPlayer: TPlayer; tsCmd: Tstringlist): string;
 begin
   Result := '';
   if w_SomeThing  then begin
@@ -6880,7 +5889,7 @@ begin
    exit; // hack
   end;
 end;
-function TSoccerbrain.CheckInputTac (aPlayer: TsoccerPlayer; tsCmd: Tstringlist): string;
+function TBrain.CheckInputTac (aPlayer: TPlayer; tsCmd: Tstringlist): string;
 begin
   Result := '';
   if w_SomeThing  then begin
@@ -6901,7 +5910,7 @@ begin
    exit; // hack
   end;
 end;
-function TSoccerbrain.CheckInputStay (aPlayer: TsoccerPlayer; tsCmd: Tstringlist): string;
+function TBrain.CheckInputStay (aPlayer: TPlayer; tsCmd: Tstringlist): string;
 begin
   Result := '';
   if w_SomeThing  then begin
@@ -6926,7 +5935,7 @@ begin
 
   end;
 end;
-function TSoccerbrain.CheckInputFree (aPlayer: TsoccerPlayer; tsCmd: Tstringlist): string;
+function TBrain.CheckInputFree (aPlayer: TPlayer; tsCmd: Tstringlist): string;
 begin
   Result := '';
   if w_SomeThing  then begin
@@ -6951,9 +5960,9 @@ begin
 
   end;
 end;
-function TSoccerbrain.CheckInputTactic (aPlayer: TsoccerPlayer; CellX, CellY: integer; tsCmd: Tstringlist): string;
+function TBrain.CheckInputTactic (aPlayer: TPlayer; CellX, CellY: integer; tsCmd: Tstringlist): string;
 var
-  aPossiblePlayer2: TSoccerPlayer;
+  aPossiblePlayer2: TPlayer;
 begin
   Result := '';
   if w_SomeThing  then begin
@@ -7001,7 +6010,7 @@ begin
    exit; // hack
   End;
 
-  aPossiblePlayer2 := GetSoccerPlayerDefault ( CellX, CellY); // importante default
+  aPossiblePlayer2 := GeTPlayerDefault ( CellX, CellY); // importante default
   if aPossiblePlayer2 <> nil then begin
    result := 'TACTIC, Cells occupied  Ts:'+ tsCmd.CommaText;
    exit; // hack
@@ -7013,7 +6022,7 @@ begin
 
   end;
 end;
-function TSoccerbrain.CheckInputSub (aPlayer, aPlayer2: TsoccerPlayer; tsCmd: Tstringlist): string;
+function TBrain.CheckInputSub (aPlayer, aPlayer2: TPlayer; tsCmd: Tstringlist): string;
 var
   CellX, CellY: Integer;
 begin
@@ -7090,7 +6099,7 @@ begin
   end;
 
 end;
-function TSoccerbrain.CheckInputPlm (aPlayer: TsoccerPlayer; CellX, CellY: integer; tsCmd: Tstringlist): string;
+function TBrain.CheckInputPlm (aPlayer: TPlayer; CellX, CellY: integer; tsCmd: Tstringlist): string;
 begin
   Result := '';
   if w_SomeThing  then begin
@@ -7112,7 +6121,7 @@ begin
   end;
 end;
   // poi attack defense ecc....
-procedure TSoccerbrain.BrainInput ( aCmd: string );
+procedure TBrain.BrainInput ( aCmd: string );
 var
   MyFile: THandle;
   tsCmd: Tstringlist;
@@ -7121,11 +6130,11 @@ var
   Roll,Roll2,Roll3,Roll4: TRoll;
   aPath: dse_pathplanner.Tpath;
   i,y,ii,c,MoveValue,P,tmpX,tmpY,ToEmptyCell,Diff: integer;
-  anIntercept: TSoccerPlayer; // un avversario che intercetta un short.passing (passaggio corto)
-  aPlayer: TSoccerPlayer;     // il player attuale che inizia questa azione
-  aFriend, aHeadingFriend, aPlayer2,aFriend2: TSoccerPlayer; // un compagno che riceve la palla
-  anOpponent, aSoccerPlayer,oldPlayerBall,aPlayerHeading, aPossiblePlayer2,aPossibleoffside: TSoccerPlayer; // altri puntatori ai player
-  SwapPlayer,  aGhost, aGK, aHeadingOpponent: TSoccerPlayer;
+  anIntercept: TPlayer; // un avversario che intercetta un short.passing (passaggio corto)
+  aPlayer: TPlayer;     // il player attuale che inizia questa azione
+  aFriend, aHeadingFriend, aPlayer2,aFriend2: TPlayer; // un compagno che riceve la palla
+  anOpponent, aSoccerPlayer,oldPlayerBall,aPlayerHeading, aPossiblePlayer2,aPossibleoffside: TPlayer; // altri puntatori ai player
+  SwapPlayer,  aGhost, aGK, aHeadingOpponent: TPlayer;
   Gkxpr : Integer;
   ACT: string;
 
@@ -7137,7 +6146,7 @@ var
   tt : string;
   SwapString: TstringList;
   SwapDone: Boolean;
-  aList: TobjectList<TSoccerPlayer>;
+  aList: TobjectList<TPlayer>;
   lstAutoTackle,lstIntercepts,LstHeading: TList<TInteractivePlayer>;// si riempiranno di player avversari che interagiscono nell'azione corrente
   CrossBarN : integer;
   DefenseHeadingWin: boolean;
@@ -7150,7 +6159,7 @@ var
   OldCell: TPoint;
   found: boolean;
   dstCell: TPoint;
-  InputGuidTeam: Integer;
+  InputGuidTeam, CmdPlay: Integer;
   reason: string;
   FileError : TextFile;
   kind: string;
@@ -7176,6 +6185,7 @@ begin
     InputGuidTeam := StrToInt(tsCmd[0]);
     tsCmd.Delete(0); // se serve lo uso
 //  end;
+  CmdPlay := StrTointDef ( tsCmd[0], 0 );
 
   if ((InputGuidTeam = Score.TeamGuid[0]) and ( TeamTurn = 1 ))
   or ((InputGuidTeam = Score.TeamGuid[1]) and ( TeamTurn = 0 ))
@@ -7221,6 +6231,7 @@ begin
   // qualunque input arrivi se la palla è del portiere avversario all'inizio del mio turno è rigore
   // qualunque input arrivi se la palla non è raggiungibile aumenta flagchartingball. se arriva a 2 è fallo
 
+//  case Cmdplay of
 
   if tsCmd[0] = 'SHP' then  begin
 {
@@ -7231,14 +6242,14 @@ begin
   TALENT_ID_ADVANCED_BULLDOG        ( +2 intercept )
 }
      // 0=pwd 1=SHP... 2=cellX 3=CellY
-//      TSoccerBrain(Cli.Brain).BrainInput ( IntToStr(Cli.GuidTeam) + ',' + ts[1] + ',' + ts[2] + ',' + ts[3]  );
+//      TBrain(Cli.Brain).BrainInput ( IntToStr(Cli.GuidTeam) + ',' + ts[1] + ',' + ts[2] + ',' + ts[3]  );
     // 0=GuidTeam 1=SHP 2=CELLY 3=CELLY
     Ball.Speed := 1;
     CellX := StrToIntDef (tsCmd[1],-1);
     CellY := StrToIntDef (tsCmd[2],-1);
 
 
-    aPlayer := Ball.Player;//   GetSoccerPlayer ( tsCmd[1]);
+    aPlayer := Ball.Player;//   GeTPlayer ( tsCmd[1]);
     reason := CheckInputShp (aPlayer, CellX, CellY, tsCmd);
     if reason <> '' then goto myexit; // hack
 
@@ -7254,7 +6265,7 @@ begin
     aRnd:= Roll.value ;
     aPlayer.resetALL;
 
-    aFriend := GetSoccerPlayer ( CellX, CellY);
+    aFriend := GeTPlayer ( CellX, CellY);
     ToEmptyCell:= 0;
     if aFriend = nil then ToEmptyCell := ToEmptyCellBonusDefending   // ToEmptyCellBonusDefending=1 in brain.create  // sarebbe un intercept bonus
     else begin
@@ -7295,7 +6306,7 @@ begin
        // cella per cella o trovo un opponente o trovo un intercept
       OldBall:= Point ( Ball.CellX , Ball.Celly );
 
-      anOpponent:= GetSoccerPlayerOpponent ( aPath[i].X,aPath[i].Y , aPlayer.team );
+      anOpponent:= GeTPlayerOpponent ( aPath[i].X,aPath[i].Y , aPlayer.team );
       if anOpponent <> nil then begin
             ExceptPlayers.Add(anOpponent);
             preRoll2 :=  RndGenerate (anOpponent.Defense + ToEmptyCell) ; // sarebbe un intercept bonus
@@ -7375,7 +6386,7 @@ begin
                      Ball.Cells:= GetBounceCell ( aPlayer.cellX, aPlayer.cellY, Ball.CellX, Ball.CellY,  1, anIntercept.team );
 
                      // intercept, checkoffside sul bounce a centrocampo
-                     aPossibleOffside := GetSoccerPlayer(ball.CellX, Ball.cellY);
+                     aPossibleOffside := GeTPlayer(ball.CellX, Ball.cellY);
                      if checkOffside  ( anIntercept, aPossibleoffside ) then begin
                        reason := '';
                        goto MyExit;
@@ -7425,7 +6436,7 @@ begin
            Ball.Cells  := Point ( aPath[i].X,aPath[i].Y) ;  // posiziona la palla
            TsScript[incMove].add ('sc_ball.move,'+ IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+  IntTostr(Ball.CellX)+','+ IntTostr(Ball.CellY) + ',0,0') ;
 
-           aPossibleOffside := GetSoccerPlayer(Ball.CellX , ball.cellY );
+           aPossibleOffside := GeTPlayer(Ball.CellX , ball.cellY );
            if checkOffside  ( aPlayer, aPossibleoffside ) then begin
              reason := '';
              goto MyExit;
@@ -7434,7 +6445,7 @@ begin
 
          { Playmaker if aplyaer.tal_playmaker shp in area avversaria +N lunghezza passaggio al shot }
 //           aPath.count è la lunghezza del passaggio che qui non +è stato intercettato perchè sopra c'è exit sicura
-           aFriend := GetSoccerPlayer(ball.CellX, ball.celly);
+           aFriend := GeTPlayer(ball.CellX, ball.celly);
            aPlayer.xpDevT := aPlayer.xpDevT + 1; // solo se shp riesce
            if aFriend <> nil then begin
               // se riceve la palla, anche in canskill=false perchè in precedenza aveva per es. provato un tackle fallito, ora si resetta.
@@ -7447,7 +6458,7 @@ begin
                 aFriend.XpTal [TALENT_ID_AGILITY] := aFriend.XpTal [TALENT_ID_AGILITY] + 1;
 
              if (aPlayer.TalentID1 = TALENT_ID_PLAYMAKER ) or (aPlayer.TalentID2 = TALENT_ID_PLAYMAKER ) then begin
-             //  aFriend := GetSoccerPlayer(ball.CellX, ball.celly);
+             //  aFriend := GeTPlayer(ball.CellX, ball.celly);
              //  if aFriend <> nil then begin
                  if (aFriend.Team = aPlayer.team) and (aFriend.InCrossingArea) then begin
 
@@ -7531,7 +6542,7 @@ begin
     if reason <> '' then goto myexit; // hack
 
 
-    aFriend := GetSoccerPlayer ( CellX, CellY, aPlayer.Team );
+    aFriend := GeTPlayer ( CellX, CellY, aPlayer.Team );
     ToEmptyCell:= 0;
     if aFriend = nil then ToEmptyCell := ToEmptyCellBonusDefending;
 
@@ -7585,7 +6596,7 @@ begin
 
         Ball.Cells := aCell;
 
-         aPossibleOffside := GetSoccerPlayer(Ball.CellX , ball.cellY ); // verifica fuorigioco
+         aPossibleOffside := GeTPlayer(Ball.CellX , ball.cellY ); // verifica fuorigioco
          if checkOffside  ( aPlayer, aPossibleOffside ) then begin
            reason := '';
            goto MyExit;
@@ -7601,7 +6612,7 @@ begin
 
           // gli heading sono a distanza 1 e possono muoversi sul pallone automaticamente solo se la cella è vuota
           CompileHeadingList (aPlayer.Team{avversari di}, 1{MaxDistance}, aCell.X, aCell.Y, LstHeading  ); // chi può respingere di testa
-          if (LstHeading.Count > 1) and  (GetSoccerPlayer (Ball.cellx, ball.celly) = nil )then begin
+          if (LstHeading.Count > 1) and  (GeTPlayer (Ball.cellx, ball.celly) = nil )then begin
             anOpponent := LstHeading[0].Player ;
             ExceptPlayers.Add(anOpponent);   // no ai_moveAll dopo per questo player
             oldPlayer.X := anOpponent.CellX ;
@@ -7627,7 +6638,7 @@ begin
           Ball.Cells := Point (CellX, CellY );
          // OldBall:= Point ( Ball.CellX , Ball.Celly );
 
-         aPossibleOffside := GetSoccerPlayer(Ball.CellX , ball.cellY );
+         aPossibleOffside := GeTPlayer(Ball.CellX , ball.cellY );
          if checkOffside  ( aPlayer, aPossibleOffside ) then begin
            reason := '';
            goto MyExit;
@@ -7710,7 +6721,7 @@ begin
               if (aRnd3 >= LOP_BC_MIN1) and (aRnd3 <= LOP_BC_MIN2)   then begin //freind non controlla la palla
                    aCell:= GetRandomCell  (  Ball.CellX, Ball.CellY , 1 , false ,true);
                    Ball.Cells := aCell;
-                   aPossibleOffside := GetSoccerPlayer(Ball.CellX , ball.cellY );
+                   aPossibleOffside := GeTPlayer(Ball.CellX , ball.cellY );
                    if checkOffside  ( aFriend, aPossibleOffside ) then begin
                      reason := '';
                      goto MyExit;
@@ -7739,13 +6750,13 @@ begin
               else if (aRnd3 >= LOP_BC_MID1) and (aRnd3 <= LOP_BC_MID2)   then begin // non controlla ma finisce su eventuale cella vuota e la raggiunge
                  aCell:= GetRandomCell  ( Ball.CellX, Ball.CellY , 1, false ,true ); {  : possibile cell=nil }
                    Ball.CellS := aCell;
-                   aPossibleOffside := GetSoccerPlayer(Ball.CellX , ball.cellY );
+                   aPossibleOffside := GeTPlayer(Ball.CellX , ball.cellY );
                    if checkOffside  ( aFriend, aPossibleOffside ) then begin
                      reason := '';
                      goto MyExit;
                    end;
 
-                   if GetSoccerPlayer (ball.CellX , ball.celly) = nil then begin
+                   if GeTPlayer (ball.CellX , ball.celly) = nil then begin
 
                     TsScript[incMove].add ('sc_lop.ballcontrol.bounce.playertoball,' + aPlayer.Ids {Lop} + ','+ aFriend.ids{cella}
                              + ',' + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) {celle}
@@ -7761,7 +6772,7 @@ begin
 
                    end
                    else Begin
-                     aPossibleOffside := GetSoccerPlayer(Ball.CellX , ball.cellY );
+                     aPossibleOffside := GeTPlayer(Ball.CellX , ball.cellY );
                      if checkOffside  ( aFriend, aPossibleOffside ) then begin
                        reason := '';
                        goto MyExit;
@@ -7781,7 +6792,7 @@ begin
                    tsSpeaker.Add(aFriend.Surname +' controlla');
                    aFriend.xpDevT := aFriend.xpDevT + 2;
 
-                   aPossibleOffside := GetSoccerPlayer(Ball.CellX , ball.cellY );
+                   aPossibleOffside := GeTPlayer(Ball.CellX , ball.cellY );
                    if checkOffside  ( aFriend, aPossibleOffside ) then begin
                      reason := '';
                      goto MyExit;
@@ -7800,7 +6811,7 @@ begin
            aFriend.xpDevT := aFriend.xpDevT + 1;
            Ball.CellS := Point (CellX, CellY);
 
-             aPossibleOffside := GetSoccerPlayer(Ball.CellX , ball.cellY );
+             aPossibleOffside := GeTPlayer(Ball.CellX , ball.cellY );
              if checkOffside  ( aPlayer, aPossibleOffside ) then begin
                reason := '';
                goto MyExit;
@@ -7841,7 +6852,7 @@ begin
                         // tra le celle adiacenti, solo la X attuale e ciclo per le Y
                         for c := 0 to  ShotCells[ii].subCell.Count -1 do begin
                           aPoint := ShotCells[ii].subCell[c];
-                          anOpponent := GetSoccerPlayerOpponent(aPoint.X ,aPoint.Y, aPlayer.team );
+                          anOpponent := GeTPlayerOpponent(aPoint.X ,aPoint.Y, aPlayer.team );
 
                           if  anOpponent = nil then continue;                                                 // non c'è player sulla cella adiacente
                           ExceptPlayers.Add(anOpponent);
@@ -8059,7 +7070,7 @@ begin
           ExceptPlayers.Add(aPlayer);
           tsSpeaker.Add( aPlayer.Surname +' effettua un passaggio alto a seguire' );
 
-          aGhost := GetSoccerPlayer (CellX, CellY) ;
+          aGhost := GeTPlayer (CellX, CellY) ;
             if aGhost = nil then begin
               // gli intercept sono a distanza 1 e possono muoversi sul pallone automaticamente
                TsScript[incMove].add ('sc_lop.no,' + aPlayer.Ids {Lop}     + ',' + IntTostr(aPlayer.cellx)+',' + IntTostr(aPlayer.celly) {celle}
@@ -8067,7 +7078,7 @@ begin
 
 
               CompileHeadingList (aPlayer.Team{avversari di}, 1{MaxDistance}, aCell.X, aCell.Y, LstHeading  );
-              if (LstHeading.Count > 1) and  (GetSoccerPlayer (Ball.cellx, ball.celly) = nil )then begin
+              if (LstHeading.Count > 1) and  (GeTPlayer (Ball.cellx, ball.celly) = nil )then begin
                 anOpponent := LstHeading[0].Player ;
                 ExceptPlayers.Add(anopponent);
                 oldPlayer.X := anOpponent.CellX ;
@@ -8080,7 +7091,7 @@ begin
               end;
             end
             else if aGhost.Team =  aPlayer.Team then begin    // cella sbagliata compagno ball.control - 2
-               aPossibleOffside := GetSoccerPlayer(Ball.CellX , ball.cellY );
+               aPossibleOffside := GeTPlayer(Ball.CellX , ball.cellY );
                if checkOffside  ( aPlayer, aPossibleOffside ) then begin
                  reason := '';
                  goto MyExit;
@@ -8103,7 +7114,7 @@ begin
                 if (aRnd3 >= LOP_BC_MIN1) and (aRnd3 <= LOP_BC_MIN2)   then begin //friend non controlla la palla
                    aCell:= GetRandomCell  (  Ball.CellX, Ball.CellY , 1 , false ,true);
                    Ball.Cells := aCell;
-                   aPossibleOffside := GetSoccerPlayer(Ball.CellX , ball.cellY );
+                   aPossibleOffside := GeTPlayer(Ball.CellX , ball.cellY );
                    if checkOffside  ( aFriend, aPossibleOffside ) then begin
                      reason := '';
                      goto MyExit;
@@ -8118,13 +7129,13 @@ begin
                 else if (aRnd3 >= LOP_BC_MID1) and (aRnd3 <= LOP_BC_MID2)   then begin // controlla ma finisce su eventuale cella vuota e la raggiunge
                    aCell:= GetRandomCell  ( Ball.CellX, Ball.CellY , 1, false  ,true);
                      Ball.CellS := aCell;
-                   aPossibleOffside := GetSoccerPlayer(Ball.CellX , ball.cellY );
+                   aPossibleOffside := GeTPlayer(Ball.CellX , ball.cellY );
                    if checkOffside  ( aFriend, aPossibleOffside ) then begin
                      reason := '';
                      goto MyExit;
                    end;
 
-                   if GetSoccerPlayer (ball.CellX , ball.celly) = nil then begin
+                   if GeTPlayer (ball.CellX , ball.celly) = nil then begin
 
                      OldPlayer := aFriend.Cells;
                      aFriend.CellS:= aCell;
@@ -8145,7 +7156,7 @@ begin
                 end
                 else if (aRnd3 >= LOP_BC_MAX1) and (aRnd3 <= MAXINT )   then begin // controlla perfettamente
 
-                     aPossibleOffside := GetSoccerPlayer(Ball.CellX , ball.cellY );
+                     aPossibleOffside := GeTPlayer(Ball.CellX , ball.cellY );
                      if checkOffside  ( aPlayer, aPossibleOffside ) then begin
                        reason := '';
                        goto MyExit;
@@ -8199,7 +7210,7 @@ begin
                      anOpponent.xpDevT := anOpponent.xpDevT + 1;
 
                      TsScript[incMove].add ('sc_bounce,'+ IntTostr(anOpponent.CellX)+','+ IntTostr(anOpponent.CellY)+','+ IntTostr(aCell.X)+','+ IntTostr(aCell.Y) +',0' ) ;
-                     if GetSoccerPlayer (ball.CellX , ball.celly) = nil then begin
+                     if GeTPlayer (ball.CellX , ball.celly) = nil then begin
 
                         OldPlayer := anOpponent.Cells;
                         anOpponent.CellS:= aCell;
@@ -8244,7 +7255,7 @@ begin
           if (AbsDistance(aPlayer.CellX,aPlayer.CellY, ball.cellX, Ball.CellY ) <=1) then
            ExceptPlayers.Add(aPlayer);
           Ball.Cells := Point (CellX, CellY );
-         aPossibleOffside := GetSoccerPlayer(Ball.CellX , ball.cellY );
+         aPossibleOffside := GeTPlayer(Ball.CellX , ball.cellY );
 
            if checkOffside  ( aPlayer, aPossibleOffside ) then begin
              reason := '';
@@ -8295,7 +7306,7 @@ TALENT_ID_PRECISE_CROSSING ( +1 crossing solo dal fondo campo, l'ultima cella )
       if (aPlayer.TalentId1 = TALENT_ID_LONGPASS) or (aPlayer.TalentId2 = TALENT_ID_LONGPASS) then
         aPlayer.tmp := aPlayer.tmp +1;
 
-    aHeadingFriend := GetSoccerPlayer ( CellX, CellY,aPlayer.Team );
+    aHeadingFriend := GeTPlayer ( CellX, CellY,aPlayer.Team );
 
     tsSpeaker.Add( aPlayer.Surname +' cerca un cross per ' + aHeadingFriend.SurName   );
 
@@ -8346,7 +7357,7 @@ TALENT_ID_PRECISE_CROSSING ( +1 crossing solo dal fondo campo, l'ultima cella )
         Ball.Cells := aCell;
 
         // devo sapere subito se è su cella vuota perchè va diretta sul portiere
-        aGhost := GetSoccerPlayer (aCell.X, aCell.Y) ;
+        aGhost := GeTPlayer (aCell.X, aCell.Y) ;
         if aGhost = nil then begin
 GK:
           //  ---------->>>      vuota la palla diretta al portiere che blocca
@@ -8358,6 +7369,7 @@ GK:
           //aPlayer.resetALL;
           aGK.Stamina := aGK.Stamina - cost_GKprs;// presa semplice
           GKxpr:= RndGenerate(100);
+{ TODO :     test gkxpr su molti campionati }
           if GKxpr <= GKXP_REDUCTION then begin
             aGK.xp_Defense:= aGK.xp_Defense+1;
             aGK.xpDevA := aGK.xpDevA + 1;
@@ -8369,7 +7381,7 @@ GK:
         end
         else if aGhost.Team =  aPlayer.Team then begin    // cella sbagliata compagno -1 heading friend e bonusdefense attivi
           //  ---------->>>      altro compagno    - 1 heading e avversario ( +altri bonus da posizione)
-                 aPossibleOffside := GetSoccerPlayer(aCell.X ,acell.Y );
+                 aPossibleOffside := GeTPlayer(aCell.X ,acell.Y );
                  if aPossibleoffside <> nil then begin
                   if isOffside ( aPlayer, aPossibleoffside )   then begin
                     //come fallo freekick1
@@ -8448,7 +7460,7 @@ GK:
           aCell.X := CellX;
           aCell.Y := CellY;
           Ball.Cells := aCell;
-         aPossibleOffside := GetSoccerPlayer(aCell.X ,acell.Y );
+         aPossibleOffside := GeTPlayer(aCell.X ,acell.Y );
          if aPossibleoffside <> nil then begin
           if isOffside ( aPlayer, aPossibleoffside )   then begin
             //come fallo freekick1
@@ -8463,7 +7475,7 @@ GK:
          end;
 
           //2              TsScript[incMove].add ('sc_ball.move,'+ IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+  IntTostr(CellX )+','+ IntTostr(CellY) +',1' ) ;
-          aHeadingFriend := GetSoccerPlayer(CellX, CellY);
+          aHeadingFriend := GeTPlayer(CellX, CellY);
          // BaseHeadingFriend:= aHeadingFriend.Heading ;
           ACT := '0';
           aHeadingFriend.tmp := 0;
@@ -8489,7 +7501,7 @@ GK:
           aCell.X := CellX;
           aCell.Y := CellY;
           Ball.Cells := aCell;
-         aPossibleOffside := GetSoccerPlayer(aCell.X ,acell.Y );
+         aPossibleOffside := GeTPlayer(aCell.X ,acell.Y );
          if aPossibleoffside <> nil then begin
           if isOffside (  aPlayer, aPossibleoffside )   then begin
             //come fallo freekick1
@@ -8502,7 +7514,7 @@ GK:
             goto MyExit;
           end;
          end;
-          aHeadingFriend := GetSoccerPlayer(CellX, CellY);
+          aHeadingFriend := GeTPlayer(CellX, CellY);
           BaseHeadingFriend:= aHeadingFriend.Heading + 1;
           ACT := '0';
           aHeadingFriend.tmp := 0;
@@ -8526,7 +7538,7 @@ GK:
 
 //     --> innesca heading vs Heading di tutti gli adiacenti. In caso un difensore vinca l'heading contro il valore fisso dell'attaccante in heading
 //          che viene passato, la palla rimbalza in celle predefinite, ma se va in gol è proprietà del portiere ( parata ).
-          //  Ball.Player := GetSoccerPlayer (Ball.cellx,Ball.celly);
+          //  Ball.Player := GeTPlayer (Ball.cellx,Ball.celly);
 
             // qui heading finale verso il portiere. aRnd è sempre il valore valido
 // HEADING OFFENSIVO IN PORTA
@@ -8767,7 +7779,7 @@ cro_crossbar:
     CellX := StrToIntDef (tsCmd[1],-1);
     CellY := StrToIntDef (tsCmd[2],-1);
     aPlayer := Ball.Player ;
-    anOpponent := GetSoccerPlayerOpponent ( CellX, CellY,  aPlayer.team );
+    anOpponent := GeTPlayerOpponent ( CellX, CellY,  aPlayer.team );
 
     reason := CheckInputDri (aPlayer, CellX, CellY, tsCmd);
     if reason <> '' then goto myexit; // hack
@@ -8811,7 +7823,7 @@ cro_crossbar:
        Roll := AdjustFatigue (aPlayer.Stamina , preRoll);
        aRnd:=  Roll.value  -DRIBBLING_MALUS ;
        if aRnd < 0 then aRnd := 0;
-       
+
        aPlayer.resetALL;
 
        preRoll2 := RndGenerate (anOpponent.Defense);
@@ -8932,8 +7944,8 @@ cro_crossbar:
       (* il roll della barriera. Sono tutti i player presenti nella cella barriera *)
       aCellBarrier:= GetBarrierCell( TeamTurn, Ball.CellX, Ball.CellY);
 
-      for I := lstSoccerPlayer.Count -1 downto 0 do begin
-        anOpponent := lstSoccerPlayer[i];
+      for I := Players.Count -1 downto 0 do begin
+        anOpponent := Players[i];
         if (anOpponent.CellX = aCellBarrier.X)  and (anOpponent.CellY = aCellBarrier.Y) then begin
           preRoll2 := RndGenerate (anOpponent.Defense);
           Roll2 := AdjustFatigue (anOpponent.Stamina , preRoll2);
@@ -9015,7 +8027,7 @@ cro_crossbar:
           // tra le celle adiacenti, solo la X attuale e ciclo per le Y
           for c := 0 to  ShotCells[ii].subCell.Count -1 do begin
             aPoint := ShotCells[ii].subCell.Items [c];
-            anOpponent := GetSoccerPlayerOpponent (aPoint.X ,aPoint.Y, aPlayer.Team);
+            anOpponent := GeTPlayerOpponent (aPoint.X ,aPoint.Y, aPlayer.Team);
 
             if  anOpponent = nil then continue;                                                 // non c'è player sulla cella adiacente
             ExceptPlayers.Add(anOpponent);
@@ -9272,8 +8284,8 @@ setCorner:
       (* il roll della barriera. Sono tutti i player presenti nella cella barriera *)
       aCellBarrier:= GetBarrierCell( TeamTurn, Ball.CellX, Ball.CellY);
 
-      for I := lstSoccerPlayer.Count -1 downto 0 do begin
-        anOpponent := lstSoccerPlayer[i];
+      for I := Players.Count -1 downto 0 do begin
+        anOpponent := Players[i];
         if (anOpponent.CellX = aCellBarrier.X)  and (anOpponent.CellY = aCellBarrier.Y) then begin
           preRoll2 := RndGenerate ( anOpponent.Defense );
           Roll2 := AdjustFatigue (anOpponent.Stamina , preRoll2);
@@ -9344,7 +8356,7 @@ setCorner:
           // tra le celle adiacenti, solo la X attuale e ciclo per le Y
           for c := 0 to  ShotCells[ii].subCell.Count -1 do begin
             aPoint := ShotCells[ii].subCell.Items [c];
-            anOpponent := GetSoccerPlayerOpponent(aPoint.X ,aPoint.Y ,  aPlayer.team );
+            anOpponent := GeTPlayerOpponent(aPoint.X ,aPoint.Y ,  aPlayer.team );
 
             if  anOpponent = nil then continue;
             ExceptPlayers.Add(anOpponent);
@@ -9532,7 +8544,7 @@ prs_crossbar:
 }
 
 
-    aPlayer := GetSoccerPlayer ( tsCmd[1]);
+    aPlayer := GeTPlayer ( tsCmd[1]);
     reason := CheckInputPre(aPlayer, tsCmd);
     if reason <> '' then goto MyExit;
 
@@ -9628,7 +8640,7 @@ Normalpressing:
   end
 
   else if tsCmd[0] = 'STAY' then  begin
-    aPlayer := GetSoccerPlayer ( tsCmd[1]);
+    aPlayer := GeTPlayer ( tsCmd[1]);
     reason := CheckInputStay (aPlayer, tsCmd);
     if reason <> '' then goto myexit; // hack
 
@@ -9640,7 +8652,7 @@ Normalpressing:
     goto MyExit;
   end
   else if tsCmd[0] = 'FREE' then  begin
-    aPlayer := GetSoccerPlayer ( tsCmd[1]);
+    aPlayer := GeTPlayer ( tsCmd[1]);
     reason := CheckInputFree (aPlayer, tsCmd);
     if reason <> '' then goto myexit; // hack
 
@@ -9660,7 +8672,7 @@ Normalpressing:
 //non sia stato preceduto da Pressing sul portatore di palla, il costo dell’abilità si riduce a 0. Nel caso il valore casuale di
 //Contrasto sia superiore a Difesa di 2 o più, il giocatore vince il Contrasto e, se possibile, avanza di 1 cella nella direzione
 // attuale. Effettuare un Contrasto da dietro alza moltissimo la probabilità di fare fallo con possibili infortuni e/o cartellini.
-    aPlayer := GetSoccerPlayer ( tsCmd[1] );
+    aPlayer := GeTPlayer ( tsCmd[1] );
     reason := CheckInputTac (aPlayer, tsCmd);
     if reason <> '' then goto myexit; // hack
 
@@ -9708,7 +8720,7 @@ Normalpressing:
 //        aPlayer.DefaultCellS  := point (CellX,CellY);
 //        MoveInDefaultField(aPlayer);
 
-    aPlayer := GetSoccerPlayer ( tsCmd[1]);
+    aPlayer := GeTPlayer ( tsCmd[1]);
     CellX := StrToIntDef (tsCmd[2],-1);
     CellY := StrToIntDef (tsCmd[3],-1);
     reason := CheckInputTactic (aPlayer, CellX, CellY, tsCmd);
@@ -9732,8 +8744,8 @@ Normalpressing:
 
 //        aPlayer.DefaultCellS  := point (CellX,CellY);
 //        MoveInDefaultField(aPlayer);
-    aPlayer := GetSoccerPlayerReserve ( tsCmd[1]);
-    aPlayer2 := GetSoccerPlayer ( tsCmd[2]);
+    aPlayer := GeTPlayerReserve ( tsCmd[1]);
+    aPlayer2 := GeTPlayer ( tsCmd[2]);
 
     reason := CheckInputSub (aPlayer, aPlayer2, tsCmd);
     if reason <> '' then goto myexit; // hack
@@ -9779,7 +8791,7 @@ Normalpressing:
 
 
   else if tsCmd[0] = 'PLM' then  begin
-    aPlayer := GetSoccerPlayer ( tsCmd[1]);
+    aPlayer := GeTPlayer ( tsCmd[1]);
     CellX := StrToIntDef (tsCmd[2],-1);
     CellY := StrToIntDef (tsCmd[3],-1);
     reason := CheckInputPlm (aPlayer, CellX, CellY, tsCmd);
@@ -9953,13 +8965,13 @@ Normalpressing:
 // input dal client setto chi calcia il corner dopo la richiesta SERVER_COA del brain tutto da validare
   else if tsCmd[0] = 'CORNER_ATTACK.SETUP' then  begin  // cof coa coa coa
      // devo sapere di chi è il corner attuale
-     //aPlayer := GetSoccerPlayer(tsCmd[1]);
+     //aPlayer := GeTPlayer(tsCmd[1]);
       if Not w_Coa  then begin
        reason := 'CORNER_ATTACK.SETUP, not waiting w_coa ';
        goto myexit; // hack
       end;
       for I := 1 to 4 do begin
-        if GetSoccerPlayer ( tsCmd[I], TeamTurn) = nil then begin
+        if GeTPlayer ( tsCmd[I], TeamTurn) = nil then begin
            reason := 'CORNER_ATTACK.SETUP, Guid/team error ';
            goto myexit; // hack
         end;
@@ -9979,8 +8991,8 @@ Normalpressing:
 
          if i= 0 then begin // cof
            aCell := CornerMap.CornerCell ;
-           swapPlayer := GetSoccerPlayer(aCell.x, aCell.Y  );  //<-- prima di tutti o prende sè stesso
-           aPlayer := GetSoccerPlayer(tsCmd[1]);  // cmd, cof, coa, coa, coa
+           swapPlayer := GeTPlayer(aCell.x, aCell.Y  );  //<-- prima di tutti o prende sè stesso
+           aPlayer := GeTPlayer(tsCmd[1]);  // cmd, cof, coa, coa, coa
            aPlayer.Cells := CornerMap.CornerCell;
            aPlayer.isCOF := true;
            TsScript[incMove].add ('sc_player,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
@@ -9990,8 +9002,8 @@ Normalpressing:
          else begin
       // molto importante la sequenza
            aCell := CornerMap.HeadingCellA [I-1];
-           swapPlayer := GetSoccerPlayer(aCell.x, aCell.Y  );  //<-- prima di tutti o prende sè stesso
-           aPlayer := GetSoccerPlayer(tsCmd[I+1]);  // cmd, cof, coa, coa, coa
+           swapPlayer := GeTPlayer(aCell.x, aCell.Y  );  //<-- prima di tutti o prende sè stesso
+           aPlayer := GeTPlayer(tsCmd[I+1]);  // cmd, cof, coa, coa, coa
            TsScript[incMove].add ('sc_player,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
                                             IntTostr(aCell.X)+','+ IntTostr(aCell.Y)  ) ;
            aPlayer.Cells := aCell;
@@ -10033,7 +9045,7 @@ Normalpressing:
        goto myexit; // hack
       end;
       for I := 1 to 3 do begin
-        if GetSoccerPlayer ( tsCmd[I], TeamTurn) = nil then begin
+        if GeTPlayer ( tsCmd[I], TeamTurn) = nil then begin
            reason := 'CORNER_DEFENSE.SETUP, Guid/team error ';
            goto myexit; // hack
         end;
@@ -10048,8 +9060,8 @@ Normalpressing:
        for I := 0 to 2 do begin
 
          aCell := CornerMap.HeadingCellD [I];
-         swapPlayer := GetSoccerPlayer(aCell.x, aCell.Y  );  //<-- prima di tutti o prende sè stesso
-         aPlayer := GetSoccerPlayer(tsCmd[I+1]);  // cmd, cod, cod, cod
+         swapPlayer := GeTPlayer(aCell.x, aCell.Y  );  //<-- prima di tutti o prende sè stesso
+         aPlayer := GeTPlayer(tsCmd[I+1]);  // cmd, cod, cod, cod
 
            if swapPlayer <> nil then begin
 
@@ -10110,7 +9122,7 @@ Normalpressing:
      reason := 'FREEKICK1_ATTACK.SETUP, not waiting fka1 ';
      goto myexit; // hack
     end;
-    if GetSoccerPlayer ( tsCmd[1], TeamTurn) = nil then begin
+    if GeTPlayer ( tsCmd[1], TeamTurn) = nil then begin
        reason := 'FREEKICK1_ATTACK.SETUP, Guid/team error ';
        goto myexit; // hack
     end;
@@ -10120,8 +9132,8 @@ Normalpressing:
      CornerMap := GetCorner ( TeamFreekick , Ball.CellY,OpponentCorner);
      SwapString:= TstringList.Create;
      SwapString.Add('0');
-     swapPlayer := GetSoccerPlayer( Ball.CellX, Ball.CellY  );  //<-- prima di tutti o prende sè stesso
-     aPlayer := GetSoccerPlayer(tsCmd[1]);  // cmd, Fk1
+     swapPlayer := GeTPlayer( Ball.CellX, Ball.CellY  );  //<-- prima di tutti o prende sè stesso
+     aPlayer := GeTPlayer(tsCmd[1]);  // cmd, Fk1
 
      TsScript[incMove].add ('sc_player,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
                                             IntTostr(Ball.CellX)+','+ IntTostr(Ball.CellY)  ) ;
@@ -10164,13 +9176,13 @@ Normalpressing:
      goto myexit; // hack                                                           { TODO  : fare come sopra e anche il corner }
     end;
     for I := 1 to 3 do begin
-      if GetSoccerPlayer ( tsCmd[I], TeamTurn) = nil then begin
+      if GeTPlayer ( tsCmd[I], TeamTurn) = nil then begin
          reason := 'FREEKICK2_ATTACK.SETUP, Guid/team error ';
          goto myexit; // hack
       end;
     End;
      // devo sapere di chi è la punizione attuale
-     //aPlayer := GetSoccerPlayer(tsCmd[1]);
+     //aPlayer := GeTPlayer(tsCmd[1]);
 
      CornerMap := GetCorner ( TeamFreekick , Ball.CellY,OpponentCorner);
      SwapString:= TstringList.Create;
@@ -10181,7 +9193,7 @@ Normalpressing:
       // molto importante la sequenza
      TsScript[incMove].add ('SERVER_FKA2.IS' );
 
-     aPlayer := GetSoccerPlayer(tsCmd[1]);  // cmd, Fk2, coa, coa, coa
+     aPlayer := GeTPlayer(tsCmd[1]);  // cmd, Fk2, coa, coa, coa
      TsScript[incMove].add ('sc_player,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
                                             IntTostr(Ball.CellX)+','+ IntTostr(Ball.CellY)  ) ;
 
@@ -10189,8 +9201,8 @@ Normalpressing:
 
          if i= 0 then begin // fk2
           // aCell :=   CornerMap.CornerCell ;
-           swapPlayer := GetSoccerPlayer( Ball.CellX, Ball.CellY  );  //<-- prima di tutti o prende sè stesso
-           aPlayer := GetSoccerPlayer(tsCmd[1]);  // cmd, Fk2, coa, coa, coa
+           swapPlayer := GeTPlayer( Ball.CellX, Ball.CellY  );  //<-- prima di tutti o prende sè stesso
+           aPlayer := GeTPlayer(tsCmd[1]);  // cmd, Fk2, coa, coa, coa
            aPlayer.Cells :=  Ball.Cells ; // CornerMap.CornerCell;
            aPlayer.isFk2 := true;
            //ball.Cells:= aPlayer.Cells;
@@ -10198,8 +9210,8 @@ Normalpressing:
          else begin  // qui è come il corner
       // molto importante la sequenza
            aCell := CornerMap.HeadingCellA [I-1];
-           swapPlayer := GetSoccerPlayer(aCell.x, aCell.Y  );  //<-- prima di tutti o prende sè stesso
-           aPlayer := GetSoccerPlayer(tsCmd[I+1]);  // cmd, cof, coa, coa, coa
+           swapPlayer := GeTPlayer(aCell.x, aCell.Y  );  //<-- prima di tutti o prende sè stesso
+           aPlayer := GeTPlayer(tsCmd[I+1]);  // cmd, cof, coa, coa, coa
            aPlayer.Cells := aCell;
          end;
 
@@ -10237,7 +9249,7 @@ Normalpressing:
      goto myexit; // hack
     end;
       for I := 1 to 3 do begin
-        if GetSoccerPlayer ( tsCmd[I], TeamTurn) = nil then begin
+        if GeTPlayer ( tsCmd[I], TeamTurn) = nil then begin
            reason := 'FREEKICK2_DEFENSE.SETUP, Guid/team error ';
            goto myexit; // hack
         end;
@@ -10254,8 +9266,8 @@ Normalpressing:
        for I := 0 to 2 do begin
 
          aCell := CornerMap.HeadingCellD [I];
-         swapPlayer := GetSoccerPlayer(aCell.x, aCell.Y  );  //<-- prima di tutti o prende sè stesso
-         aPlayer := GetSoccerPlayer(tsCmd[I+1]);  // cmd, cod, cod, cod
+         swapPlayer := GeTPlayer(aCell.x, aCell.Y  );  //<-- prima di tutti o prende sè stesso
+         aPlayer := GeTPlayer(tsCmd[I+1]);  // cmd, cod, cod, cod
          TsScript[incMove].add ('sc_player,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
                                             IntTostr( aCell.X )+','+ IntTostr(aCell.Y )  ) ;
 
@@ -10298,7 +9310,7 @@ Normalpressing:
      reason := 'FREEKICK3_ATTACK.SETUP, not waiting fka3 ';
      goto myexit; // hack
     end;
-    if GetSoccerPlayer ( tsCmd[1], TeamTurn) = nil then begin
+    if GeTPlayer ( tsCmd[1], TeamTurn) = nil then begin
        reason := 'FREEKICK3_ATTACK.SETUP, Guid/team error ';
        goto myexit; // hack
     end;
@@ -10307,8 +9319,8 @@ Normalpressing:
      CornerMap := GetCorner ( TeamFreekick , Ball.CellY,OpponentCorner);
      SwapString:= TstringList.Create;
      SwapString.Add('0');
-     swapPlayer := GetSoccerPlayer( Ball.CellX, Ball.CellY  );  //<-- prima di tutti o prende sè stesso
-     aPlayer := GetSoccerPlayer(tsCmd[1]);  // cmd, Fk2, coa, coa, coa
+     swapPlayer := GeTPlayer( Ball.CellX, Ball.CellY  );  //<-- prima di tutti o prende sè stesso
+     aPlayer := GeTPlayer(tsCmd[1]);  // cmd, Fk2, coa, coa, coa
          TsScript[incMove].add ('sc_player,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
                                             IntTostr(Ball.CellX)+','+ IntTostr(Ball.CellY)  ) ;
      aPlayer.Cells :=  Ball.Cells ; // CornerMap.CornerCell;
@@ -10350,7 +9362,7 @@ Normalpressing:
      goto myexit; // hack
     end;
     for I := 1 to 4 do begin
-      if GetSoccerPlayer ( tsCmd[I], TeamTurn) = nil then begin
+      if GeTPlayer ( tsCmd[I], TeamTurn) = nil then begin
          reason := 'FREEKICK3_DEFENSE.SETUP, Guid/team error ';
          goto myexit; // hack
       end;
@@ -10369,8 +9381,8 @@ Normalpressing:
        for I := 0 to 3 do begin // 4 in barriera
 
          ACellBarrier := GetBarrierCell( TeamFreeKick , Ball.CellX, Ball.CellY );  // dalla cella punizione shot ricavo la cella della barriera
-         aPlayer := GetSoccerPlayer(tsCmd[I+1]);  // cmd, bar1, bar2, bar3, bar4
-         swapPlayer := GetSoccerPlayer(ACellBarrier.x, ACellBarrier.Y  );  //<-- prima di tutti o prende sè stesso
+         aPlayer := GeTPlayer(tsCmd[I+1]);  // cmd, bar1, bar2, bar3, bar4
+         swapPlayer := GeTPlayer(ACellBarrier.x, ACellBarrier.Y  );  //<-- prima di tutti o prende sè stesso
 
          if (swapPlayer <> nil) and (Not SwapDone) and (i = 0) then begin   // evita swap del primo in barriera
 
@@ -10405,7 +9417,7 @@ Normalpressing:
      reason := 'FREEKICK4_ATTACK.SETUP, not waiting fka4 ';
      goto myexit; // hack
     end;
-    if GetSoccerPlayer ( tsCmd[1], TeamTurn) = nil then begin
+    if GeTPlayer ( tsCmd[1], TeamTurn) = nil then begin
        reason := 'FREEKICK4_ATTACK.SETUP, Guid/team error ';
        goto myexit; // hack
     end;
@@ -10415,9 +9427,9 @@ Normalpressing:
      SwapString:= TstringList.Create;
      SwapString.Add('0');
 
-     aPlayer := GetSoccerPlayer(tsCmd[1]);  // cmd, Fk2, coa, coa, coa
+     aPlayer := GeTPlayer(tsCmd[1]);  // cmd, Fk2, coa, coa, coa
      Ball.Cells := GetPenaltyCell( aPlayer.team ) ;
-     swapPlayer := GetSoccerPlayer( Ball.CellX, Ball.CellY  );  //<-- prima di tutti o prende sè stesso
+     swapPlayer := GeTPlayer( Ball.CellX, Ball.CellY  );  //<-- prima di tutti o prende sè stesso
      //    TsScript[incMove].add ('sc_player,'+ aPlayer.Ids +','+IntTostr(aPlayer.CellX)+','+ IntTostr(aPlayer.CellY)+','+
      //                                       IntTostr(Ball.CellX)+','+ IntTostr(Ball.CellY)  ) ;
 
@@ -10457,7 +9469,7 @@ Normalpressing:
      reason := 'BUFFD, waiting freekick ';
      goto myexit; // hack
     end;  // concesso nulla
-    aPlayer := GetSoccerPlayer ( tsCmd[1]);
+    aPlayer := GeTPlayer ( tsCmd[1]);
 
     if aPlayer = nil then begin
      reason := 'BUFFD,Player not found';
@@ -10494,7 +9506,7 @@ buffd:
     // non costa stamina
     // non va in ExceptPlayer
     // cerco il reparto e lo buffo
-      aList := TObjectList<TSoccerPlayer>.create(false);
+      aList := TObjectList<TPlayer>.create(false);
       CompileRoleList(aPlayer.team,'D', aList);
       for p := aList.Count -1 downto 0 do begin
 
@@ -10518,7 +9530,7 @@ buffd:
      reason := 'BUFFM, waiting freekick ';
      goto myexit; // hack
     end;  // concesso nulla
-    aPlayer := GetSoccerPlayer ( tsCmd[1]);
+    aPlayer := GeTPlayer ( tsCmd[1]);
 
     if aPlayer = nil then begin
      reason := 'BUFFM,Player not found';
@@ -10553,7 +9565,7 @@ buffd:
     if RndGenerate(100) <= 5 then begin
 buffm:
       Score.BuffM[aPlayer.Team] := 20;
-      aList := TObjectList<TSoccerPlayer>.create(false);
+      aList := TObjectList<TPlayer>.create(false);
       CompileRoleList(aPlayer.Team,'M',aList);
       for p := aList.Count -1 downto 0 do begin
         if aList[p].Speed < 4 then
@@ -10575,7 +9587,7 @@ buffm:
      reason := 'BUFFF, waiting freekick ';
      goto myexit; // hack
     end;  // concesso nulla
-    aPlayer := GetSoccerPlayer ( tsCmd[1]);
+    aPlayer := GeTPlayer ( tsCmd[1]);
 
     if aPlayer = nil then begin
      reason := 'BUFFF,Player not found';
@@ -10611,7 +9623,7 @@ bufff:
       // non costa stamina
       // non va in ExceptPlayer
       Score.BuffF[aPlayer.Team] := 20;
-      aList := TObjectList<TSoccerPlayer>.create(false);
+      aList := TObjectList<TPlayer>.create(false);
       CompileRoleList(aPlayer.Team,'F',aList);
       for p := aList.Count -1 downto 0 do begin
         aList[p].BonusBuffF := 1;
@@ -10670,7 +9682,7 @@ bufff:
   end
   else if tsCmd[0] ='testcorner' then begin  // già verificato dal server GmLevel (account)
 
-    aPlayer := GetSoccerPlayer(tsCmd[1]);
+    aPlayer := GeTPlayer(tsCmd[1]);
     if aPlayer <> nil then begin
       aGK := GetOpponentGK ( aPlayer.team);
       TsScript[incMove].add ('SERVER_POS,' + aPlayer.ids + ',' + IntToStr(aPlayer.CellX) + ',' + IntToStr(aPlayer.CellY)+ ',' + IntToStr( aGK.CellX ) +',' + IntToStr(aGK.celly));
@@ -10680,9 +9692,9 @@ bufff:
     end;
   end
   else if tsCmd[0] ='randomstamina' then begin  // già verificato dal server GmLevel (account)
-    for P:= lstSoccerPlayer.Count -1 downto 0 do begin
-     if  (RndGenerate(100) <= 20) and (lstSoccerPlayer[p].role <> 'G') then
-     lstSoccerPlayer[p].Stamina := RndGenerate(50);
+    for P:= Players.Count -1 downto 0 do begin
+     if  (RndGenerate(100) <= 20) and (Players[p].role <> 'G') then
+     Players[p].Stamina := RndGenerate(50);
     end;
 //    SaveData (incMove -1);
 {    SaveData (incMove );
@@ -10703,7 +9715,7 @@ bufff:
   end
   else if tsCmd[0] ='setplayer' then begin  // già verificato dal server GmLevel (account)
     if GameMode =  pvp then begin
-      aPlayer := GetSoccerPlayer(tsCmd[1]);
+      aPlayer := GeTPlayer(tsCmd[1]);
       if aPlayer <> nil then begin
         aPlayer.CellX := StrToIntDef(tsCmd[2],5);
         aPlayer.CellY := StrToIntDef(tsCmd[3],3);
@@ -10788,7 +9800,7 @@ Myexit:
       Working:= false;
     end;
 end;
-procedure TSoccerBrain.SaveData ( CurMove: Integer ) ;
+procedure TBrain.SaveData ( CurMove: Integer ) ;
 var
   ISMARK : array [0..1] of ansichar;
   i,ii,pcount,s,aa,totPlayer, TotReserve,totGameOver,PlayerGuid,LentsScript,lenMatchInfo: integer;
@@ -10813,8 +9825,8 @@ begin
   // MMbrainData contiene lo streaming
   // 2 bytes che indicano l'offset dell'inizio di tsScript
   // variabili globali
-  // lstplayer.count + lstreserver.count
-  // lista lstplayer e lstreserve
+  // Players.count + Reservesr.count
+  // lista Players e Reserves
   // infine ts.scripts  @ts.commatext
   ISMARK [0] := 'I';
   ISMARK [1] := 'S';
@@ -10907,195 +9919,195 @@ begin
   MMbraindata.Write( @str[1] , Length(str) );
 
 
-  totPlayer :=  lstSoccerPlayer.Count ;
+  totPlayer :=  Players.Count ;
   MMbraindata.Write( @totPlayer, sizeof(byte) );
 
-  for i := 0 to lstSoccerPlayer.Count -1 do begin    // salvo tutti i player che stanno giocando
-    PlayerGuid := StrToInt(lstSoccerPlayer[i].Ids);
+  for i := 0 to Players.Count -1 do begin    // salvo tutti i player che stanno giocando
+    PlayerGuid := StrToInt(Players[i].Ids);
     MMbraindata.Write( @PlayerGuid, sizeof(integer) );
-    MMbraindata.Write( @lstSoccerPlayer[i].GuidTeam, sizeof(integer) );
+    MMbraindata.Write( @Players[i].GuidTeam, sizeof(integer) );
 
-    MMbraindata.Write( @lstSoccerPlayer[i].Surname [0], length ( lstSoccerPlayer[i].Surname) +1 );      // +1 byte 0 indica lunghezza stringa
+    MMbraindata.Write( @Players[i].Surname [0], length ( Players[i].Surname) +1 );      // +1 byte 0 indica lunghezza stringa
 
-    MMbraindata.Write( @lstSoccerPlayer[i].Team, sizeof(byte) );
+    MMbraindata.Write( @Players[i].Team, sizeof(byte) );
     if GameMode = pvp then begin
-      MMbraindata.Write( @lstSoccerPlayer[i].MatchesPlayed, sizeof(SmallInt) );
-      MMbraindata.Write( @lstSoccerPlayer[i].MatchesLeft, sizeof(SmallInt) );
+      MMbraindata.Write( @Players[i].MatchesPlayed, sizeof(SmallInt) );
+      MMbraindata.Write( @Players[i].MatchesLeft, sizeof(SmallInt) );
     end;
-    MMbraindata.Write( @lstSoccerPlayer[i].Age, sizeof(byte) );
-    MMbraindata.Write( @lstSoccerPlayer[i].TalentID1,  sizeof(byte) );
-    MMbraindata.Write( @lstSoccerPlayer[i].TalentID2,  sizeof(byte) );
-    MMbraindata.Write( @lstSoccerPlayer[i].Stamina, sizeof(SmallInt) );
+    MMbraindata.Write( @Players[i].Age, sizeof(byte) );
+    MMbraindata.Write( @Players[i].TalentID1,  sizeof(byte) );
+    MMbraindata.Write( @Players[i].TalentID2,  sizeof(byte) );
+    MMbraindata.Write( @Players[i].Stamina, sizeof(SmallInt) );
 
 
-    MMbraindata.Write( @lstSoccerPlayer[i].DefaultSpeed , sizeof(byte) );      // i valori di default senza buff o debuff (come underpressure)
-    MMbraindata.Write( @lstSoccerPlayer[i].DefaultDefense , sizeof(byte) );
-    MMbraindata.Write( @lstSoccerPlayer[i].DefaultPassing, sizeof(byte) );
-    MMbraindata.Write( @lstSoccerPlayer[i].DefaultBallControl , sizeof(byte) );
-    MMbraindata.Write( @lstSoccerPlayer[i].DefaultShot , sizeof(byte) );
-    MMbraindata.Write( @lstSoccerPlayer[i].DefaultHeading , sizeof(byte) );
+    MMbraindata.Write( @Players[i].DefaultSpeed , sizeof(byte) );      // i valori di default senza buff o debuff (come underpressure)
+    MMbraindata.Write( @Players[i].DefaultDefense , sizeof(byte) );
+    MMbraindata.Write( @Players[i].DefaultPassing, sizeof(byte) );
+    MMbraindata.Write( @Players[i].DefaultBallControl , sizeof(byte) );
+    MMbraindata.Write( @Players[i].DefaultShot , sizeof(byte) );
+    MMbraindata.Write( @Players[i].DefaultHeading , sizeof(byte) );
 
-    MMbraindata.Write( @lstSoccerPlayer[i].Speed , sizeof(ShortInt) );        // gli attuali valori con eventuali buff e debuff (come underpressure)
-    MMbraindata.Write( @lstSoccerPlayer[i].Defense , sizeof(ShortInt) );
-    MMbraindata.Write( @lstSoccerPlayer[i].Passing, sizeof(ShortInt) );
-    MMbraindata.Write( @lstSoccerPlayer[i].BallControl , sizeof(ShortInt) );
-    MMbraindata.Write( @lstSoccerPlayer[i].Shot , sizeof(ShortInt) );
-    MMbraindata.Write( @lstSoccerPlayer[i].Heading , sizeof(ShortInt) );
+    MMbraindata.Write( @Players[i].Speed , sizeof(ShortInt) );        // gli attuali valori con eventuali buff e debuff (come underpressure)
+    MMbraindata.Write( @Players[i].Defense , sizeof(ShortInt) );
+    MMbraindata.Write( @Players[i].Passing, sizeof(ShortInt) );
+    MMbraindata.Write( @Players[i].BallControl , sizeof(ShortInt) );
+    MMbraindata.Write( @Players[i].Shot , sizeof(ShortInt) );
+    MMbraindata.Write( @Players[i].Heading , sizeof(ShortInt) );
 
-    MMbraindata.Write( @lstSoccerPlayer[i].injured, sizeof(byte) );          // infortunato: tutti i valori a 1 ma rimane in campo se vuole
-    MMbraindata.Write( @lstSoccerPlayer[i].yellowcard, sizeof(byte) );       // ammonito
-    MMbraindata.Write( @lstSoccerPlayer[i].redcard, sizeof(byte) );          // espulso
-    MMbraindata.Write( @lstSoccerPlayer[i].disqualified, sizeof(byte) );     // squalificato prima del match, non poteva giocare
-    MMbraindata.Write( @lstSoccerPlayer[i].gameover, sizeof(byte) );         // partita terminata per questo player (espulso o sostituito )
+    MMbraindata.Write( @Players[i].injured, sizeof(byte) );          // infortunato: tutti i valori a 1 ma rimane in campo se vuole
+    MMbraindata.Write( @Players[i].yellowcard, sizeof(byte) );       // ammonito
+    MMbraindata.Write( @Players[i].redcard, sizeof(byte) );          // espulso
+    MMbraindata.Write( @Players[i].disqualified, sizeof(byte) );     // squalificato prima del match, non poteva giocare
+    MMbraindata.Write( @Players[i].gameover, sizeof(byte) );         // partita terminata per questo player (espulso o sostituito )
 
-    MMbraindata.Write( @lstSoccerPlayer[i].AIFormationCellX, sizeof(ShortInt) );
-    MMbraindata.Write( @lstSoccerPlayer[i].AIFormationCellY, sizeof(ShortInt) );
-    MMbraindata.Write( @lstSoccerPlayer[i].DefaultCellX, sizeof(ShortInt) );
-    MMbraindata.Write( @lstSoccerPlayer[i].DefaultCellY, sizeof(ShortInt) );
-    MMbraindata.Write( @lstSoccerPlayer[i].CellX, sizeof(ShortInt) );
-    MMbraindata.Write( @lstSoccerPlayer[i].CellY, sizeof(ShortInt) );
+    MMbraindata.Write( @Players[i].AIFormationCellX, sizeof(ShortInt) );
+    MMbraindata.Write( @Players[i].AIFormationCellY, sizeof(ShortInt) );
+    MMbraindata.Write( @Players[i].DefaultCellX, sizeof(ShortInt) );
+    MMbraindata.Write( @Players[i].DefaultCellY, sizeof(ShortInt) );
+    MMbraindata.Write( @Players[i].CellX, sizeof(ShortInt) );
+    MMbraindata.Write( @Players[i].CellY, sizeof(ShortInt) );
 
-    MMbraindata.Write( @lstSoccerPlayer[i].Stay, sizeof(byte) );
-    MMbraindata.Write( @lstSoccerPlayer[i].CanMove, sizeof(byte) );
-    MMbraindata.Write( @lstSoccerPlayer[i].CanSkill, sizeof(byte) );
-    MMbraindata.Write( @lstSoccerPlayer[i].CanDribbling, sizeof(byte) );
-    MMbraindata.Write( @lstSoccerPlayer[i].PressingDone, sizeof(byte) );
-    MMbraindata.Write( @lstSoccerPlayer[i].BonusTackleTurn, sizeof(byte) );
-    MMbraindata.Write( @lstSoccerPlayer[i].BonusLopBallControlTurn, sizeof(byte) );
-    MMbraindata.Write( @lstSoccerPlayer[i].BonusProtectionTurn, sizeof(byte) );
-    MMbraindata.Write( @lstSoccerPlayer[i].UnderPressureTurn, sizeof(byte) );
-    MMbraindata.Write( @lstSoccerPlayer[i].BonusSHPturn, sizeof(byte) );
-    MMbraindata.Write( @lstSoccerPlayer[i].BonusSHPAREAturn, sizeof(byte) );
-    MMbraindata.Write( @lstSoccerPlayer[i].BonusPLMturn, sizeof(byte) );
-    MMbraindata.Write( @lstSoccerPlayer[i].BonusFinishingTurn, sizeof(byte) );
+    MMbraindata.Write( @Players[i].Stay, sizeof(byte) );
+    MMbraindata.Write( @Players[i].CanMove, sizeof(byte) );
+    MMbraindata.Write( @Players[i].CanSkill, sizeof(byte) );
+    MMbraindata.Write( @Players[i].CanDribbling, sizeof(byte) );
+    MMbraindata.Write( @Players[i].PressingDone, sizeof(byte) );
+    MMbraindata.Write( @Players[i].BonusTackleTurn, sizeof(byte) );
+    MMbraindata.Write( @Players[i].BonusLopBallControlTurn, sizeof(byte) );
+    MMbraindata.Write( @Players[i].BonusProtectionTurn, sizeof(byte) );
+    MMbraindata.Write( @Players[i].UnderPressureTurn, sizeof(byte) );
+    MMbraindata.Write( @Players[i].BonusSHPturn, sizeof(byte) );
+    MMbraindata.Write( @Players[i].BonusSHPAREAturn, sizeof(byte) );
+    MMbraindata.Write( @Players[i].BonusPLMturn, sizeof(byte) );
+    MMbraindata.Write( @Players[i].BonusFinishingTurn, sizeof(byte) );
 
-    MMbraindata.Write( @lstSoccerPlayer[i].isCOF, sizeof(byte) );
-    MMbraindata.Write( @lstSoccerPlayer[i].isFK1, sizeof(byte) );
-    MMbraindata.Write( @lstSoccerPlayer[i].isFK2, sizeof(byte) );
-    MMbraindata.Write( @lstSoccerPlayer[i].isFK3, sizeof(byte) );
-    MMbraindata.Write( @lstSoccerPlayer[i].isFK4, sizeof(byte) );
-    MMbraindata.Write( @lstSoccerPlayer[i].isFKD3, sizeof(byte) );
-    MMbraindata.Write( @lstSoccerPlayer[i].face, sizeof(integer) );
-    MMbraindata.Write( @lstSoccerPlayer[i].country, sizeof(smallint) );
+    MMbraindata.Write( @Players[i].isCOF, sizeof(byte) );
+    MMbraindata.Write( @Players[i].isFK1, sizeof(byte) );
+    MMbraindata.Write( @Players[i].isFK2, sizeof(byte) );
+    MMbraindata.Write( @Players[i].isFK3, sizeof(byte) );
+    MMbraindata.Write( @Players[i].isFK4, sizeof(byte) );
+    MMbraindata.Write( @Players[i].isFKD3, sizeof(byte) );
+    MMbraindata.Write( @Players[i].face, sizeof(integer) );
+    MMbraindata.Write( @Players[i].country, sizeof(smallint) );
 
-    MMbraindata.Write( @lstSoccerPlayer[i].BonusBuffD, sizeof(Byte) );
-    MMbraindata.Write( @lstSoccerPlayer[i].BonusBuffM, sizeof(Byte) );
-    MMbraindata.Write( @lstSoccerPlayer[i].BonusBuffF, sizeof(Byte) );
-    MMbraindata.Write( @lstSoccerPlayer[i].buffhome, sizeof(Byte) );
-    MMbraindata.Write( @lstSoccerPlayer[i].buffmorale, sizeof(ShortInt) );
+    MMbraindata.Write( @Players[i].BonusBuffD, sizeof(Byte) );
+    MMbraindata.Write( @Players[i].BonusBuffM, sizeof(Byte) );
+    MMbraindata.Write( @Players[i].BonusBuffF, sizeof(Byte) );
+    MMbraindata.Write( @Players[i].buffhome, sizeof(Byte) );
+    MMbraindata.Write( @Players[i].buffmorale, sizeof(ShortInt) );
 
-    MMbraindata.Write( @lstSoccerPlayer[i].xpDevA, sizeof(smallint) );
-    MMbraindata.Write( @lstSoccerPlayer[i].xpDevT, sizeof(smallint) );
-    MMbraindata.Write( @lstSoccerPlayer[i].xpDevI, sizeof(smallint) );
+    MMbraindata.Write( @Players[i].xpDevA, sizeof(smallint) );
+    MMbraindata.Write( @Players[i].xpDevT, sizeof(smallint) );
+    MMbraindata.Write( @Players[i].xpDevI, sizeof(smallint) );
 
   end;
 
-  totReserve :=   lstSoccerReserve.Count;
+  totReserve :=   Reserves.Count;
   MMbraindata.Write( @totReserve, sizeof(byte) );
 
-  for i := 0 to lstSoccerReserve.Count -1 do begin
-    PlayerGuid := StrToInt(lstSoccerReserve[i].Ids); // dipende dalla gestione players, se divido per nazioni?
+  for i := 0 to Reserves.Count -1 do begin
+    PlayerGuid := StrToInt(Reserves[i].Ids); // dipende dalla gestione players, se divido per nazioni?
     MMbraindata.Write( @PlayerGuid, sizeof(integer) );
-    MMbraindata.Write( @lstSoccerReserve[i].GuidTeam, sizeof(integer) );
-    MMbraindata.Write( @lstSoccerReserve[i].Surname[0], length ( lstSoccerReserve[i].Surname) +1 );
-    MMbraindata.Write( @lstSoccerReserve[i].Team, sizeof(byte) );
-    MMbraindata.Write( @lstSoccerReserve[i].Age, sizeof(byte) );
+    MMbraindata.Write( @Reserves[i].GuidTeam, sizeof(integer) );
+    MMbraindata.Write( @Reserves[i].Surname[0], length ( Reserves[i].Surname) +1 );
+    MMbraindata.Write( @Reserves[i].Team, sizeof(byte) );
+    MMbraindata.Write( @Reserves[i].Age, sizeof(byte) );
     if GameMode = pvp then begin
-      MMbraindata.Write( @lstSoccerReserve[i].MatchesPlayed, sizeof(SmallInt) );
-      MMbraindata.Write( @lstSoccerReserve[i].MatchesLeft, sizeof(SmallInt) );
+      MMbraindata.Write( @Reserves[i].MatchesPlayed, sizeof(SmallInt) );
+      MMbraindata.Write( @Reserves[i].MatchesLeft, sizeof(SmallInt) );
     end;
-    MMbraindata.Write( @lstSoccerReserve[i].TalentID1,  sizeof(byte) );
-    MMbraindata.Write( @lstSoccerReserve[i].TalentID2,  sizeof(byte) );
-    MMbraindata.Write( @lstSoccerReserve[i].Stamina, sizeof(SmallInt) );
+    MMbraindata.Write( @Reserves[i].TalentID1,  sizeof(byte) );
+    MMbraindata.Write( @Reserves[i].TalentID2,  sizeof(byte) );
+    MMbraindata.Write( @Reserves[i].Stamina, sizeof(SmallInt) );
 
-    MMbraindata.Write( @lstSoccerReserve[i].DefaultSpeed , sizeof(byte) );
-    MMbraindata.Write( @lstSoccerReserve[i].DefaultDefense , sizeof(byte) );
-    MMbraindata.Write( @lstSoccerReserve[i].DefaultPassing, sizeof(byte) );
-    MMbraindata.Write( @lstSoccerReserve[i].DefaultBallControl , sizeof(byte) );
-    MMbraindata.Write( @lstSoccerReserve[i].DefaultShot , sizeof(byte) );
-    MMbraindata.Write( @lstSoccerReserve[i].DefaultHeading , sizeof(byte) );
+    MMbraindata.Write( @Reserves[i].DefaultSpeed , sizeof(byte) );
+    MMbraindata.Write( @Reserves[i].DefaultDefense , sizeof(byte) );
+    MMbraindata.Write( @Reserves[i].DefaultPassing, sizeof(byte) );
+    MMbraindata.Write( @Reserves[i].DefaultBallControl , sizeof(byte) );
+    MMbraindata.Write( @Reserves[i].DefaultShot , sizeof(byte) );
+    MMbraindata.Write( @Reserves[i].DefaultHeading , sizeof(byte) );
 
-    MMbraindata.Write( @lstSoccerReserve[i].Speed , sizeof(ShortInt) );
-    MMbraindata.Write( @lstSoccerReserve[i].Defense , sizeof(ShortInt) );
-    MMbraindata.Write( @lstSoccerReserve[i].Passing, sizeof(ShortInt) );
-    MMbraindata.Write( @lstSoccerReserve[i].BallControl , sizeof(ShortInt) );
-    MMbraindata.Write( @lstSoccerReserve[i].Shot , sizeof(ShortInt) );
-    MMbraindata.Write( @lstSoccerReserve[i].Heading , sizeof(ShortInt) );
+    MMbraindata.Write( @Reserves[i].Speed , sizeof(ShortInt) );
+    MMbraindata.Write( @Reserves[i].Defense , sizeof(ShortInt) );
+    MMbraindata.Write( @Reserves[i].Passing, sizeof(ShortInt) );
+    MMbraindata.Write( @Reserves[i].BallControl , sizeof(ShortInt) );
+    MMbraindata.Write( @Reserves[i].Shot , sizeof(ShortInt) );
+    MMbraindata.Write( @Reserves[i].Heading , sizeof(ShortInt) );
 
-    MMbraindata.Write( @lstSoccerReserve[i].injured, sizeof(byte) );
-    MMbraindata.Write( @lstSoccerReserve[i].yellowcard, sizeof(byte) );
-    MMbraindata.Write( @lstSoccerReserve[i].redcard, sizeof(byte) );
-    MMbraindata.Write( @lstSoccerReserve[i].disqualified, sizeof(byte) );
-    MMbraindata.Write( @lstSoccerReserve[i].gameover, sizeof(byte) );
+    MMbraindata.Write( @Reserves[i].injured, sizeof(byte) );
+    MMbraindata.Write( @Reserves[i].yellowcard, sizeof(byte) );
+    MMbraindata.Write( @Reserves[i].redcard, sizeof(byte) );
+    MMbraindata.Write( @Reserves[i].disqualified, sizeof(byte) );
+    MMbraindata.Write( @Reserves[i].gameover, sizeof(byte) );
 
-    MMbraindata.Write( @lstSoccerReserve[i].AIFormationCellX, sizeof(ShortInt) );
-    MMbraindata.Write( @lstSoccerReserve[i].AIFormationCellY, sizeof(ShortInt) );
-    MMbraindata.Write( @lstSoccerReserve[i].DefaultCellX, sizeof(ShortInt) );
-    MMbraindata.Write( @lstSoccerReserve[i].DefaultCellY, sizeof(ShortInt) );
-    MMbraindata.Write( @lstSoccerReserve[i].CellX, sizeof(ShortInt) );
-    MMbraindata.Write( @lstSoccerReserve[i].CellY, sizeof(ShortInt) );
+    MMbraindata.Write( @Reserves[i].AIFormationCellX, sizeof(ShortInt) );
+    MMbraindata.Write( @Reserves[i].AIFormationCellY, sizeof(ShortInt) );
+    MMbraindata.Write( @Reserves[i].DefaultCellX, sizeof(ShortInt) );
+    MMbraindata.Write( @Reserves[i].DefaultCellY, sizeof(ShortInt) );
+    MMbraindata.Write( @Reserves[i].CellX, sizeof(ShortInt) );
+    MMbraindata.Write( @Reserves[i].CellY, sizeof(ShortInt) );
 
-    MMbraindata.Write( @lstSoccerReserve[i].face, sizeof(integer) );
-    MMbraindata.Write( @lstSoccerReserve[i].country, sizeof(smallint) );
+    MMbraindata.Write( @Reserves[i].face, sizeof(integer) );
+    MMbraindata.Write( @Reserves[i].country, sizeof(smallint) );
 
-    MMbraindata.Write( @lstSoccerReserve[i].xpDevA, sizeof(smallint) );
-    MMbraindata.Write( @lstSoccerReserve[i].xpDevT, sizeof(smallint) );
-    MMbraindata.Write( @lstSoccerReserve[i].xpDevI, sizeof(smallint) );
+    MMbraindata.Write( @Reserves[i].xpDevA, sizeof(smallint) );
+    MMbraindata.Write( @Reserves[i].xpDevT, sizeof(smallint) );
+    MMbraindata.Write( @Reserves[i].xpDevI, sizeof(smallint) );
 
   end;
 
-  totGameOver :=   lstSoccerGameover.Count;
+  totGameOver :=   Gameover.Count;
   MMbraindata.Write( @totGameOver, sizeof(byte) );
 
-  for i := 0 to lstSoccerGameOver.Count -1 do begin
-    PlayerGuid := StrToInt(lstSoccerGameOver[i].Ids); // dipende dalla gestione players, se divido per nazioni?
+  for i := 0 to Gameover.Count -1 do begin
+    PlayerGuid := StrToInt(Gameover[i].Ids); // dipende dalla gestione players, se divido per nazioni?
     MMbraindata.Write( @PlayerGuid, sizeof(integer) );
-    MMbraindata.Write( @lstSoccerGameOver[i].GuidTeam, sizeof(integer) );
-    MMbraindata.Write( @lstSoccerGameOver[i].Surname[0], length ( lstSoccerGameOver[i].Surname) +1 );
-    MMbraindata.Write( @lstSoccerGameOver[i].Team, sizeof(byte) );
+    MMbraindata.Write( @Gameover[i].GuidTeam, sizeof(integer) );
+    MMbraindata.Write( @Gameover[i].Surname[0], length ( Gameover[i].Surname) +1 );
+    MMbraindata.Write( @Gameover[i].Team, sizeof(byte) );
     if GameMode = pvp then begin
-      MMbraindata.Write( @lstSoccerGameOver[i].MatchesPlayed, sizeof(SmallInt) );
-      MMbraindata.Write( @lstSoccerGameOver[i].MatchesLeft, sizeof(SmallInt) );
+      MMbraindata.Write( @Gameover[i].MatchesPlayed, sizeof(SmallInt) );
+      MMbraindata.Write( @Gameover[i].MatchesLeft, sizeof(SmallInt) );
     end;
-    MMbraindata.Write( @lstSoccerGameOver[i].Age, sizeof(byte) );
+    MMbraindata.Write( @Gameover[i].Age, sizeof(byte) );
 
-    MMbraindata.Write( @lstSoccerGameOver[i].TalentID1,  sizeof(byte) );
-    MMbraindata.Write( @lstSoccerGameOver[i].TalentID2,  sizeof(byte) );
-    MMbraindata.Write( @lstSoccerGameOver[i].Stamina, sizeof(SmallInt) );
+    MMbraindata.Write( @Gameover[i].TalentID1,  sizeof(byte) );
+    MMbraindata.Write( @Gameover[i].TalentID2,  sizeof(byte) );
+    MMbraindata.Write( @Gameover[i].Stamina, sizeof(SmallInt) );
 
-    MMbraindata.Write( @lstSoccerGameOver[i].DefaultSpeed , sizeof(byte) );
-    MMbraindata.Write( @lstSoccerGameOver[i].DefaultDefense , sizeof(byte) );
-    MMbraindata.Write( @lstSoccerGameOver[i].DefaultPassing, sizeof(byte) );
-    MMbraindata.Write( @lstSoccerGameOver[i].DefaultBallControl , sizeof(byte) );
-    MMbraindata.Write( @lstSoccerGameOver[i].DefaultShot , sizeof(byte) );
-    MMbraindata.Write( @lstSoccerGameOver[i].DefaultHeading , sizeof(byte) );
+    MMbraindata.Write( @Gameover[i].DefaultSpeed , sizeof(byte) );
+    MMbraindata.Write( @Gameover[i].DefaultDefense , sizeof(byte) );
+    MMbraindata.Write( @Gameover[i].DefaultPassing, sizeof(byte) );
+    MMbraindata.Write( @Gameover[i].DefaultBallControl , sizeof(byte) );
+    MMbraindata.Write( @Gameover[i].DefaultShot , sizeof(byte) );
+    MMbraindata.Write( @Gameover[i].DefaultHeading , sizeof(byte) );
 
-    MMbraindata.Write( @lstSoccerGameOver[i].Speed , sizeof(ShortInt) );
-    MMbraindata.Write( @lstSoccerGameOver[i].Defense , sizeof(ShortInt) );
-    MMbraindata.Write( @lstSoccerGameOver[i].Passing, sizeof(ShortInt) );
-    MMbraindata.Write( @lstSoccerGameOver[i].BallControl , sizeof(ShortInt) );
-    MMbraindata.Write( @lstSoccerGameOver[i].Shot , sizeof(ShortInt) );
-    MMbraindata.Write( @lstSoccerGameOver[i].Heading , sizeof(ShortInt) );
+    MMbraindata.Write( @Gameover[i].Speed , sizeof(ShortInt) );
+    MMbraindata.Write( @Gameover[i].Defense , sizeof(ShortInt) );
+    MMbraindata.Write( @Gameover[i].Passing, sizeof(ShortInt) );
+    MMbraindata.Write( @Gameover[i].BallControl , sizeof(ShortInt) );
+    MMbraindata.Write( @Gameover[i].Shot , sizeof(ShortInt) );
+    MMbraindata.Write( @Gameover[i].Heading , sizeof(ShortInt) );
 
-    MMbraindata.Write( @lstSoccerGameOver[i].injured, sizeof(byte) );
-    MMbraindata.Write( @lstSoccerGameOver[i].yellowcard, sizeof(byte) );
-    MMbraindata.Write( @lstSoccerGameOver[i].redcard, sizeof(byte) );
-    MMbraindata.Write( @lstSoccerGameOver[i].disqualified, sizeof(byte) );
-    MMbraindata.Write( @lstSoccerGameOver[i].gameover, sizeof(byte) );
+    MMbraindata.Write( @Gameover[i].injured, sizeof(byte) );
+    MMbraindata.Write( @Gameover[i].yellowcard, sizeof(byte) );
+    MMbraindata.Write( @Gameover[i].redcard, sizeof(byte) );
+    MMbraindata.Write( @Gameover[i].disqualified, sizeof(byte) );
+    MMbraindata.Write( @Gameover[i].gameover, sizeof(byte) );
 
-    MMbraindata.Write( @lstSoccerGameOver[i].AIFormationCellX, sizeof(ShortInt) );
-    MMbraindata.Write( @lstSoccerGameOver[i].AIFormationCellY, sizeof(ShortInt) );
-    MMbraindata.Write( @lstSoccerGameOver[i].DefaultCellX, sizeof(ShortInt) );
-    MMbraindata.Write( @lstSoccerGameOver[i].DefaultCellY, sizeof(ShortInt) );
-    MMbraindata.Write( @lstSoccerGameOver[i].CellX, sizeof(ShortInt) );
-    MMbraindata.Write( @lstSoccerGameOver[i].CellY, sizeof(ShortInt) );
+    MMbraindata.Write( @Gameover[i].AIFormationCellX, sizeof(ShortInt) );
+    MMbraindata.Write( @Gameover[i].AIFormationCellY, sizeof(ShortInt) );
+    MMbraindata.Write( @Gameover[i].DefaultCellX, sizeof(ShortInt) );
+    MMbraindata.Write( @Gameover[i].DefaultCellY, sizeof(ShortInt) );
+    MMbraindata.Write( @Gameover[i].CellX, sizeof(ShortInt) );
+    MMbraindata.Write( @Gameover[i].CellY, sizeof(ShortInt) );
 
-    MMbraindata.Write( @lstSoccerGameOver[i].face, sizeof(integer) );
-    MMbraindata.Write( @lstSoccerGameOver[i].country, sizeof(smallint) );
+    MMbraindata.Write( @Gameover[i].face, sizeof(integer) );
+    MMbraindata.Write( @Gameover[i].country, sizeof(smallint) );
 
-    MMbraindata.Write( @lstSoccerGameOver[i].xpDevA, sizeof(smallint) );
-    MMbraindata.Write( @lstSoccerGameOver[i].xpDevT, sizeof(smallint) );
-    MMbraindata.Write( @lstSoccerGameOver[i].xpDevI, sizeof(smallint) );
+    MMbraindata.Write( @Gameover[i].xpDevA, sizeof(smallint) );
+    MMbraindata.Write( @Gameover[i].xpDevT, sizeof(smallint) );
+    MMbraindata.Write( @Gameover[i].xpDevI, sizeof(smallint) );
 
   end;
 
@@ -11142,12 +10154,12 @@ begin
 end;
 
 
-function TSoccerBrain.exec_tackle ( ids: string ): integer;
+function TBrain.exec_tackle ( ids: string ): integer;
 var
   TackleResult , aRnd,aRnd2,preRoll, preRoll2: integer;
   Roll,Roll2:TRoll;
   aPath: dse_pathplanner.Tpath;
-  aPlayer, oldPlayerBall: TSoccerPlayer;
+  aPlayer, oldPlayerBall: TPlayer;
   dstCell: Tpoint;
   OldCell: TPoint;
   fault, Card , redCard , YellowCard, injured : Integer;
@@ -11173,7 +10185,7 @@ begin
   i talenti sono ovviamente cumulabili durante l'azione.
 }
 
-    aPlayer := GetSoccerPlayer (ids);
+    aPlayer := GeTPlayer (ids);
     if (absDistance (aPlayer.CellX , aPlayer.CellY, Ball.Cellx, Ball.Celly  ) = 1) and
     (Ball.Player.team <> aPlayer.Team ) and( Ball.Player.Role <> 'G') then begin
        // cell per eventuale spostamento e calcolo direzione per cartellini
@@ -11471,7 +10483,7 @@ begin
 
     end;
 end;
-Function TSoccerBrain.GetFault ( team, CellX, CellY : integer): Integer;
+Function TBrain.GetFault ( team, CellX, CellY : integer): Integer;
 begin
 
   case team of
@@ -11531,12 +10543,12 @@ begin
     end;
   end;
 end;
-function TSoccerBrain.exec_autotackle ( ids: string; LastPath: boolean ): boolean;
+function TBrain.exec_autotackle ( ids: string; LastPath: boolean ): boolean;
 var
   aRnd,aRnd2,preRoll, preRoll2: integer;
   Roll,Roll2:TRoll;
   aPath: dse_pathplanner.TPath;
-  aPlayer, oldPlayerBall: TSoccerPlayer;
+  aPlayer, oldPlayerBall: TPlayer;
   dstCell: Tpoint;
   OldCell: TPoint;
   ACT : string;
@@ -11551,7 +10563,7 @@ begin
   i talenti sono ovviamente cumulabili durante l'azione.
 }
     result := false;
-    aPlayer := GetSoccerPlayer ( ids );
+    aPlayer := GeTPlayer ( ids );
     if aPlayer = nil then exit; // hack
     if not aPlayer.CanSkill then  exit; // hack
     if (absDistance (aPlayer.CellX , aPlayer.CellY, Ball.Cellx, Ball.Celly  ) = 1) and
@@ -11661,7 +10673,7 @@ begin
     end;
 end;
 
-function TSoccerbrain.FindSwapCOAD (  SwapPlayer: TSoccerPlayer; CornerMap: TCornerMap ): Tpoint;
+function TBrain.FindSwapCOAD (  SwapPlayer: TPlayer; CornerMap: TCornerMap ): Tpoint;
 var
   x: integer;
   function inExceptCells ( aList:TList<Tpoint>;X,Y: integer): boolean;
@@ -11670,7 +10682,7 @@ var
   begin
     Result := false;
     if aList.Count = 0 then exit;      // bug delphi
-    
+
     for I := 0 to aList.count do begin
       if (aList[i].X = X ) and (aList[i].X = Y )then begin
         result := true;
@@ -11690,31 +10702,31 @@ begin
   case CornerMap.Team of
     1: begin
       for X := 3 to 10 do begin
-        if GetSoccerPlayer ( X, 3 ) = nil then begin
+        if GeTPlayer ( X, 3 ) = nil then begin
             Result := point (X, 3);
             exit;
         end;
-        if GetSoccerPlayer ( X, 2) = nil then begin
+        if GeTPlayer ( X, 2) = nil then begin
             Result := point (X, 2);
             exit;
         end;
-        if GetSoccerPlayer ( X, 4) = nil then begin
+        if GeTPlayer ( X, 4) = nil then begin
             Result := point (X, 4);
             exit;
         end;
-        if GetSoccerPlayer ( X, 5) = nil then begin
+        if GeTPlayer ( X, 5) = nil then begin
             Result := point (X, 5);
             exit;
         end;
-        if GetSoccerPlayer ( X, 1) = nil then begin
+        if GeTPlayer ( X, 1) = nil then begin
             Result := point (X, 1);
             exit;
           end;
-        if GetSoccerPlayer ( X, 6) = nil then begin
+        if GeTPlayer ( X, 6) = nil then begin
             Result := point (X, 6);
             exit;
         end;
-        if GetSoccerPlayer ( X, 0) = nil then begin
+        if GeTPlayer ( X, 0) = nil then begin
             Result := point (X, 0);
             exit;
         end;
@@ -11722,31 +10734,31 @@ begin
     end;
     0: begin
       for X := 8 downto 1 do begin
-        if GetSoccerPlayer ( X, 3 ) = nil then begin
+        if GeTPlayer ( X, 3 ) = nil then begin
             Result := point (X, 3);
             exit;
         end;
-        if GetSoccerPlayer ( X, 2) = nil then begin
+        if GeTPlayer ( X, 2) = nil then begin
             Result := point (X, 2);
             exit;
         end;
-        if GetSoccerPlayer ( X, 4) = nil then begin
+        if GeTPlayer ( X, 4) = nil then begin
             Result := point (X, 4);
             exit;
         end;
-        if GetSoccerPlayer ( X, 5) = nil then begin
+        if GeTPlayer ( X, 5) = nil then begin
             Result := point (X, 5);
             exit;
         end;
-        if GetSoccerPlayer ( X, 1) = nil then begin
+        if GeTPlayer ( X, 1) = nil then begin
             Result := point (X, 1);
             exit;
         end;
-        if GetSoccerPlayer ( X, 6) = nil then begin
+        if GeTPlayer ( X, 6) = nil then begin
             Result := point (X, 6);
             exit;
         end;
-        if GetSoccerPlayer ( X, 0) = nil then begin
+        if GeTPlayer ( X, 0) = nil then begin
             Result := point (X, 0);
             exit;
         end;
@@ -11756,7 +10768,7 @@ begin
   end;
 end;
 
-function TSoccerbrain.FindDefensiveCellFree (  team: integer ): Tpoint;
+function TBrain.FindDefensiveCellFree (  team: integer ): Tpoint;
 var
   X: Integer;
 begin
@@ -11764,31 +10776,31 @@ begin
   case Team of
     1: begin
       for X := 10 downto 1 do begin
-        if GetSoccerPlayer ( X, 3 ) = nil then begin
+        if GeTPlayer ( X, 3 ) = nil then begin
             Result := point (X, 3);
             exit;
         end;
-        if GetSoccerPlayer ( X, 2) = nil then begin
+        if GeTPlayer ( X, 2) = nil then begin
             Result := point (X, 2);
             exit;
         end;
-        if GetSoccerPlayer ( X, 4) = nil then begin
+        if GeTPlayer ( X, 4) = nil then begin
             Result := point (X, 4);
             exit;
         end;
-        if GetSoccerPlayer ( X, 5) = nil then begin
+        if GeTPlayer ( X, 5) = nil then begin
             Result := point (X, 5);
             exit;
         end;
-        if GetSoccerPlayer ( X, 1) = nil then begin
+        if GeTPlayer ( X, 1) = nil then begin
             Result := point (X, 1);
             exit;
           end;
-        if GetSoccerPlayer ( X, 6) = nil then begin
+        if GeTPlayer ( X, 6) = nil then begin
             Result := point (X, 6);
             exit;
         end;
-        if GetSoccerPlayer ( X, 0) = nil then begin
+        if GeTPlayer ( X, 0) = nil then begin
             Result := point (X, 0);
             exit;
         end;
@@ -11796,31 +10808,31 @@ begin
     end;
     0: begin
       for X := 1 to 10 do begin
-        if GetSoccerPlayer ( X, 3 ) = nil then begin
+        if GeTPlayer ( X, 3 ) = nil then begin
             Result := point (X, 3);
             exit;
         end;
-        if GetSoccerPlayer ( X, 2) = nil then begin
+        if GeTPlayer ( X, 2) = nil then begin
             Result := point (X, 2);
             exit;
         end;
-        if GetSoccerPlayer ( X, 4) = nil then begin
+        if GeTPlayer ( X, 4) = nil then begin
             Result := point (X, 4);
             exit;
         end;
-        if GetSoccerPlayer ( X, 5) = nil then begin
+        if GeTPlayer ( X, 5) = nil then begin
             Result := point (X, 5);
             exit;
         end;
-        if GetSoccerPlayer ( X, 1) = nil then begin
+        if GeTPlayer ( X, 1) = nil then begin
             Result := point (X, 1);
             exit;
         end;
-        if GetSoccerPlayer ( X, 6) = nil then begin
+        if GeTPlayer ( X, 6) = nil then begin
             Result := point (X, 6);
             exit;
         end;
-        if GetSoccerPlayer ( X, 0) = nil then begin
+        if GeTPlayer ( X, 0) = nil then begin
             Result := point (X, 0);
             exit;
         end;
@@ -11829,7 +10841,7 @@ begin
 
   end;
 end;
-function TSoccerbrain.FindDefensiveCellFreePenalty (  team: integer ): Tpoint;
+function TBrain.FindDefensiveCellFreePenalty (  team: integer ): Tpoint;
 var
   X: Integer;
 begin
@@ -11837,31 +10849,31 @@ begin
   case Team of
     0: begin
       for X := 8 downto 1 do begin
-        if GetSoccerPlayer ( X, 3 ) = nil then begin
+        if GeTPlayer ( X, 3 ) = nil then begin
             Result := point (X, 3);
             exit;
         end;
-        if GetSoccerPlayer ( X, 2) = nil then begin
+        if GeTPlayer ( X, 2) = nil then begin
             Result := point (X, 2);
             exit;
         end;
-        if GetSoccerPlayer ( X, 4) = nil then begin
+        if GeTPlayer ( X, 4) = nil then begin
             Result := point (X, 4);
             exit;
         end;
-        if GetSoccerPlayer ( X, 5) = nil then begin
+        if GeTPlayer ( X, 5) = nil then begin
             Result := point (X, 5);
             exit;
         end;
-        if GetSoccerPlayer ( X, 1) = nil then begin
+        if GeTPlayer ( X, 1) = nil then begin
             Result := point (X, 1);
             exit;
           end;
-        if GetSoccerPlayer ( X, 6) = nil then begin
+        if GeTPlayer ( X, 6) = nil then begin
             Result := point (X, 6);
             exit;
         end;
-        if GetSoccerPlayer ( X, 0) = nil then begin
+        if GeTPlayer ( X, 0) = nil then begin
             Result := point (X, 0);
             exit;
         end;
@@ -11869,31 +10881,31 @@ begin
     end;
     1: begin
       for X := 3 to 10 do begin
-        if GetSoccerPlayer ( X, 3 ) = nil then begin
+        if GeTPlayer ( X, 3 ) = nil then begin
             Result := point (X, 3);
             exit;
         end;
-        if GetSoccerPlayer ( X, 2) = nil then begin
+        if GeTPlayer ( X, 2) = nil then begin
             Result := point (X, 2);
             exit;
         end;
-        if GetSoccerPlayer ( X, 4) = nil then begin
+        if GeTPlayer ( X, 4) = nil then begin
             Result := point (X, 4);
             exit;
         end;
-        if GetSoccerPlayer ( X, 5) = nil then begin
+        if GeTPlayer ( X, 5) = nil then begin
             Result := point (X, 5);
             exit;
         end;
-        if GetSoccerPlayer ( X, 1) = nil then begin
+        if GeTPlayer ( X, 1) = nil then begin
             Result := point (X, 1);
             exit;
         end;
-        if GetSoccerPlayer ( X, 6) = nil then begin
+        if GeTPlayer ( X, 6) = nil then begin
             Result := point (X, 6);
             exit;
         end;
-        if GetSoccerPlayer ( X, 0) = nil then begin
+        if GeTPlayer ( X, 0) = nil then begin
             Result := point (X, 0);
             exit;
         end;
@@ -11902,7 +10914,7 @@ begin
 
   end;
 end;
-function TSoccerbrain.GetOpponentDoor (SelectedPlayer: TSoccerPlayer ): TPoint;
+function TBrain.GetOpponentDoor (SelectedPlayer: TPlayer ): TPoint;
 begin
    if SelectedPlayer.Team = 0 then begin
       Result.X :=11;
@@ -11913,7 +10925,7 @@ begin
       Result.Y :=3;
    end;
 end;
-function TSoccerbrain.GetCorner (Team: Integer; Y: integer; CornerMode: TCornerMode ): TCornerMap;
+function TBrain.GetCorner (Team: Integer; Y: integer; CornerMode: TCornerMode ): TCornerMap;
 begin
 
    if CornerMode = FriendlyCorner then begin
@@ -12008,7 +11020,7 @@ begin
    end;
 
 end;
-function TSoccerbrain.GetBarrierCell (Team: Integer; CellX, CellY: integer ): TPoint; // in base alla cella della punizione, ottengo la cella barriera
+function TBrain.GetBarrierCell (Team: Integer; CellX, CellY: integer ): TPoint; // in base alla cella della punizione, ottengo la cella barriera
 begin
   case Team of
     0: begin
@@ -12126,21 +11138,21 @@ begin
    end;
 
 end;
-function TSoccerbrain.GetPenaltyCell (Team: Integer ): TPoint;// in base al team (0 o 1) ottengo la cella del rigore
+function TBrain.GetPenaltyCell (Team: Integer ): TPoint;// in base al team (0 o 1) ottengo la cella del rigore
 begin
   if team = 0  then
     Result := Point (10,3)
     else Result := Point (1,3);
 end;
-procedure TSoccerbrain.FreePenaltyArea ( team : Integer  ); // libero l'area di rigore da altri gioatory per il penalty
+procedure TBrain.FreePenaltyArea ( team : Integer  ); // libero l'area di rigore da altri gioatory per il penalty
 var
   p: Integer;
-  aPlayer: TSoccerPlayer;
+  aPlayer: TPlayer;
 begin
   case team of
     0: begin   // il rigore a 10,3
-      for p := lstSoccerPlayer.Count -1 downto 0 do begin
-        aPlayer := lstSoccerPlayer[p];
+      for p := Players.Count -1 downto 0 do begin
+        aPlayer := Players[p];
         if  IsOutSide(aPlayer.CellX, aPlayer.CellY) then Continue;
         if (aPlayer.CellX >= 9) and (aPlayer.Role <> 'G') then begin
           aPlayer.cells := FindDefensiveCellFreePenalty ( team ); // lo sposto in una cella libera fuori dall'area di rigore
@@ -12148,8 +11160,8 @@ begin
       end;
     end;
     1: begin   // il rigore a 1,3
-      for p := lstSoccerPlayer.Count -1 downto 0 do begin
-        aPlayer := lstSoccerPlayer[p];
+      for p := Players.Count -1 downto 0 do begin
+        aPlayer := Players[p];
         if  IsOutSide(aPlayer.CellX, aPlayer.CellY) then Continue;
         if (aPlayer.CellX <= 2) and (aPlayer.Role <> 'G') then begin
           aPlayer.cells := FindDefensiveCellFreePenalty ( team ); // lo sposto in una cella libera fuori dall'area di rigore
@@ -12159,11 +11171,11 @@ begin
   end;
 end;
 
-function TSoccerbrain.IsCheatingBall ( TeamFault: Integer ) : boolean;
+function TBrain.IsCheatingBall ( TeamFault: Integer ) : boolean;
 var
   aCellList: TList<TPoint>;
   i: integer;
-  aPlayer: TSoccerPlayer;
+  aPlayer: TPlayer;
 begin
   { TODO : bug se all'inizio la palla è del gk non è raggiungibile }
   // TeamFault rende irragiungibile la palla
@@ -12173,7 +11185,7 @@ begin
 
   // ho le celle adiacenti. se sono tutte occupate da player del teamfault è cheating
   for I := 0 to aCellList.Count -1 do begin
-    aPlayer:= GetSoccerPlayer ( acellList[i].X, acellList[i].Y );
+    aPlayer:= GeTPlayer ( acellList[i].X, acellList[i].Y );
     if aPlayer = nil then begin   // se la cella è vuota la strada è libera verso la palla
       result := False;
       Break;
@@ -12190,7 +11202,7 @@ begin
 
   acellList.free;
 end;
-function TSoccerbrain.IsCheatingBallGK ( OldTeamTurn: Integer ) : boolean;
+function TBrain.IsCheatingBallGK ( OldTeamTurn: Integer ) : boolean;
 begin
   result := False;
   if Ball.Player = nil then Exit;
@@ -12199,7 +11211,7 @@ begin
     result := True;
 
 end;
-function TSoccerbrain.NextReserveSlot ( team: integer ): Integer;
+function TBrain.NextReserveSlot ( team: integer ): Integer;
 var
   x: Integer;
 begin
@@ -12211,7 +11223,7 @@ begin
       end;
     end;
 end;
-procedure TSoccerbrain.CleanReserveSlot ( team: integer );
+procedure TBrain.CleanReserveSlot ( team: integer );
 var
   x: Integer;
 begin
@@ -12219,7 +11231,7 @@ begin
           ReserveSlot [team, x] := '';
     end;
 end;
-function TSoccerbrain.NextGameOverSlot ( aPlayer: TSoccerPlayer): Integer;
+function TBrain.NextGameOverSlot ( aPlayer: TPlayer): Integer;
 var
   x: Integer;
 begin
@@ -12230,7 +11242,7 @@ begin
     end;
   end;
 end;
-function TSoccerbrain.NextGameOverSlot ( team: integer ): Integer;
+function TBrain.NextGameOverSlot ( team: integer ): Integer;
 var
   x: Integer;
 begin
@@ -12242,7 +11254,7 @@ begin
       end;
     end;
 end;
-procedure TSoccerbrain.CleanGameOverSlot ( team: integer );
+procedure TBrain.CleanGameOverSlot ( team: integer );
 var
   x: Integer;
 begin
@@ -12251,7 +11263,7 @@ begin
     end;
 end;
 
-function TSoccerbrain.GetOpponentStart (SelectedPlayer: TSoccerPlayer ): TPoint;
+function TBrain.GetOpponentStart (SelectedPlayer: TPlayer ): TPoint;
 begin
    if SelectedPlayer.Team = 0 then begin
       Result.X :=6;
@@ -12263,11 +11275,11 @@ begin
    end;
 end;
 
-procedure TSoccerbrain.exec_corner ;
+procedure TBrain.exec_corner ;
 var
   aRnd  , aRnd2, preRoll, preRoll2, preroll3, arnd3, preroll4, arnd4,GKxpr: integer;
   Roll, Roll2, roll3, roll4: TRoll;
-  aPlayer, aheadingFriend, aHeadingOpponent, aGK : TSoccerPlayer;
+  aPlayer, aheadingFriend, aHeadingOpponent, aGK : TPlayer;
   CornerMap: TCornerMap;
   aCell:Tpoint;
   oldCell: Tpoint;
@@ -12307,40 +11319,40 @@ begin
         IntToStr(aPlayer.Passing ) +',Crossing,'+ aPlayer.ids+','+IntTostr(Roll.value)+','+Roll.fatigue+ '.0'+','+IntTostr(aPlayer.tmp));
       if (aRnd >= COR_D2_MIN) and (aRnd <= COR_D2_MAX) then begin  //  palla a headingD [2]
         Ball.Cells :=  Point (CornerMap.HeadingCellD [2].X , CornerMap.HeadingCellD [2].Y);
-        aHeadingFriend := GetSoccerPlayer ( CornerMap.HeadingCellA [2].X , CornerMap.HeadingCellA [2].Y  );
-        aHeadingOpponent := GetSoccerPlayer ( CornerMap.HeadingCellD [2].X , CornerMap.HeadingCellD [2].Y  );
+        aHeadingFriend := GeTPlayer ( CornerMap.HeadingCellA [2].X , CornerMap.HeadingCellA [2].Y  );
+        aHeadingOpponent := GeTPlayer ( CornerMap.HeadingCellD [2].X , CornerMap.HeadingCellD [2].Y  );
         BonusDefenseHeading := 1;
       end
       else if (aRnd >= COR_D1_MIN) and (aRnd <= COR_D1_MAX) then begin  //  palla a headingD [1]
         Ball.Cells :=  Point (CornerMap.HeadingCellD [1].X , CornerMap.HeadingCellD [1].Y);
-        aHeadingFriend := GetSoccerPlayer ( CornerMap.HeadingCellA [1].X , CornerMap.HeadingCellA [1].Y  );
-        aHeadingOpponent := GetSoccerPlayer ( CornerMap.HeadingCellD [1].X , CornerMap.HeadingCellD [1].Y  );
+        aHeadingFriend := GeTPlayer ( CornerMap.HeadingCellA [1].X , CornerMap.HeadingCellA [1].Y  );
+        aHeadingOpponent := GeTPlayer ( CornerMap.HeadingCellD [1].X , CornerMap.HeadingCellD [1].Y  );
         BonusDefenseHeading := 1;
 
       end
       else if (aRnd >= COR_D0_MIN) and (aRnd <= COR_D0_MAX) then begin  //  palla a headingD [0]
         Ball.Cells :=  Point (CornerMap.HeadingCellD [0].X , CornerMap.HeadingCellD [0].Y);
-        aHeadingFriend := GetSoccerPlayer ( CornerMap.HeadingCellA [0].X , CornerMap.HeadingCellA [0].Y  );
-        aHeadingOpponent := GetSoccerPlayer ( CornerMap.HeadingCellD [0].X , CornerMap.HeadingCellD [0].Y  );
+        aHeadingFriend := GeTPlayer ( CornerMap.HeadingCellA [0].X , CornerMap.HeadingCellA [0].Y  );
+        aHeadingOpponent := GeTPlayer ( CornerMap.HeadingCellD [0].X , CornerMap.HeadingCellD [0].Y  );
         BonusDefenseHeading := 1;
 
       end
       else if (aRnd >= COR_A2_MIN) and (aRnd <= COR_A2_MAX) then begin  //  palla a headingA [2]
         Ball.Cells :=  Point (CornerMap.HeadingCellA [2].X , CornerMap.HeadingCellA [2].Y);
-        aHeadingFriend := GetSoccerPlayer ( CornerMap.HeadingCellA [2].X , CornerMap.HeadingCellA [2].Y  );
-        aHeadingOpponent := GetSoccerPlayer ( CornerMap.HeadingCellD [2].X , CornerMap.HeadingCellD [2].Y  );
+        aHeadingFriend := GeTPlayer ( CornerMap.HeadingCellA [2].X , CornerMap.HeadingCellA [2].Y  );
+        aHeadingOpponent := GeTPlayer ( CornerMap.HeadingCellD [2].X , CornerMap.HeadingCellD [2].Y  );
 
       end
       else if (aRnd >= COR_A1_MIN) and (aRnd <= COR_A1_MAX) then begin  //  palla a headingA [1]
         Ball.Cells :=  Point (CornerMap.HeadingCellA [1].X , CornerMap.HeadingCellA [1].Y);
-        aHeadingFriend := GetSoccerPlayer ( CornerMap.HeadingCellA [1].X , CornerMap.HeadingCellA [1].Y  );
-        aHeadingOpponent := GetSoccerPlayer ( CornerMap.HeadingCellD [1].X , CornerMap.HeadingCellD [1].Y  );
+        aHeadingFriend := GeTPlayer ( CornerMap.HeadingCellA [1].X , CornerMap.HeadingCellA [1].Y  );
+        aHeadingOpponent := GeTPlayer ( CornerMap.HeadingCellD [1].X , CornerMap.HeadingCellD [1].Y  );
 
       end
       else if (aRnd >= COR_A0_MIN) and (aRnd <= MAX_LEVEL) then begin  //  palla a headingA [0]
         Ball.Cells :=  Point (CornerMap.HeadingCellA [0].X , CornerMap.HeadingCellA [0].Y);
-        aHeadingFriend := GetSoccerPlayer ( CornerMap.HeadingCellA [0].X , CornerMap.HeadingCellA [0].Y  );
-        aHeadingOpponent := GetSoccerPlayer ( CornerMap.HeadingCellD [0].X , CornerMap.HeadingCellD [0].Y  );
+        aHeadingFriend := GeTPlayer ( CornerMap.HeadingCellA [0].X , CornerMap.HeadingCellA [0].Y  );
+        aHeadingOpponent := GeTPlayer ( CornerMap.HeadingCellD [0].X , CornerMap.HeadingCellD [0].Y  );
       end;
 
   // esistono per forza 3 coa e 3 cod, per il momento swappo solo dove cade la palla.
@@ -12570,11 +11582,11 @@ cor_crossbar:
 
 
 end;
-procedure TSoccerbrain.exec_freekick2 ;
+procedure TBrain.exec_freekick2 ;
 var
   aRnd  , aRnd2, preRoll, preRoll2, preroll3, arnd3, preroll4, arnd4,GKxpr: integer;
   Roll, Roll2, roll3, roll4: TRoll;
-  aPlayer, aheadingFriend, aHeadingOpponent, aGK : TSoccerPlayer;
+  aPlayer, aheadingFriend, aHeadingOpponent, aGK : TPlayer;
   CornerMap: TCornerMap;
   aCell:Tpoint;
   oldCell: Tpoint;
@@ -12617,21 +11629,21 @@ begin
 
       if (aRnd >= CRO2_D2_MIN) and (aRnd <= CRO2_D2_MAX) then begin  //  palla a headingD [2]
         Ball.Cells :=  Point (CornerMap.HeadingCellD [2].X , CornerMap.HeadingCellD [2].Y);
-        aHeadingFriend := GetSoccerPlayer ( CornerMap.HeadingCellA [2].X , CornerMap.HeadingCellA [2].Y  );
-        aHeadingOpponent := GetSoccerPlayer ( CornerMap.HeadingCellD [2].X , CornerMap.HeadingCellD [2].Y  );
+        aHeadingFriend := GeTPlayer ( CornerMap.HeadingCellA [2].X , CornerMap.HeadingCellA [2].Y  );
+        aHeadingOpponent := GeTPlayer ( CornerMap.HeadingCellD [2].X , CornerMap.HeadingCellD [2].Y  );
 //        BonusDefenseHeading := BonusDefenseHeading ;
       end
       else if (aRnd >= CRO2_D1_MIN) and (aRnd <= CRO2_D1_MAX) then begin  //  palla a headingD [1]
         Ball.Cells :=  Point (CornerMap.HeadingCellD [1].X , CornerMap.HeadingCellD [1].Y);
-        aHeadingFriend := GetSoccerPlayer ( CornerMap.HeadingCellA [1].X , CornerMap.HeadingCellA [1].Y  );
-        aHeadingOpponent := GetSoccerPlayer ( CornerMap.HeadingCellD [1].X , CornerMap.HeadingCellD [1].Y  );
+        aHeadingFriend := GeTPlayer ( CornerMap.HeadingCellA [1].X , CornerMap.HeadingCellA [1].Y  );
+        aHeadingOpponent := GeTPlayer ( CornerMap.HeadingCellD [1].X , CornerMap.HeadingCellD [1].Y  );
       //  BonusDefenseHeading := 1;
 
       end
       else if (aRnd >= CRO2_D0_MIN) and (aRnd <= CRO2_D0_MAX) then begin  //  palla a headingD [0]
         Ball.Cells :=  Point (CornerMap.HeadingCellD [0].X , CornerMap.HeadingCellD [0].Y);
-        aHeadingFriend := GetSoccerPlayer ( CornerMap.HeadingCellA [0].X , CornerMap.HeadingCellA [0].Y  );
-        aHeadingOpponent := GetSoccerPlayer ( CornerMap.HeadingCellD [0].X , CornerMap.HeadingCellD [0].Y  );
+        aHeadingFriend := GeTPlayer ( CornerMap.HeadingCellA [0].X , CornerMap.HeadingCellA [0].Y  );
+        aHeadingOpponent := GeTPlayer ( CornerMap.HeadingCellD [0].X , CornerMap.HeadingCellD [0].Y  );
       //  BonusDefenseHeading := 1;
 
       end
@@ -12639,16 +11651,16 @@ begin
         aPlayer.xpDevT := aPlayer.xpDevT + 1; // premio normale
 
         Ball.Cells :=  Point (CornerMap.HeadingCellA [2].X , CornerMap.HeadingCellA [2].Y);
-        aHeadingFriend := GetSoccerPlayer ( CornerMap.HeadingCellA [2].X , CornerMap.HeadingCellA [2].Y  );
-        aHeadingOpponent := GetSoccerPlayer ( CornerMap.HeadingCellD [2].X , CornerMap.HeadingCellD [2].Y  );
+        aHeadingFriend := GeTPlayer ( CornerMap.HeadingCellA [2].X , CornerMap.HeadingCellA [2].Y  );
+        aHeadingOpponent := GeTPlayer ( CornerMap.HeadingCellD [2].X , CornerMap.HeadingCellD [2].Y  );
         BonusDefenseHeading := BonusDefenseHeading -1;   //3 o anche -2 o -1
       end
       else if (aRnd >= CRO2_A1_MIN) and (aRnd <= CRO2_A1_MAX) then begin  //  palla a headingA [1]
         aPlayer.xpDevT := aPlayer.xpDevT + 1; // premio normale
 
         Ball.Cells :=  Point (CornerMap.HeadingCellA [1].X , CornerMap.HeadingCellA [1].Y);
-        aHeadingFriend := GetSoccerPlayer ( CornerMap.HeadingCellA [1].X , CornerMap.HeadingCellA [1].Y  );
-        aHeadingOpponent := GetSoccerPlayer ( CornerMap.HeadingCellD [1].X , CornerMap.HeadingCellD [1].Y  );
+        aHeadingFriend := GeTPlayer ( CornerMap.HeadingCellA [1].X , CornerMap.HeadingCellA [1].Y  );
+        aHeadingOpponent := GeTPlayer ( CornerMap.HeadingCellD [1].X , CornerMap.HeadingCellD [1].Y  );
         BonusDefenseHeading := BonusDefenseHeading -1;  //3  -2 -1
 
       end
@@ -12656,8 +11668,8 @@ begin
         aPlayer.xpDevT := aPlayer.xpDevT + 2; // premio massimo
 
         Ball.Cells :=  Point (CornerMap.HeadingCellA [0].X , CornerMap.HeadingCellA [0].Y);
-        aHeadingFriend := GetSoccerPlayer ( CornerMap.HeadingCellA [0].X , CornerMap.HeadingCellA [0].Y  );
-        aHeadingOpponent := GetSoccerPlayer ( CornerMap.HeadingCellD [0].X , CornerMap.HeadingCellD [0].Y  );
+        aHeadingFriend := GeTPlayer ( CornerMap.HeadingCellA [0].X , CornerMap.HeadingCellA [0].Y  );
+        aHeadingOpponent := GeTPlayer ( CornerMap.HeadingCellD [0].X , CornerMap.HeadingCellD [0].Y  );
         BonusDefenseHeading := BonusDefenseHeading -2; //3 -2 -1
       end;
 
@@ -12862,7 +11874,7 @@ cor_crossbar:
 end;
 
 
-function TSoccerbrain.MirrorAIfield ( CellX,CellY: integer) : TPoint;
+function TBrain.MirrorAIfield ( CellX,CellY: integer) : TPoint;
 begin
   case CellY of
     0:Result.Y := 11;
@@ -12889,2497 +11901,8 @@ begin
   end;
 
 end;
-function TSoccerbrain.AI_Think_sub ( team: Integer; anOutPlayer:TSoccerPlayer; SubType: TSubType ):TBetterSolution;
-var
-  ids: string;
-begin
-  // si fanno sempre anche oltre 120+
-  if CanDoSub ( Team ) then begin  //not gk
 
-    if( AbsDistance(anOutPlayer.CellX, anOutPlayer.CellY,Ball.CellX ,Ball.celly) < 4) then begin
-      Result := SubAbs4;
-      Exit;
-    end;
-
-    //same role. in base a D M F  bestdefense, bestshot, bestpassing not gk , ma non al di sotto di 60 (giò checkato in candosub )
-    if SubType = PossiblysameRole then begin // arriva da injured o da stamina < 60
-      if anOutPlayer.Role = 'G' then begin
-        ids := GetBestGKReserve( team,61);
-        if ids <> '0' then
-          BrainInput( IntTostr(score.TeamGuid [team]) + ',SUB,' + ids + ',' + anOutPlayer.ids  )// potrebe non esserci quindi candosub
-        else begin
-          Result := SubCant;
-          Exit;
-        end;
-      end
-      else if anOutPlayer.Role = 'D' then begin
-        ids := GetBestDefenseReserve( team,61);
-        BrainInput( IntTostr(score.TeamGuid [team]) + ',SUB,' + ids + ',' + anOutPlayer.ids  );// 1 c'è per forza altrimenti no candosub
-      end
-      else if anOutPlayer.Role = 'M' then begin
-        ids := GetBestPassingReserve( team,61);
-        BrainInput( IntTostr(score.TeamGuid [team]) + ',SUB,' + ids  + ',' + anOutPlayer.ids  );// 1 c'è per forza altrimenti no candosub
-      end
-      else if anOutPlayer.Role = 'F' then begin
-        ids := GetBestShotReserve( team,61);
-        BrainInput( IntTostr(score.TeamGuid [team]) + ',SUB,' + ids + ',' + anOutPlayer.ids  );// 1 c'è per forza altrimenti no candosub
-      end;
-
-
-    end
-    else if SubType = BestShot then begin // arriva da checkScore
-        ids := GetBestShotReserve( team,61);
-        BrainInput( IntTostr(score.TeamGuid [team]) + ',SUB,' + ids + ',' + anOutPlayer.ids  );// 1 c'è per forza altrimenti no candosub
-    end
-    else if SubType = BestDefense then begin // arriva da checkScore
-        ids := GetBestDefenseReserve( team,61);
-        BrainInput( IntTostr(score.TeamGuid [team]) + ',SUB,' + ids + ',' + anOutPlayer.ids  );// 1 c'è per forza altrimenti no candosub
-    end
-    else if SubType = BestPassing then begin // arriva da checkScore
-        ids := GetBestPassingReserve( team,61);
-        BrainInput( IntTostr(score.TeamGuid [team]) + ',SUB,' + ids + ',' + anOutPlayer.ids  );// 1 c'è per forza altrimenti no candosub
-    end;
-
-    Result := subDone;
-  end
-  else Result := SubCant;
-
-
-end;
-function TSoccerbrain.AI_Think_Tactic ( team , cks: integer):TBetterSolution;
-var
-  i,D,M,F: integer;
-  lstDefense: TObjectList<TSoccerPlayer>;
-  lstMidfield: TObjectList<TSoccerPlayer>;
-  lstForward: TObjectList<TSoccerPlayer>;
-  Newcell:TPoint;
-  ids:string;
-begin
-// Tactic costa mosse com sub
-  result := None;
-  lstDefense:= TObjectList<TSoccerPlayer>.Create(false);
-  lstMidfield:= TObjectList<TSoccerPlayer>.Create(false);
-  lstForward:= TObjectList<TSoccerPlayer>.Create(false);
-
-  D:=0; M:=0; F:=0;
-  if team = 0 then begin
-    for i := 0 to lstSoccerPlayer.Count -1 do begin
-      if (lstSoccerPlayer[i].DefaultCellX = 2) then begin
-        inc (D);
-        lstDefense.Add(lstSoccerPlayer[i]);
-      end
-      else if (lstSoccerPlayer[i].DefaultCellX = 5) then begin
-        inc (M);
-        lstMidfield.Add(lstSoccerPlayer[i]);
-      end
-      else if (lstSoccerPlayer[i].DefaultCellX = 8) then begin
-        inc (F);
-        lstForward.Add(lstSoccerPlayer[i]);
-      end
-    end;
-  end
-  else begin
-    for i := 0 to lstSoccerPlayer.Count -1 do begin
-      if (lstSoccerPlayer[i].DefaultCellX = 9) then begin
-        inc (D);
-        lstDefense.Add(lstSoccerPlayer[i]);
-      end
-      else if (lstSoccerPlayer[i].DefaultCellX = 6) then begin
-        inc (M);
-        lstMidfield.Add(lstSoccerPlayer[i]);
-      end
-      else if (lstSoccerPlayer[i].DefaultCellX = 3) then begin
-        inc (F);
-        lstForward.Add(lstSoccerPlayer[i]);
-      end
-    end;
-  end;
-
-  // ho la fomrazione 4-3-3 5-4-1 ecc...  e le liste per ruolo
-  // fatte in modo che sposta prima la difesa verso il centrocampo o il centrocampo verso la difesa gradualemente
-  if Cks <= -1  then begin // perdo e basta
-    if D >= 4 then begin  // se almeno 4 dif , uno random diventa un midfield
-      ids :=  lstDefense[ RndGenerate0(lstDefense.Count-1)].Ids ;
-      newCell := GetRandomDefaultMidFieldCellFree ( team );
-      lstDefense.Free;
-      lstMidfield.Free;
-      lstForward.Free;
-      if Newcell.X <> -1 then begin
-        BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'TACTIC' + ',' + ids + ',' + IntToStr(Newcell.X)+ ',' + IntToStr(Newcell.Y)  );// 1 c'è per forza altrimenti no candosub
-        Result := TacticDone;
-      end;
-      exit;
-    end
-    else if M >=3 then begin  // se almeno 3 midfield , uno random diventa un forward
-      ids :=  lstMidfield[ RndGenerate0(lstMidfield.Count-1)].Ids ;
-      newCell:= GetRandomDefaultForwardCellFree ( team );
-      lstDefense.Free;
-      lstMidfield.Free;
-      lstForward.Free;
-      if Newcell.X <> -1 then begin
-        BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'TACTIC' + ',' + ids + ',' + IntToStr(Newcell.X)+ ',' + IntToStr(Newcell.Y)  );// 1 c'è per forza altrimenti no candosub
-        Result := TacticDone;
-      end;
-      exit;
-    end;
-
-  end
-  else if Cks >= 1  then begin // vinco e basta
-    if M >= 3 then begin// se almeno 3 midfield uno random diventa Ddfender
-      ids :=  lstMidfield[ RndGenerate0(lstMidfield.Count-1)].Ids ;
-      newCell:= GetRandomDefaultDefenseCellFree ( team );
-      lstDefense.Free;
-      lstMidfield.Free;
-      lstForward.Free;
-      if Newcell.X <> -1 then begin
-        BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'TACTIC' + ',' + ids + ',' + IntToStr(Newcell.X)+ ',' + IntToStr(Newcell.Y)  );// 1 c'è per forza altrimenti no candosub
-        Result := TacticDone;
-      end;
-      exit;
-    end
-    else if F >= 2 then begin// se almeno 2 Attaccanti , uno random diventa midfield
-      ids :=  lstForward[ RndGenerate0(lstForward.Count-1)].Ids ;
-      newCell:= GetRandomDefaultMidFieldCellFree ( team );
-      lstDefense.Free;
-      lstMidfield.Free;
-      lstForward.Free;
-      if Newcell.X <> -1 then begin
-        BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'TACTIC' + ',' + ids + ',' + IntToStr(Newcell.X)+ ',' + IntToStr(Newcell.Y)  );// 1 c'è per forza altrimenti no candosub
-        Result := TacticDone;
-      end;
-      exit;
-    end
-
-  end
-  else begin // 0-0
-      lstDefense.Free;
-      lstMidfield.Free;
-      lstForward.Free;
-  end;
-
-end;
-function TSoccerbrain.AI_Think_StayFree ( team, Cks : integer): TbetterSolution;
-var
-  i:integer;
-  aPlayer: TSoccerPlayer;
-begin
- // se F o M stanno oltre
- // SE M o d stanno più bassi
-  Result := none;
-  if Minute >= 120 then // oltre 120 non lo puo' fare
-    Exit;
-
-  if Cks <= -1  then begin // perdo e basta
-    if team = 0 then begin
-      for I := 0 to lstSoccerplayer.count -1 do begin
-        aPlayer :=lstSoccerplayer[i];   // attenzione, se non è giò settato STAY
-        if (aPlayer.role='F') and (aPlayer.Team=team) and (aPlayer.cellX > aPlayer.DefaultCellX) and (not aPlayer.stay ) then begin
-          BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'STAY' + ',' + aPlayer.ids);
-          Result := StayFreeDone;
-          Exit;
-        end
-        else if (aPlayer.role='M') and (aPlayer.Team=team) and (aPlayer.cellX > aPlayer.DefaultCellX) and (not aPlayer.stay ) then begin
-          BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'STAY' + ',' + aPlayer.ids);
-          Result := StayFreeDone;
-          Exit;
-        end;
-      end;
-    end
-    else if team = 1 then begin
-      for I := 0 to lstSoccerplayer.count -1 do begin
-        aPlayer :=lstSoccerplayer[i];   // attenzione, se non è giò settato STAY
-        if (aPlayer.role='F') and (aPlayer.Team=team) and (aPlayer.cellX < aPlayer.DefaultCellX) and (not aPlayer.stay ) then begin
-          BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'STAY' + ',' + aPlayer.ids);
-          Result := StayFreeDone;
-          Exit;
-        end
-        else if (aPlayer.role='M') and (aPlayer.Team=team) and (aPlayer.cellX < aPlayer.DefaultCellX) and (not aPlayer.stay ) then begin
-          BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'STAY' + ',' + aPlayer.ids);
-          Result := StayFreeDone;
-          Exit;
-        end;
-      end;
-
-    end;
-
-  end
-  else if Cks = 0 then begin // pareggio, applico i free , non importa il team
-      for I := 0 to lstSoccerplayer.count -1 do begin
-        aPlayer :=lstSoccerplayer[i];   // attenzione, se non è giò settato STAY
-        if (aPlayer.stay) and (aPlayer.Team=team) then begin
-          BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'FREE' + ',' + aPlayer.ids);
-          Result := StayFreeDone;
-          Exit;
-        end
-      end;
-  end
-  else if  Cks >= -1  then begin // vinco e basta        // va bene < e > diversi da sopra.
-    if team = 0 then begin
-      for I := 0 to lstSoccerplayer.count -1 do begin
-        aPlayer :=lstSoccerplayer[i];   // attenzione, se non è giò settato STAY
-        if (aPlayer.role='F') and (aPlayer.Team=team) and (aPlayer.cellX < aPlayer.DefaultCellX) and (not aPlayer.stay ) then begin
-          BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'STAY' + ',' + aPlayer.ids);
-          Result := StayFreeDone;
-          Exit;
-        end
-        else if (aPlayer.role='M') and (aPlayer.Team=team) and (aPlayer.cellX < aPlayer.DefaultCellX) and (not aPlayer.stay ) then begin
-          BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'STAY' + ',' + aPlayer.ids);
-          Result := StayFreeDone;
-          Exit;
-        end;
-      end;
-    end
-    else if team = 1 then begin
-      for I := 0 to lstSoccerplayer.count -1 do begin
-        aPlayer :=lstSoccerplayer[i];   // attenzione, se non è giò settato STAY
-        if (aPlayer.role='F') and (aPlayer.Team=team) and (aPlayer.cellX > aPlayer.DefaultCellX) and (not aPlayer.stay ) then begin
-          BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'STAY' + ',' + aPlayer.ids);
-          Result := StayFreeDone;
-          Exit;
-        end
-        else if (aPlayer.role='M') and (aPlayer.Team=team) and (aPlayer.cellX > aPlayer.DefaultCellX) and (not aPlayer.stay ) then begin
-          BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'STAY' + ',' + aPlayer.ids);
-          Result := StayFreeDone;
-          Exit;
-        end;
-      end;
-
-    end;
-
-  end;
-
-end;
-function TSoccerbrain.AI_Think_CleanSomeRows ( team:Integer): TBetterSolution;
-var
-  x: integer;
-  aPlayer: TsoccerPlayer;
-  lstSameRow: TObjectlist<TSoccerPlayer>;
-  aplmcell: TPoint;
-  ids:string;
-begin
-  // solo roga 0 e 6 . Le fascie tendono a popolarsi
-  result := none;
-  lstSameRow:= TObjectlist<TSoccerPlayer>.create(false);
-  for x := 1 to 10 do begin // not gk, sono esclusi
-      aPlayer:=Getsoccerplayer ( x, 0 );
-      if aPlayer = nil then continue;
-      if (aPlayer.team = team) and ( not aPlayer.hasBall) and (aPlayer.canMove) then
-        lstSameRow.add(aPlayer);
-  end;
-
-  if lstSameRow.count >= 3 then begin
-      aPlayer:= lstSameRow[ RndGenerate0 (lstSameRow.Count-1)];
-      ids:= aPlayer.Ids; //lstSameRow[ RndGenerate0 (lstSameRow.Count-1)].Ids ;
-      aplmCell:= GetRandomCellNO06 ( aPlayer.CellX, aPlayer.CellY, aPlayer.Speed  );
-      if aplmCell.X <> -1 then begin
-        GetPath (aPlayer.Team , aPlayer.CellX , aPlayer.CellY, aplmcell.x, aplmcell.y, aPlayer.speed{Limit},false{useFlank},false{FriendlyWall},
-                         false{OpponentWall},true{FinalWall},TruncOneDir{OneDir}, aPlayer.MovePath );
-          if aPlayer.MovePath.Count > 0 then begin
-            BrainInput  ( IntTostr(score.TeamGuid [team]) + ',' +'PLM,' + Ids +',' +
-                        IntToStr(aPlayer.MovePath[aPlayer.MovePath.Count-1].X) +','+ IntToStr(aPlayer.MovePath[aPlayer.MovePath.Count-1].Y));
-            Result := CleanRowDone;
-          end;
-      end;
-      lstSameRow.free;
-      Exit;
-  end;
-
-  lstSameRow.clear;  // le righe 0
-  for x := 1 to 10 do begin // not gk, sono esclusi
-      aPlayer:=Getsoccerplayer ( x, 6 );   // riga 6
-      if aPlayer = nil then continue;
-      if (aPlayer.team = team) and ( not aPlayer.hasBall) and (aPlayer.canMove) then
-        lstSameRow.add(aPlayer);
-  end;
-
-  if lstSameRow.count >= 3 then begin
-      aPlayer:= lstSameRow[ RndGenerate0 (lstSameRow.Count-1)];
-      ids:= aPlayer.Ids; //lstSameRow[ RndGenerate0 (lstSameRow.Count-1)].Ids ;
-      aplmCell:= GetRandomCellNO06 ( aPlayer.CellX, aPlayer.CellY, aPlayer.Speed  );
-      if aplmCell.X <> -1 then begin
-        GetPath (aPlayer.Team , aPlayer.CellX , aPlayer.CellY, aplmcell.x, aplmcell.y, aPlayer.speed{Limit},false{useFlank},false{FriendlyWall},
-                         false{OpponentWall},true{FinalWall},TruncOneDir{OneDir}, aPlayer.MovePath );
-          if aPlayer.MovePath.Count > 0 then begin
-            BrainInput  ( IntTostr(score.TeamGuid [team]) + ',' +'PLM,' + Ids +',' +
-                        IntToStr(aPlayer.MovePath[aPlayer.MovePath.Count-1].X) +','+ IntToStr(aPlayer.MovePath[aPlayer.MovePath.Count-1].Y));
-            Result := CleanRowDone;
-          end;
-      end;
-      lstSameRow.free;
-      Exit;
-  end;
-
-  lstSameRow.free;
-
-end;
-function TSoccerBrain.AI_ForceRandomMove ( team : Integer ): Boolean;
-var
-  i: Integer;
-  aPlayer : TSoccerPlayer;
-  aplmcell: TPoint;
-begin
-  Result := false;
-  for i := lstSoccerPlayer.Count -1 downto 0 do begin // not gk, sono esclusi
-      aPlayer:= lstSoccerPlayer[i];
-      if aPlayer.Team  <> team then continue;
-      if (aPlayer.team = team) and ( not aPlayer.hasBall) and (aPlayer.canMove) and (aPlayer.TalentId1 <> TALENT_ID_GOALKEEPER) then begin
-
-        aplmCell:= GetRandomCellNOplayer ( aPlayer.CellX, aPlayer.CellY, aPlayer.Speed  );
-        if aplmCell.X <> -1 then begin
-          GetPath (aPlayer.Team , aPlayer.CellX , aPlayer.CellY, aplmcell.x, aplmcell.y, aPlayer.speed{Limit},false{useFlank},false{FriendlyWall},
-                           false{OpponentWall},true{FinalWall},TruncOneDir{OneDir}, aPlayer.MovePath );
-            if aPlayer.MovePath.Count > 0 then begin
-              BrainInput  ( IntTostr(score.TeamGuid [team]) + ',' +'PLM,' + aPlayer.Ids +',' +
-                          IntToStr(aPlayer.MovePath[aPlayer.MovePath.Count-1].X) +','+ IntToStr(aPlayer.MovePath[aPlayer.MovePath.Count-1].Y));
-              Result := true;
-              Exit; // importante o ripete sempre.
-            end;
-        end;
-      end;
-  end;
-
-end;
-function TSoccerbrain.AI_Injured_sub_tactic_stay (Team: integer): TBetterSolution;
-var
-  anInjured,aWorstStamina,OutPlayer: TSoccerPlayer;
-//  aSol :TBetterSolution;
-  aRnd,Cks:integer;
-  label Tryrows;
-begin
-  // ci deve sempre essere EXIT.
-
-  if CanDoSub ( Team ) then begin  //not gk
-    // check injured player
-    anInjured := GetInjuredPlayer ( team );
-    if anInjured <> nil then begin
-      Result := AI_Think_sub ( team, anInjured, possiblysamerole ); //result = abs4, SubDone, None
-        if (Result = SubAbs4)  or (result = SubCant) then
-          goto Tryrows
-          else if (Result = SubDone) then
-            Exit;
-    end;
-    // semplice sostituzione in base alla stamina quando cala c'è più probabilità
-    aWorstStamina:= GetWorstStamina (team);   // può ancxhe essere uno appena entrato
-    if aWorstStamina.Stamina <= 60 then begin
-      aRnd := RndGenerate(120);
-      if aRnd >= aWorstStamina.Stamina then begin   // la stamina cala, quindi la chance aumenta
-        Result := AI_Think_sub ( team, aWorstStamina, possiblysamerole ); //result = abs4, SubDone, None
-        if (Result = SubAbs4)  or (result = SubCant) then
-          goto Tryrows
-          else if (Result = SubDone) then
-            Exit;
-      end;
-    end;
-
-    // checkScore e secondo tempo fminute --> sub tactic stay/free
-    if fMinute >= 80 then begin   // 80 su 120
-
-        Cks := CheckScore (team);
-        if Cks <= -2  then begin // perdo di 2 gol o più
-          OutPlayer := GetPlayerForOUT (team,  DefenderOUT ); // un midfield può uscire al posto di un defender, dipende
-          if OutPlayer <> nil then begin
-            aRnd := RndGenerate(120);
-            if aRnd <= fminute  then begin   // fminute incrementa, la chance si alza
-            Result := AI_Think_sub ( team, OutPlayer, BestShot ); //result = abs4, SubDone, None
-              if (Result = SubAbs4)  or (result = SubCant) then
-                goto Tryrows
-                else if (Result = SubDone) then
-                  Exit;
-            end;
-          end;
-          // seguirà tactics
-        end
-        else if Cks = -1  then begin  // perdo di 1 gol
-          OutPlayer := GetPlayerForOUT (team,  DefenderOUT ); // un midfield può uscire al posto di un defender, dipende
-          if OutPlayer <> nil then begin
-            aRnd := RndGenerate(120);
-            if aRnd <= fminute  then begin   // fminute incrementa, la chance si alza
-            Result := AI_Think_sub ( team, OutPlayer, BestShot ); //result = abs4, SubDone, None
-              if (Result = SubAbs4)  or (result = SubCant) then
-                goto Tryrows
-                else if (Result = SubDone) then
-                  Exit;
-            end;
-          end;
-          // seguirà tactics
-        end
-    //    else if Cks = 0  then begin  // pareggio
-    //    end
-        else if Cks = 1  then begin  // vinco di 1 gol
-          OutPlayer := GetPlayerForOUT (team,  forwardOUT ); // un midfield può uscire al posto di un defender, dipende
-          if OutPlayer <> nil then begin
-            aRnd := RndGenerate(120);
-            if aRnd <= fminute  then begin   // fminute incrementa, la chance si alza
-            Result := AI_Think_sub ( team, OutPlayer, BestDefense ); //result = abs4, SubDone, None
-              if (Result = SubAbs4)  or (result = SubCant) then
-                goto Tryrows
-                else if (Result = SubDone) then
-                  Exit;
-            end;
-          end;
-          // seguirà tactics
-        end
-        else if Cks >= 2  then begin  // vinco di 2 gol o più
-          OutPlayer := GetPlayerForOUT (team,  forwardOUT ); // un midfield può uscire al posto di un forward, dipende
-          if OutPlayer <> nil then begin
-            aRnd := RndGenerate(120);
-            if aRnd <= fminute  then begin   // fminute incrementa, la chance si alza
-            Result := AI_Think_sub ( team, OutPlayer, BestDefense ); //result = abs4, SubDone, None
-              if (Result = SubAbs4)  or (result = SubCant) then
-                goto Tryrows
-                else if (Result = SubDone) then
-                  Exit;
-            end;
-          end;
-          // seguirà tactics
-        end;
-    end;  // minute 80
-  end; // candosub
-
-  // TACTICS
-  // qui Result = SubCant oppure semplicemente nil oppure candosub = false;  oppure pareggio quindi no sub
-  if fMinute >= 120 then begin   // 120+
-    // non puo' fare tactics
-    goto Tryrows;
-  end;
-  if fMinute >= 80 then begin   // 80 su 120
-      // Tactic sempre dentro >= 80
-      Cks := CheckScore (team);
-      Result := AI_Think_Tactic ( team, Cks );
-      if Result = TacticDone then
-        Exit;
-  end;
-  if fMinute >= 85 then begin   // 85 su 120
-      // Stay/Free sempre dentro >= 100 ultimi 20
-      Cks := CheckScore (team);
-      Result := AI_Think_StayFree ( team, Cks ); // in caso di pareggio elimino gli stay con i free
-      if Result = StayFreeDone then
-        Exit;
-      // se F +1 M +2
-  end;
-
-
-  // in ultimo pulisoc le righe
-Tryrows:
-  Result := AI_Think_CleanSomeRows ( team );
-
-end;
-procedure TSoccerbrain.AI_Think (team: integer);
-var
-  tmp: TStringList;
-  cof,fkf2,fkf3,fkf4: string;
-  ShpOrLop: Integer;
-  dstCell: TPoint;
-  CornerMap: TCornerMap;
-  aHeadingFriend: TSoccerPlayer;
-  aSol:TBetterSolution;
-  label lopfkf1;
-begin
-  if (not GameStarted) or (Finished) then Exit;
-
-  // Prima vengono processate le palle inattive, corner, punizioni ecc..
-
-  if w_Coa  then begin
-    cof := GetBestCrossing ( Team );
-    tmp:= TstringList.Create;
-    tmp.commatext :=  GetBestHeading ( Team, cof );
-    BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'CORNER_ATTACK.SETUP' + ',' + cof + ',' + tmp[0] + ',' + tmp[1] + ',' + tmp[2]  );
-    tmp.free;
-    Exit;
-  end
-  else if w_Cod then begin
-   (* COD1 COD2 COD3 *)
-    tmp:= TstringList.Create;
-    tmp.commatext :=  GetBestHeading ( Team, '' );
-    BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'CORNER_DEFENSE.SETUP' + ',' + tmp[0] + ',' + tmp[1] + ',' + tmp[2]   );
-    tmp.Free;
-    Exit;
-  end
-  else if w_CornerKick then begin
-    BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'COR'  );
-    Exit;
-  end
-
-  (*------------------------------------------------------------------------*)
-  else if w_Fka1 then begin
-    cof := GetBestPassing ( Team );
-    BrainInput( IntTostr(score.TeamGuid [team]) + ',' +'FREEKICK1_ATTACK.SETUP' + ',' + cof   );
-    Exit;
-  end
-  else if w_FreeKick1 then begin
-    ShpOrLop := RndGenerate(100);
-
-    case ShpOrLop of
-      65..100: begin
-        dstCell:= GetDummyShpCellXY;
-        if dstCell.X <> -1 then
-            BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'SHP' +',' + IntToStr(dstCell.X) + ',' + IntToStr(dstCell.Y) ) else goto lopfkf1;
-        end;
-      1..64: begin
-lopfkf1:
-        dstCell:= GetDummyLopCellXYFriend;
-        if dstCell.X <> -1 then begin
-            BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'LOP' +',' + IntToStr(dstCell.X) + ',' + IntToStr(dstCell.Y)+ ',N' );
-        end
-        else begin
-          dstCell:= GetDummyLopCellXY;
-          if dstCell.X <> -1 then  begin
-            BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'LOP' +',' + IntToStr(dstCell.X) + ',' + IntToStr(dstCell.Y)+ ',N' );
-          end
-          else  begin   // un portiere che non può fare nulla, nel lop, ne shp --> speciale maxrangeLop fino a 11 o 0
-              dstCell:= GetDummyLopCellXYinfinite;
-              BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'LOP,'  + IntToStr(dstCell.X) + ',' + IntToStr(dstCell.Y)+ ',GKLOP' )  // vale anche per FKF1 ok bug no celle libere
-          end;
-        end;
-
-      end;
-    end;
-
-    Exit;
-
-  end
-  (*------------------------------------------------------------------------*)
-
-  else if w_fka2 then begin   // chi tira punizione/cross e saltatori attacco
-    fkf2 := GetBestCrossing ( Team );
-    tmp:= TstringList.Create;
-    tmp.commatext :=  GetBestHeading ( Team, fkf2 );
-    BrainInput( IntTostr(score.TeamGuid [team]) + ',' +'FREEKICK2_ATTACK.SETUP' + ',' + fkf2 + ',' + tmp[0] + ',' + tmp[1] + ',' + tmp[2]  );
-    tmp.free;
-    Exit;
-  end
-  else if w_fkd2 then begin   // saltatori difesa
-    tmp:= TstringList.Create;
-    tmp.commatext :=  GetBestHeading ( Team, '' );
-    BrainInput( IntTostr(score.TeamGuid [team]) + ',' +'FREEKICK2_DEFENSE.SETUP' + ',' +  tmp[0] + ',' + tmp[1] + ',' + tmp[2]  );
-    tmp.free;
-    Exit;
-  end
-  else if w_FreeKick2 then begin
-    CornerMap := GetCorner ( TeamTurn , Ball.CellY, OpponentCorner );
-
-    // cerco il saltatore centrale, di solito quello più forte
-    aHeadingFriend := GetSoccerPlayer ( CornerMap.HeadingCellA [0].X , CornerMap.HeadingCellA [0].Y  );
-    
-    BrainInput(  IntTostr(score.TeamGuid [team]) + ',' +'CRO2,'  + IntToStr(aHeadingFriend.CellX) + ',' + IntToStr( aHeadingFriend.CellY)  );
-    Exit;
-  end
-  (*------------------------------------------------------------------------*)
-
-  else if w_fka3 then begin  // singolo tiratore
-    fkf3 := GetBestShot ( Team );
-    BrainInput( IntTostr(score.TeamGuid [team]) + ',' +'FREEKICK3_ATTACK.SETUP' + ',' + fkf3   );
-    Exit;
-  end
-  else if w_fkd3 then begin // barriera
-    tmp:= TstringList.Create;
-    tmp.commatext :=  GetBestBarrier ( Team );
-    BrainInput( IntTostr(score.TeamGuid [team]) + ',' +'FREEKICK3_DEFENSE.SETUP' + ',' +  tmp[0] + ',' + tmp[1] + ',' + tmp[2] + ',' + tmp[3] );
-    tmp.free;
-    Exit;
-  end
-  else if w_FreeKick3 then begin   // la punizione shot
-   // o pos o prs. se ho uomini in area posso provare pos perchè ottengono il rimbalzo
-   if GetFriendInCrossingArea ( Ball.Player )  then begin // absdistance è sempre ok
-     PosOrPrs ( score.TeamGuid [team], 30 )
-   end
-   else PosOrPrs ( score.TeamGuid [team], 1 ); // comunque 1%
-   Exit;
-  end
-  (*------------------------------------------------------------------------*)
-  else if w_fka4 then begin // rigorista
-    fkf4 := GetBestShot ( Team );
-    BrainInput( IntTostr(score.TeamGuid [team]) + ',' +'FREEKICK4_ATTACK.SETUP' + ',' + fkf4   );
-    Exit;
-  end
-  else if w_FreeKick4 then begin // il rigore
-   // o pos o prs. con pos e parata il corner è 100%
-    PosOrPrs ( score.TeamGuid [team], 10 );
-    Exit;
-  end;
-
-    { ai sostituzioni stamina e tattiche }
-
-  ASol := AI_Injured_sub_tactic_stay ( team );
-  if (ASol = subDone ) or (ASol = tacticDone )  or (ASol = StayfreeDone ) or (aSol = CleanRowDone ) //or (aSol = SubAbs4) // bug risolto
-    then Exit; // se abs4 passo al giro dop ma proseguo qui sotto, se stay/free per il momento nulla
-
-
-  if Ball.Player <> nil then begin
-    if Ball.Player.Team = team  then begin    // palla mio turno sempre mio
-      case ball.Zone  of     // ball.Zone  0 2 1
-        0: begin
-          if  team = 0 then begin             // mio turno ho la palla in difesa
-            AI_Think_myball_iDefend ( team ); // ----> converte output in reale
-          end
-          else if  team = 1 then begin        // mio turno ho la palla in attacco
-            AI_Think_myball_iAttack ( team);
-          end;
-        end;
-        1: begin
-          if  team = 0 then begin             // mio turno ho la palla in attacco
-            AI_Think_myball_iAttack ( team);
-
-          end
-          else if  team = 1 then begin        // mio turno ho la palla in difesa
-            AI_Think_myball_iDefend ( team);
-          end;
-
-        end;
-        2: begin
-            AI_Think_myball_middle ( team );
-
-        end;
-      end;
-    end
-    else begin                                    // palla loro
-      case ball.Zone  of
-        0: begin
-          if  team = 0 then begin             // sono blu Loro hanno la palla in difesa
-            AI_Think_oppball_iDefend ( team );
-
-          end
-          else if  team = 1 then begin        // sono 0 Loro hanno la palla in attacco
-            AI_Think_oppball_iAttack ( team );
-            //
-          end;
-
-        end;
-        1: begin
-          if  team = 0 then begin             // sono 1 Loro hanno la palla in attacco
-            AI_Think_oppball_iAttack ( team );
-
-          end
-          else if  team = 1 then begin        // sono 0 Loro hanno la palla in difesa
-            AI_Think_oppball_iDefend ( team );
-
-          end;
-
-        end;
-        2: begin
-            AI_Think_oppball_middle ( team );
-        end;
-      end;
-
-    end;
-  end                                           // palla neutra  Dummy reachtheball
-  else begin
-      case ball.Zone  of
-        0: begin
-          if  team = 0 then begin             // mio turno palla neutra nella mia difesa
-            AI_Think_neutralball_iDefend ( team );
-          end
-          else if  team = 1 then begin             // sono 1 palla neutra in attacco
-            AI_Think_neutralball_iAttack ( team );
-          end;
-
-        end;
-        1: begin
-          if  team = 0 then begin             // sono 1 palla neutra nella mia difesa
-            AI_Think_neutralball_iAttack ( team );
-          end
-          else if  team = 1 then begin             // sono 0 palla neutra in attacco
-            AI_Think_neutralball_idefend ( team );
-          end;
-
-
-        end;
-        2: begin
-          AI_Think_neutralball_middle ( team  );  // palla neutra centrocampo
-        end;
-      end;
-
-  end;
-end;
-procedure TSoccerbrain.AI_Think_myball_iDefend ( Team: integer );
-var
-  ShpOrLopOrPlm: Integer;
-//  aList: TList<TAimidChance>;
-  dstCell: TPoint;
-  aDoor,aPlmCell: TPoint;
-  aSol : TBetterSolution;
-  label lopdef;
-begin
-(*  MidChances := Tlist<TAIMidChance>.Create;*)
-      // Dummy AI
-// COPIATA SEMPRE DA AI_Think_myball_middle ma il GK non può fare short.passing
-
-  if not Ball.Player.CanSkill  then begin
-    aSol := AI_Injured_sub_tactic_stay(team);
-    if  (aSol = none) or (aSol = SubAbs4) or (aSol = SubCant) then begin // subCant non arriva mai. candosub è chechata prima
-      if Minute < 120 then
-        BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'PASS'  ) // o ha fatto qualcosa o passo
-        else AI_ForceRandomMove ( Team );
-    end;
-      Exit;
-  end;
-
-
-  if Ball.Player.TalentId1 = TALENT_ID_GOALKEEPER then begin  // problema getlinepoints per short.passing
-    dstCell:= GetDummyLopCellXYinfinite;
-    BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'LOP,'  + IntToStr(dstCell.X) + ',' + IntToStr(dstCell.Y) + ',GKLOP');
-    Exit;
-  end;
-
-  if DummyAheadPass ( team ) then Exit;
-
-
- // mia metacampo in difesa AI SHP or LOP
-
-  ShpOrLopOrPlm := RndGenerate(100);
-  case ShpOrLopOrPlm of
-    81..100: begin
-      dstCell:= GetDummyShpCellXY;
-      if dstCell.X <> -1 then begin
-        BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'SHP' +',' + IntToStr(dstCell.X) + ',' + IntToStr(dstCell.Y) );
-        exit;
-      end
-      else goto lopdef;
-    end;
-    21..80: begin  // punto la porta
-      if (not Ball.Player.canMove) or ( Ball.Player.Role = 'G' ) then goto lopdef;
-
-      aDoor:= GetOpponentDoor(ball.Player);
-      if aDoor.X = 0 then aDoor.X:= 1 else // il fondo
-      if aDoor.X = 11 then aDoor.X:= 10; // il fondo
-          // MoveValue := ball.player.speed-1;
-          // if MoveValue <=0 then MoveValue := 1;
-      aplmCell:= GetDummyMaxAcceleration (AccSelfY );
-      if aplmCell.X <> -1 then begin
-          BrainInput  ( IntTostr(score.TeamGuid [team]) + ',' +'PLM,' + ball.Player.Ids +',' + IntToStr(aplmCell.X) +','+ IntToStr(aplmCell.Y));
-          exit;
-      end;
-      aplmCell:= GetDummyMaxAcceleration (AccBestDistance);
-      if aplmCell.X <> -1 then begin
-          BrainInput  ( IntTostr(score.TeamGuid [team]) + ',' +'PLM,' + ball.Player.Ids +',' + IntToStr(aplmCell.X) +','+ IntToStr(aplmCell.Y));
-          exit;
-      end
-      else begin  // se non c'è maxacceleration cerco un path verso la porta. se è tutto chiuso mi muovo in avanti di 1
-          // provo a puntare la porta anche in diagonale di 1 o anche speed
-          aplmCell:= GetDummyGoAheadCell;   // si muove solo di 2 in su??????
-          if aplmCell.X <> -1 then begin
-            BrainInput  ( IntTostr(score.TeamGuid [team]) + ',' +'PLM,' + ball.Player.Ids +',' + IntToStr(aplmCell.X) +','+ IntToStr(aplmCell.Y));
-            exit;
-          end
-          else goto lopdef; // se proprio non c'è path provo lop
-      end
-    end;
-    1..20: begin
-  lopdef:
-      dstCell:= GetDummyLopCellXYFriend;  // prima cerca un compagno
-      if dstCell.X <> -1 then begin
-          BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'LOP' +',' + IntToStr(dstCell.X) + ',' + IntToStr(dstCell.Y)+ ',N' );
-          Exit;
-      end
-      else begin
-        dstCell:= GetDummyLopCellXY;
-        if dstCell.X <> -1 then  begin
-          BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'LOP' +',' + IntToStr(dstCell.X) + ',' + IntToStr(dstCell.Y)+ ',N' );
-          Exit;
-        end
-        else if Ball.Player.TalentId1 <> TALENT_ID_GOALKEEPER then begin
-          if AI_Think_CleanSomeRows ( team ) = None then begin   // se non riesco a pulire le row e col
-            if not AI_TrySomeBuff ( team )then begin                        // provo un buff, se non ho buffato, nel senso non ho la skill nei 3 reparti
-              BrainInput( IntTostr(score.TeamGuid [team]) + ',' +'PRO');
-              Exit;
-            end;
-          end;
-
-        end
-        else  begin   // un portiere che non può fare nulla, nel lop, ne shp --> speciale maxrangeLop fino a 11 o 0
-          dstCell:= GetDummyLopCellXYinfinite;
-          BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'LOP,'  + IntToStr(dstCell.X) + ',' + IntToStr(dstCell.Y) + ',GKLOP');
-          Exit;
-        end;
-      end;
-
-    end;
-  end;
-  // 2-4 mosse. check lop su friend per volley. valuto rischio
-
-
-      Exit;
-  case fTeamMovesLeft of
-    2..4:begin
-      // non calcolo shp free o non free
-
-      // 2-4 mosse. check plmBall speed. valuto rischio
-      // 2-4 mosse. check shp a seguire.  valuto rischio
-      // 2-4 mosse. check shp diretto . valuto rischio
-      // 2-4 mosse. check plm a seguire e poi shp. valuto rischio
-      // 2-4 mosse. check plm e poi shp diretto. valuto rischio
-      // 2-4 mosse. check lop a seguire. valuto rischio
-      // 2-4 mosse. check lop su friend. valuto rischio
-      // 2-4 mosse. check plm e Lop a seguire. valuto rischio
-      // 2-4 mosse. check plm e lop su friend. valuto rischio
-      // ultima: 4 mosse. check plMove. se può farlo  sulle celledefaultX i difensori offensivi o difensivi se fuori celladefaultX
-
-      (*      MidChance := ai_check_plmballSpeed ( Team );
-      if MidChance.Chance >= 0 then MidChances.Add(MidChance);
-      MidChance := ai_check_shpCell ( Team );
-      if MidChance.Chance >= 0 then MidChances.Add(MidChance); QUESTA ANDAVA BENE*)
-      {
-      MidChance := ai_check_shpFriend ( Team );
-      MidChances.Add(MidChance);
-      MidChance := ai_check_plmMove_shp ( Team );
-      MidChances.Add(MidChance);
-      MidChance := ai_check_plmMove_shpFriend ( Team );
-      MidChances.Add(MidChance);
-      MidChance := ai_check_lopCell ( Team );
-      MidChances.Add(MidChance);
-      MidChance := ai_check_lopFriend ( Team );
-      MidChances.Add(MidChance);
-      MidChance := ai_check_plmMove_lopCell ( Team );
-      MidChances.Add(MidChance);
-      MidChance := ai_check_plmMove_lopFriend ( Team );
-      MidChances.Add(MidChance); x
-
-      if MidChance <= 50 then begin
-       if ai_plmBallMove (1) = 0 then begin
-         // non mi posso muovere. prendo la migliore MidChance
-       end;
-
-      end
-      else begin
-
-      end; }
-    end;
-    1:begin
-      // 1 mossa. check protection. valuto rischio
-      // 1 mosse. check lop a seguire. valuto rischio
-      // 1 mosse. check lop su friend. valuto rischio
-
-    end;
-
-  end;
-
-  (*if MidChances.Count > 0 then BrainInput(  MidChances[0].inputAI );
-  MidChances.Free;*)
-end;
-
-procedure TSoccerbrain.AI_Think_myball_middle ( Team: integer  );
-var
-  dstCell: TPoint;
-  ShpOrLopOrPlm,ShotCellsOrBottom,aRnd: Integer;
-  aDoor,aPlmCell,aplmCell2: TPoint;
-  aSol: TBetterSolution;
-  label lopdef,lopatt,plmmoveatt,normalversion;
-begin
-
-  if not Ball.Player.CanSkill  then begin
-    aSol := AI_Injured_sub_tactic_stay(team);
-    if  (aSol = none) or (aSol = SubAbs4) or (aSol = SubCant) then begin // subCant non arriva mai. candosub è chechata prima
-      if Minute < 120 then
-        BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'PASS'  ) // o ha fatto qualcosa o passo
-        else AI_ForceRandomMove ( team );
-    end;
-      Exit;
-  end;
-  // se il ball.player ha una speed > 2 penso in un modo, altrimenti posso pensare in un un altro.
-  aRnd := RndGenerate(100);
-  if aRnd > 70 then goto normalversion;// 70% speed version  30% normal version
-
-
-      {  provo a puntare una shotcell > 2 se speed > 2}
-  if (Ball.Player.canMove) and (Ball.Player.Speed > 2) then begin // quindi minimo 3 che diventa 2 con la palla
-    aplmCell.X := -1;
-    aplmCell2.X := -1;
-    ShotCellsOrBottom :=0;
-    // vedo se è possibile raggiungere una shotcell con buff
-    aplmCell:= GetDummyMaxAccelerationSHotCells( True {OnlyBuffed} ) ;
-    // se sono sulle fascie posso cercare il fondo per un cross se ho almeno 1 friendly in area o sulla celly dell'area per eventuale inserimento
-    if (Ball.Player.CellY = 0) or (Ball.Player.CellY = 1) or (Ball.Player.CellY = 5) or (Ball.Player.CellY = 6) then begin // se sono sulle fascie
-      aplmCell2:= GetDummyMaxAccelerationBottom ; // GetDummyMaxAcceleration (AccSelfY ) + check è sul fondo (ultima o penultima cella)
-    end;
-
-    // o ho 2 possibilità (fondo o shotcell o solo una delle 2 o nessuna delle 2
-    if (aplmCell.X <> -1) and (aplmCell2.X <> -1)
-      then  ShotCellsOrBottom := 50
-        else if aplmCell.X <> -1 then begin
-          BrainInput  ( IntTostr(score.TeamGuid [team]) + ',' +'PLM,' + ball.Player.Ids +',' + IntToStr(aplmCell.X) +','+ IntToStr(aplmCell.Y));
-          exit;
-        end
-        else if aplmCell2.X <> -1 then begin
-          BrainInput  ( IntTostr(score.TeamGuid [team]) + ',' +'PLM,' + ball.Player.Ids +',' + IntToStr(aplmCell2.X) +','+ IntToStr(aplmCell2.Y));
-          exit;
-        end;
-
-    // se arrivo qui significa che ho tutte e le possibilità
-
-    if  ShotCellsOrBottom = 50 then begin
-     aRnd :=rndgenerate (100);
-     case aRnd of
-          1..50: begin
-            BrainInput  ( IntTostr(score.TeamGuid [team]) + ',' +'PLM,' + ball.Player.Ids +',' + IntToStr(aplmCell.X) +','+ IntToStr(aplmCell.Y));
-            exit;
-          end;
-          51..100: begin
-            BrainInput  ( IntTostr(score.TeamGuid [team]) + ',' +'PLM,' + ball.Player.Ids +',' + IntToStr(aplmCell2.X) +','+ IntToStr(aplmCell2.Y));
-            exit;
-          end;
-     end;
-    end;
-  end;
-normalversion:
-    // qui nel caso la speed di ball.player sia inferiore a 3
-    if DummyAheadPass ( team ) then Exit;  // provo un shp dritto
-
-      // la palla si sposta , devo sempre usare exit
-      // mia metacampo AI SHP or LOP
-      if ((Team = 0) and (Ball.Player.CellX < 6)) or ((Team = 1) and (Ball.Player.CellX > 5)) then begin
-        ShpOrLopOrPlm := RndGenerate(100);
-
-//        ShpOrLopOrPlm:= 33;
-        case ShpOrLopOrPlm of
-          81..100: begin
-            dstCell:= GetDummyShpCellXY;
-            if dstCell.X <> -1 then begin
-              BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'SHP' +',' + IntToStr(dstCell.X) + ',' + IntToStr(dstCell.Y) );
-              Exit;
-            end
-            else goto lopdef;
-          end;
-          21..80: begin  // punto la porta
-            if not Ball.Player.canMove then goto lopdef;
-
-            aDoor:= GetOpponentDoor(ball.Player);
-            if aDoor.X = 0 then aDoor.X:= 1 else // il fondo
-            if aDoor.X = 11 then aDoor.X:= 10; // il fondo
-
-//                 MoveValue := ball.player.speed-1;
-//                 if MoveValue <=0 then MoveValue := 1;
-            // cerco una massima accelerazione. se non la trovo cerco un path verso la porta
-            aplmCell:= GetDummyMaxAcceleration (AccSelfY );
-            if aplmCell.X <> -1 then begin
-                BrainInput  ( IntTostr(score.TeamGuid [team]) + ',' +'PLM,' + ball.Player.Ids +',' + IntToStr(aplmCell.X) +','+ IntToStr(aplmCell.Y));
-                exit;
-            end;
-            aplmCell:= GetDummyMaxAcceleration (AccBestDistance );
-            if aplmCell.X <> -1 then begin
-                BrainInput  ( IntTostr(score.TeamGuid [team]) + ',' +'PLM,' + ball.Player.Ids +',' + IntToStr(aplmCell.X) +','+ IntToStr(aplmCell.Y));
-                Exit;
-            end
-            else begin  // se non c'è maxacceleration cerco un path verso la porta. se è tutto chiuso mi muovo in avanti di 1
-
-                // provo a puntare la porta anche in diagonale di 1 o anche speed
-                aplmCell:= GetDummyGoAheadCell;   // si muove solo di 2 in su??????
-                if aplmCell.X <> -1 then begin
-                  BrainInput  ( IntTostr(score.TeamGuid [team]) + ',' +'PLM,' + ball.Player.Ids +',' + IntToStr(aplmCell.X) +','+ IntToStr(aplmCell.Y));
-                 Exit;
-                end
-                else goto lopdef; // se proprio non c'è path provo lop
-            end;
-          end;
-
-          1..20: begin
-lopdef:
-            dstCell:= GetDummyLopCellXYFriend;
-            if dstCell.X <> -1 then begin
-                BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'LOP' +',' + IntToStr(dstCell.X) + ',' + IntToStr(dstCell.Y)+ ',N' );
-                Exit;
-            end
-            else begin
-              dstCell:= GetDummyLopCellXY;
-              if dstCell.X <> -1 then  begin
-                BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'LOP' +',' + IntToStr(dstCell.X) + ',' + IntToStr(dstCell.Y)+ ',N' );
-                Exit;
-              end
-              else if Ball.Player.TalentId1 <> TALENT_ID_GOALKEEPER then begin
-                if AI_Think_CleanSomeRows ( team ) = None then begin   // se non riesco a pulire le row e col
-                  if not AI_TrySomeBuff (team) then begin                        // provo un buff, se non ho buffato, nel senso non ho la skill nei 3 reparti
-                    BrainInput( IntTostr(score.TeamGuid [team]) + ',' +'PRO');
-                    Exit;
-                  end;
-                end;
-
-              end
-              else  begin   // un portiere che non può fare nulla, nel lop, ne shp --> speciale maxrangeLop fino a 11 o 0
-                dstCell:= GetDummyLopCellXYinfinite;
-                BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'LOP,'  + IntToStr(dstCell.X) + ',' + IntToStr(dstCell.Y)+ ',GKLOP' );
-                exit;
-              end;
-            end;
-
-          end;
-        end;
-      end
-      // loro metacampo AI SHP or PRO or Puntolaporta in cellX (niente lop a vuoto)
-      else if ((Team = 0) and (Ball.Player.CellX > 5)) or ((Team = 1) and (Ball.Player.CellX < 6)) then begin
-        ShpOrLopOrPlm := RndGenerate(100);
-        case ShpOrLopOrPlm of
-          60..100: begin
-            dstCell:= GetDummyShpCellXY;
-            if dstCell.X <> -1 then begin
-              BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'SHP' +',' + IntToStr(dstCell.X) + ',' + IntToStr(dstCell.Y) );
-              exit;
-            end
-            else goto plmmoveatt;
-          end;
-          16..59: begin  // 43% punto la porta
-plmmoveatt:
-            if not Ball.Player.canMove then goto lopatt;
-            aDoor:= GetOpponentDoor(ball.Player);
-            if aDoor.X = 0 then aDoor.X:= 1 else // il fondo
-            if aDoor.X = 11 then aDoor.X:= 10; // il fondo
-              //   MoveValue := ball.player.speed-1;
-              //   if MoveValue <=0 then MoveValue := 1;
-
-            // cerco una massima accelerazione. se non la trovo cerco un path verso la porta
-            aplmCell:= GetDummyMaxAcceleration(AccSelfY );
-              if aplmCell.X <> -1 then begin
-                  BrainInput  ( IntTostr(score.TeamGuid [team]) + ',' +'PLM,' + ball.Player.Ids +',' + IntToStr(aplmCell.X) +','+ IntToStr(aplmCell.Y)) ;
-                  Exit;
-              end;
-              aplmCell:= GetDummyMaxAcceleration(AccDoor );
-              if aplmCell.X <> -1 then begin
-                  BrainInput  ( IntTostr(score.TeamGuid [team]) + ',' +'PLM,' + ball.Player.Ids +',' + IntToStr(aplmCell.X) +','+ IntToStr(aplmCell.Y));
-                  Exit;
-              end;
-                // se non c'è maxacceleration cerco un path verso la porta. se è tutto chiuso mi muovo in avanti di 1
-                // provo a puntare la porta anche in diagonale di 1 o anche speed
-                aplmCell:= GetDummyGoAheadCell;   // si muove solo di 2 in su??????
-                if aplmCell.X <> -1 then begin
-                  BrainInput  ( IntTostr(score.TeamGuid [team]) + ',' +'PLM,' + ball.Player.Ids +',' + IntToStr(aplmCell.X) +','+ IntToStr(aplmCell.Y));
-                  exit;
-                end
-                else goto lopatt; // se proprio non c'è path provo lop
-          end;
-
-          1..15: begin  // non innesca volley
-lopatt:
-            dstCell:= GetDummyLopCellXYFriend;
-            if dstCell.X <> -1 then begin
-                BrainInput(  IntTostr(score.TeamGuid [team]) + ',' +'LOP' +',' + IntToStr(dstCell.X) + ',' + IntToStr(dstCell.Y)+ ',N' );
-                Exit;
-            end
-            else begin
-                //PRO or Something
-                if AI_Think_CleanSomeRows ( team ) = None then begin   // se non riesco a pulire le row e col
-                  if not AI_TrySomeBuff (team) then begin                        // provo un buff, se non ho buffato, nel senso non ho la skill nei 3 reparti
-                    BrainInput( IntTostr(score.TeamGuid [team]) + ',' +'PRO');
-                    Exit;
-                  end;
-                end;
-            end;
-
-          end;
-        end;
-      end;
-
-      // 2-4 mosse. check lop su friend per volley. valuto rischio
-
-end;
-procedure TSoccerbrain.AI_Think_myball_iAttack ( Team: integer );
-var
-  ShotOrPlm: Integer;
-  aplmCell: TPoint;
-  aSol: TBetterSolution;
-  label todoor,shot,shot2,tobottomfield,cantcross;
-begin
-      // Dummy AI
-      // se può tirare cerca il tiro o potente o preciso, se non può fa un lop in X (non Y)
-  if not Ball.Player.CanSkill  then begin
-    aSol := AI_Injured_sub_tactic_stay(team);
-    if  (aSol = none) or (aSol = SubAbs4) or (aSol = SubCant) then begin // subCant non arriva mai. candosub è chechata prima
-      if Minute < 120 then
-        BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'PASS'  ) // o ha fatto qualcosa o passo
-        else AI_ForceRandomMove (team);
-    end;
-      Exit;
-  end;
-
-
-  case Ball.Player.onBottom of
-    NearCornerCell,BottomNoShot: begin  // la cella pari al corner sul fondo o quella isolata. non posso tirare
-      // cerco un cross o volley. se non c'è e se mancano almeno 2 mosse metto un uomo in CrossingArea
-      // o dribbling o pass o move. come sotto
-      // è possibile avere un headingFriend ma non un volleyfriend oppure tutti e due
-      if DummyTryCross ( team ) then Exit;
-      if FTeamMovesLeft >=2 then begin
-        if Ball.Player.Passing >= 6 then begin // se posso fare 10
-          if DummyReachTheCrossinArea1Moves (ball.Player, atShot) = true then Exit;   // ripassa di qui e farà DummyTryCross
-        end
-        else begin
-          if DummyReachTheCrossinArea1Moves (ball.Player, atHeading) = true then Exit;   // ripassa di qui e farà DummyTryCross
-        end;
-      end;
-      if FTeamMovesLeft >=3 then begin
-        if Ball.Player.Passing >= 6 then begin // se posso fare 10
-          if DummyReachTheCrossinArea2Moves (ball.Player, atShot) = true then Exit;   // ripassa di qui e farà DummyTryCross
-        end
-        else begin
-          if DummyReachTheCrossinArea2Moves (ball.Player, atHeading) = true then Exit;   // ripassa di qui e farà DummyTryCross
-        end;
-
-      end;
-
-      DummyFindaWay( team ); // o dribbling o pass o move, dipende cos trovo puntanto la porta, altrimenti Protection
-    end;
-    BottomShot: begin     // posizione centrale di tiro ravvicinato
-      // se teammovleft minimo 2 se posso avanzare maxdirection o anche solo di 1 lo faccio
-      // altrimenti tiro
-  shot:
-        PosOrPrs ( Team, 50 );
-    end;
-    BottomNone: begin // non sono sul fondo ma comunque sono in Shotcell linee 2,3
-      case Ball.Player.CellY of
-        2..4: begin  // Posizione centrale linee 2,3 check uno davanti
-
-          if FTeamMovesLeft >=2 then begin
-            if Ball.Player.BonusLopBallControlTurn  > 0 then begin // ne approfitto
-  toDoor:
-              if not ball.Player.canmove then goto shot;
-              aplmCell:= GetDummyMaxAcceleration (AccDoor);
-              if aplmCell.X <> -1 then
-                  BrainInput  ( IntTostr(score.TeamGuid [team]) + ',' +'PLM,' + ball.Player.Ids +',' + IntToStr(aplmCell.X) +','+ IntToStr(aplmCell.Y))
-              else begin  // se non c'è maxacceleration cerco un path verso la porta. se è tutto chiuso mi muovo in avanti di 1
-                  // provo a puntare la porta anche in diagonale di 1 o anche speed
-                  aplmCell:= GetDummyGoAheadCell;   // si muove solo di 2 in su??????
-                  if aplmCell.X <> -1 then
-                    BrainInput  ( IntTostr(score.TeamGuid [team]) + ',' +'PLM,' + ball.Player.Ids +',' + IntToStr(aplmCell.X) +','+ IntToStr(aplmCell.Y))
-                    else begin
-                      // forse ho un friend davanti
-                      if not DummyAheadPass ( team ) then
-                        goto shot;
-                    end;
-              end;
-           end
-            else begin //come sopra ma 50%
-               ShotOrPlm := RndGenerate(100);
-               case ShotOrPlm of
-                1..50:PosOrPrs ( team, 50 );
-                51..100: goto toDoor;
-               end;
-           end;
-          end
-          else goto shot; // solo 1 mossa rimasta. tiro.
-
-        end
-        else begin // sono sulle fascie linee 2,3 check uno davanti  non posso tirare   ma posso crossare (se possibile) o avanzare verso il fondo
-  toBottomfield:
-      { se rimane 1 mossa cerca il fondo invece di provare il cross . o crossa o cerca il fondo o tira}
-       //   if Ball.Player.passing > ball.Player.BallControl then begin   // meglio il cross che cercare il rigore
-            if DummyTryCross ( team ) then Exit;
-            if FTeamMovesLeft >=2 then begin
-              if Ball.Player.Passing >= MAX_STAT then begin // se posso fare MAX_LEVEL
-                if DummyReachTheCrossinArea1Moves (ball.Player, atShot) = true then Exit;   // ripassa di qui e farà DummyTryCross
-              end
-              else begin
-                if DummyReachTheCrossinArea1Moves (ball.Player, atHeading) = true then Exit;   // ripassa di qui e farà DummyTryCross
-              end;
-            end;
-            if FTeamMovesLeft >=3 then begin
-              if Ball.Player.Passing >= MAX_STAT then begin // se posso fare 10
-                if DummyReachTheCrossinArea2Moves (ball.Player, atShot) = true then Exit;   // ripassa di qui e farà DummyTryCross
-              end
-              else begin
-                if DummyReachTheCrossinArea2Moves (ball.Player, atHeading) = true then Exit;   // ripassa di qui e farà DummyTryCross
-              end;
-
-            end;
-
-            goto cantcross;
-       //   end
-        //  else begin
-  cantcross:
-              if not ball.Player.canmove then goto shot;
-          aplmCell:= GetDummyMaxAcceleration (AccSelfY);
-              if aplmCell.X <> -1 then
-                  BrainInput  ( IntTostr(score.TeamGuid [team]) + ',' +'PLM,' + ball.Player.Ids +',' + IntToStr(aplmCell.X) +','+ IntToStr(aplmCell.Y))
-              else begin  // se non c'è maxacceleration cerco un path verso la porta. se è tutto chiuso mi muovo in avanti di 1
-                      if not DummyAheadPass ( team ) then
-                        goto shot;
-              end;
-        end;
-      //  end;
-      end;
-    end;
-  end;
-            // inshotcell o no?
-            // vedo se tiro facile
-            // vedo se tiro buffato
-            // vedo se tiro buffato con shp
-            // vedo come andare al tiro
-            // cerco le fascie
-            // valuto cross
-end;
-function TSoccerBrain.AI_TrySomeBuff ( team: integer ): Boolean;
-var
-  OpponentTeam: integer;
-  aPlayer: TSoccerPlayer;
-begin
-  result := false;
-  // Devo sapere Se sto perdendo, pareggiando o vincendo.
-  // Devo sapere se c'è qualche buff già attivo. Nel caso evito perchè non stacka
-  // Cerco un player che possa buffare il reparto, quindi che abbia qul specifico talento e provo il buff.
-  if team = 0 then
-    OpponentTeam := 1
-    else OpponentTeam := 0;
-  if Score.Gol[Team] = Score.Gol[ OpponentTeam ] then begin // se pareggio cerco un buff per cen-att-dif, se perdo att-cen-dif, se vinco def,cen,att
-    if Score.buffM[team] = 0 then begin
-       aPlayer := GetDummyTalentInRole ( Team, TALENT_ID_BUFF_MIDDLE );
-       if aPlayer <> nil then begin
-         BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'BUFFM' + ',' + aPlayer.ids );
-         Result := True;
-         exit;
-       end;
-    end;
-    if Score.buffF[team] = 0 then begin
-      aPlayer := GetDummyTalentInRole ( Team, TALENT_ID_BUFF_FORWARD );
-       if aPlayer <> nil then begin
-         BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'BUFFF' + ',' + aPlayer.ids );
-         Result := True;
-         exit;
-       end;
-    end;
-    if Score.buffD[team] = 0 then begin
-      aPlayer := GetDummyTalentInRole ( Team, TALENT_ID_BUFF_DEFENSE );
-       if aPlayer <> nil then begin
-         BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'BUFFD' + ',' + aPlayer.ids );
-         Result := True;
-         exit;
-       end;
-    end;
-
-  end
-  else if Score.Gol[Team] < Score.Gol[OpponentTeam] then begin // se pareggio cerco un buff per cen-att-dif, se perdo att-cen-dif, se vinco def,cen,att
-    if Score.buffF[team] = 0 then begin
-      aPlayer := GetDummyTalentInRole ( Team, TALENT_ID_BUFF_FORWARD );
-       if aPlayer <> nil then begin
-         BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'BUFFF'  + ',' + aPlayer.ids );
-         Result := True;
-         exit;
-       end;
-    end;
-    if Score.buffM[team] = 0 then begin
-      aPlayer := GetDummyTalentInRole ( Team, TALENT_ID_BUFF_MIDDLE );
-       if aPlayer <> nil then begin
-         BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'BUFFM' + ',' + aPlayer.ids );
-         Result := True;
-         exit;
-       end;
-    end;
-    if Score.buffD[team] = 0 then begin
-      aPlayer := GetDummyTalentInRole ( Team, TALENT_ID_BUFF_DEFENSE );
-       if aPlayer <> nil then begin
-         BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'BUFFD'  + ',' + aPlayer.ids );
-         Result := True;
-         exit;
-       end;
-    end;
-  end
-  else if Score.Gol[Team] > Score.Gol[OpponentTeam] then begin // se pareggio cerco un buff per cen-att-dif, se perdo att-cen-dif, se vinco def,cen,att
-    if Score.buffD[team] = 0 then begin
-      aPlayer := GetDummyTalentInRole ( Team, TALENT_ID_BUFF_DEFENSE );
-       if aPlayer <> nil then begin
-         BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'BUFFD' + ',' + aPlayer.ids );
-         Result := True;
-         exit;
-       end;
-    end;
-    if Score.buffM[team] = 0 then begin
-      aPlayer := GetDummyTalentInRole ( Team, TALENT_ID_BUFF_MIDDLE );
-       if aPlayer <> nil then begin
-         BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'BUFFM' + ',' + aPlayer.ids );
-         Result := True;
-         exit;
-       end;
-    end;
-    if Score.buffF[team] = 0 then begin
-      aPlayer := GetDummyTalentInRole ( Team, TALENT_ID_BUFF_FORWARD );
-       if aPlayer <> nil then begin
-         BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'BUFFF' + ',' + aPlayer.ids );
-         Result := True;
-         exit;
-       end;
-    end;
-  end;
-
-end;
-function TSoccerBrain.GetDummyTalentInRole ( team, TalentId: integer ): TSoccerPlayer;
-var
-  P: Integer;
-  aPlayer: TSoccerPlayer;
-begin
-  Result := nil;
-  for P := lstSoccerPlayer.Count -1 downto 0 do begin
-    aPlayer := lstSoccerPlayer[p];
-    if IsOutSide( aPlayer.CellX, aPlayer.CellY) then continue;
-    if ( aPlayer.Team = team ) and ( aPlayer.TalentId2 = talentid  ) then begin
-      if TalentId = 139 then begin
-        if aPlayer.Role = 'D' then begin
-          Result := aPlayer;
-          Exit;
-        end;
-      end
-      else if TalentId = 140 then begin
-        if aPlayer.Role = 'M' then begin
-          Result := aPlayer;
-          Exit;
-        end;
-      end
-      else if TalentId = 141 then begin
-        if aPlayer.Role = 'F' then begin
-          Result := aPlayer;
-          Exit;
-        end;
-      end;
-    end;
-  end;
-
-
-
-end;
-
-function TSoccerBrain.GetDummyAheadPass( Team: integer ): TSoccerPlayer;
-var
-  x: integer;
-  aPlayer: TSoccerPlayer;
-begin
-  { TODO : controllo offside }
-  Result := nil;
-   if Team = 1 then begin
-     for x := 1 to Ball.Player.CellX -1 do begin
-       aPlayer := GetSoccerPlayer (X, ball.Player.CellY, ball.Player.team );
-       if aPlayer = nil then Continue;
-
-       if AbsDistance(aPlayer.cellX, aPlayer.CellX, ball.Player.CellX,ball.Player.cellY)  <= ShortPassRange then begin
-          Result := aPlayer;
-          Exit;
-       end;
-      end;
-   end
-   else if Team = 0 then begin
-     for x := 10 downto Ball.Player.CellX +1 do begin
-       aPlayer := GetSoccerPlayer (X, ball.Player.CellY, ball.Player.team );
-       if aPlayer = nil then Continue;
-
-       if AbsDistance(aPlayer.cellX, aPlayer.CellX, ball.Player.CellX,ball.Player.cellY)  <= ShortPassRange then begin
-          Result := aPlayer;
-          Exit;
-       end;
-     end;
-
-   end;
-
-
-end;
-function TSoccerBrain.DummyAheadPass( Team: integer ): Boolean;
-var
-  x: integer;
-  aPlayer: TSoccerPlayer;
-begin
-  Result := False;
-   if Ball.Player.Team = 1 then begin
-     for x := 1 to Ball.Player.CellX -1 do begin
-       aPlayer := GetSoccerPlayer (X, ball.Player.CellY, ball.Player.team );
-       if aPlayer = nil then Continue;
-       if IsOffSide(ball.Player,aPlayer) then continue;
-
-
-       if AbsDistance(aPlayer.cellX, aPlayer.CellX, ball.Player.CellX,ball.Player.cellY)  <= ShortPassRange then begin
-
-          BrainInput(  IntTostr(score.TeamGuid [team]) + ',' +'SHP' +',' + IntToStr(aPlayer.cellX) + ',' + IntToStr(aPlayer.cellY) );
-          Result := true;
-          Exit;
-       end;
-     end;
-   end
-   else if Ball.Player.Team = 0 then begin
-     for x := 10 downto Ball.Player.CellX +1 do begin
-       aPlayer := GetSoccerPlayer (X, ball.Player.CellY, ball.Player.team );
-       if aPlayer = nil then Continue;
-       if IsOffSide(ball.Player,aPlayer) then Exit;
-
-       if AbsDistance(aPlayer.cellX, aPlayer.CellX, ball.Player.CellX,ball.Player.cellY)  <= ShortPassRange then begin
-          BrainInput(  IntTostr(score.TeamGuid [team]) + ',' +'SHP' +',' + IntToStr(aPlayer.cellX) + ',' + IntToStr(aPlayer.cellY) );
-          Result := true;
-          Exit;
-       end;
-     end;
-
-   end;
-
-
-end;
-
-procedure TSoccerBrain.PosOrPrs ( Team, PosChance: integer );
-var
-  r: Integer;
-begin
-  r := RndGenerate(100);
-  if r <= PosChance then BrainInput( IntTostr(score.TeamGuid [ team]) + ',' + 'POS' )
-  else BrainInput( IntTostr(score.TeamGuid [ team]) + ',' + 'PRS' );
-
-end;
-procedure TSoccerBrain.DummyFindaWay;
-var
-  anOpponent: TSoccerPlayer;
-  aDoor: TPoint;
-begin
-    //Getpath FALSE ! poi cella per cella vede cosa è
-  aDoor:= GetOpponentDoor(ball.Player);
-          if aDoor.X = 0 then aDoor.X := 1 else // il dischetto dl rigore
-            if aDoor.X = 11 then aDoor.X := 10; // il dischetto dl rigore
-  GetPath ( Ball.Player.Team, Ball.Player.CellX, Ball.Player.CellY, aDoor.X, aDoor.Y,12,False,False,False,false,EveryDirection, Ball.Player.MovePath  );
-          anOpponent := GetSoccerPlayer(Ball.Player.MovePath[0].X , Ball.Player.MovePath[0].Y );
-          if anOpponent = nil then begin
-            if Ball.Player.canMove then begin
-              BrainInput  (IntTostr(score.TeamGuid [team]) + ',' + 'PLM,' + ball.Player.Ids +',' + IntToStr(Ball.Player.MovePath[0].X) +','+ IntToStr(Ball.Player.MovePath[0].Y));
-              Exit;
-            end
-            else begin
-              // prima provo a spostare qualcosa
-              if AI_Think_CleanSomeRows ( team ) = None then
-                BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'PRO');
-            end;
-          end
-          else begin
-            if (anOpponent.Team <> Ball.Player.Team)   then begin
-              if Ball.Player.CanDribbling then
-                  BrainInput  (IntTostr(score.TeamGuid [team]) + ',' + 'DRI,' + IntToStr(Ball.Player.MovePath[0].X) +','+ IntToStr(Ball.Player.MovePath[0].Y))
-                  else begin
-                    if AI_Think_CleanSomeRows ( team ) = None then
-                    BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'PRO');
-                  end;
-              Exit;
-            end
-            else if anOpponent.Team = Ball.Player.Team  then begin // un compagno mi ostruisce
-                  BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'SHP,' + IntToStr(Ball.Player.MovePath[0].X) +','+ IntToStr(Ball.Player.MovePath[0].Y));
-              Exit;
-            end;
-
-          end
-end;
-function TSoccerbrain.DummyTryCross( Team: integer ): Boolean;
-var
-  aVolleyFriend,aHeadingfriend: TSoccerPlayer;
-
-begin
-  result := false;
-  aHeadingFriend:= GetDummyCrossFriend (Ball.Player);
-  aVolleyFriend:= GetDummyVolleyFriend (Ball.Player);
-
-  if ( aHeadingfriend <> nil ) and ( aVolleyFriend = nil ) then begin
-    if IsOffSide(ball.Player,aHeadingFriend) then Exit;
-
-    BrainInput(  IntTostr(score.TeamGuid [team]) + ',' +'CRO,'  + IntToStr(aHeadingFriend.cellX) + ',' + IntToStr(aHeadingFriend.cellY) );
-    result := True;
-  end
-
-  // non può esistere che ho un volley ma non un heading
-  // qui hho tutti e 2 disponibili
-  else if ( aHeadingfriend <> nil ) and ( aVolleyFriend <> nil ) then begin
-    if IsOffSide(ball.Player,aVolleyFriend) then Exit;
-    if IsOffSide(ball.Player,aHeadingFriend) then Exit;
-
-    if Ball.Player.Passing >= MAX_STAT then  // se posso fare 10f o 16m
-        BrainInput(  IntTostr(score.TeamGuid [team]) + ',' +'LOP,'  + IntToStr(aVolleyFriend.cellX) + ',' + IntToStr(aVolleyFriend.cellY) + ',N' )
-    else
-        BrainInput(  IntTostr(score.TeamGuid [team]) + ',' +'CRO,'  + IntToStr(aHeadingFriend.cellX) + ',' + IntToStr(aHeadingFriend.cellY) );
-    result := True;
-  end
-end;
-function TSoccerbrain.DummyReachTheCrossinArea1Moves ( aPlayer: TSoccerPlayer; bestAttribute:TAttributeName) : boolean;
-var
-  i,p: Integer;
-  aCrossCell: TTvCrossAreaCell;
-  tmpCrossCells : Tlist<TTVCrossAreaCell>;
-  Listfriends: TList<TCellAndPlayer>;
-  aFriend: TSoccerPlayer;
-  aCellandPlayer: TCellAndPlayer;
-begin
-  (* Tra tutti quelli che possono un random raggiunge l'aera avversaria*)
-  // ciclo per tutte le celle della corossing e ottengo quelle libere
-  result := false;
-  tmpCrossCells := Tlist<TTVCrossAreaCell>.Create;
-  Listfriends:= TList<TCellAndPlayer>.Create;
-
-    ball.Player.tmp := CrossingRangeMax;
-    if (ball.Player.TalentId1 = TALENT_ID_LONGPASS)or (ball.Player.TalentId2 = TALENT_ID_LONGPASS)  then
-      ball.Player.tmp := ball.Player.tmp + 1 ;
-
-  for I := 0 to TVCrossingAreaCells.Count -1 do begin
-    aCrossCell :=  TvCrossingAreaCells[i];
-
-    if aCrossCell.DoorTeam <> aPlayer.Team then begin // <> opponent
-      if (GetSoccerPlayer ( aCrossCell.cellX, aCrossCell.CellY) = nil) and // la distanza minima e massima crossing
-      ( AbsDistance( Ball.Player.CellX,ball.Player.CellY, aCrossCell.CellX , aCrossCell.cellY ) >= CrossingRangeMin )
-      and  ( AbsDistance( Ball.Player.CellX,ball.Player.CellY, aCrossCell.CellX , aCrossCell.cellY ) <= (ball.Player.tmp ) )
-      then begin
-        // la aggiungo alla lista di celle cross libere in versione AIfield
-        tmpCrossCells.Add ( aCrossCell );
-      end;
-    end;
-  end;
-  // ho la lista delle crosscell libere. devo trovare i possibili friend che le raggiungano
-  for i := 0 to tmpCrossCells.Count -1 do begin
-    aCrossCell:= tmpCrossCells[i];
-    for p := lstSoccerPlayer.Count -1 downto 0 do begin
-      aFriend := lstSoccerPlayer[p];
-      if (aFriend.TalentId1 = TALENT_ID_GOALKEEPER ) or (aFriend.Team <> aPlayer.Team) or ( not aFriend.CanMove ) or ( aPlayer.Ids = aFriend.Ids ) then Continue;
-      // un mio friend
-
-      GetPath (aFriend.Team, aFriend.CellX ,aFriend.Celly,
-      aCrossCell.CellX, aCrossCell.CellY, aFriend.Speed{Limit},
-      aFriend.Flank <> 0{useFlank}, false, false,true ,TruncOneDir{OneDir}, aFriend.MovePath );
-
-      if (afriend.MovePath.Count > 0) then begin // il path potrebbe essere parziale. meglio se l'ultimp step E' una cella cross
-        if (afriend.MovePath[afriend.MovePath.Count-1].X = aCrossCell.cellX) and (afriend.MovePath[afriend.MovePath.Count-1].Y = aCrossCell.cellY) then begin
-          // raggiunge la cross area
-          aCellandPlayer.CellX :=  aCrossCell.CellX;
-          aCellandPlayer.CellY :=  aCrossCell.CellY;
-          aCellandPlayer.Player := aFriend.ids;
-          if bestAttribute = atShot then
-            aCellandPlayer.chance := aFriend.Shot
-          else if bestAttribute = atheading then
-            aCellandPlayer.chance := aFriend.heading ;
-          ListFriends.Add(aCellandPlayer);
-        end;
-      end;
-
-    end;
-  end;
-
-  // il result è il player con il suo MovePath pronto per l'input
-  // ritorno il puntatore alla lista orginale, questa viene distrutta
-
-  if Listfriends.count > 0 then begin
-      Listfriends.sort(TComparer<TCellAndPlayer>.Construct(
-      function (const L, R: TCellAndPlayer): integer
-      begin
-        Result := R.chance - L.chance;
-      end
-     ));
-
-    BrainInput  ( IntTostr(score.TeamGuid [ aPlayer.team]) + ',' +'PLM,' + Listfriends[0].Player  + ',' +
-                            IntToStr(Listfriends[0].cellX) +','+ IntToStr(Listfriends[0].cellY));  // è la cella finale del path
-    Result :=  True;
-  end;
-
-
-  Listfriends.Free;
-  tmpCrossCells.Free;
-end;
-function TSoccerbrain.DummyReachTheCrossinArea2Moves ( aPlayer: TSoccerPlayer; bestAttribute:TAttributeName) : boolean;
-var
-  i,p: Integer;
-  aCrossCell: TTvCrossAreaCell;
-  tmpCrossCells : Tlist<TTVCrossAreaCell>;
-  Listfriends: TList<TCellAndPlayer>;
-  aFriend: TSoccerPlayer;
-  aCellandPlayer: TCellAndPlayer;
-  AVirtualPlayer: TVirtualPlayer;
-  lstVirtualSoccer: TList<TVirtualPlayer>;
-  aPlayerR: TSoccerPlayer;
-begin
-  (* Tra tutti quelli che possono un random raggiunge l'aera avversaria in 2 mosse quindi 2 getpath virtuali/teoriche. solo il primo PLM path è effettuato*)
-  // ciclo per tutte le celle della corossing e ottengo quelle libere
-  result := false;
-  tmpCrossCells := Tlist<TTVCrossAreaCell>.Create;
-  Listfriends:= TList<TCellAndPlayer>.Create;
-
-    ball.Player.tmp := CrossingRangeMax;
-    if (ball.Player.TalentId1 = TALENT_ID_LONGPASS)or (ball.Player.TalentId2 = TALENT_ID_LONGPASS)  then
-      ball.Player.tmp := ball.Player.tmp + 1 ;
-
-
-  for I := 0 to TVCrossingAreaCells.Count -1 do begin
-    aCrossCell :=  TvCrossingAreaCells[i];
-
-    if aCrossCell.DoorTeam <> aPlayer.Team then begin // <> opponent
-      if (GetSoccerPlayer ( aCrossCell.cellX, aCrossCell.CellY) = nil) and // la distanza minima e massima crossing
-      ( AbsDistance( Ball.Player.CellX,ball.Player.CellY, aCrossCell.CellX , aCrossCell.cellY ) >= CrossingRangeMin )
-      and  ( AbsDistance( Ball.Player.CellX,ball.Player.CellY, aCrossCell.CellX , aCrossCell.cellY ) <= (ball.Player.tmp) )
-      then begin
-        // la aggiungo alla lista di celle cross libere in versione AIfield
-        tmpCrossCells.Add ( aCrossCell );
-      end;
-    end;
-  end;
-  // ho la lista delle crosscell libere. devo trovare i possibili friend che le raggiungano in 2 mosse ( 2 getpath consecutivi !!! )
-
-  // fill virtualSoccer
-  lstVirtualSoccer:= TList<TVirtualPlayer>.Create;
-  for p := 0 to lstSoccerPlayer.Count -1 do begin  // parte da 0 per synch
-    aPlayerR:= lstSoccerPlayer[p];
-    AVirtualPlayer.ids := aPlayerR.Ids;
-    AVirtualPlayer.VirtualCellX := aPlayerR.CellX;
-    AVirtualPlayer.VirtualCellY := aPlayerR.CellY;
-    AVirtualPlayer.Team := aPlayerR.Team;
-    AVirtualPlayer.canMove := aPlayerR.CanMove;
-    AVirtualPlayer.Role := aPlayerR.Role;
-    lstVirtualSoccer.add ( AVirtualPlayer);
-  end;
-  for i := 0 to tmpCrossCells.Count -1 do begin
-    aCrossCell:= tmpCrossCells[i];
-    for p := lstSoccerPlayer.Count -1 downto 0 do begin
-      aFriend := lstSoccerPlayer[p];
-      if (aFriend.Role = 'G') or (aFriend.Team <> aPlayer.Team) or ( not aFriend.CanMove ) or ( aPlayer.Ids = aFriend.Ids ) then Continue;
-      // un mio friend
-
-      GetPath (aFriend.Team, aFriend.CellX ,aFriend.Celly,
-      aCrossCell.CellX, aCrossCell.CellY, aFriend.Speed{Limit},
-      aFriend.Flank <> 0{useFlank}, false, false,true ,TruncOneDir{OneDir}, aFriend.MovePath );
-
-
-      // in teoria non dovrebbe trovare nessuno qui da dove è chiamata.
-      if (afriend.MovePath.Count > 0) then begin // il path potrebbe essere parziale. meglio se l'ultimp step E' una cella cross
-          // aggiorno virtualX e VirtualY
-      // non uso find, sono liste sincronizzate
-        AVirtualPlayer := lstVirtualSoccer[p];
-        AVirtualPlayer.VirtualCellX:= afriend.MovePath[afriend.MovePath.Count-1].X; // <-- la lista è per forza sincronizzata. il ciclo parte da 0
-        AVirtualPlayer.VirtualCellY:= afriend.MovePath[afriend.MovePath.Count-1].Y; // <-- la lista è per forza sincronizzata. il ciclo parte da 0
-        if (afriend.MovePath[afriend.MovePath.Count-1].X = aCrossCell.cellX) and (afriend.MovePath[afriend.MovePath.Count-1].Y = aCrossCell.cellY) then begin
-          // raggiunge la cross area
-          aCellandPlayer.CellX :=  aCrossCell.CellX;
-          aCellandPlayer.CellY :=  aCrossCell.CellY;
-          aCellandPlayer.Player := aFriend.ids;
-          if bestAttribute = atShot then
-            aCellandPlayer.chance := aFriend.Shot
-          else if bestAttribute = atheading then
-            aCellandPlayer.chance := aFriend.heading ;
-          ListFriends.Add(aCellandPlayer);
-        end;
-      end;
-
-
-    end;
-  end;
-
-  for i := 0 to tmpCrossCells.Count -1 do begin
-    aCrossCell:= tmpCrossCells[i];
-    for p := lstVirtualSoccer.Count -1 downto 0 do begin
-
-        // il nuovo getpath riparte dalla cella virtuale raggiunta sopra al primo tentativo
-        aFriend := lstSoccerPlayer[p];  //<-- synch
-        AVirtualPlayer := lstVirtualSoccer [p];   //<-- synch
-
-        if (aFriend.Role = 'G') or (aFriend.Team <> aPlayer.Team) or ( not aFriend.CanMove ) or ( aPlayer.Ids = aFriend.Ids ) then Continue;
-
-        // il getpath dovrebbe lavorare su virtualSoccer
-        GetPath (AVirtualPlayer.Team, AVirtualPlayer.VirtualCellX , AVirtualPlayer.VirtualCellY,
-        aCrossCell.CellX, aCrossCell.CellY, aFriend.Speed{Limit},
-        aFriend.Flank <> 0{useFlank}, false, false,true ,TruncOneDir{OneDir}, aFriend.MovePath );
-
-        if (afriend.MovePath.Count > 0) then begin // il path potrebbe essere parziale. meglio se l'ultimp step E' una cella cross
-          if (afriend.MovePath[afriend.MovePath.Count-1].X = aCrossCell.cellX) and (afriend.MovePath[afriend.MovePath.Count-1].Y = aCrossCell.cellY) then begin
-            // raggiunge la cross area
-            aCellandPlayer.CellX :=  aCrossCell.CellX;
-            aCellandPlayer.CellY :=  aCrossCell.CellY;
-            aCellandPlayer.Player := aFriend.ids;
-            if bestAttribute = atShot then
-              aCellandPlayer.chance := aFriend.Shot
-            else if bestAttribute = atheading then
-              aCellandPlayer.chance := aFriend.heading ;
-            ListFriends.Add(aCellandPlayer);
-          end;
-        end;
-    end;
-  end;
-  // il result è il player con il suo MovePath pronto per l'input
-  // ritorno il puntatore alla lista orginale, questa viene distrutta
-
-  if Listfriends.count > 0 then begin
-      Listfriends.sort(TComparer<TCellAndPlayer>.Construct(
-      function (const L, R: TCellAndPlayer): integer
-      begin
-        Result := R.chance - L.chance;
-      end
-     ));
-
-    BrainInput  ( IntTostr(score.TeamGuid [ aPlayer.team]) + ',' +'PLM,' + Listfriends[0].Player  + ',' +
-                            IntToStr(Listfriends[0].cellX) +','+ IntToStr(Listfriends[0].cellY));  // è la cella finale del path
-    Result :=  true;
-  end;
-
-  lstVirtualSoccer.Free;
-  Listfriends.Free;
-  tmpCrossCells.Free;
-end;
-procedure TSoccerbrain.AI_Think_oppball_iDefend ( Team: integer  );
-begin
-      AiDummyTakeTheBall ( Team );
-
-            //cerco un path per fare un tackle o un pressing + tackle
-            //cerco un aiuto pressing
-end;
-procedure TSoccerbrain.AiDummyTakeTheBall ( Team: integer  );
-var
-  aPlayer: TSoccerPlayer;
-  TacOrPre: Integer;
-begin
-      // Dummy AI
-      // provo sempre il tackle se mi trovo a distanza 1 altrimenti passo
-      if Ball.Player.TalentId1 <> TALENT_ID_GOALKEEPER then begin // se non è un portiere
-
-        aPlayer := GetdummyPressing(Team); // vede se c'è a distanza 1 un player con talento experience
-        if aPlayer <> nil then begin
-            BrainInput(  IntTostr(score.TeamGuid [team]) + ',' +'PRE,' + aPlayer.ids  )
-        end
-        else begin
-          aPlayer := GetdummyTackle (Team); // vale anche per pressing perchè è per forza a distanza 1
-          if aPlayer <> nil then begin
-            if Ball.Player.UnderPressureTurn > 0  then begin   // se è già sotto pressing non lo ripeto, faccio il tackle
-                BrainInput(  IntTostr(score.TeamGuid [team]) + ',' +'TAC,' + aPlayer.ids  );   // subito il tackle
-            end
-            else begin
-            TacOrPre:= RndGenerate(100);
-            case TacOrPre of
-              1..50: BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'PRE,' + aPlayer.ids  );    // faccio sempre prima pressing oppure no al 50%
-              51..100: BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'TAC,' + aPlayer.ids  );   // rischio subito il tackle
-              end;
-            end;
-          end
-          else DummyReachTheBall ( Team );
-        end
-      end
-      else begin  // se il gk avversario ha la palla
-        if AI_Injured_sub_tactic_stay(team) = none then begin
-          if Minute < 120 then
-            BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'PASS'  ) // o ha fatto qualcosa o passo
-          else AI_ForceRandomMove(team);
-        end;
-      end;
-end;
-procedure TSoccerbrain.AI_Think_oppball_middle ( Team: integer  );
-begin
-      AiDummyTakeTheBall ( Team );
-end;
-procedure TSoccerbrain.AI_Think_oppball_iAttack ( Team: integer  );
-begin
-      AiDummyTakeTheBall ( Team );
-            //cerco un path per fare un tackle o un pressing + tackle
-            //cerco un aiuto pressing
-            // mi copro, abilito il rientro agevole
-end;
-procedure TSoccerbrain.AI_Think_neutralball_iDefend ( Team: integer );
-begin
-      // Dummy AI
-      // provo sempre a raggiungere la palla
-      DummyReachTheBall (Team);
-   // cerco solo come raggiungere la palla
-end;
-procedure TSoccerbrain.AI_Think_neutralball_middle ( Team: integer  );
-begin
-      // Dummy AI
-      // provo sempre a raggiungere la palla
-      DummyReachTheBall (Team);
-end;
-procedure TSoccerbrain.AI_Think_neutralball_iAttack ( Team: integer );
-begin
-      // Dummy AI
-      // provo sempre a raggiungere la palla
-      DummyReachTheBall (Team);
-end;
-
-
-
-
-function TSoccerbrain.GetDummyLopCellXY : Tpoint;
-var
-  AICell,TvCell,dstCell: TPoint;
-  aList: TList<TPoint>;
-  x,y,MaxDistance: integer;
-  DummyFriend: TSoccerPlayer;
-begin
-    Result.X := -1;   // errore, nessuna cella libera
-    Result.Y := -1;
-    // butto la palla in avanti a caso il più lontano
-    AICell := Tv2AiField (Ball.player.Team, Ball.player.CellX,Ball.player.CellY ) ;
-    MaxDistance := LoftedPassRangeMax ;
-    if (ball.Player.TalentId1 = TALENT_ID_LONGPASS)or (ball.Player.TalentId2 = TALENT_ID_LONGPASS)  then
-      MaxDistance :=  MaxDistance + 1;
-    aList:= Tlist<TPoint>.Create;
-
-
-    // ragioni in AIfield
-    for Y := MaxDistance downto MaxDistance-1 do begin // fino a lop max -1 (abbastanza lontano in avanti)
-      for X := 0 to 6 do begin // tutta la linea possibile X
-        DstCell.Y := AICell.Y  - Y;
-        DstCell.X := X;
-
-        (*absdistance è diversa dal rangeMAx, va checkata ora*)
-        TvCell := AiField2TV ( Ball.player.Team, dstCell.X,dstCell.Y );
-        if AbsDistance( Ball.player.CellX,Ball.player.CellY,TvCell.X,TvCell.Y) > (MaxDistance) then Continue;
-        if IsOutSide(TvCell.X, TvCell.Y ) then Continue;
-
-        TvCell := AiField2TV ( Ball.player.Team, dstCell.X,dstCell.Y );
-        DummyFriend := GetSoccerPlayer (TvCell.X,TvCell.Y) ;
-        if DummyFriend = nil then begin
-          aList.Add(dstCell);
-          continue;
-        end;
-        if (DummyFriend.Team = Ball.player.Team) and ( DummyFriend.Ids <>  Ball.Player.ids  ) and (not IsOffSide(ball.Player,DummyFriend)) then begin // se è un compagno
-          aList.Add(dstCell);
-          continue;
-        end;
-      end;
-    end;
-
-    if aList.Count > 0 then begin
-      Result := aList[RndGenerate0(aList.Count-1)];
-      TvCell := AiField2TV ( Ball.player.Team, Result.X, Result.Y );
-      Result := TvCell;
-    end;
-    aList.Free;
-
-end;
-function TSoccerbrain.GetDummyLopCellXYInfinite : Tpoint;
-var
-  AICell,TvCell,dstCell: TPoint;
-  aList: TList<TPoint>;
-  x,y: integer;
-  DummyFriend: TSoccerPlayer;
-begin
-//    Result.X := -1;   // una cella libera esiste per forza
-    // butto la palla in avanti a caso il più lontano
-    AICell := Tv2AiField (Ball.player.Team, Ball.player.CellX,Ball.player.CellY ) ;
-   // MaxDistance := 10;
-    aList:= Tlist<TPoint>.Create;
-
-
-    // ragioni in AIfield
-    for Y := 1 to 5 do begin // fino a lop 1 una cella libra la trovo per forza
-      for X := 0 to 6 do begin // tutta la linea possibile X
-        DstCell.Y := AICell.Y  - Y;
-        DstCell.X := X;
-
-        (*absdistance è diversa dal rangeMAx, va checkata ora*)
-        TvCell := AiField2TV ( Ball.player.Team, dstCell.X,dstCell.Y );
-        if AbsDistance( Ball.player.CellX,Ball.player.CellY,TvCell.X,TvCell.Y) < (LoftedPassRangeMin) then Continue;
-        if IsOutSide(TvCell.X, TvCell.Y ) then Continue;
-
-
-        if not IsOutSide( TvCell.X, TvCell.Y )  then begin // se è dentro il campo e se è friendly/vuota
-          TvCell := AiField2TV ( Ball.player.Team, dstCell.X,dstCell.Y );
-          DummyFriend := GetSoccerPlayer (TvCell.X,TvCell.Y);
-          if DummyFriend = nil then begin
-            aList.Add(dstCell);
-          end
-          else if (DummyFriend.Ids <>  Ball.Player.ids) and not (IsOffSide(ball.Player,DummyFriend))   then begin // se è un compagno
-            aList.Add(dstCell);
-//            continue;
-          end;
-        end;
-      end;
-    end;
-
-    if aList.Count > 0 then begin
-      Result := aList[RndGenerate0(aList.Count-1)];
-      TvCell := AiField2TV ( Ball.player.Team, Result.X, Result.Y );
-      Result := TvCell;
-    end;
-    aList.Free;
-
-end;
-function TSoccerbrain.GetDummyLopCellXYfriend : Tpoint;
-var
-  AICell,TvCell,dstCell: TPoint;
-  aList: TList<TPoint>;
-  x,y,MaxDistance: integer;
-  DummyFriend: TSoccerPlayer;
-begin
-    Result.X := -1;   // errore, nessuna cella con compagno
-    Result.Y := -1;
-
-    AICell := Tv2AiField (Ball.player.Team, Ball.player.CellX,Ball.player.CellY ) ;
-    MaxDistance := LoftedPassRangeMax ;
-    if (ball.Player.TalentId1 = TALENT_ID_LONGPASS) or (ball.Player.TalentId2 = TALENT_ID_LONGPASS)  then
-      MaxDistance :=  MaxDistance + 1;
-    aList:= Tlist<TPoint>.Create;
-
-
-    // ragiono in AIfield
-    for Y := MaxDistance downto MaxDistance-1 do begin // fino a lop max -1 (abbastanza lontano in avanti)
-      for X := 0 to 6 do begin // tutta la linea possibile X
-        DstCell.Y := AICell.Y  - Y;
-        DstCell.X := X;
-
-        (*absdistance è diversa dal rangeMAx, va checkata ora*)
-        TvCell := AiField2TV ( Ball.player.Team, dstCell.X,dstCell.Y );
-        if AbsDistance( Ball.player.CellX,Ball.player.CellY,TvCell.X,TvCell.Y) > (MaxDistance) then Continue;
-        if IsOutSide(TvCell.X, TvCell.Y ) then Continue;
-
-          TvCell := AiField2TV ( Ball.player.Team, dstCell.X,dstCell.Y );
-          DummyFriend := GetSoccerPlayer (TvCell.X,TvCell.Y,ball.Player.team);
-          if DummyFriend = nil then continue;
-          if IsOffSide(ball.Player,DummyFriend) then continue;
-
-          if DummyFriend.Ids <>  Ball.Player.ids  then begin // se è un compagno
-            aList.Add(dstCell);
-            continue;
-          end;
-      end;
-    end;
-
-    if aList.Count > 0 then begin
-      Result := aList[RndGenerate0(aList.Count-1)];
-      TvCell := AiField2TV (Ball.player.Team, Result.X, Result.Y );
-      Result := TvCell;
-    end;
-    aList.Free;
-
-end;
-
-function TSoccerbrain.GetDummyCrossFriend ( aPlayer: TSoccerPlayer ): TSoccerPlayer;
-var
-  p,MaxDistance: integer;
-  aFriend: TSoccerPlayer;
-  aList: TObjectList<TSoccerPlayer>;
-
-begin
-  Result := nil;
-
-    MaxDistance := CrossingRangeMax ;
-    if (aPlayer.TalentId1 = TALENT_ID_LONGPASS ) or (aPlayer.TalentId2 = TALENT_ID_LONGPASS ) then
-      MaxDistance :=  MaxDistance + 1;
-
-  aList:= TObjectList<TSoccerPlayer>.Create(false);
-
-  for P := lstSoccerPlayer.Count -1 downto 0 do begin
-    aFriend := lstSoccerPlayer[p];
-    if IsOutSide( aFriend.CellX ,aFriend.CellY )  then Continue;
-    if (absDistance( aPlayer.CellX ,aPlayer.CellY,  aFriend.CellX, aFriend.CellY ) > ( MaxDistance ))
-    or (absDistance( aPlayer.CellX ,aPlayer.CellY,  aFriend.CellX, aFriend.CellY ) < CrossingRangeMin)  then begin
-      continue;
-    end;
-
-    if  ( aFriend.Team = aPlayer.Team ) and (aFriend.InCrossingArea) then
-      aList.add (aFriend);
-
-  end;
-
-  // quello con heading più alta
-  if aList.Count > 0 then begin
-      aList.sort(TComparer<TSoccerPlayer>.Construct(
-      function (const L, R: TSoccerPlayer): integer
-      begin
-        Result := R.heading - L.heading;
-      end
-     ));
-
-    Result :=  GetSoccerPlayer ( aList[0].ids );  // lo prendo dalla lista principale, questa viene distrutta
-  end;
-  aList.Free;
-
-
-end;
-function TSoccerbrain.GetDummyVolleyFriend ( aPlayer: TSoccerPlayer ): TSoccerPlayer;
-var
-  p,MaxDistance: integer;
-  aFriend: TSoccerPlayer;
-  aList: TObjectList<TSoccerPlayer>;
-
-begin
-   Result := nil;
-   MaxDistance := CrossingRangeMax ;
-   if (aPlayer.TalentId1 = TALENT_ID_LONGPASS ) or (aPlayer.TalentId2 = TALENT_ID_LONGPASS ) then
-     MaxDistance :=  MaxDistance + 1;
-
-  aList:= TObjectList<TSoccerPlayer>.Create(false);
-
-  for P := lstSoccerPlayer.Count -1 downto 0 do begin
-    aFriend := lstSoccerPlayer[p];
-    if IsOutSide( aFriend.CellX ,aFriend.CellY )  then Continue;
-    if (absDistance( aPlayer.CellX ,aPlayer.CellY,  aFriend.CellX, aFriend.CellY ) > ( MaxDistance ))
-    or (absDistance( aPlayer.CellX ,aPlayer.CellY,  aFriend.CellX, aFriend.CellY ) < CrossingRangeMin)  then begin
-      continue;
-    end;
-
-    if absDistance( aPlayer.CellX ,aPlayer.CellY,  aFriend.CellX, aFriend.CellY ) < VolleyRangeMin then
-      Continue;
-
-    if  ( (aPlayer.Team = 0) and (aPlayer.CellX < aFriend.CellX) )  or  ( (aPlayer.Team = 1) and (aPlayer.CellX > aFriend.CellX) ) then
-    Continue;
-
-    if  ( aFriend.Team = aPlayer.Team ) and (aFriend.InCrossingArea) then
-      aList.add (aFriend);
-
-  end;
-
-  // quello con shot più alta
-  if aList.Count > 0 then begin
-      aList.sort(TComparer<TSoccerPlayer>.Construct(
-      function (const L, R: TSoccerPlayer): integer
-      begin
-        Result := R.shot - L.shot;
-      end
-     ));
-
-    Result :=  GetSoccerPlayer ( aList[0].ids );  // lo prendo dalla lista principale, questa viene distrutta
-  end;
-  aList.Free;
-
-
-end;
-function TSoccerbrain.GetDummyShpCellXY : Tpoint;
-var
-  AICell,TvCell,dstCell: TPoint;
-  aList: TList<TPoint>;
-  x,y,MaxDistance: integer;
-  DummyFriend: TSoccerPlayer;
-begin
-    Result.X := -1;   // errore, nessuna cella libera
-    Result.Y := -1;
-    // cerco un compagno o una cella vuota alla quale può accedere a minimo distanza 2 un compagno  ( il compagno deve avere speed  >= 2)
-    // il compagno deve avere un path libero
-    // la cella è davanti o in linea, preferendo davanti
-    AICell := Tv2AiField (Ball.player.Team, Ball.player.CellX,Ball.player.CellY ) ;
-    MaxDistance := ShortPassRange ;
-    if (Ball.Player.TalentId1 = TALENT_ID_LONGPASS) or (Ball.Player.TalentId2 = TALENT_ID_LONGPASS) then
-    MaxDistance :=  MaxDistance + 1;
-
-
-    aList:= Tlist<TPoint>.Create;
-
-
-    // ragioni in AIfield
-    for Y := MaxDistance downto 1 do begin // fino a lop max -1 (abbastanza lontano in avanti)
-      for X := 0 to 6 do begin // tutta la linea possibile X
-        DstCell.Y := AICell.Y  - Y;
-        DstCell.X := X;
-
-        (*absdistance è diversa dal rangeMAx, va checkata ora*)
-        TvCell := AiField2TV ( Ball.player.Team, dstCell.X,dstCell.Y );
-        if AbsDistance( Ball.player.CellX,Ball.player.CellY,TvCell.X,TvCell.Y) > (MaxDistance) then Continue;
-        if IsOutSide(TvCell.X, TvCell.Y ) then Continue;
-
-        TvCell := AiField2TV ( Ball.player.Team, dstCell.X,dstCell.Y );
-        // passaggio a seguire
-        DummyFriend := GetSoccerPlayer (TvCell.X,TvCell.Y , Ball.player.Team ) ; // cerco solo compagni
-        if DummyFriend = nil then begin
-          // un compagno deve essere a distanza 1    //         e deve potere raggiungere la palla in onedir
-          if DummyGetAnyFriendToBall ( 1, Ball.player.Team, Ball.player.Ids, TvCell.X, TvCell.Y ) <> nil then   // non gk, non sè stesso
-            aList.Add(dstCell);
-        end
-          // passaggio su compagno
-        else if (DummyFriend.Ids <>  Ball.Player.ids) and (Dummyfriend.Role <> 'G') and (not IsOffSide(ball.Player,DummyFriend))  then begin // se è un compagno
-          aList.Add(dstCell);
-          continue;
-        end;
-      end;
-    end;
-
-    if aList.Count > 0 then begin
-      Result := aList[RndGenerate0(aList.Count-1)];
-      TvCell := AiField2TV ( Ball.player.Team, Result.X, Result.Y );
-      Result := TvCell;
-    end;
-    aList.Free;
-
-end;
-function TSoccerbrain.DummyGetAnyFriendToBall ( dist, team: Integer; meIds:string; CellX, CellY: integer): TSoccerPlayer;
-var
-  i: Integer;
-  aFriend: TSoccerPlayer;
-  aPath: dse_pathplanner.Tpath;
-begin
-    result := nil;
-    aPath:= dse_pathplanner.Tpath.Create ;
-  for I := lstSoccerPlayer.Count -1 downto 0 do begin
-    aFriend:= lstSoccerPlayer[i];
-    if (aFriend.Team <> team) or (aFriend.Role = 'G') or (aFriend.Ids = meIds) or ( not aFriend.CanMove )
-    or ( aFriend.Speed < dist)  then continue;
-
-    aPath.Clear ;
-    GetPath (aFriend.Team, aFriend.CellX ,aFriend.Celly, CellX, CellY, dist{Limit},
-    false{useFlank}, false, false,true ,TruncOneDir{OneDir},aPath );
-
-    if (aPath.Count > 0) then begin
-      if (aPath[aPath.Count-1].X = CellX) and (aPath[aPath.Count-1].Y = CellY) then begin    // solo se  la raggiunge subito dopo
-      Result := aFriend;
-        Break;
-      end;
-    end;
-
-  end;
-    aPath.Free;
-end;
-function TSoccerbrain.GetdummyTackle ( team: Integer): TSoccerPlayer;
-var
-  i: Integer;
-begin
-    Result:= nil;
-    for I := lstSoccerPlayer.Count -1 downto 0 do begin
-      if ( not lstSoccerPlayer[i].PressingDone ) and (lstSoccerPlayer[i].canSkill) and (lstSoccerPlayer[i].Role <> 'G') and
-          (AbsDistance(lstSoccerPlayer[i].CellX, lstSoccerPlayer[i].CellY, Ball.Player.CellX,Ball.Player.CellY )=1) and
-           (lstSoccerPlayer[i].Team = team)
-        then begin
-          Result := lstSoccerPlayer[i];
-          Exit;
-        end;
-
-    end;
-
-end;
-function TSoccerbrain.GetdummyPressing ( team: Integer): TSoccerPlayer;
-var
-  i: Integer;
-begin
-    Result:= nil;
-    for I := lstSoccerPlayer.Count -1 downto 0 do begin
-      if ( not lstSoccerPlayer[i].PressingDone ) and (lstSoccerPlayer[i].canSkill) and (lstSoccerPlayer[i].Role <> 'G') and
-          (AbsDistance(lstSoccerPlayer[i].CellX, lstSoccerPlayer[i].CellY, Ball.Player.CellX,Ball.Player.CellY )=1)  and
-           (lstSoccerPlayer[i].Team = team) and ( (lstSoccerPlayer[i].TalentId1 = TALENT_ID_EXPERIENCE) or (lstSoccerPlayer[i].TalentId2 = TALENT_ID_EXPERIENCE) )
-        then begin
-          Result := lstSoccerPlayer[i];
-          Exit;
-        end;
-
-    end;
-
-end;
-function TSoccerbrain.DummyReachTheBall ( team: Integer): TSoccerPlayer;
-var
-  i,MinDist,aRnd,p: Integer;
-  aPlayer: TSoccerPlayer;
-  aListToBall: TObjectList<TSoccerPlayer>;
-  aListToBalldist1: TObjectList<TSoccerPlayer>;
-begin
-    Result:= nil;
-
-     aListToBall:= TObjectList<TSoccerPlayer>.Create(false);
-     aListToBalldist1:= TObjectList<TSoccerPlayer>.Create(false);
-
-          //prima provo un path alla massima speed che possa raggiungere effettivamente la palla o almeno una distanza 1
-      for I := lstSoccerPlayer.Count -1 downto 0 do begin
-        aPlayer :=  lstSoccerPlayer[i];
-        if ( not aPlayer.canSkill ) or ( not aPlayer.canMove ) or (aPlayer.TalentId1 = TALENT_ID_GOALKEEPER)  then continue;
-
-        if ( not aPlayer.HasBall) and ( aPlayer.Team = team ) then begin
-
-
-            // se la palla è libera FinalWall è false quindi uso la massima speed  .
-          if (Ball.Player = nil) then begin
-            GetPath (aPlayer.Team, aPlayer.CellX ,aPlayer.Celly,
-            Ball.CellX, Ball.CellY, aPlayer.Speed{Limit},
-            aPlayer.Flank <> 0{useFlank}, false, false,false ,AbortMultipleDirection{OneDir},aPlayer.MovePath  );
-            if aPlayer.MovePath.Count > 0 then begin
-               // se ha raggiunto la palla
-               if (aPlayer.MovePath[aPlayer.MovePath.Count-1].X = Ball.CellX)and (aPlayer.MovePath[aPlayer.MovePath.Count-1].Y = Ball.CellY) then begin // raggiunge la palla
-                aListToBall.Add(aPlayer);
-               end;
-            end;
-            if aListToBall.Count = 0 then begin // se i player sono lontani e nessuno può raggiungere la palla
-              GetAggressionCellPath ( aPlayer, Ball.CellX, Ball.CellY );
-
-              if aPlayer.MovePath.Count > 0 then begin
-                  aListToBalldist1.Add(aPlayer);
-              end;
-
-            end;
-
-          end
-          else if Ball.Player <> nil then begin // se c'è un player provo ad arrivare a distanza 1  quindi onedir TruncNotOneDir
-            GetAggressionCellPath ( aPlayer, Ball.CellX, Ball.CellY );
-
-            if aPlayer.MovePath.Count > 0 then begin
-                aListToBalldist1.Add(aPlayer);
-            end;
-          end;
-        end;
-      end;
-
-      if aListToBall.Count > 0  then begin   // ogni player ha il suo MovePath
-        aRnd := RndGenerate0(aListToBall.Count -1);
-        BrainInput( IntTostr(score.TeamGuid [ team ]) + ',' + 'PLM,' + aListToBall[aRnd].ids + ',' + IntToStr(aListToBall[aRnd].MovePath[aListToBall[aRnd].MovePath.Count-1].X) +
-         ',' + IntToStr(aListToBall[aRnd].MovePath[aListToBall[aRnd].MovePath.Count-1].Y  ) );
-      end
-      else if aListToBalldist1.Count > 0 then begin
-        // prendo uno fra quelli che ha raggiunto absdistance 1 dalla palla
-        aListToBalldist1.sort(TComparer<TSoccerPlayer>.Construct(
-        function (const L, R: TSoccerPlayer): integer
-        begin
-          Result := AbsDistance( Ball.CellX, Ball.CellY, L.MovePath [L.MovePath.Count-1 ].X, L.MovePath [L.MovePath.Count-1 ].Y )  -
-          AbsDistance( Ball.CellX, Ball.CellY, R.MovePath [R.MovePath.Count-1 ].X, R.MovePath [R.MovePath.Count-1 ].Y )
-        end
-       ));
-
-        // L - R  distanza 1 è a elemento 0
-        MinDist := AbsDistance( Ball.CellX, Ball.CellY,
-        aListToBalldist1[0].MovePath [aListToBalldist1[0].MovePath.Count-1 ].X,
-        aListToBalldist1[0].MovePath [aListToBalldist1[0].MovePath.Count-1 ].Y);
-
-        for P := aListToBalldist1.Count -1 downto 0 do begin
-          if AbsDistance( Ball.CellX, Ball.CellY,
-          aListToBalldist1[p].MovePath [aListToBalldist1[p].MovePath.Count-1 ].X,
-          aListToBalldist1[p].MovePath [aListToBalldist1[p].MovePath.Count-1 ].Y)
-          > MinDist then
-            aListToBalldist1.Delete(p);
-        end;
-
-        aRnd := RndGenerate0(aListToBallDist1.Count -1);
-        BrainInput(  IntTostr(score.TeamGuid [team]) + ',' +'PLM,' + aListToBalldist1[aRnd].ids  + ',' + IntToStr(aListToBalldist1[aRnd].MovePath[aListToBalldist1[aRnd].MovePath.Count-1].X) +
-         ',' + IntToStr(aListToBalldist1[aRnd].MovePath[aListToBalldist1[aRnd].MovePath.Count-1].Y  ) );
-      end
-      else  begin
-        if AI_Injured_sub_tactic_stay(team) = none then begin
-          if Minute < 120 then
-            BrainInput( IntTostr(score.TeamGuid [team]) + ',' + 'PASS'  ) // o ha fatto qualcosa o passo
-          else AI_ForceRandomMove (team);
-        end;
-      end;
-      aListToBall.Free;
-      aListToBalldist1.Free;
-end;
-
-
-function TSoccerbrain.GetDummyMaxAcceleration ( AccelerationMode: TAccelerationMode): TPoint;
-var
-  P: Integer;
-  aList: TList<TAICells>;
-  aRnd,iSpeed,MaxSpeed:Integer;
-  x,y: Integer;
-  AICell: TAICells;
-  aDoor: TPoint;
-begin
-//AccBestDistance, AccSelfY, AccDoor
-  result.X := -1;
-  if not Ball.Player.CanMove then Exit;
-  aList:= TList<TAICells>.create;
-
-  iSpeed := Ball.player.speed -1;
-  if iSpeed < 1 then iSpeed := 1;
-
-  for x:= 1 to 10 do begin       // 0 è portiere // 11 è portiere
-    for y:= 0 to 6 do begin
-      if AbsDistance(ball.Player.CellX,ball.Player.CellY,X,Y) <= iSpeed then begin   // cella nel raggio di speed
-        if GetSoccerPlayer (X,Y) = nil then begin                          // cella libera
-          // la cerco solo in offensiva verso il portiere avversario
-          if ((x > Ball.Player.CellX) and (Ball.Player.Team=0) ) or ((x < Ball.Player.CellX) and (Ball.Player.Team=1) )  then  begin
-
-          GetPath (Ball.Player.Team , Ball.Player.CellX , Ball.Player.CellY, X, Y,iSpeed{Limit},false{useFlank},true{FriendlyWall},
-                         true{OpponentWall},true{FinalWall},TruncOneDir{OneDir}, Ball.Player.MovePath );
-            if Ball.Player.MovePath.Count > 0 then begin
-              AICell.Cells.X := x;
-              AICell.Cells.Y := y;
-              AICell.chance := Ball.Player.MovePath.Count; // prendo in prestito 'chance' per il sort dopo, ma non è una chance, è il numero di celle di cui si muove
-              aList.Add(aICell);
-            end;
-          end;
-        end;
-
-      end;
-    end;
-  end;
-
-  if aList.Count > 0 then begin
-
-      //AccBestDistance= maggiore numero di celle di cui muoversi, AccSelfY= corre dritto verso il fondo avversario, AccDoor= punta la porta
-      // chance non è una probabilità, ma il numero di celle di cui si muove
-      if AccelerationMode = AccBestDistance then begin
-
-        aList.sort(TComparer<TAICells>.Construct(
-        function (const L, R: TAICells): integer
-        begin
-          Result := R.chance - L.chance;
-        end
-       ));
-        MaxSpeed := aList[0].chance ;
-
-        for P := aList.Count -1 downto 0 do begin
-          if aList[p].chance < MaxSpeed then
-            aList.Delete(p);
-        end;
-        aRnd := RndGenerate0(aList.Count -1);   // estraggo solo tra movimenti di Maxspeed ecc...
-//        Result := Point (aList[aRnd].cells.X, aList[aRnd].cells.Y);
-        GetPath (Ball.Player.Team , Ball.Player.CellX , Ball.Player.CellY, aList[aRnd].cells.X, aList[aRnd].cells.Y,iSpeed{Limit},false{useFlank},true{FriendlyWall},
-                         true{OpponentWall},true{FinalWall},TruncOneDir{OneDir}, Ball.Player.MovePath );
-        Result := Point (Ball.Player.MovePath [Ball.Player.MovePath.Count-1].X, Ball.Player.MovePath [Ball.Player.MovePath.Count-1].Y);
-
-      end
-      else if AccelerationMode = AccSelfY then begin
-        aList.sort(TComparer<TAICells>.Construct(
-        function (const L, R: TAICells): integer
-        begin
-          Result := R.chance - L.chance;
-        end
-       ));
-        MaxSpeed := aList[0].chance ;
-
-        for P := aList.Count -1 downto 0 do begin
-          if aList[p].chance < MaxSpeed then
-            aList.Delete(p);
-        end;
-
-        for P := aList.Count -1 downto 0 do begin
-          if aList[p].Cells.Y  <> Ball.Player.CellY then
-            aList.Delete(p);
-        end;
-        if aList.Count = 0 then begin
-          aList.Free;
-          Exit;
-        end
-        else
-        GetPath (Ball.Player.Team , Ball.Player.CellX , Ball.Player.CellY, aList[0].cells.X, aList[0].cells.Y,iSpeed{Limit},false{useFlank},true{FriendlyWall},
-                         true{OpponentWall},true{FinalWall},TruncOneDir{OneDir}, Ball.Player.MovePath );
-       // Result := Point (aList[0].cells.X, aList[0].cells.Y);
-        Result := Point (Ball.Player.MovePath [Ball.Player.MovePath.Count-1].X, Ball.Player.MovePath [Ball.Player.MovePath.Count-1].Y);
-
-
-      end
-      else if AccelerationMode = AccDoor then begin
-
-        aDoor:= GetOpponentDoor (Ball.Player );
-
-        aList.sort(TComparer<TAICells>.Construct(
-        function (const L, R: TAICells): integer
-        begin
-          Result := AbsDistance( aDoor.X, aDoor.Y, L.Cells.X, L.Cells.Y  )  -
-          AbsDistance( aDoor.X, aDoor.Y, R.Cells.X, R.Cells.Y  )
-        end
-       ));
-
-        GetPath (Ball.Player.Team , Ball.Player.CellX , Ball.Player.CellY, aList[0].cells.X, aList[0].cells.Y,iSpeed{Limit},false{useFlank},true{FriendlyWall},
-                         true{OpponentWall},true{FinalWall},TruncOneDir{OneDir}, Ball.Player.MovePath );
-       // Result := Point (aList[0].cells.X, aList[0].cells.Y);
-        Result := Point (Ball.Player.MovePath [Ball.Player.MovePath.Count-1].X, Ball.Player.MovePath [Ball.Player.MovePath.Count-1].Y);
-
-      end;
-  end;
-  aList.free;
-
-end;
-function TSoccerbrain.GetDummyMaxAccelerationShotCells ( OnlyBuffed: boolean ): TPoint;
-var
-  aList: TList<TPoint>;
-  aRnd,iSpeed:Integer;
-  i,dist: Integer;
-  TvShotCell: TPoint;
-begin
-
-  result.X := -1;
-  if not Ball.Player.CanMove then Exit;
-  aList:= TList<TPoint>.create;
-
-  iSpeed := Ball.player.speed -1;
-  if iSpeed < 1 then iSpeed := 1;
-  // riempo una lista di ShotCells (dipende dal team) e per ognuna valuto se posso raggiungerla
-  for I := 0 to ShotCells.Count -1 do begin
-    if ShotCells[i].doorTeam = Ball.Player.Team then Continue; // solo shotCell Avversarie
-    TvShotCell :=  Point(ShotCells[i].CellX, ShotCells[i].CellY) ;
-    if GetSoccerPlayer (TvShotCell.X,TvShotCell.Y) <> nil then Continue;  // cerco una cella libera
-    dist :=  AbsDistance(ball.Player.CellX,ball.Player.CellY,TvShotCell.X,TvShotCell.Y);
-    if dist <= iSpeed then begin   // cella nel raggio di speed
-
-      if not OnlyBuffed then
-      GetPath (Ball.Player.Team , Ball.Player.CellX , Ball.Player.CellY, TvShotCell.X,TvShotCell.Y,iSpeed{Limit},false{useFlank},true{FriendlyWall},
-                         true{OpponentWall},true{FinalWall},AbortMultipleDirection{OneDir}, Ball.Player.MovePath )
-      else if dist > 1 then begin  // minimo 2 celle per buff
-      GetPath (Ball.Player.Team , Ball.Player.CellX , Ball.Player.CellY, TvShotCell.X,TvShotCell.Y,iSpeed{Limit},false{useFlank},true{FriendlyWall},
-                         true{OpponentWall},true{FinalWall},AbortMultipleDirection{OneDir}, Ball.Player.MovePath )
-
-      end;
-
-      if Ball.Player.MovePath.Count > 0 then
-        aList.Add(TvShotCell);
-    end;
-  end;
-
-
-
-  if aList.Count > 0 then begin
-
-      aRnd := RndGenerate0(aList.Count -1);
-      Result.X := aList[aRnd].X;
-      Result.Y := aList[aRnd].Y;
-  end;
-
-  aList.Free;
-
-end;
-function TSoccerbrain.GetDummyMaxAccelerationBottom: TPoint;
-var
-  aplmCell: TPoint;
-begin
-  result.X := -1;
-  aplmCell := GetDummyMaxAcceleration( AccSelfY );
-  if aplmCell.X <> -1 then begin
-    if (aplmCell.X = 1) or (aplmCell.X = 10) then begin
-      Result.X := aplmCell.X;
-      Result.Y := aplmCell.Y;
-    end;
-  end;
-
-end;
-function TSoccerbrain.GetDummyGoAheadCell : Tpoint; // il player con la palla cerca di avanzare
-var
-  aList: TList<TAICells>;
-  aRnd,iSpeed:Integer;
-  x,y: Integer;
-  AICell: TAICells;
-begin
-  // uguale a GetDummyMaxAcceleration ma nienete Sort per speed e estrazione random tra tutte
-  // o dritto o in diagonale
-  result.X := -1;
-  aList:= TList<TAICells>.create;
-
-  iSpeed := Ball.player.speed -1;
-  if iSpeed < 1 then iSpeed := 1;
-
-  for x:= 1 to 10 do begin       // 0 è portiere // 11 è portiere
-    for y:= 0 to 6 do begin
-      if AbsDistance(ball.Player.CellX,ball.Player.CellY,X,Y) <= iSpeed then begin   // cella nel raggio di speed
-        if GetSoccerPlayer (X,Y) = nil then begin                          // cella libera
-          // la cerco solo in offensiva verso il portiere avversario
-          if ((x > Ball.Player.CellX) and (Ball.Player.Team=0) ) or ((x < Ball.Player.CellX) and (Ball.Player.Team=1) )  then  begin
-
-          GetPath (Ball.Player.Team , Ball.Player.CellX , Ball.Player.CellY, X, Y,iSpeed{Limit},false{useFlank},true{FriendlyWall},
-                         true{OpponentWall},true{FinalWall},TruncOneDir{OneDir}, Ball.Player.MovePath );
-            if Ball.Player.MovePath.Count > 0 then begin
-              AICell.Cells.X := x;
-              AICell.Cells.Y := y;
-//              AICell.chance :=Ball.Player.MovePath.Count;
-              aList.Add(aICell);
-            end;
-          end;
-        end;
-
-      end;
-    end;
-  end;
-
-  if aList.Count > 0 then begin
-
-      aRnd := RndGenerate0(aList.Count -1);   // estraggo solo tra movimenti di 1,2,3,4... speed ecc...
-      // mando l'ultima cella
-      GetPath (Ball.Player.Team , Ball.Player.CellX , Ball.Player.CellY, aList[aRnd].cells.X, aList[aRnd].cells.Y,iSpeed{Limit},false{useFlank},true{FriendlyWall},
-                         true{OpponentWall},true{FinalWall},TruncOneDir{OneDir}, Ball.Player.MovePath );
-
-      if Ball.Player.MovePath.Count > 0 then
-        Result := Point (  Ball.Player.MovePath[Ball.Player.MovePath.Count-1].X, Ball.Player.MovePath[Ball.Player.MovePath.Count-1].Y  );
-
-  end;
-
-  aList.free;
-end;
-function TSoccerbrain.Tv2AiField ( Team, tvX,tvY: integer ): TPoint;
-var
-  i: Integer;
-begin
-  // cerco in aifields
-  for i := AIField.Count -1 downto 0 do begin
-    if (Aifield[i].Team =Team) and (AIField[i].TV.X = tvX) and (AIField[i].TV.Y = tvY)then begin
-      Result := AiField[i].AI;
-      Exit;
-    end;
-  end;
-
-end;
-function TSoccerbrain.AiField2TV ( Team, aiX,aiY: integer ): TPoint;
-var
-  i: Integer;
-begin
-  for i := AIField.Count -1 downto 0 do begin
-    if (Aifield[i].Team =Team) and (AIField[i].AI.X = aiX) and (AIField[i].AI.Y = aiY)then begin
-      Result := AiField[i].TV;
-      Exit;
-    end;
-  end;
-end;
-
-function TSoccerbrain.inExceptPlayers ( aPlayer: TSoccerPlayer ) : Boolean;
+function TBrain.inExceptPlayers ( aPlayer: TPlayer ) : Boolean;
 var
   i: integer;
 begin
@@ -15393,19 +11916,19 @@ begin
   result := False;
 end;
 
-procedure TSoccerbrain.AI_MovePlayer_DefaultX ( aPlayer: TSoccerPlayer  ) ;
+procedure TBrain.AI_MovePlayer_DefaultX ( aPlayer: TPlayer  ) ;
 begin
   aPlayer.MoveValue := AdjustFatigue(aPlayer.Stamina , aPlayer.Speed).value;
   GetPathX ( aPlayer.Team, aPlayer.CellX , aPlayer.CellY, aPlayer.DefaultCellX , aPlayer.CellY,
     aPlayer.MoveValue , false,false,false,true,true, aPlayer.MovePath );
 end;
-procedure TSoccerbrain.AI_MovePlayer_DefaultY ( aPlayer: TSoccerPlayer  ) ;
+procedure TBrain.AI_MovePlayer_DefaultY ( aPlayer: TPlayer  ) ;
 begin
   aPlayer.MoveValue := AdjustFatigue(aPlayer.Stamina , aPlayer.Speed).value;
   GetPathY ( aPlayer.Team, aPlayer.CellX , aPlayer.CellY, aPlayer.CellX , aPlayer.DefaultCellY,
     aPlayer.MoveValue , false,false,false,true,true, aPlayer.MovePath );
 end;
-procedure TSoccerbrain.AI_MovePlayer_DefaultX_plus_1 ( aPlayer: TSoccerPlayer  ) ;
+procedure TBrain.AI_MovePlayer_DefaultX_plus_1 ( aPlayer: TPlayer  ) ;
 var
   DstX: integer;
 begin
@@ -15424,7 +11947,7 @@ begin
     aPlayer.MoveValue , false,false,false,true,true, aPlayer.MovePath );
   end;
 end;
-procedure TSoccerbrain.AI_MovePlayer_DefaultX_plus_2 ( aPlayer: TSoccerPlayer  ) ;
+procedure TBrain.AI_MovePlayer_DefaultX_plus_2 ( aPlayer: TPlayer  ) ;
 var
   DstX: integer;
 begin
@@ -15443,7 +11966,7 @@ begin
     aPlayer.MoveValue , false,false,false,true,true, aPlayer.MovePath );
   end;
 end;
-procedure TSoccerbrain.AI_MovePlayer_DefaultX_minus_1 ( aPlayer: TSoccerPlayer  ) ;
+procedure TBrain.AI_MovePlayer_DefaultX_minus_1 ( aPlayer: TPlayer  ) ;
 var
   DstX: integer;
 begin
@@ -15462,7 +11985,7 @@ begin
     aPlayer.MoveValue , false,false,false,true,true, aPlayer.MovePath );
   end;
 end;
-procedure TSoccerbrain.AI_MovePlayer_DefaultX_minus_2 ( aPlayer: TSoccerPlayer  ) ;
+procedure TBrain.AI_MovePlayer_DefaultX_minus_2 ( aPlayer: TPlayer  ) ;
 var
   DstX: integer;
 begin
@@ -15481,7 +12004,7 @@ begin
     aPlayer.MoveValue , false,false,false,true,true, aPlayer.MovePath );
   end;
 end;
-procedure TSoccerbrain.AI_MovePlayer_Ball_equal ( aPlayer: TSoccerPlayer  ) ;
+procedure TBrain.AI_MovePlayer_Ball_equal ( aPlayer: TPlayer  ) ;
 var
   DstX: integer;
 begin
@@ -15492,7 +12015,7 @@ begin
     aPlayer.MoveValue , false,false,false,true,true, aPlayer.MovePath );
 
 end;
-procedure TSoccerbrain.AI_MovePlayer_Ball_plus_1 ( aPlayer: TSoccerPlayer  ) ;
+procedure TBrain.AI_MovePlayer_Ball_plus_1 ( aPlayer: TPlayer  ) ;
 var
   DstX: integer;
 begin
@@ -15513,7 +12036,7 @@ begin
   end;
 
 end;
-procedure TSoccerbrain.AI_MovePlayer_Ball_plus_2 ( aPlayer: TSoccerPlayer  ) ;
+procedure TBrain.AI_MovePlayer_Ball_plus_2 ( aPlayer: TPlayer  ) ;
 var
   DstX: integer;
 begin
@@ -15534,7 +12057,7 @@ begin
   end;
 
 end;
-procedure TSoccerbrain.AI_MovePlayer_Ball_minus_1 ( aPlayer: TSoccerPlayer  ) ;
+procedure TBrain.AI_MovePlayer_Ball_minus_1 ( aPlayer: TPlayer  ) ;
 var
   DstX: integer;
 begin
@@ -15555,7 +12078,7 @@ begin
   end;
 
 end;
-procedure TSoccerbrain.AI_MovePlayer_Ball_minus_2 ( aPlayer: TSoccerPlayer  ) ;
+procedure TBrain.AI_MovePlayer_Ball_minus_2 ( aPlayer: TPlayer  ) ;
 var
   DstX: integer;
 begin
@@ -15577,15 +12100,15 @@ begin
 
 end;
 
-procedure TSoccerbrain.AI_MoveAll ; // movimento automatico dei player a fine turno
+procedure TBrain.AI_MoveAll ; // movimento automatico dei player a fine turno
 var
   p,x,y,i,Modifier_MoveAll: integer;
-  aPlayer : TSoccerPlayer;
+  aPlayer : TPlayer;
   aCell,dstCell: TPoint;
   Toball: Boolean;
   DstX: integer;
-  aList: TObjectList<TSoccerPlayer>;
-//  aList: TList<TSoccerPlayer>;
+  aList: TObjectList<TPlayer>;
+//  aList: TList<TPlayer>;
   preRoll, aRnd: integer;
   Roll:TRoll;
   MaxSpeed: integer;
@@ -15596,19 +12119,17 @@ var
 begin
 
   TsScript[incMove].add ('sc_ai.movetoball');
-    for P := lstSoccerPlayer.Count -1 downto 0 do begin
-      aPlayer := lstSoccerPlayer[p];
-      aPlayer.MovePath.Clear ;
-    end;
+  for P := Players.Count -1 downto 0 do begin
+    aPlayer := Players[p];
+    aPlayer.MovePath.Clear ;
+  end;
   if GetTeamBall = -1 then begin
 
   // a distanza 1 un giocatore random prende la palla
-    aList:= TObjectList<TSoccerPlayer>.create(false);
-//    aList:= TList<TSoccerPlayer>.create;
-    for P := lstSoccerPlayer.Count -1 downto 0 do begin
-      aPlayer := lstSoccerPlayer[p];
+    aList:= TObjectList<TPlayer>.create(false);
+    for P := Players.Count -1 downto 0 do begin
+      aPlayer := Players[p];
       if  inExceptPlayers ( aPlayer ) then  continue;
-//      aPlayer.grouped := false;
       if (not aPlayer.CanMove) or (aPlayer.Role='G') then continue;
       if (absdistance (ball.CellX, ball.celly, aPlayer.CellX , aPlayer.CellY) = 1) then
         aList.add (aPlayer);
@@ -15627,8 +12148,8 @@ begin
       end;
 
       // prendo i roll più alti
-      aList.sort(TComparer<TSoccerPlayer>.Construct(
-      function (const L, R: TSoccerPlayer): integer
+      aList.sort(TComparer<TPlayer>.Construct(
+      function (const L, R: TPlayer): integer
       begin
         Result := R.iTag - L.iTag;
       end
@@ -15667,8 +12188,8 @@ begin
   end;
 
   shpBuff:= False;
-    for P := lstSoccerPlayer.Count -1 downto 0 do begin
-      aPlayer := lstSoccerPlayer[p];
+    for P := Players.Count -1 downto 0 do begin
+      aPlayer := Players[p];
       aPlayer.MovePath.Clear ;
     end;
 
@@ -15684,7 +12205,7 @@ begin
       1..5: begin                           // team 0 defend team 1 attack
         for X := 1 to 10 do begin      //<--
           for Y := 0 to 6 do begin
-            aPlayer := GetSoccerPlayer ( X,Y);
+            aPlayer := GeTPlayer ( X,Y);
             if aPlayer = nil then continue;
             //if (aPlayer.Ids='3634') then asm int 3 end;
 
@@ -16503,7 +13024,7 @@ DoOriginalPath0:
       6..10: begin
         for X := 10 downto 1 do begin      //<--
           for Y := 0 to 6 do begin
-            aPlayer := GetSoccerPlayer ( X,Y);
+            aPlayer := GeTPlayer ( X,Y);
             if aPlayer = nil then continue;
             if not aPlayer.CanMove then continue;
             if aPlayer.HasBall then continue;
@@ -17288,14 +13809,14 @@ DoOriginalPath1:
  TsScript[incMove].add ('sc_ai.endmoveall');
 
 end;
-procedure TSoccerbrain.DeflateBarrier ( aCell: Tpoint; ExceptPlayer: TSoccerPlayer ); // occhio al plurale! exceptplayers è una lista
+procedure TBrain.DeflateBarrier ( aCell: Tpoint; ExceptPlayer: TPlayer ); // occhio al plurale! exceptplayers è una lista
 var
   i: Integer;
-  anOpponent: TSoccerPlayer;
+  anOpponent: TPlayer;
 begin
   //excpetPlayer è chi ha catturato la palla
-  for I := lstSoccerPlayer.Count -1 downto 0 do begin
-    anOpponent := lstSoccerPlayer[i];
+  for I := Players.Count -1 downto 0 do begin
+    anOpponent := Players[i];
     if (anOpponent.CellX = aCell.X)  and (anOpponent.CellY = aCell.Y) then begin
 
       if ExceptPlayer <> nil then
@@ -17309,11 +13830,11 @@ begin
   end;
 end;
 
-function TSoccerbrain.GetTeamBall : integer;
+function TBrain.GetTeamBall : integer;
 var
-  aPlayer: TSoccerPlayer;
+  aPlayer: TPlayer;
 begin
-  aPlayer := GetSoccerPlayer(ball.CellX, ball.CellY  );
+  aPlayer := GeTPlayer(ball.CellX, ball.CellY  );
   if aPlayer = nil then begin
     result := -1;
     exit;
@@ -17321,7 +13842,7 @@ begin
   Result := aPlayer.Team;
 
 end;
-function TSoccerbrain.GetCrossDefenseBonus (aPlayer: TsoccerPlayer; CellX, CellY: integer ): integer;
+function TBrain.GetCrossDefenseBonus (aPlayer: TPlayer; CellX, CellY: integer ): integer;
 begin
 
   if aPlayer.cellX = CellX then begin
@@ -17341,7 +13862,7 @@ begin
   end;
 end;
 
-procedure TSoccerbrain.CalculateChance  ( A, B: integer; var chanceA, chanceB: integer);
+procedure TBrain.CalculateChance  ( A, B: integer; var chanceA, chanceB: integer);
 var
   AI, BI, TA, TB: integer;
 begin
@@ -17366,7 +13887,7 @@ begin
 
 end;
 
-function TSoccerbrain.NextReserveSlot ( aPlayer: TSoccerPlayer): Integer;
+function TBrain.NextReserveSlot ( aPlayer: TPlayer): Integer;
 var
   x: Integer;
 begin
@@ -17377,7 +13898,7 @@ begin
     end;
   end;
 end;
-procedure TSoccerbrain.PutInReserveSlot ( aPlayer: TSoccerPlayer );  // mette il player nella prima cella di riserva libera
+procedure TBrain.PutInReserveSlot ( aPlayer: TPlayer );  // mette il player nella prima cella di riserva libera
 var
   NextSlot: Integer;
 begin
@@ -17390,7 +13911,7 @@ begin
     aPlayer.AIFormationCellY := aPlayer.CellY;
     aPlayer.Role := 'N';
 end;
-procedure TSoccerbrain.PutInReserveSlot ( aPlayer: TSoccerPlayer; ReserveCell: TPoint );  // mette il player nella cella indicata
+procedure TBrain.PutInReserveSlot ( aPlayer: TPlayer; ReserveCell: TPoint );  // mette il player nella cella indicata
 begin
     ReserveSlot [aPlayer.Team, ReserveCell.X]:= aPlayer.Ids;
     aPlayer.CellX := ReserveCell.X;
@@ -17400,7 +13921,7 @@ begin
     aPlayer.AIFormationCellY := aPlayer.CellY;
     aPlayer.Role := 'N';
 end;
-procedure TSoccerbrain.ClearReserveSlot;
+procedure TBrain.ClearReserveSlot;
 var
   t,x: Integer;
 begin
@@ -17411,7 +13932,7 @@ begin
   end;
 end;
 
-function TSoccerbrain.isReserveSlot (CellX, CellY: integer): boolean;
+function TBrain.isReserveSlot (CellX, CellY: integer): boolean;
 begin
 
   if (CellY = -1) and (( CellX > -1) and (CellX < 23)) then
@@ -17420,7 +13941,7 @@ begin
 
 
 end;
-procedure TSoccerbrain.PutInGameOverSlot ( aPlayer: TSoccerPlayer );  // mette il player nella prima cella di GameOver libera
+procedure TBrain.PutInGameOverSlot ( aPlayer: TPlayer );  // mette il player nella prima cella di GameOver libera
 var
   NextSlot: Integer;
 begin
@@ -17433,7 +13954,7 @@ begin
     aPlayer.AIFormationCellY := aPlayer.CellY;
     aPlayer.Role := 'N';
 end;
-procedure TSoccerbrain.PutInGameOverSlot ( aPlayer: TSoccerPlayer; GameOverCell: TPoint );  // mette il player nella cella indicata
+procedure TBrain.PutInGameOverSlot ( aPlayer: TPlayer; GameOverCell: TPoint );  // mette il player nella cella indicata
 begin
     GameOverSlot [aPlayer.Team, GameOverCell.X]:= aPlayer.Ids;
     aPlayer.CellX := GameOverCell.X;
@@ -17443,7 +13964,7 @@ begin
     aPlayer.AIFormationCellY := aPlayer.CellY;
     aPlayer.Role := 'N';
 end;
-procedure TSoccerbrain.ClearGameOverSlot;
+procedure TBrain.ClearGameOverSlot;
 var
   t,x: Integer;
 begin
@@ -17454,7 +13975,7 @@ begin
   end;
 end;
 
-function TSoccerbrain.isGameOverSlot (CellX, CellY: integer): boolean;
+function TBrain.isGameOverSlot (CellX, CellY: integer): boolean;
 begin
 
   if (CellY = -2) and (( CellX > -1) and (CellX < 23)) then
@@ -17464,24 +13985,24 @@ begin
 
 end;
 
-procedure TSoccerbrain.UpdateDevi;
+procedure TBrain.UpdateDevi;
 var
   i:integer;
 begin
   // Tutti i panchinari. i gameover sono già salvi. Gli injured e i disqulified no
-  for I := lstSoccerReserve.Count -1 downto 1 do begin
-    if (lstSoccerReserve[i].Injured = 0) and (lstSoccerReserve[i].disqualified = 0 ) then
-      lstSoccerReserve[i].xpDevI := lstSoccerReserve[i].xpDevI + 1; // xpdevi quando raggiunge N es.20 stora a +1% devi. poi si resetta a 0 . tutto nel finalizebrain
+  for I := Reserves.Count -1 downto 1 do begin
+    if (Reserves[i].Injured = 0) and (Reserves[i].disqualified = 0 ) then
+      Reserves[i].xpDevI := Reserves[i].xpDevI + 1; // xpdevi quando raggiunge N es.20 stora a +1% devi. poi si resetta a 0 . tutto nel finalizebrain
   end;
-  for I := lstSoccerPlayer.Count -1 downto 1 do begin
-    if (lstSoccerPlayer[i].Injured = 0) then begin
-      lstSoccerPlayer[i].xpDevI := lstSoccerPlayer[i].xpDevI - 1;
-      if lstSoccerPlayer[i].xpDevI < 0 then
-        lstSoccerPlayer[i].xpDevI := 0;  // xpdevi quando raggiunge 0 non fa nulla. ci pensa xpdeva a decrementare di 1 xpdevi
+  for I := Players.Count -1 downto 1 do begin
+    if (Players[i].Injured = 0) then begin
+      Players[i].xpDevI := Players[i].xpDevI - 1;
+      if Players[i].xpDevI < 0 then
+        Players[i].xpDevI := 0;  // xpdevi quando raggiunge 0 non fa nulla. ci pensa xpdeva a decrementare di 1 xpdevi
     end;
   end;
 end;
-function TSoccerbrain.CalculateBasePrecisionShot (  aPlayer: TSoccerPlayer ): TChance;
+function TBrain.CalculateBasePrecisionShot (  aPlayer: TPlayer ): TChance;
 begin
   if w_FreeKick3 then begin
     aPlayer.tmp := 0;
@@ -17510,7 +14031,7 @@ begin
 
 
 end;
-function TSoccerbrain.CalculateBasePowerShot (  aPlayer: TSoccerPlayer ): Tchance;
+function TBrain.CalculateBasePowerShot (  aPlayer: TPlayer ): Tchance;
 begin
   if w_FreeKick3 then begin
     aPlayer.tmp := 0;
@@ -17540,19 +14061,19 @@ begin
 
 
 end;
-function TSoccerbrain.CalculateBasePrecisionShotGK ( aPlayer: TSoccerPlayer ): Tchance;
+function TBrain.CalculateBasePrecisionShotGK ( aPlayer: TPlayer ): Tchance;
 begin
   Result.Modifier :=  BonusPrecisionShotGK [ Ball.Player.Cellx ];
   Result.value := aPlayer.Defense +  Result.Modifier;
 
 end;
-function TSoccerbrain.CalculateBasePowerShotGK ( aPlayer: TSoccerPlayer ): Tchance;
+function TBrain.CalculateBasePowerShotGK ( aPlayer: TPlayer ): Tchance;
 begin
   Result.Modifier :=  BonusPowerShotGK [ Ball.Player.Cellx ];
   Result.value := aPlayer.Defense +  Result.Modifier;
 
 end;
-function TSoccerBrain.CalculateBasePlmBallControl (  aPlayer: TSoccerPlayer ): Tchance;
+function TBrain.CalculateBasePlmBallControl (  aPlayer: TPlayer ): Tchance;
 begin
   // elaboro i talenti Challenge ma non advanced Challenge ( autotackle )
   Result.Modifier:=0;
@@ -17565,7 +14086,7 @@ begin
   if aPlayer.TalentId2 = TALENT_ID_ADVANCED_CHALLENGE then
     Result.modifier2 := 1;
 end;
-function TSoccerBrain.CalculateBasePlmBaseAutoTackle (  aPlayer: TSoccerPlayer ): Tchance;
+function TBrain.CalculateBasePlmBaseAutoTackle (  aPlayer: TPlayer ): Tchance;
 begin
   if  (aPlayer.TalentId1 = TALENT_ID_POWER)  or  (aPlayer.TalentId2 = TALENT_ID_POWER) then
    Result.Modifier := 1;
@@ -17573,19 +14094,19 @@ begin
     Result.modifier2 := 1;
   Result.Value := aPlayer.Defense + Result.Modifier;
 end;
-function TSoccerBrain.CalculateBaseShortPassing  (  aPlayer: TSoccerPlayer ): Tchance;
+function TBrain.CalculateBaseShortPassing  (  aPlayer: TPlayer ): Tchance;
 begin
   Result.Value := aPlayer.Passing;
 end;
-function TSoccerBrain.CalculateBaseShortPassingStopped (  aPlayer: TSoccerPlayer ): Tchance;
+function TBrain.CalculateBaseShortPassingStopped (  aPlayer: TPlayer ): Tchance;
 begin
   Result.Value := aPlayer.Defense;
 end;
-function TSoccerBrain.CalculateBaseShortPassingIntercept (  CellX, CellY: Integer; aPlayer: TSoccerPlayer ): Tchance;
+function TBrain.CalculateBaseShortPassingIntercept (  CellX, CellY: Integer; aPlayer: TPlayer ): Tchance;
 var
-  aFriend: TSoccerPlayer;
+  aFriend: TPlayer;
 begin
-  aFriend := GetSoccerPlayer ( CellX , CellY);
+  aFriend := GeTPlayer ( CellX , CellY);
   if aFriend = nil then
 { toemptycells lo devo riportare adesso }
     Result.Modifier := ToEmptyCellBonusDefending
@@ -17595,27 +14116,27 @@ begin
   Result.Value := aPlayer.Defense + Result.Modifier ;
 
 end;
-function TSoccerBrain.CalculateBaseLoftedPass ( aPlayer: TSoccerPlayer ): Tchance;
+function TBrain.CalculateBaseLoftedPass ( aPlayer: TPlayer ): Tchance;
 begin
   Result.Value := aPlayer.Passing ;
 
 end;
-function TSoccerBrain.CalculateBaseLoftedPassBallControl ( aPlayer: TSoccerPlayer ): Tchance;
+function TBrain.CalculateBaseLoftedPassBallControl ( aPlayer: TPlayer ): Tchance;
 begin
   Result.Value := aPlayer.BallControl;
 
 end;
-function TSoccerBrain.CalculateBaseLoftedPassHeadingDefense ( CellX, CellY: integer; aPlayer: TSoccerPlayer ): Tchance;
+function TBrain.CalculateBaseLoftedPassHeadingDefense ( CellX, CellY: integer; aPlayer: TPlayer ): Tchance;
 begin
   Result.Value := aPlayer.Heading;
 
 end;
-function TSoccerBrain.CalculateBaseLoftedPassEmptyPlmSpeed ( CellX, CellY: integer; aPlayer: TSoccerPlayer ): Tchance;
+function TBrain.CalculateBaseLoftedPassEmptyPlmSpeed ( CellX, CellY: integer; aPlayer: TPlayer ): Tchance;
 begin
   Result.Value := aPlayer.Speed;
 
 end;
-function TSoccerBrain.CalculateBaseCrossing ( CellX, CellY: integer; aPlayer: TSoccerPlayer ): Tchance;
+function TBrain.CalculateBaseCrossing ( CellX, CellY: integer; aPlayer: TPlayer ): Tchance;
 begin
   Result.Modifier := 0;
   if (aPlayer.TalentId1 = TALENT_ID_CROSSING) or (aPlayer.TalentId2 = TALENT_ID_CROSSING) then
@@ -17633,19 +14154,19 @@ begin
   Result.Value := aPlayer.Passing + Result.Modifier;
 
 end;
-function TSoccerBrain.CalculateBaseCrossingHeadingDefense ( CellX, CellY: integer; aPlayer: TSoccerPlayer ): Tchance;
+function TBrain.CalculateBaseCrossingHeadingDefense ( CellX, CellY: integer; aPlayer: TPlayer ): Tchance;
 begin
 
   Result.Value := aPlayer.Heading + GetCrossDefenseBonus (aPlayer, CellX, CellY );
 
 end;
-function TSoccerBrain.CalculateBaseCrossingHeadingFriend ( CellX, CellY: integer; aPlayer: TSoccerPlayer ): Tchance;
+function TBrain.CalculateBaseCrossingHeadingFriend ( CellX, CellY: integer; aPlayer: TPlayer ): Tchance;
 begin
 
   Result.Value := aPlayer.Heading;
 
 end;
-function TSoccerBrain.CalculateBaseDribblingChance ( CellX, CellY: integer; aPlayer: TSoccerPlayer ): Tchance;
+function TBrain.CalculateBaseDribblingChance ( CellX, CellY: integer; aPlayer: TPlayer ): Tchance;
 begin
   Result.Modifier := 0;
 
@@ -17665,395 +14186,253 @@ begin
   if Result.Value <= 0 then Result.Value := 1;
 
 end;
-function TSoccerBrain.CalculatBaseDribblingDefense ( CellX, CellY: integer; anOpponent: TSoccerPlayer ): Tchance;
+function TBrain.CalculatBaseDribblingDefense ( CellX, CellY: integer; anOpponent: TPlayer ): Tchance;
 begin
   Result.Value := anOpponent.Defense;
 end;
-
-{procedure TSoccerBrain.CreateFormationCells;
-var
-  i,x,y: Integer;
-  aCell: TFormationCell;
-begin
-  FormationCells.clear;
-  for X := 0 to 6 do begin
-    for Y := 0 to 11 do begin
-      aCell.CellX := X;
-      aCell.CellY := Y;
-      aCell.Team [0].X := 11-Y;
-      aCell.Team [0].Y := X;
-      aCell.Team [1].X := Y;
-      aCell.Team [1].Y := 6-X;
-
-      if (Y = 0) or (Y = 11) then aCell.role := 'G';
-      if (Y = 1) or (Y = 2) or (Y = 9) or (Y = 10) then aCell.role := 'D';
-      if (Y = 4) or (Y = 5) or (Y = 6) or (Y = 7) then aCell.role := 'M';
-      if (Y = 3) or (Y = 8) then aCell.role := 'F';
-
-
-      FormationCells.Add(aCell);
-    end;
-  end;
-
-end;
-procedure TSoccerBrain.FormationCellCompleteInfo (  team, Fcx, Fcy: Integer; var CellX, CellY: Integer; var Role:string );
+function TBrain.Tv2AiField ( Team, tvX,tvY: integer ): TPoint;
 var
   i: Integer;
 begin
-  for I := 0 to FormationCells.count -1 do begin
-    if (FormationCells[i].CellX = FcX) and (FormationCells[i].CellY  = FcY) then begin
-      CellX := FormationCells[i].Team[team].X;
-      CellY := FormationCells[i].Team[team].Y;
-      Role := FormationCells[i].Role ;
+  // cerco in aifields
+  for i := AIField.Count -1 downto 0 do begin
+    if (Aifield[i].Team =Team) and (AIField[i].TV.X = tvX) and (AIField[i].TV.Y = tvY)then begin
+      Result := AiField[i].AI;
       Exit;
     end;
-
-
   end;
 
 end;
-
-function TSoccerBrain.FieldCellToFormationCell ( CellX, CellY : integer ): TFormationCell;
+function TBrain.AiField2TV ( Team, aiX,aiY: integer ): TPoint;
 var
-  i: integer;
+  i: Integer;
 begin
+  for i := AIField.Count -1 downto 0 do begin
+    if (Aifield[i].Team =Team) and (AIField[i].AI.X = aiX) and (AIField[i].AI.Y = aiY)then begin
+      Result := AiField[i].TV;
+      Exit;
+    end;
+  end;
+end;
+function TBrain.GetBestShotZone ( Team: integer; Zonerole:Char ): TPlayer;
+var
+  i,p,MaxShot: Integer;
+  lstBestShot: TObjectList<TPlayer>;
+begin
+    // il result può essere nil se in zona non c'è nessuno
+    lstBestShot:= TObjectList<TPlayer>.Create(False);
 
-  for I := 0 to FormationCells.Count -1 do begin
-
-    if (FormationCells[i].CellX = CellX) and (FormationCells[i].CellY = CellY) then begin
-      Result := FormationCells[i];
-      exit;
+    for I := Players.Count -1 downto 0 do begin
+// nin cerca un ruolo, cerca quelli che in quella zona hanno il Shot forte
+      if (Players[i].Team = Team ) and ( Players[i].ZoneRole = Zonerole ) then
+          lstBestShot.Add(Players[i]);
     end;
 
-  end;
+    if lstBestShot.count > 0 then begin
 
-end;
-function TSoccerBrain.GetCrossBounceCell ( StartX, StartY: integer ): TPoint;
-var
-  acellList: Tlist<TPoint>;
-  aPoint: Tpoint;
-
-begin
-  // in base a dove si trova ottiene una cella random tra quelle previste. Le celle sono fisse
-  // StartX e StartY sono le coords dell'Opponent che ha respinto la palla
-    case StartY of
-      1..2: begin
-          if StartX = 1 then begin  // ha crossato da X,Y =1,0
-
-            aPoint.X := 1; aPoint.Y := StartY-1;  // torna a chi crossa
-            aCellList.add(aPoint);
-            aPoint.X := 2; aPoint.Y := StartY-1; // a destra di chi crossa
-            aCellList.add(aPoint);
-            aPoint.X := 2; aPoint.Y := StartY; // a destra di chi crossa in diagonale
-            aCellList.add(aPoint);
-            aPoint.X := 1; aPoint.Y := StartY; // rimane al difensore
-            aCellList.add(aPoint);
-            aPoint.X := 0; aPoint.Y := StartY-1; // corner
-            aCellList.add(aPoint);
-            aPoint.X := 0; aPoint.Y := StartY; // corner
-            aCellList.add(aPoint);
-
-            Result := aCellList [RndGenerate0 ( AcellList.Count )];
-
-          end
-          else if StartX = 10 then begin  // ha crossato da X,Y =10,0
-
-            aPoint.X := 10; aPoint.Y := StartY;  // torna a chi crossa
-            aCellList.add(aPoint);
-            aPoint.X := 9; aPoint.Y := StartY; // a sinistra di chi crossa
-            aCellList.add(aPoint);
-            aPoint.X := 9; aPoint.Y := StartY-1; // a sinistra di chi crossa in diagonale
-            aCellList.add(aPoint);
-            aPoint.X := 10; aPoint.Y := StartY-1; // rimane al difensore
-            aCellList.add(aPoint);
-            aPoint.X := 11; aPoint.Y := StartY-1; // corner
-            aCellList.add(aPoint);
-            aPoint.X := 11; aPoint.Y := StartY; // corner
-            aCellList.add(aPoint);
-
-            Result := aCellList [RndGenerate0 ( AcellList.Count )];
-          end;
-         end;
-      5..6: begin
-          if StartX = 1 then begin // ha crossato da X,Y = 1,6 o 2,6
-
-            aPoint.X := 1; aPoint.Y := StartY;  // torna a chi crossa
-            aCellList.add(aPoint);
-            aPoint.X := 2; aPoint.Y := StartY; // a destra di chi crossa
-            aCellList.add(aPoint);
-            aPoint.X := 2; aPoint.Y := StartY-1; // a destra di chi crossa in diagonale
-            aCellList.add(aPoint);
-            aPoint.X := 1; aPoint.Y := StartY-1; // rimane al difensore
-            aCellList.add(aPoint);
-            aPoint.X := 0; aPoint.Y := StartY-1; // corner
-            aCellList.add(aPoint);
-            aPoint.X := 0; aPoint.Y := StartY; // corner
-            aCellList.add(aPoint);
-
-            Result := aCellList [RndGenerate0 ( AcellList.Count )];
-
-          end
-          else if StartX = 10 then begin  // ha crossato da X,Y = 10,6 o 19,5
-
-            aPoint.X := 10; aPoint.Y := StartY;  // torna a chi crossa
-            aCellList.add(aPoint);
-            aPoint.X := 9; aPoint.Y := StartY; // a sinistra di chi crossa
-            aCellList.add(aPoint);
-            aPoint.X := 9; aPoint.Y := StartY-1; // a sinistra di chi crossa in diagonale
-            aCellList.add(aPoint);
-            aPoint.X := 10; aPoint.Y := StartY-1; // rimane al difensore
-            aCellList.add(aPoint);
-            aPoint.X := 11; aPoint.Y := StartY; // corner
-            aCellList.add(aPoint);
-            aPoint.X := 11; aPoint.Y := StartY-1; // corner
-            aCellList.add(aPoint);
-
-            Result := aCellList [RndGenerate0 ( AcellList.Count )];
-          end;
-         end;
-    end;
-
-end;
-function TSoccerbrain.ai_check_shpCell ( Team: Integer ): TAIMidChance;
-var
-  aList: TList<TAimidChance>;
-  pick : TAimidChance;
-begin
-  Result.Chance := -1;
-  Result.inputAI := 'PASS,' + IntTostr (Team);
-  // non è posibile muoversi di 2 o più celle
-  if (Ball.Player.Speed -1 <=1) or ( not ball.Player.CanMove ) then begin
-    Exit;
-  end;
-
-  // cerco i possibili shp su cell vuote con compagni a -1 distanza
-  // ritorno una lista di celle a distanza short.passsing + tal_longpass . cerco player al massimo -1 da me fino davanti
-  // per ognuna calcolo il rischio in base alla speed degli avversari. -1 se perdo per forza
-  aList:= TList<TAimidChance>.Create;
-  GetShpCells ( aList, -1 ); // al massimo 1 dietro
- // sort
-//  aList.Sort
-    if aList.Count > 0 then begin
-      aList.sort(TComparer<TAimidChance>.Construct(
-      function (const L, R: TAimidChance): integer
+      lstBestShot.sort(TComparer<TPlayer>.Construct(
+      function (const L, R: TPlayer): integer
       begin
-        Result := R.Chance  - L.chance;
+        Result := (R.Shot )- (L.Shot  );
       end
      ));
-    end;
- // chance maggiore o rnd a parità o rnd tra le prime (2 o più) se il divario non è enorme
- // qui entra in gioco la mentalità del trainer
-  // scelgo
-  if aList.count > 0 then begin
-   pick := aList[0];
-    Result.X := pick.X;
-    Result.Y := pick.Y;
-    Result.Chance := pick.Chance;
-    Result.inputAI := pick.inputAI ;
-  end;
-  aList.Free;
+      MaxShot := lstBestShot[0].Shot   ;
 
+      for P := lstBestShot.Count -1 downto 0 do begin
+        if lstBestShot[p].Shot  < MaxShot then
+          lstBestShot.Delete(p);
+      end;
+//      Result :=  lstBestShot[ brain.RndGenerate0(lstBestShot.Count-1)].Ids ;
+      // dato che questa lista scompare passo il puntatore al player originale
+      result := GeTPlayer( lstBestShot[ RndGenerate0(lstBestShot.Count-1)].Ids) ;
+    end
+    else Result := nil;
+    lstBestShot.Free;
 end;
-// cerca possibili shp a seguire cercando un compagno che la possa raggiungere
-procedure TSoccerbrain.GetShpCells ( aList:TList<TAimidChance>; backLimit: integer );
+function TBrain.GetBestPassingZone ( Team: integer; Zonerole:Char ): TPlayer;
 var
-  i,NewX,NewY,P,t,chanceA,chanceB,lastChance: Integer;
-  AICell,TvCell: TPoint;
-  aMidChance: TAimidChance;
-  LstAutoTackle: TList<TInteractivePlayer>;
+  i,p,MaxPassing: Integer;
+  lstBestPassing: TObjectList<TPlayer>;
 begin
+    // il result può essere nil se in zona non c'è nessuno
+    lstBestPassing:= TObjectList<TPlayer>.Create(False);
 
-  i:=2;
-  while i <= (Ball.player.speed -1) do begin
-
-    AICell := Tv2AiField (Ball.player.Team, Ball.player.CellX,Ball.player.CellY ) ;
-    // cerco ogni compagno dietro di me -1 (backlimit) fino al massimo di shp+talpassing e ottengo una lista
-    newX:= AICell.X -i;
-    newY:= AICell.Y -i;
-    if (NewX > 0) and (NewY > 0) then begin
-
-     // recupero la nuova TvCell
-      TvCell := AiField [ Ball.player.Team, NewX, NewY ];
-      // cerco nel path TV
-      GetPath (Ball.Player.Team , Ball.Player.CellX , Ball.Player.CellY, TvCell.X, TvCell.Y,I,false,true,
-                         true,true,TruncOneDir, Ball.Player.MovePath );
-
-      // se il path esiste aggiungo la cella alle possibilità in cui spostarsi di 2+
-      if Ball.Player.MovePath.Count = I then begin
-        // Ball.Player.MovePath è in TVmode
-        aMidChance.X := newX;
-        aMidChance.Y := newY;
-        ball.Player.tmp := 0;
-        if ball.Player.TalentId = TALENT_ID_TOUGHNESS then
-          ball.Player.tmp :=  1 ;
-
-        //per ognuna delle celle ottengo la chance sugli autotackle, per esempio a distanza 2 chance 70, a distanza 3 chance 30
-        LstAutoTackle:= TList<TInteractivePlayer>.create;
-        // OLTODO: da rifare tutta la routine, cerco non autotackle ma intercept
-        lastChance:= 100;
-        CompileAutoTackleList(Ball.player.Team, 1, Ball.Player.MovePath, lstAutoTackle);
-          for P:= 0 to Ball.Player.MovePath.Count - 1 do begin
-
-            if P < Ball.Player.MovePath.Count -1 then begin         // <-- autotackle non si aziona sulla FinalCell
-//            lastChance:= 100;
-            for t := 0 to LstAutoTackle.Count -1 do begin
-
-                if (LstAutoTackle[t].Cell.X = Ball.Player.MovePath[p].X) and (LstAutoTackle[t].Cell.Y = Ball.Player.MovePath[p].Y) then begin // se la cella lo riguarda. questo fa la giusta animazione
-                  LstAutoTackle[t].Player.tmp := 0;
-                  if LstAutoTackle[t].Player.TalentId = TALENT_ID_CHALLENGE then
-                  LstAutoTackle[t].Player.tmp :=  1 ;
-
-
-                    CalculateChance  (Ball.player.Defense  + ball.Player.tmp  , LstAutoTackle[t].Player.Defense
-                    + LstAutoTackle[t].Player.tmp + Modifier_autotackle , chanceA,chanceB);
-                    // esempio chanceA 37, poi chanceA 65. prendo il valore più basso di chance di riuscita
-                    if chanceA < lastChance  then lastChance:= chanceA;    // QUI bug, forse devo prende il valore più alto di chance
-                end;                         // la chance di riuscita di me , non del difensore
-              end;
-            end;
-          end;
-
-          LstAutoTackle.Free;
-
-        // ottengo una media e la storo
-        aMidChance.Chance := lastChance;
-        aMidChance.inputAI := 'PLM,' + ball.Player.Ids +',' + IntToStr(Ball.Player.MovePath[I-1].X) +','+ IntToStr(Ball.Player.MovePath[I-1].Y);
-        aList.Add(aMidChance);
-
-      end;
-
+    for I := Players.Count -1 downto 0 do begin
+// nin cerca un ruolo, cerca quelli che in quella zona hanno il passing forte
+      if (Players[i].Team = Team ) and ( Players[i].ZoneRole = Zonerole ) then
+          lstBestPassing.Add(Players[i]);
     end;
 
+    if lstBestPassing.count > 0 then begin
 
-    newX:= AICell.X;
-    newY:= AICell.Y -i;
-    // ragiono in aifield cerco le celle in linea con me che porto palla
-    if (NewY > 0) then begin
+      lstBestPassing.sort(TComparer<TPlayer>.Construct(
+      function (const L, R: TPlayer): integer
+      begin
+        Result := (R.Passing )- (L.Passing  );
+      end
+     ));
+      MaxPassing := lstBestPassing[0].Passing   ;
 
-     // recupero la nuova TvCell
-      TvCell := AiField [ Ball.player.Team, NewX, NewY ];
-      // cerco nel path TV
-      GetPath (Ball.Player.Team , Ball.Player.CellX , Ball.Player.CellY, TvCell.X, TvCell.Y,I,false,true,
-                         true,true,TruncOneDir, Ball.Player.MovePath );
-
-      // se il path esiste aggiungo la cella alle possibilità in cui spostarsi di 2+
-      if Ball.Player.MovePath.Count = I then begin
-        // Ball.Player.MovePath è in TVmode
-        aMidChance.X := newX;
-        aMidChance.Y := newY;
-        ball.Player.tmp := 0;
-        if ball.Player.TalentId = TALENT_ID_TOUGHNESS then
-          ball.Player.tmp :=  1 ;
-
-        //per ognuna delle celle ottengo la chance sugli autotackle, per esempio a distanza 2 chance 70, a distanza 3 chance 30
-        LstAutoTackle:= TList<TInteractivePlayer>.create;
-
-        lastChance:= 100;
-        CompileAutoTackleList(Ball.player.Team, 1, Ball.Player.MovePath, lstAutoTackle);
-          for P:= 0 to Ball.Player.MovePath.Count - 1 do begin
-
-            if P < Ball.Player.MovePath.Count -1 then begin         // <-- autotackle non si aziona sulla FinalCell
-//            lastChance:= 100;
-            for t := 0 to LstAutoTackle.Count -1 do begin
-
-                if (LstAutoTackle[t].Cell.X = Ball.Player.MovePath[p].X) and (LstAutoTackle[t].Cell.Y = Ball.Player.MovePath[p].Y) then begin // se la cella lo riguarda. questo fa la giusta animazione
-                  LstAutoTackle[t].Player.tmp := 0;
-                  if LstAutoTackle[t].Player.TalentId = TALENT_ID_CHALLENGE then
-                  LstAutoTackle[t].Player.tmp :=  1 ;
-
-                    CalculateChance  (Ball.player.Defense  +Ball.player.tmp  , LstAutoTackle[t].Player.Defense
-                    + LstAutoTackle[t].Player.tmp + Modifier_autotackle , chanceA,chanceB);
-                    // esempio chanceA 37, poi chanceA 65. prendo il valore più basso di chance di riuscita
-                    if chanceA < lastChance  then lastChance:= chanceA;
-                end;
-              end;
-            end;
-          end;
-
-          LstAutoTackle.Free;
-
-        // ottengo una media e la storo
-        aMidChance.Chance := lastChance;
-        aMidChance.inputAI := 'PLM,' + ball.Player.Ids +',' + IntToStr(Ball.Player.MovePath[I-1].X) +','+ IntToStr(Ball.Player.MovePath[I-1].Y);
-        aList.Add(aMidChance);
-
+      for P := lstBestPassing.Count -1 downto 0 do begin
+        if lstBestPassing[p].Passing  < MaxPassing then
+          lstBestPassing.Delete(p);
       end;
+//      Result :=  lstBestPassing[ brain.RndGenerate0(lstBestPassing.Count-1)].Ids ;
+      // dato che questa lista scompare passo il puntatore al player originale
+      result := GeTPlayer( lstBestPassing[ RndGenerate0(lstBestPassing.Count-1)].Ids ) ;
+    end
+    else Result := nil;
+    lstBestPassing.Free;
+end;
+function TBrain.GetWorstBallControlZone ( Team: integer; Zonerole:Char ): TPlayer;
+var
+  i,p,MinBallControl: Integer;
+  lstBestBallControl: TObjectList<TPlayer>;
+begin
+    // il result può essere nil se in zona non c'è nessuno
+    lstBestBallControl:= TObjectList<TPlayer>.Create(False);
 
+    for I := Players.Count -1 downto 0 do begin
+// nin cerca un ruolo, cerca quelli che in quella zona hanno il BallControl forte
+      if (Players[i].Team = Team ) and ( Players[i].ZoneRole = Zonerole ) then
+          lstBestBallControl.Add(Players[i]);
     end;
 
+    if lstBestBallControl.count > 0 then begin
 
+      lstBestBallControl.sort(TComparer<TPlayer>.Construct(
+      function (const L, R: TPlayer): integer
+      begin
+        Result := (L.BallControl )- (R.BallControl  );     // <--- il più basso
+      end
+     ));
+      MinBallControl := lstBestBallControl[0].BallControl   ;
 
-    newX:= AICell.X +i;
-    newY:= AICell.Y -i;
-    // ragiono in aifield
-    if (NewX < 7) and (NewY > 0) then begin
-
-     // recupero la nuova TvCell
-      TvCell := AiField [ Ball.player.Team, NewX, NewY ];
-      // cerco nel path TV
-      GetPath (Ball.Player.Team , Ball.Player.CellX , Ball.Player.CellY, TvCell.X, TvCell.Y,I,false,true,
-                         true,true,TruncOneDir, Ball.Player.MovePath );
-
-      // se il path esiste aggiungo la cella alle possibilità in cui spostarsi di 2+
-      if Ball.Player.MovePath.Count = I then begin
-        // Ball.Player.MovePath è in TVmode
-        aMidChance.X := newX;
-        aMidChance.Y := newY;
-        ball.Player.tmp := 0;
-        if ball.Player.TalentId = TALENT_ID_TOUGHNESS then
-          ball.Player.tmp :=  1 ;
-
-        //per ognuna delle celle ottengo la chance sugli autotackle, per esempio a distanza 2 chance 70, a distanza 3 chance 30
-        LstAutoTackle:= TList<TInteractivePlayer>.create;
-
-        CompileAutoTackleList(Ball.player.Team, 1, Ball.Player.MovePath, lstAutoTackle);
-          for P:= 0 to Ball.Player.MovePath.Count - 1 do begin
-
-            if P < Ball.Player.MovePath.Count -1 then begin         // <-- autotackle non si aziona sulla FinalCell
-            lastChance:= 100;
-            for t := 0 to LstAutoTackle.Count -1 do begin
-
-                if (LstAutoTackle[t].Cell.X = Ball.Player.MovePath[p].X) and (LstAutoTackle[t].Cell.Y = Ball.Player.MovePath[p].Y) then begin // se la cella lo riguarda. questo fa la giusta animazione
-                  LstAutoTackle[t].Player.tmp := 0;
-                  if LstAutoTackle[t].Player.TalentId = TALENT_ID_CHALLENGE then
-                  LstAutoTackle[t].Player.tmp :=  1 ;
-
-                    CalculateChance  (Ball.player.Defense  + Ball.player.tmp  , LstAutoTackle[t].Player.Defense
-                    + LstAutoTackle[t].Player.tmp + Modifier_autotackle , chanceA,chanceB);
-                    // esempio chanceA 37, poi chanceA 65. prendo il valore più basso di chance di riuscita
-                    if chanceA < lastChance  then lastChance:= chanceA;
-                end;
-              end;
-            end;
-          end;
-
-          LstAutoTackle.Free;
-
-        // ottengo una media e la storo
-        aMidChance.Chance := lastChance;
-        aMidChance.inputAI := 'PLM,' + ball.Player.Ids +',' + IntToStr(Ball.Player.MovePath[I-1].X) +','+ IntToStr(Ball.Player.MovePath[I-1].Y);
-        aList.Add(aMidChance);
-
+      for P := lstBestBallControl.Count -1 downto 0 do begin
+        if lstBestBallControl[p].BallControl  > MinBallControl then     // il più basso
+          lstBestBallControl.Delete(p);
       end;
+//      Result :=  lstBestBallControl[ brain.RndGenerate0(lstBestBallControl.Count-1)].Ids ;
+      // dato che questa lista scompare passo il puntatore al player originale
+      result := GeTPlayer( lstBestBallControl[ RndGenerate0(lstBestBallControl.Count-1)].Ids) ;
+    end
+    else Result := nil;
+    lstBestBallControl.Free;
+end;
+function TBrain.GetWorstShot ( Team: integer ): TPlayer;
+var
+  i,p,MinShot: Integer;
+  lstWorstShot: TObjectList<TPlayer>;
+begin
+    // il result può essere nil se in zona non c'è nessuno
+    lstWorstShot:= TObjectList<TPlayer>.Create(False);
 
+    for I := Players.Count -1 downto 0 do begin
+// nin cerca un ruolo, cerca quelli che in quella zona hanno il BallControl forte
+
+      if (Players[i].Team = Team ) and ( Players[i].TalentId1 <> TALENT_ID_GOALKEEPER) then
+          lstWorstShot.Add(Players[i]);
     end;
 
+    if lstWorstShot.count > 0 then begin
 
+      lstWorstShot.sort(TComparer<TPlayer>.Construct(
+      function (const L, R: TPlayer): integer
+      begin
+        Result := (L.Shot )- (R.Shot  );     // <--- il più basso
+      end
+     ));
+      MinShot := lstWorstShot[0].Shot   ;
 
-    Inc(i);
+      for P := lstWorstShot.Count -1 downto 0 do begin
+        if lstWorstShot[p].Shot  > MinShot then     // il più basso
+          lstWorstShot.Delete(p);
+      end;
+//      Result :=  lstWorstBallControl[ brain.RndGenerate0(lstWorstBallControl.Count-1)].Ids ;
+      // dato che questa lista scompare passo il puntatore al player originale
+      result := GeTPlayer( lstWorstShot[ RndGenerate0(lstWorstShot.Count-1)].Ids) ;
+    end
+    else Result := nil;
+    lstWorstShot.Free;
+end;
+function TBrain.GetWorstDefense ( Team: integer ): TPlayer;
+var
+  i,p,MinDefense: Integer;
+  lstWorstDefense: TObjectList<TPlayer>;
+begin
+    // il result può essere nil se in zona non c'è nessuno
+    lstWorstDefense:= TObjectList<TPlayer>.Create(False);
 
-  end;
+    for I := Players.Count -1 downto 0 do begin
+// nin cerca un ruolo, cerca quelli che in quella zona hanno il BallControl forte
+      if (Players[i].Team = Team )  and ( Players[i].TalentId1 <> TALENT_ID_GOALKEEPER) then
+          lstWorstDefense.Add(Players[i]);
+    end;
 
+    if lstWorstDefense.count > 0 then begin
+
+      lstWorstDefense.sort(TComparer<TPlayer>.Construct(
+      function (const L, R: TPlayer): integer
+      begin
+        Result := (L.Defense )- (R.Defense  );     // <--- il più basso
+      end
+     ));
+      MinDefense := lstWorstDefense[0].Defense   ;
+
+      for P := lstWorstDefense.Count -1 downto 0 do begin
+        if lstWorstDefense[p].Defense  > MinDefense then     // il più basso
+          lstWorstDefense.Delete(p);
+      end;
+//      Result :=  lstWorstBallControl[ brain.RndGenerate0(lstWorstBallControl.Count-1)].Ids ;
+      // dato che questa lista scompare passo il puntatore al player originale
+      result := GeTPlayer( lstWorstDefense[ RndGenerate0(lstWorstDefense.Count-1)].Ids) ;
+    end
+    else Result := nil;
+    lstWorstDefense.Free;
+end;
+function TBrain.GetWorstPassing ( Team: integer ): TPlayer;
+var
+  i,p,MinPassing: Integer;
+  lstWorstPassing: TObjectList<TPlayer>;
+begin
+    // il result può essere nil se in zona non c'è nessuno
+    lstWorstPassing:= TObjectList<TPlayer>.Create(False);
+
+    for I := Players.Count -1 downto 0 do begin
+// nin cerca un ruolo, cerca quelli che in quella zona hanno il BallControl forte
+      if (Players[i].Team = Team )  and ( Players[i].TalentId1 <> TALENT_ID_GOALKEEPER) then
+          lstWorstPassing.Add(Players[i]);
+    end;
+
+    if lstWorstPassing.count > 0 then begin
+
+      lstWorstPassing.sort(TComparer<TPlayer>.Construct(
+      function (const L, R: TPlayer): integer
+      begin
+        Result := (L.Passing )- (R.Passing  );     // <--- il più basso
+      end
+     ));
+      MinPassing := lstWorstPassing[0].Passing   ;
+
+      for P := lstWorstPassing.Count -1 downto 0 do begin
+        if lstWorstPassing[p].Passing  > MinPassing then     // il più basso
+          lstWorstPassing.Delete(p);
+      end;
+//      Result :=  lstWorstBallControl[ brain.RndGenerate0(lstWorstBallControl.Count-1)].Ids ;
+      // dato che questa lista scompare passo il puntatore al player originale
+      result := GeTPlayer( lstWorstPassing[ RndGenerate0(lstWorstPassing.Count-1)].Ids) ;
+    end
+    else Result := nil;
+    lstWorstPassing.Free;
 end;
 
 
-   }
 initialization
 
 finalization
   ShotCells.Free;
   TVCrossingAreaCells.Free;
-  AICrossingAreaCells.free;	
+  AICrossingAreaCells.free;
   AIField.Free;
 
 end.

@@ -70,8 +70,8 @@
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
         <DCC_Define>EUREKALOG;EUREKALOG_VER7;$(DCC_Define)</DCC_Define>
-        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.443;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=;LastCompiledTime=2020/11/06 23:12:42</VerInfo_Keys>
-        <VerInfo_Build>443</VerInfo_Build>
+        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.446;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=;LastCompiledTime=2022/01/30 02:20:07</VerInfo_Keys>
+        <VerInfo_Build>446</VerInfo_Build>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
         <DCC_MapFile>3</DCC_MapFile>
         <Icon_MainIcon>Time120Server_Icon1.ico</Icon_MainIcon>
@@ -102,6 +102,9 @@
         </DCCReference>
         <DCCReference Include="SoccerBrainv3.pas"/>
         <DCCReference Include="utilities.pas"/>
+        <DCCReference Include="SoccerAIv3.pas"/>
+        <DCCReference Include="SoccerTypes.pas"/>
+        <DCCReference Include="validate.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
